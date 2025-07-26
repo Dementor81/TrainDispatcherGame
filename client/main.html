@@ -2,9 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Train Simulator</title>
+  <!-- Bootstrap JS fallback -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 </head>
-<body>
-  <canvas id="train-canvas"></canvas>
+<body class="bg-dark">
+  <div class="container-fluid position-relative">
+    <canvas id="mainCanvas" class="w-100 h-100"></canvas>
+    <button id="showStationSelector" class="btn btn-primary position-absolute top-0 end-0 m-3">
+      Bahnhof auswählen
+    </button>
+  </div>
+  <div class="modal fade" id="stationSelectModal" tabindex="-1" aria-labelledby="stationSelectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Bahnhof auswählen</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Wählen Sie einen Bahnhof aus der Liste aus.</p>
+          
+          <div class="mb-3">
+            <label for="layoutSelect" class="form-label">Bahnhof</label>
+            <select class="form-select" id="DropdownStations">
+              <!-- Options will be populated dynamically -->
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+          <button type="button" class="btn btn-primary" id="startButton">Start</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

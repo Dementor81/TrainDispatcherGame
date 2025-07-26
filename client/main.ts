@@ -1,6 +1,13 @@
+import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/main.css";
-import { initApp } from "./core/app";
+import Application from "./core/application";
+
+// Import Bootstrap JavaScript
+import * as bootstrap from 'bootstrap';
+// Make bootstrap available globally
+(window as any).bootstrap = bootstrap;
 
 window.addEventListener("load", () => {
-  initApp();
+  const app = new Application();
+  app.init();
 });
