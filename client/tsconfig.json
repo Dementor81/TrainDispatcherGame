@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "target": "ES6",
+      "module": "ESNext",
+      "moduleResolution": "node",
+      "strict": true,
+      "esModuleInterop": true,
+      "baseUrl": "./",
+      "paths": {
+        "@core/*": ["core/*"],
+        "@sim/*": ["sim/*"],
+        "@canvas/*": ["canvas/*"]
+      },
+      "outDir": "./dist"
+    },
+    "include": ["./**/*.ts"]
+  }
