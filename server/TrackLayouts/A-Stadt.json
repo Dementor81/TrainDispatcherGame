@@ -29,8 +29,7 @@
           "type": "Track",
           "id": 5
         }
-      ],
-      "hasBumper": true
+      ]
     },
     {
       "_class": "Track",
@@ -45,13 +44,15 @@
       },
       "signals": [],
       "switches": [
-        null,
+        {
+          "type":"Exit",
+          "id":0
+        },
         {
           "type": "Switch",
           "id": 0
         }
-      ],
-      "hasBumper": true
+      ]
     },
     {
       "_class": "Track",
@@ -74,8 +75,7 @@
           "type": "Track",
           "id": 6
         }
-      ],
-      "hasBumper": true
+      ]
     },
     {
       "_class": "Track",
@@ -98,8 +98,7 @@
           "type": "Switch",
           "id": 1
         }
-      ],
-      "hasBumper": true
+      ]
     },
     {
       "_class": "Track",
@@ -122,8 +121,7 @@
           "type": "Switch",
           "id": 1
         }
-      ],
-      "hasBumper": true
+      ]
     },
     {
       "_class": "Track",
@@ -143,8 +141,7 @@
           "id": 1
         },
         null
-      ],
-      "hasBumper": true
+      ]
     }
   ],
   "switches": [

@@ -1,11 +1,11 @@
-import { fetchAvailableLayouts, fetchLayout } from "../network/api";
-import { TrackLayoutDto } from "../network/dto";
+import { fetchAvailableLayouts } from "../network/api";
 
 export class StationSelector {
   private modal: HTMLElement | null = null;
   private dropdown: HTMLSelectElement | null = null;
+  private playerNameInput: HTMLInputElement | null = null;
   private startButton: HTMLButtonElement | null = null;
-  private onStationSelected: ((layout: string) => void) | null = null;
+  private onStationSelected: ((layout: string, playerId: string) => void) | null = null;
 
   constructor() {
     this.initializeElements();
@@ -15,6 +15,7 @@ export class StationSelector {
   private initializeElements(): void {
     this.modal = document.getElementById('stationSelectModal');
     this.dropdown = document.getElementById('DropdownStations') as HTMLSelectElement;
+    this.playerNameInput = document.getElementById('playerNameInput') as HTMLInputElement;
     this.startButton = document.getElementById('startButton') as HTMLButtonElement;
   }
 
@@ -32,8 +33,8 @@ export class StationSelector {
     const manualButton = document.getElementById('showStationSelector');
     if (manualButton) {
       manualButton.addEventListener('click', () => {
-        this.showModal((layout) => {
-          console.log("Manual selection - Selected layout:", layout);
+        this.showModal((layout, playerId) => {
+          console.log("Manual selection - Selected layout:", layout, "Player ID:", playerId);
           // TODO: Initialize the simulation with the selected layout
         });
       });
@@ -58,30 +59,44 @@ export class StationSelector {
         this.dropdown!.appendChild(option);
       });
 
+      this.dropdown.value = layouts[0];
+
     } catch (error) {
       console.error('Failed to load stations:', error);
       this.dropdown.innerHTML = '<option value="">Fehler beim Laden der Bahnhöfe</option>';
     }
   }
 
-  private async handleStartClick(): Promise<void> {
-    if (!this.dropdown || !this.onStationSelected) return;
+  private handleStartClick(): void {
+    if (!this.dropdown || !this.playerNameInput || !this.onStationSelected) return;
 
     const selectedStation = this.dropdown.value;
+    const playerName = this.playerNameInput.value.trim();
+
     if (!selectedStation) {
       alert('Bitte wählen Sie einen Bahnhof aus.');
       return;
     }
 
-    // Call the callback with the selected station
-    this.onStationSelected(selectedStation);
+    if (!playerName) {
+      alert('Bitte geben Sie Ihren Namen ein.');
+      return;
+    }
+
+    // Call the callback with the selected station and player ID
+    this.onStationSelected(selectedStation, playerName);
     
     // Hide the modal
     this.hideModal();
   }
 
-  public showModal(onStationSelected: (layout: string) => void): void {
+  public showModal(onStationSelected: (layout: string, playerId: string) => void): void {
     this.onStationSelected = onStationSelected;
+    
+    // Clear the player name input
+    if (this.playerNameInput) {
+      this.playerNameInput.value = '';
+    }
     
     // Use Bootstrap's modal API to show the modal
     if (this.modal) {

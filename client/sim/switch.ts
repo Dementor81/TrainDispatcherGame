@@ -2,11 +2,7 @@ import { Point } from "../utils/point";
 import Track from "./track";
 
 class Switch {
-   private static _counter = 0;
-
-   static _getID() {
-      return Switch._counter++;
-   }
+   
 
    static fromObject(object: any): Switch {
     const sw = new Switch(new Point(object.location.x, object.location.y));
@@ -26,7 +22,7 @@ class Switch {
    private _from: Track | null;
 
    constructor(location: Point) {
-      this._id = Switch._getID();      
+      this._id = -1;      
       this._location = location;
       this._tracks = new Array(4).fill(null);
       this._branch = null;
@@ -77,6 +73,16 @@ class Switch {
       return this._tracks;
    }
 
+   set tracks(tracks: Track[]) {
+      this._tracks = tracks;
+   }
+
+   // Toggle the switch state by swapping branch and from tracks
+   toggle(): void {
+      if (this._tracks[3] === null) {         
+         this._branch = this._branch === this._tracks[2] ? this._tracks[1] : this._tracks[2];         
+      }
+   }
    
 }
 

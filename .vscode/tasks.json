@@ -47,6 +47,45 @@
                 "isDefault": true
             },
             "detail": "Runs the webpack development server."
+        },
+        {
+            "label": "start-all",
+            "dependsOrder": "parallel",
+            "dependsOn": [
+                "start-dotnet",
+                "start-webpack"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "detail": "Starts both the .NET server and webpack development server concurrently."
+        },
+        {
+            "label": "start-dotnet",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/server/server.csproj"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/server"
+            },
+            "problemMatcher": "$msCompile",
+            "detail": "Starts the .NET server in watch mode."
+        },
+        {
+            "label": "start-webpack",
+            "type": "npm",
+            "script": "start",
+            "options": {
+                "cwd": "${workspaceFolder}/client"
+            },
+            "problemMatcher": [],
+            "detail": "Starts the webpack development server."
         }
     ]
 }

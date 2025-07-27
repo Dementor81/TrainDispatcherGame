@@ -7,7 +7,7 @@ import * as bootstrap from 'bootstrap';
 // Make bootstrap available globally
 (window as any).bootstrap = bootstrap;
 
-window.addEventListener("load", () => {
+window.addEventListener("load", async () => {
   const app = new Application();
-  app.init();
+  await app.init();
 });

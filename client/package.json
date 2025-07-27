@@ -23,6 +23,8 @@
       "webpack-dev-server": "^5.2.2"
    },
    "dependencies": {
-      "bootstrap": "^5.3.7"
+      "@microsoft/signalr": "^8.0.7",
+      "bootstrap": "^5.3.7",
+      "pixi.js": "^8.11.0"
    }
 }

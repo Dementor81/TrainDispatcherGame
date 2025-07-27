@@ -1,0 +1,23 @@
+{
+    "title": "Fahrplan",
+    "start_time": "00:00",
+    "trains": [
+      {
+        "number": "1001",
+        "entries": [
+          {
+            "type": "exit",
+            "id": "A",
+            "time": "00:01",
+            "stops": false
+          },
+          {
+            "type": "station",
+            "id": "B",
+            "time": "00:02",
+            "stops": true
+          }
+        ]
+      }
+    ]
+  }

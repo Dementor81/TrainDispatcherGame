@@ -2,7 +2,8 @@ import Track from "../sim/track";
 import Switch from "../sim/switch";
 import Signal from "../sim/signal";
 import Train from "../sim/train";
-import { TrackDto, SwitchDto, TrackLayoutDto } from "../network/dto";
+import Exit from "../sim/exit";
+import { TrackDto, SwitchDto, TrackLayoutDto, ExitDto } from "../network/dto";
 
 class Storage {
     static getClassMap(): any {
@@ -11,33 +12,26 @@ class Storage {
            Switch: Switch,
            Signal: Signal,
            Train: Train,
+           Exit: Exit,
         };
      }
     
     constructor() {
     }
 
-    static loadTrackLayoutFromJson(json: string) {
-        let loaded: TrackLayoutDto|null = null;
-        try {
-            loaded = JSON.parse(json);
-        } catch (error) {
-            console.error("Error parsing JSON:", error);
-            return null;
-        }
-        if (loaded === null) {
-            return null;
-        }
-
-        const tracks = loaded.tracks.map((trackObj: TrackDto) => Track.fromObject(trackObj));        
-        const switches = loaded.switches.map((switchObj: SwitchDto) => Switch.fromObject(switchObj));
+    static loadTrackLayoutFromJson(trackLayoutDto: TrackLayoutDto): {tracks: Track[], switches: Switch[], exits: Exit[]} | null {
+        
+        const tracks = trackLayoutDto.tracks.map((trackObj: TrackDto) => Track.fromObject(trackObj));        
+        const switches = trackLayoutDto.switches.map((switchObj: SwitchDto) => Switch.fromObject(switchObj));
+        const exits = trackLayoutDto.exits.map((exitObj: ExitDto) => Exit.fromObject(exitObj));
 
         tracks.forEach((track: Track) => {
-            const track_loaded = loaded.tracks.find((t: TrackDto) => t.id === track.id);
+            const track_loaded = trackLayoutDto.tracks.find((t: TrackDto) => t.id === track.id);
             if (track_loaded === undefined) {
                 throw new Error(`Track ${track.id} not found in loaded layout`);
             }
-            track.switches = track_loaded.switches.map((sd: { type: string; id: number }): (Switch | Track | null) => {
+            track.switches = track_loaded.switches.map((sd: { type: string; id: number }): (Switch | Track| Exit | null) => {
+                if(sd === null) return null;
                 if (sd.type === "Switch") {
                     const sw = switches.find((s: Switch) => s.id === sd.id);
                     if (sw === undefined) {
@@ -51,12 +45,19 @@ class Storage {
                     }
                     return tr;
                 }
+                else if (sd.type === "Exit") {
+                    const ex = exits.find((e: Exit) => e.id === sd.id);
+                    if (ex === undefined) {
+                        throw new Error(`Exit ${sd.id} not found in loaded layout`);
+                    }
+                    return ex;
+                }
                 throw new Error(`Invalid switch type: ${sd.type}`);
             });
         });
 
         switches.forEach((sw: any) => {
-            const sw_loaded = loaded.switches.find((s: SwitchDto) => s.id === sw.id);
+            const sw_loaded = trackLayoutDto.switches.find((s: SwitchDto) => s.id === sw.id);
             if (sw_loaded === undefined) {
                 throw new Error(`Switch ${sw.id} not found in loaded layout`);
             }
@@ -71,7 +72,7 @@ class Storage {
         });
 
         
-        return { tracks, switches };
+        return { tracks, switches, exits };
     }
 }
 

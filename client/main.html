@@ -4,14 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Train Simulator</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
   <!-- Bootstrap JS fallback -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 </head>
-<body class="bg-dark">
+<body class="">
   <div class="container-fluid position-relative">
     <canvas id="mainCanvas" class="w-100 h-100"></canvas>
     <button id="showStationSelector" class="btn btn-primary position-absolute top-0 end-0 m-3">
       Bahnhof auswählen
+    </button>
+    <button id="toggleControlPanel" class="btn btn-outline-light position-absolute top-0 start-0 m-3">
+      <i class="bi bi-gear-fill"></i> Control Panel
     </button>
   </div>
   <div class="modal fade" id="stationSelectModal" tabindex="-1" aria-labelledby="stationSelectModalLabel" aria-hidden="true">
@@ -22,7 +29,12 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p>Wählen Sie einen Bahnhof aus der Liste aus.</p>
+          <p>Geben Sie Ihren Namen ein und wählen Sie einen Bahnhof aus der Liste aus.</p>
+          
+          <div class="mb-3">
+            <label for="playerNameInput" class="form-label">Spielername</label>
+            <input type="text" class="form-control" id="playerNameInput" placeholder="Ihr Name" required>
+          </div>
           
           <div class="mb-3">
             <label for="layoutSelect" class="form-label">Bahnhof</label>

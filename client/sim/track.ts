@@ -3,13 +3,10 @@ import { Point } from "../utils/point";
 import { V2 } from "../utils/v2";
 import Signal from "./signal";
 import Switch from "./switch";
+import Exit from "./exit";
 
 class Track extends BaseSimModule {
-   private static _counter = 0;
-
-   static _getID() {
-      return Track._counter++;
-   }
+   
 
    static fromObject(object: any): Track {
       const track = new Track();
@@ -27,7 +24,7 @@ class Track extends BaseSimModule {
    private _end: Point;
    private _signals: Signal[];
 
-   private _switches: (Switch | Track | null)[];
+   private _switches: (Switch | Track | Exit | null)[];
    private _id: number = 0;
 
    private _vector: V2 | null = null;
@@ -43,7 +40,7 @@ class Track extends BaseSimModule {
       super();
       this._start = new Point(0, 0);
       this._end = new Point(0, 0);
-      this._id = Track._getID();
+      this._id = -1;
       this._signals = [];
       this._switches = [null, null];
    }
@@ -64,11 +61,11 @@ class Track extends BaseSimModule {
       return this._signals;
    }
 
-   get switches(): (Switch | Track | null)[] {
+   get switches(): (Switch | Track | Exit | null)[] {
       return this._switches;
    }
 
-   set switches(switches: (Switch | Track | null)[]) {
+   set switches(switches: (Switch | Track | Exit | null)[]) {
       this._switches = switches;
    }
 
