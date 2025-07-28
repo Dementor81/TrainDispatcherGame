@@ -8,10 +8,10 @@ namespace TrainDispatcherGame.Server.Models
     {
         public string Number { get; set; } = string.Empty;
         public List<TrainEvent> Events { get; set; } = new();
-        public TrainState State { get; set; } = TrainState.Waiting;
+        public TrainState State { get; set; } = TrainState.Unspawned;
         public int CurrentEventIndex { get; set; } = 0;
-        public DateTime? SpawnTime { get; set; }
         public string? CurrentLocation { get; set; }
+        public bool controlledByPlayer { get; set; } = false;
 
         public Train(string number)
         {
@@ -51,20 +51,39 @@ namespace TrainDispatcherGame.Server.Models
                     CurrentLocation = Events[CurrentEventIndex].LocationId;
                 }
             }
+            else
+            {
+                State = TrainState.Completed;
+            }
         }
 
         public void Reset()
         {
             CurrentEventIndex = 0;
-            State = TrainState.Waiting;
-            SpawnTime = null;
-            CurrentLocation = Events.FirstOrDefault()?.LocationId;
+            State = TrainState.Unspawned;
+            CurrentLocation = null;
+            foreach (var evt in Events)
+            {
+                evt.Processed = false;
+            }
         }
 
         public bool IsEventDue(DateTime currentTime)
         {
             var currentEvent = GetCurrentEvent();
             return currentEvent != null && currentEvent.ScheduledTime <= currentTime && !currentEvent.Processed;
+        }
+
+        public bool ShouldSpawn(DateTime currentTime)
+        {
+            var spawnEvent = GetSpawnEvent();
+            return spawnEvent != null && spawnEvent.ScheduledTime <= currentTime && !spawnEvent.Processed;
+        }
+
+        public TrainEvent? GetSpawnEvent()
+        {
+            // Find the first event that represents the train spawning (usually the first event)
+            return Events.FirstOrDefault(e => e.Type == "spawn");
         }
     }
 } 

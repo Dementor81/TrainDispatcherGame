@@ -45,6 +45,38 @@ export class TrackLayoutManager {
     get exits(): Exit[] {
         return this._exits;
     }
+
+    // Find the track and kilometer position for an exit point
+    getExitPointLocation(exitPointId: string): { track: Track | null, km: number } {
+        const exitId = parseInt(exitPointId);
+        
+        // Find the track that has this exit
+        for (const track of this._tracks) {
+            for (let i = 0; i < track.switches.length; i++) {
+                const switchItem = track.switches[i];
+                if (switchItem instanceof Exit && switchItem.id === exitId) {
+                    // Exit found! Determine the kilometer position
+                    let km: number;
+                    if (i === 0) {
+                        // Exit is at the start of the track
+                        km = 0;
+                    } else if (i === 1) {
+                        // Exit is at the end of the track
+                        km = track.length;
+                    } else {
+                        // This shouldn't happen with current structure, but handle it
+                        km = 0;
+                    }
+                    
+                    console.log(`Found exit ${exitId} on track ${track.id} at km ${km}`);
+                    return { track, km };
+                }
+            }
+        }
+        
+        console.warn(`Exit point ${exitPointId} not found in track layout`);
+        return { track: null, km: 0 };
+    }
     
     async loadTrackLayout(layoutID: string): Promise<void> {
         console.log("Loading track layout:", layoutID);

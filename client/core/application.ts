@@ -1,14 +1,17 @@
 import { UIManager } from "../manager/ui_manager";
 import { EventManager } from "../manager/event_manager";
 import { TrackLayoutManager } from "../manager/trackLayout_manager";
+import { TrainManager } from "../manager/train_manager";
 import { Renderer } from "../canvas/renderer";
 import Switch from "../sim/switch";
 import SignalRManager from "../network/signalr";
+import Train from "../sim/train";
 
 export class Application {
    private _uiManager: UIManager;
    private _eventManager: EventManager;
    private _trackLayoutManager: TrackLayoutManager;
+   private _trainManager: TrainManager;
    private _renderer: Renderer | null = null;
    private _currentPlayerId: string | null = null;
    private _signalRManager: SignalRManager;
@@ -17,7 +20,8 @@ export class Application {
       this._uiManager = new UIManager(this);
       this._eventManager = new EventManager(this);
       this._trackLayoutManager = new TrackLayoutManager(this);
-      this._signalRManager = new SignalRManager();
+      this._trainManager = new TrainManager(this._eventManager, this._trackLayoutManager);
+      this._signalRManager = new SignalRManager(this._eventManager);
    }
 
    async init() {
@@ -117,6 +121,8 @@ export class Application {
       
    }
 
+
+
    get uiManager(): UIManager {
       return this._uiManager;
    }
@@ -131,6 +137,18 @@ export class Application {
 
    get signalRManager(): SignalRManager {
       return this._signalRManager;
+   }
+
+   get trains(): Train[] {
+      return this._trainManager.getAllTrains();
+   }
+
+   get trainManager(): TrainManager {
+      return this._trainManager;
+   }
+
+   get trackLayoutManager(): TrackLayoutManager {
+      return this._trackLayoutManager;
    }
 }
 

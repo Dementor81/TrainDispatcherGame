@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.FileProviders;
 using TrainDispatcherGame.Server.Simulation;
 using TrainDispatcherGame.Server.Managers;
-
 using TrainDispatcherGame.Server.Hubs;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
@@ -25,6 +25,9 @@ builder.Services.AddSingleton<Simulation>();
 
 // Add player manager as a singleton service
 builder.Services.AddSingleton<PlayerManager>();
+
+// Add notification manager as a singleton service
+builder.Services.AddSingleton<INotificationManager, NotificationManager>();
 
 var app = builder.Build();
 
@@ -55,11 +58,37 @@ app.MapGet("/api/layouts", () =>
         return Results.Problem("TrackLayouts folder not found.");
     }
 
-    var files = Directory.GetFiles(directoryPath, "*.json")
-                         .Select(f => Path.GetFileNameWithoutExtension(f))
-                         .ToList();
+    var stations = new List<object>();
+    
+    foreach (var file in Directory.GetFiles(directoryPath, "*.json"))
+    {
+        try
+        {
+            var json = File.ReadAllText(file);
+            var layoutData = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(json);
+            
+            var stationId = Path.GetFileNameWithoutExtension(file);
+            var title = layoutData.GetProperty("title").GetString() ?? stationId;
+            
+            stations.Add(new
+            {
+                id = stationId,
+                title = title
+            });
+        }
+        catch (Exception ex)
+        {
+            // If we can't read the title, use the filename as both id and title
+            var stationId = Path.GetFileNameWithoutExtension(file);
+            stations.Add(new
+            {
+                id = stationId,
+                title = stationId
+            });
+        }
+    }
 
-    return Results.Json(files);
+    return Results.Json(stations);
 });
 
 // Simulation control endpoints
@@ -85,12 +114,6 @@ app.MapPost("/api/simulation/resume", (Simulation simulation) =>
 {
     simulation.Resume();
     return Results.Ok(new { message = "Simulation resumed", state = simulation.State.ToString() });
-});
-
-app.MapPost("/api/simulation/reset", (Simulation simulation) =>
-{
-    simulation.Reset();
-    return Results.Ok(new { message = "Simulation reset", state = simulation.State.ToString() });
 });
 
 app.MapPost("/api/simulation/clear-error", (Simulation simulation) =>

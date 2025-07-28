@@ -3,8 +3,12 @@
   "title": "A-Stadt",
   "exits": [
     {
-      "destination": "b_stadt",
+      "destination": "Berlin",
       "id": 0
+    },
+    {
+      "destination": "b_stadt",
+      "id": 1
     }
   ],
   "tracks": [
@@ -140,7 +144,10 @@
           "type": "Switch",
           "id": 1
         },
-        null
+        {
+          "type": "Exit",
+          "id": 1
+        }
       ]
     }
   ],

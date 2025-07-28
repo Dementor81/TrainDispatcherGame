@@ -2,12 +2,23 @@ import { TrackLayoutDto } from "./dto";
 
 const API_BASE_URL = "http://localhost:5070/api";
 
-export async function fetchAvailableLayouts(): Promise<string[]> {
+export interface StationInfo {
+  id: string;
+  title: string;
+}
+
+export async function fetchAvailableStations(): Promise<StationInfo[]> {
   const response = await fetch(`${API_BASE_URL}/layouts`);
   if (!response.ok) {
-    throw new Error(`Failed to fetch layout list: ${response.statusText}`);
+    throw new Error(`Failed to fetch station list: ${response.statusText}`);
   }
   return response.json();
+}
+
+// Keep the old function for backward compatibility
+export async function fetchAvailableLayouts(): Promise<string[]> {
+  const stations = await fetchAvailableStations();
+  return stations.map(station => station.id);
 }
 
 export async function fetchLayout(name: string): Promise<TrackLayoutDto> {
@@ -102,6 +113,7 @@ export async function getActiveTrains(): Promise<any[]> {
 
 export default {
   fetchAvailableLayouts,
+  fetchAvailableStations,
   fetchLayout,
   startSimulation,
   stopSimulation,

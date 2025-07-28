@@ -1,4 +1,6 @@
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import Train from '../sim/train';
+import { EventManager } from '../manager/event_manager';
 
 export class SignalRManager {
     private connection: HubConnection | null = null;
@@ -6,8 +8,10 @@ export class SignalRManager {
     private reconnectAttempts = 0;
     private maxReconnectAttempts = 5;
     private reconnectDelay = 2000; // 2 seconds
+    private eventManager: EventManager;
 
-    constructor() {
+    constructor(eventManager: EventManager) {
+        this.eventManager = eventManager;
         this.initializeConnection();
     }
 
@@ -69,6 +73,11 @@ export class SignalRManager {
 
         this.connection.on('Pong', (timestamp) => {
             console.log('Pong received at:', timestamp);
+        });
+
+        this.connection.on('TrainSent', (data) => {
+            console.log('Train sent:', data);
+            this.handleTrainSent(data);
         });
     }
 
@@ -174,6 +183,19 @@ export class SignalRManager {
         console.log('Train departing event:', data);
     }
 
+    private handleTrainSent(data: any): void {
+        // Handle train sent event (train is ready for player control)
+        console.log(`Train ${data.trainNumber} is ready for control at station ${data.stationId}, exit point ${data.exitPointId}`);
+        
+        // Create a new Train instance from the server data
+        const train = Train.fromServerData(data);
+        console.log(`Created train: ${train.getInfo()}`)     
+        
+        // Emit the train created event through the EventManager
+        this.eventManager.emit('trainCreated', train,data.exitPointId);
+        console.log(`Emitted trainCreated event for train ${train.number}`);
+    }
+
     public get connectionState(): string {
         return this.connection?.state || 'Disconnected';
     }
@@ -181,6 +203,8 @@ export class SignalRManager {
     public get connected(): boolean {
         return this.isConnected;
     }
+
+
 }
 
 export default SignalRManager;

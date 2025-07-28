@@ -1,4 +1,4 @@
-import { fetchAvailableLayouts } from "../network/api";
+import { fetchAvailableStations, StationInfo } from "../network/api";
 
 export class StationSelector {
   private modal: HTMLElement | null = null;
@@ -48,18 +48,20 @@ export class StationSelector {
       // Clear existing options
       this.dropdown.innerHTML = '<option value="">Bahnhof auswählen...</option>';
 
-      // Fetch available layouts from server
-      const layouts = await fetchAvailableLayouts();
+      // Fetch available stations from server
+      const stations = await fetchAvailableStations();
       
       // Populate dropdown
-      layouts.forEach(layout => {
+      stations.forEach(station => {
         const option = document.createElement('option');
-        option.value = layout;
-        option.textContent = layout;
+        option.value = station.id;
+        option.textContent = station.title;
         this.dropdown!.appendChild(option);
       });
 
-      this.dropdown.value = layouts[0];
+      if (stations.length > 0) {
+        this.dropdown.value = stations[0].id;
+      }
 
     } catch (error) {
       console.error('Failed to load stations:', error);

@@ -13,7 +13,7 @@ export function drawArrow(container: PIXI.Container, from: Point, to: Point, opt
     const {
         color = 0xffffff,
         width = 4,
-        headLength = 15,
+        headLength = 5,
         headAngle = Math.PI / 8, // angle between arrowhead sides
     } = options || {};
 

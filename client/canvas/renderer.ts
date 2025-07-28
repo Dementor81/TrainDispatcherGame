@@ -249,18 +249,18 @@ export class Renderer {
          .lineTo(track.end.x, track.end.y)
          .stroke({ width: RendererConfig.trackWidth, color: RendererConfig.trackColor, alpha: 1, cap: "round" });
 
-         if(track.switches[0] !== null) {
-            if(track.switches[0] instanceof Exit) {
-               const exit = track.switches[0] as Exit;
-               this.renderExit(exit, track.start,track.start.add(track.unit.multiply(-RendererConfig.switchCircleRadius)));
-            }
+      if (track.switches[0] !== null) {
+         if (track.switches[0] instanceof Exit) {
+            const exit = track.switches[0] as Exit;
+            this.renderExit(exit, track, true);
          }
-         if(track.switches[1] !== null) {
-            if(track.switches[1] instanceof Exit) {
-               const exit = track.switches[1] as Exit;
-               this.renderExit(exit, track.end,track.end.add(track.unit.multiply(RendererConfig.switchCircleRadius)));
-            }
+      }
+      if (track.switches[1] !== null) {
+         if (track.switches[1] instanceof Exit) {
+            const exit = track.switches[1] as Exit;
+            this.renderExit(exit, track, false);
          }
+      }
 
       this._trackContainer.addChild(graphics);
    }
@@ -359,10 +359,13 @@ export class Renderer {
       this.renderSwitch(sw);
    }
 
-   public renderExit(exit: Exit, position: Point, end: Point): void {
+   public renderExit(exit: Exit, track: Track, inverted: boolean): void {
       const exitContainer = new PIXI.Container() as ExitContainer;
       exitContainer.exitId = exit.id;
-      drawArrow(exitContainer, position, end, {color: RendererConfig.trackColor, width: 2});
+      const unit = track.unit.multiply(inverted ? -1 : 1);
+      const position =(inverted?track.start:track.end).add(unit.multiply(5));
+      const end = position.add(unit.multiply(15));
+      drawArrow(exitContainer, position, end, { color: RendererConfig.trackColor, width: 2 });
       this._exitContainer.addChild(exitContainer);
    }
 

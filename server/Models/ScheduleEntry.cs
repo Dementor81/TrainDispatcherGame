@@ -10,6 +10,9 @@ namespace TrainDispatcherGame.Server.Models
         [JsonPropertyName("id")]
         public string Id { get; set; } = string.Empty;
 
+        [JsonPropertyName("station")]
+        public string Station { get; set; } = string.Empty;
+
         [JsonPropertyName("time")]
         public string Time { get; set; } = string.Empty;
 

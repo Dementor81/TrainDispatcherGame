@@ -6,14 +6,15 @@
         "number": "1001",
         "entries": [
           {
-            "type": "exit",
-            "id": "A",
+            "type": "spawn",
+            "id": "0",
+            "station": "a_stadt",
             "time": "00:01",
             "stops": false
           },
           {
             "type": "station",
-            "id": "B",
+            "station": "b_stadt",
             "time": "00:02",
             "stops": true
           }

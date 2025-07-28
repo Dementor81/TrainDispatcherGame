@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using TrainDispatcherGame.Server.Models;
+using TrainDispatcherGame.Server.Managers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,6 +19,7 @@ namespace TrainDispatcherGame.Server.Simulation
         private string? _errorMessage;
         private Timetable? _timetable;
         private List<Train> _trains = new();
+        private readonly INotificationManager _notificationManager;
         
         public DateTime CurrentTime => _simulationStartTime.AddSeconds(ElapsedSeconds);
         public double ElapsedSeconds { get; private set; } = 0;
@@ -26,8 +28,9 @@ namespace TrainDispatcherGame.Server.Simulation
         public Timetable? Timetable => _timetable;
         public List<Train> Trains => _trains;
 
-        public Simulation()
+        public Simulation(INotificationManager notificationManager)
         {
+            _notificationManager = notificationManager;
             LoadTimetable();
         }
 
@@ -80,6 +83,7 @@ namespace TrainDispatcherGame.Server.Simulation
                             train.Events.Add(new TrainEvent
                             {
                                 Type = entry.Type,
+                                Station = entry.Station,
                                 LocationId = entry.Id,
                                 ScheduledTime = eventDateTime,
                                 Stops = entry.Stops
@@ -139,6 +143,12 @@ namespace TrainDispatcherGame.Server.Simulation
             _timer = null;
             _state = SimulationState.Stopped;
             _errorMessage = null;
+
+            // Reset all trains
+            foreach (var train in _trains)
+            {
+                train.Reset();
+            }
             
             Console.WriteLine("Simulation stopped");
         }
@@ -212,58 +222,55 @@ namespace TrainDispatcherGame.Server.Simulation
             
             foreach (var train in _trains)
             {
-                if (train.IsEventDue(currentSimTime))
+                if (train.ShouldSpawn(currentSimTime))
                 {
-                    ProcessTrainEvent(train);
+                    SpawnTrain(train);
                 }
             }
         }
 
-        private void ProcessTrainEvent(Train train)
+        private async void SpawnTrain(Train train)
         {
-            var currentEvent = train.GetCurrentEvent();
-            if (currentEvent == null) return;
+            var spawnEvent = train.GetSpawnEvent();
+            if (spawnEvent == null) return;
 
-            Console.WriteLine($"Train {train.Number}: {currentEvent.Type} at {currentEvent.LocationId} at {currentEvent.ScheduledTime:HH:mm:ss}");
+            Console.WriteLine($"Spawning Train {train.Number} at station {spawnEvent.Station} at {spawnEvent.LocationId} at {spawnEvent.ScheduledTime:HH:mm:ss}");
             
-            // Mark event as processed
-            currentEvent.Processed = true;
+            // Update train state to active
+            train.State = TrainState.Active;
             
-            // Update train state
-            if (train.State == TrainState.Waiting)
+            // Mark spawn event as processed
+            spawnEvent.Processed = true;
+            
+            // Check if a player controls this station and send the train to them
+            try
             {
-                train.State = TrainState.Active;
-                train.SpawnTime = CurrentTime;
+                await _notificationManager.SendTrain(spawnEvent.Station, train, spawnEvent.LocationId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending train to player: {ex.Message}");
             }
             
-            // Advance to next event
-            train.AdvanceToNextEvent();
-            
-            // Check if train has completed all events
-            if (!train.HasMoreEvents())
-            {
-                train.State = TrainState.Completed;
-                Console.WriteLine($"Train {train.Number} has completed all events");
-            }
-            
-            // TODO: Implement actual event processing logic
-            // This is where we'll spawn trains, handle arrivals/departures, etc.
+            // TODO: Notify track network to spawn the train at the specified location
+            // This will be handled by the track network simulation
         }
 
-        public void Reset()
+        // Method to send a train to a player at a specific station (for intermediate stations)
+        public async Task SendTrainToStation(string stationId, Train train, string? exitPointId = null)
         {
-            Stop();
-            ElapsedSeconds = 0;
-            _errorMessage = null;
-            
-            // Reset all trains
-            foreach (var train in _trains)
+            try
             {
-                train.Reset();
+                await _notificationManager.SendTrain(stationId, train, exitPointId);
+                Console.WriteLine($"Sent train {train.Number} to station {stationId}");
             }
-            
-            Console.WriteLine($"Simulation reset to {_simulationStartTime:HH:mm:ss}");
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending train {train.Number} to station {stationId}: {ex.Message}");
+            }
         }
+
+        
 
         public void ClearError()
         {
@@ -282,7 +289,7 @@ namespace TrainDispatcherGame.Server.Simulation
 
         public List<Train> GetWaitingTrains()
         {
-            return _trains.Where(t => t.State == TrainState.Waiting).ToList();
+            return _trains.Where(t => t.State == TrainState.Unspawned).ToList();
         }
 
         public List<Train> GetCompletedTrains()
