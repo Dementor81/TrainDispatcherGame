@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js";
 import Track from "../sim/track";
 import Switch from "../sim/switch";
+import Train from "../sim/train";
 import TrackLayoutManager from "../manager/trackLayout_manager";
 import { EventManager } from "../manager/event_manager";
 import { RendererConfig } from "../core/config";
@@ -16,11 +17,16 @@ interface ExitContainer extends PIXI.Container {
    exitId?: number;
 }
 
+interface TrainContainer extends PIXI.Container {
+   trainNumber?: string;
+}
+
 export class Renderer {
    private _pixiApp: PIXI.Application;
    private _trackContainer: PIXI.Container;
    private _switchContainer: PIXI.Container;
    private _exitContainer: PIXI.Container;
+   private _trainContainer: PIXI.Container;
    private _trackLayoutManager: TrackLayoutManager;
    private _eventManager: EventManager;
 
@@ -48,10 +54,12 @@ export class Renderer {
       this._trackContainer = new PIXI.Container();
       this._switchContainer = new PIXI.Container();
       this._exitContainer = new PIXI.Container();
+      this._trainContainer = new PIXI.Container();
       // Add containers directly to the stage
       this._pixiApp.stage.addChild(this._trackContainer);
       this._pixiApp.stage.addChild(this._switchContainer);
       this._pixiApp.stage.addChild(this._exitContainer);
+      this._pixiApp.stage.addChild(this._trainContainer);
 
       this._trackLayoutManager = trackLayoutManager;
       this._eventManager = eventManager;
@@ -369,10 +377,109 @@ export class Renderer {
       this._exitContainer.addChild(exitContainer);
    }
 
+   public renderTrain(train: Train): void {
+      if (!train.track) {
+         console.warn(`Cannot render train ${train.number}: no track assigned`);
+         return;
+      }
+
+      // Create a container for this train
+      const trainContainer = new PIXI.Container() as TrainContainer;
+      trainContainer.trainNumber = train.number;
+      
+      // Calculate train position on the track
+      const position = this.calculateTrainPosition(train);
+      
+      // Calculate rotation angle based on track direction and train direction
+      let trackAngle = train.track.rad; // Track angle in radians
+      
+      
+      
+      // Create rounded rectangle for train body
+      const graphics = new PIXI.Graphics();
+      graphics
+         .roundRect(
+            -RendererConfig.trainWidth / 2, 
+            -RendererConfig.trainHeight / 2,
+            RendererConfig.trainWidth, 
+            RendererConfig.trainHeight, 
+            RendererConfig.trainRadius
+         )
+         .fill(RendererConfig.trainColor);
+
+      // Position and rotate the train graphics
+      graphics.x = position.x;
+      graphics.y = position.y;
+      graphics.rotation = trackAngle;
+
+      trainContainer.addChild(graphics);
+
+      // Add train number text (keep horizontal for readability)
+      const text = new PIXI.Text({
+         text: train.number,
+         style: {
+            fontSize: RendererConfig.trainTextSize,
+            fill: RendererConfig.trainTextColor,
+            align: "center",
+         },
+      });
+      text.anchor.set(0.5);
+      text.x = position.x;
+      text.y = position.y - RendererConfig.trainHeight / 2 - 15;
+      // Keep text horizontal (no rotation applied)
+
+      trainContainer.addChild(text);
+      this._trainContainer.addChild(trainContainer);
+   }
+
+   public renderTrains(trains: Train[]): void {
+      // Clear existing trains
+      this._trainContainer.removeChildren();
+      
+      // Render each train
+      trains.forEach(train => {
+         this.renderTrain(train);
+      });
+   }
+
+   public redrawTrain(train: Train): void {
+      // Find and remove the existing train container
+      let trainContainer: TrainContainer | null = null;
+      for (let i = 0; i < this._trainContainer.children.length; i++) {
+         const child = this._trainContainer.children[i] as TrainContainer;
+         if (child.trainNumber === train.number) {
+            trainContainer = child;
+            break;
+         }
+      }
+
+      if (trainContainer) {
+         this._trainContainer.removeChild(trainContainer);
+      }
+
+      // Render the train again
+      this.renderTrain(train);
+   }
+
+   private calculateTrainPosition(train: Train): Point {
+      if (!train.track) {
+         return new Point(0, 0);
+      }
+
+      return this.getPointFromPosition(train.track, train.km);
+   }
+
+   private getPointFromPosition(track: Track, km: number): Point {
+      // Use the track's unit vector multiplied by km distance from the start
+      const offset = track.unit.multiply(km);
+      return track.start.add(offset);
+   }
+
    public clear(): void {
       this._trackContainer.removeChildren();
       this._switchContainer.removeChildren();
       this._exitContainer.removeChildren();
+      this._trainContainer.removeChildren();
    }
 
    public getCurrentZoom(): number {

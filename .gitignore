@@ -1,5 +1,7 @@
 /client/dist
 /client/node_modules
+/client/playground/dist
+/client/playground/node_modules
 
 /server/bin
 /server/obj

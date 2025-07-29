@@ -1,0 +1,188 @@
+{
+  "id": "b_stadt",
+  "title": "B-Stadt",
+  "exits": [
+    {
+      "destination": "a_stadt",
+      "id": 0
+    },
+    {
+      "destination": "c_stadt",
+      "id": 1
+    }
+  ],
+  "tracks": [
+    {
+      "_class": "Track",
+      "id": 2,
+      "start": {
+        "x": 500,
+        "y": 500
+      },
+      "end": {
+        "x": 550,
+        "y": 450
+      },
+      "signals": [],
+      "switches": [
+        {
+          "type": "Switch",
+          "id": 0
+        },
+        {
+          "type": "Track",
+          "id": 5
+        }
+      ]
+    },
+    {
+      "_class": "Track",
+      "id": 3,
+      "start": {
+        "x": 200,
+        "y": 500
+      },
+      "end": {
+        "x": 500,
+        "y": 500
+      },
+      "signals": [],
+      "switches": [
+        {
+          "type":"Exit",
+          "id":0
+        },
+        {
+          "type": "Switch",
+          "id": 0
+        }
+      ]
+    },
+    {
+      "_class": "Track",
+      "id": 5,
+      "start": {
+        "x": 550,
+        "y": 450
+      },
+      "end": {
+        "x": 1250,
+        "y": 450
+      },
+      "signals": [],
+      "switches": [
+        {
+          "type": "Track",
+          "id": 2
+        },
+        {
+          "type": "Track",
+          "id": 6
+        }
+      ]
+    },
+    {
+      "_class": "Track",
+      "id": 6,
+      "start": {
+        "x": 1250,
+        "y": 450
+      },
+      "end": {
+        "x": 1300,
+        "y": 500
+      },
+      "signals": [],
+      "switches": [
+        {
+          "type": "Track",
+          "id": 5
+        },
+        {
+          "type": "Switch",
+          "id": 1
+        }
+      ]
+    },
+    {
+      "_class": "Track",
+      "id": 7,
+      "start": {
+        "x": 500,
+        "y": 500
+      },
+      "end": {
+        "x": 1300,
+        "y": 500
+      },
+      "signals": [],
+      "switches": [
+        {
+          "type": "Switch",
+          "id": 0
+        },
+        {
+          "type": "Switch",
+          "id": 1
+        }
+      ]
+    },
+    {
+      "_class": "Track",
+      "id": 8,
+      "start": {
+        "x": 1300,
+        "y": 500
+      },
+      "end": {
+        "x": 1650,
+        "y": 500
+      },
+      "signals": [],
+      "switches": [
+        {
+          "type": "Switch",
+          "id": 1
+        },
+        {
+          "type": "Exit",
+          "id": 1
+        }
+      ]
+    }
+  ],
+  "switches": [
+    {
+      "_class": "Switch",
+      "id": 0,
+      "location": {
+        "x": 500,
+        "y": 500
+      },
+      "tracks": [
+        3,
+        7,
+        2,
+        null
+      ],
+      "branch": 7,
+      "from": 3
+    },
+    {
+      "_class": "Switch",
+      "id": 1,
+      "location": {
+        "x": 1300,
+        "y": 500
+      },
+      "tracks": [
+        8,
+        7,
+        6,
+        null
+      ],
+      "branch": 7,
+      "from": 8
+    }
+  ]
+}

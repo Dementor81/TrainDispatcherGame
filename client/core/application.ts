@@ -112,7 +112,16 @@ export class Application {
 
    private setupEventListeners(): void {
       // Listen for switch click events
+      this._eventManager.on('switchClicked', (sw: Switch) => {
+         this.handleSwitchClick(sw);
+      });
+
+      // Listen for train events and update renderer
+      this._eventManager.on('trainAdded', (train: Train) => {
+         this.handleTrainAdded(train);
+      });
       
+      console.log("Event listeners setup complete");
    }
 
    private handleSwitchClick(sw: Switch): void {
@@ -121,6 +130,26 @@ export class Application {
       
    }
 
+   private handleTrainAdded(train: Train): void {
+      console.log(`Application: Train ${train.number} added, updating renderer`);
+      if (this._renderer) {
+         // Re-render all trains
+         this._renderer.renderTrains(this._trainManager.getAllTrains());
+      }
+   }
+
+   // Method to manually add a test train for demonstration
+   public addTestTrain(trainNumber: string): void {
+      // Get the first available exit point for testing
+      const exits = this._trackLayoutManager.exits;
+      if (exits.length > 0) {
+         const testTrain = new Train(trainNumber, null, 0);
+         const firstExitId = exits[0].id.toString();
+         this._trainManager.addTrainAtExitPoint(testTrain, firstExitId);
+      } else {
+         console.warn("No exit points available for test train");
+      }
+   }
 
 
    get uiManager(): UIManager {

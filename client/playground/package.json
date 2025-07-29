@@ -1,0 +1,26 @@
+{
+  "name": "train-simulator-playground",
+  "version": "1.0.0",
+  "description": "Playground for testing Train Simulator client components",
+  "main": "main.js",
+  "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "dev": "webpack serve --config webpack.config.js",
+    "start": "webpack serve --config webpack.config.js --open",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.7",
+    "bootstrap-icons": "^1.11.0"
+  },
+  "devDependencies": {
+    "webpack": "^5.100.2",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.2",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.3",
+    "style-loader": "^4.0.0",
+    "css-loader": "^7.1.2",
+    "html-webpack-plugin": "^5.6.3"
+  }
+} 

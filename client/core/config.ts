@@ -12,4 +12,12 @@ export class RendererConfig {
     static readonly switchTextFont = "Arial";
     static readonly switchTextFontSize = 12;
     static readonly switchTextFontColor = 0xffffff;
+    
+    // Train rendering configuration
+    static readonly trainColor = 0x4a90e2;
+    static readonly trainWidth = 20;
+    static readonly trainHeight = 8;
+    static readonly trainRadius = 4;
+    static readonly trainTextColor = 0xffffff;
+    static readonly trainTextSize = 10;
 }
