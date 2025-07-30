@@ -69,7 +69,10 @@
         "x": 1250,
         "y": 450
       },
-      "signals": [],
+      "signals": [{
+        "type":"main",
+        "position":600
+      }],
       "switches": [
         {
           "type": "Track",
@@ -115,7 +118,10 @@
         "x": 1300,
         "y": 500
       },
-      "signals": [],
+      "signals": [{
+        "type":"main",
+        "position":600
+      }],
       "switches": [
         {
           "type": "Switch",

@@ -14,10 +14,22 @@ export class RendererConfig {
     static readonly switchTextFontColor = 0xffffff;
     
     // Train rendering configuration
-    static readonly trainColor = 0x4a90e2;
-    static readonly trainWidth = 20;
-    static readonly trainHeight = 8;
-    static readonly trainRadius = 4;
+    static readonly locomotiveColor = 0x036ffc;
+    static readonly carColor = 0x4391f7;
+    static readonly locomotiveWidth = 8;
+    static readonly carWidth = 40;
+    static readonly trainHeight = 20;
+    static readonly locomotiveRadius = 3;
+    static readonly carRadius = 1;
     static readonly trainTextColor = 0xffffff;
     static readonly trainTextSize = 10;
+    static readonly trainCarSpacing = 4; // Distance between cars in pixels
+
+    static readonly curveTransitionZone = 30;
+}
+
+export class SimulationConfig {
+    static readonly simulationSpeed = 1.0;
+    static readonly simulationIntervalMs = 20;
+    static readonly simulationScale = 1000;
 }

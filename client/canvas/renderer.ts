@@ -8,6 +8,7 @@ import { RendererConfig } from "../core/config";
 import Exit from "../sim/exit";
 import { Point } from "../utils/point";
 import { drawArrow } from "./pixi_extension";
+import { Geometry } from "../utils/geometry";
 
 interface SwitchContainer extends PIXI.Container {
    switchId?: number;
@@ -371,7 +372,7 @@ export class Renderer {
       const exitContainer = new PIXI.Container() as ExitContainer;
       exitContainer.exitId = exit.id;
       const unit = track.unit.multiply(inverted ? -1 : 1);
-      const position =(inverted?track.start:track.end).add(unit.multiply(5));
+      const position = (inverted ? track.start : track.end).add(unit.multiply(5));
       const end = position.add(unit.multiply(15));
       drawArrow(exitContainer, position, end, { color: RendererConfig.trackColor, width: 2 });
       this._exitContainer.addChild(exitContainer);
@@ -386,35 +387,92 @@ export class Renderer {
       // Create a container for this train
       const trainContainer = new PIXI.Container() as TrainContainer;
       trainContainer.trainNumber = train.number;
-      
-      // Calculate train position on the track
-      const position = this.calculateTrainPosition(train);
-      
-      // Calculate rotation angle based on track direction and train direction
-      let trackAngle = train.track.rad; // Track angle in radians
-      
-      
-      
-      // Create rounded rectangle for train body
-      const graphics = new PIXI.Graphics();
-      graphics
-         .roundRect(
-            -RendererConfig.trainWidth / 2, 
-            -RendererConfig.trainHeight / 2,
-            RendererConfig.trainWidth, 
-            RendererConfig.trainHeight, 
-            RendererConfig.trainRadius
-         )
-         .fill(RendererConfig.trainColor);
 
-      // Position and rotate the train graphics
-      graphics.x = position.x;
-      graphics.y = position.y;
-      graphics.rotation = trackAngle;
+      // Render each car
+      for (let carIndex = 0; carIndex < train.cars; carIndex++) {
+         // Calculate how far behind the locomotive this car should be
 
-      trainContainer.addChild(graphics);
+         let carTrack = train.track;
+         let carKm = train.km;
 
-      // Add train number text (keep horizontal for readability)
+         // Use followRailNetwork to find the correct position for this car
+         if (carIndex !== 0) {
+            const carOffsetDistance = carIndex * (RendererConfig.trainCarSpacing + RendererConfig.carWidth);
+            try {
+               const result = this._trackLayoutManager.followRailNetwork(
+                  train.track,
+                  train.km,
+                  carOffsetDistance * -train.direction
+               );
+
+               if (result.element instanceof Track) {
+                  carTrack = result.element;
+                  carKm = result.km;
+               } else {
+                  continue;
+               }
+            } catch (error) {
+               continue;
+            }
+         }
+
+         let curveTrack: Track | null = null;
+         // Look ahead
+         try {
+            const ahead = this._trackLayoutManager.followRailNetwork(carTrack, carKm, RendererConfig.curveTransitionZone);
+            if (ahead.element instanceof Track && ahead.element !== carTrack) {
+               curveTrack = ahead.element;
+            }
+         } catch {}
+         // Look behind if not found ahead
+         if (!curveTrack) {
+            try {
+               const behind = this._trackLayoutManager.followRailNetwork(carTrack, carKm, -RendererConfig.curveTransitionZone);
+               if (behind.element instanceof Track && behind.element !== carTrack) {
+                  curveTrack = behind.element;
+               }
+            } catch {}
+         }
+
+         // Calculate car's screen position
+         let carPosition = this.getPointFromPosition(carTrack, carKm);
+         let trackAngle = carTrack.rad;
+         if (curveTrack && curveTrack.slope != carTrack.slope) {
+            carPosition = this.getPointFromPositionAdvanced(carTrack, carKm, curveTrack);
+            trackAngle = this.getRotationFromPosition(carTrack, carKm, curveTrack);
+         }
+
+         // Create rounded rectangle for car body
+         const carGraphics = new PIXI.Graphics();
+
+         // Make the first car (locomotive) slightly different
+         const isLocomotive = carIndex === 0;
+
+         let carColor: number;
+         let carRadius: number;
+         let carWidth: number = RendererConfig.carWidth;
+         if (isLocomotive) {
+            carColor = RendererConfig.locomotiveColor;
+            carRadius = RendererConfig.locomotiveRadius;
+         } else {
+            carColor = RendererConfig.carColor;
+            carRadius = RendererConfig.carRadius;
+         }
+
+         carGraphics
+            .roundRect(-carWidth / 2, -RendererConfig.trainHeight / 2, carWidth, RendererConfig.trainHeight, carRadius)
+            .fill(carColor);
+
+         // Position and rotate the car graphics
+         carGraphics.x = carPosition.x;
+         carGraphics.y = carPosition.y;
+         carGraphics.rotation = trackAngle;
+
+         trainContainer.addChild(carGraphics);
+      }
+
+      // Add train number text above the locomotive (first car at index 0)
+      const locomotivePosition = this.getPointFromPosition(train.track, train.km);
       const text = new PIXI.Text({
          text: train.number,
          style: {
@@ -424,9 +482,8 @@ export class Renderer {
          },
       });
       text.anchor.set(0.5);
-      text.x = position.x;
-      text.y = position.y - RendererConfig.trainHeight / 2 - 15;
-      // Keep text horizontal (no rotation applied)
+      text.x = locomotivePosition.x;
+      text.y = locomotivePosition.y - RendererConfig.trainHeight / 2 - 15;
 
       trainContainer.addChild(text);
       this._trainContainer.addChild(trainContainer);
@@ -435,9 +492,9 @@ export class Renderer {
    public renderTrains(trains: Train[]): void {
       // Clear existing trains
       this._trainContainer.removeChildren();
-      
+
       // Render each train
-      trains.forEach(train => {
+      trains.forEach((train) => {
          this.renderTrain(train);
       });
    }
@@ -473,6 +530,64 @@ export class Renderer {
       // Use the track's unit vector multiplied by km distance from the start
       const offset = track.unit.multiply(km);
       return track.start.add(offset);
+   }
+
+   private getPointFromPositionAdvanced(track: Track, km: number, nextTrack: Track): Point {
+      // Determine the connection point between tracks
+      const cp = track.start.equals(nextTrack.end) ? track.start : track.end;
+
+      // Calculate distance from train car position to connection point
+      const trainPosition = this.getPointFromPosition(track, km);
+      const distanceToConnection = Math.sqrt(Math.pow(trainPosition.x - cp.x, 2) + Math.pow(trainPosition.y - cp.y, 2));
+
+      // Define the transition zone (cars within this distance will use the curve)
+      const transitionZone = RendererConfig.curveTransitionZone; // Same as the curve control point distance
+
+      // Calculate t based on proximity to connection point
+      // t = 0 when far from connection (use straight track)
+      // t = 1 when at connection point (use full curve)
+      let t = Math.max(0, Math.min(1, 1 - distanceToConnection / transitionZone));
+      t = t / 2;
+      console.log(`getPointFromPositionAdvanced: track=${track.id}, nextTrack=${nextTrack.id},km=${km}, t=${t}`);
+
+      // If we're very close to the connection, use the curve
+      if (distanceToConnection < transitionZone) {
+         const p0 = track.along(cp, transitionZone);
+         const p1 = nextTrack.along(cp, transitionZone);
+         return Geometry.getPointOnCurve(t, p0, cp, p1);
+      } else {
+         // Use regular straight track positioning when far from connection
+         return this.getPointFromPosition(track, km);
+      }
+   }
+
+   private getRotationFromPosition(track: Track, km: number, nextTrack: Track): number {
+      // Determine the connection point between tracks
+      const cp = track.start.equals(nextTrack.end) ? track.start : track.end;
+
+      // Calculate distance from train car position to connection point
+      const trainPosition = this.getPointFromPosition(track, km);
+      const distanceToConnection = Math.sqrt(Math.pow(trainPosition.x - cp.x, 2) + Math.pow(trainPosition.y - cp.y, 2));
+
+      // Define the transition zone (cars within this distance will use the curve)
+      const transitionZone = RendererConfig.curveTransitionZone; // Same as the curve control point distance
+
+      // Calculate t based on proximity to connection point
+      // t = 0 when far from connection (use straight track)
+      // t = 1 when at connection point (use full curve)
+      let t = Math.max(0, Math.min(1, 1 - distanceToConnection / transitionZone));
+      t = t / 2;
+      console.log(`getRotationFromPosition: track=${track.id}, nextTrack=${nextTrack.id},km=${km}, t=${t}`);
+
+      // If we're very close to the connection, use the curve
+      if (distanceToConnection < transitionZone) {
+         const p0 = track.along(cp, transitionZone);
+         const p1 = nextTrack.along(cp, transitionZone);
+         return Geometry.getDegreeOfTangentOnCurve(t, p0, cp, p1);
+      } else {
+         // Use regular straight track positioning when far from connection
+         return track.rad;
+      }
    }
 
    public clear(): void {

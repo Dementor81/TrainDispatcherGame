@@ -1,6 +1,10 @@
 import Train from '../sim/train';
+import Track from '../sim/track';
+import Switch from '../sim/switch';
+import Exit from '../sim/exit';
 import { EventManager } from './event_manager';
-import { TrackLayoutManager } from './trackLayout_manager';
+import { TrackLayoutManager, MovementException } from './trackLayout_manager';
+import { SimulationConfig } from '../core/config';
 
 export class TrainManager {
     private _trains: Train[] = [];
@@ -10,8 +14,9 @@ export class TrainManager {
     // Simulation properties
     private _simulationTimer: NodeJS.Timeout | null = null;
     private _isSimulationRunning: boolean = false;
-    private _simulationIntervalMs: number = 100; // Update every 100ms
-    private _simulationSpeed: number = 1.0; // Speed multiplier (1.0 = normal speed)
+    private _simulationIntervalMs: number = SimulationConfig.simulationIntervalMs; // Update every 100ms
+    private _simulationSpeed: number = SimulationConfig.simulationSpeed; // Speed multiplier (1.0 = normal speed)
+    private _lastUpdateTime: number = 0; // Timestamp of last update
 
     constructor(eventManager: EventManager, trackLayoutManager: TrackLayoutManager) {
         this._eventManager = eventManager;
@@ -35,6 +40,7 @@ export class TrainManager {
         }
 
         this._isSimulationRunning = true;
+        this._lastUpdateTime = Date.now(); // Initialize the time tracking
         this._simulationTimer = setInterval(() => {
             this.updateSimulation();
         }, this._simulationIntervalMs);
@@ -82,11 +88,17 @@ export class TrainManager {
             return; // No trains to update
         }
 
+        // Calculate time elapsed since last update
+        const currentTime = Date.now();
+        const timeElapsedMs = currentTime - this._lastUpdateTime;
+        const timeElapsedSeconds = (timeElapsedMs / 1000) * this._simulationSpeed; // Apply speed multiplier to time
+        this._lastUpdateTime = currentTime;
+
         let trainsUpdated = false;
 
         // Update each train
         for (const train of this._trains) {
-            if (this.updateTrain(train)) {
+            if (this.updateTrain(train, timeElapsedSeconds)) {
                 trainsUpdated = true;
             }
         }
@@ -98,37 +110,67 @@ export class TrainManager {
     }
 
     // Update a single train's position
-    private updateTrain(train: Train): boolean {
+    private updateTrain(train: Train, timeElapsedSeconds: number): boolean {
         if (!train.track || !train.isMoving) {
             return false; // Train can't move or is stopped
         }
 
-        // Calculate movement distance for this simulation step
-        const baseDistance = train.getMovementDistance();
-        const actualDistance = baseDistance * this._simulationSpeed;
+        // Calculate movement distance based on elapsed time
+        const signedDistance = train.getMovementDistance(timeElapsedSeconds);
 
-        if (Math.abs(actualDistance) < 0.001) {
+        if (Math.abs(signedDistance) < 0.001) {
             return false; // Movement too small to process
         }
 
         // Use TrackLayoutManager to calculate new position
-        const result = this._trackLayoutManager.calculateMovement(
-            train.track,
-            train.km,
-            train.direction,
-            Math.abs(actualDistance)
-        );
+        try {
+            const result = this._trackLayoutManager.followRailNetwork(
+                train.track,
+                train.km,
+                signedDistance
+            );
 
-        if (result) {
-            // Update train position
-            train.setPosition(result.track, result.km);
-            train.setDirection(result.direction);
-            return true; // Train was updated
-        } else {
-            // Movement blocked (hit exit or dead end) - stop the train
+            // Check what type of element we got
+            if (result.element instanceof Track) {
+                // Normal movement - update train position
+                train.setPosition(result.element, result.km);
+                train.setDirection(result.direction);
+                return true; // Train was updated
+            } else if (result.element instanceof Exit) {
+                // Train reached exit
+                train.setMoving(false);
+                console.log(`Train ${train.number} reached exit ${result.element.id}`);
+                this._eventManager.emit('trainReachedExit', train, result.element.id);
+                return false;
+            } else if (result.element instanceof Switch) {
+                // Train stopped at switch (wrong direction/position)
+                train.setMoving(false);
+                console.log(`Train ${train.number} stopped at switch ${result.element.id}`);
+                this._eventManager.emit('trainStoppedAtSwitch', train, result.element);
+                return false;
+            } else {
+                // Unknown element type
+                train.setMoving(false);
+                console.log(`Train ${train.number} encountered unknown element`);
+                this._eventManager.emit('trainStopped', train, result);
+                return false;
+            }
+        } catch (error) {
+            // Movement blocked by actual error (invalid track, zero distance, etc.)
             train.setMoving(false);
-            console.log(`Train ${train.number} stopped at exit or dead end`);
+            this.handleMovementException(train, error);
             return false;
+        }
+    }
+
+    // Handle movement exceptions
+    private handleMovementException(train: Train, error: any): void {
+        if (error instanceof MovementException) {
+            console.log(`Train ${train.number} movement error: ${error.message}`);
+            this._eventManager.emit('trainMovementError', train, error);
+        } else {
+            console.log(`Train ${train.number} stopped due to unknown error: ${error.message}`);
+            this._eventManager.emit('trainStopped', train, error);
         }
     }
 

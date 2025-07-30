@@ -6,8 +6,6 @@ import Switch from "./switch";
 import Exit from "./exit";
 
 class Track extends BaseSimModule {
-   
-
    static fromObject(object: any): Track {
       const track = new Track();
       track._start = new Point(object.start.x, object.start.y);
@@ -119,6 +117,14 @@ class Track extends BaseSimModule {
       this._slope = null;
       this._sin = null;
       this._cos = null;
+   }
+
+   along(point: Point, km: number): Point {
+      if (point.equals(this.end)) {
+         return this.end.add(this.unit.multiply(-km));
+      } else {
+         return this.start.add(this.unit.multiply(km));
+      }
    }
 }
 

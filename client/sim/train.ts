@@ -1,4 +1,5 @@
 import Track from "./track";
+import { SimulationConfig } from "../core/config";
 
 class Train {
     private _number: string;
@@ -16,7 +17,7 @@ class Train {
         this._track = track;
         this._km = km;
         this._cars = 4;
-        this._speed = 1; // Default speed: 0.1 km per simulation step
+        this._speed = 50; // Default speed: 50 km/h
         this._direction = 1; // Default direction: forward
         this._isMoving = true; // Default: train is moving
     }
@@ -81,9 +82,16 @@ class Train {
     }
 
     // Update train position based on current speed and direction
-    // Returns the distance the train should move this simulation step
-    getMovementDistance(): number {
-        return this._isMoving ? this._speed * this._direction : 0;
+    // Returns the distance the train should move based on elapsed time
+    // speed is in km/h, timeElapsedSeconds is in seconds
+    getMovementDistance(timeElapsedSeconds: number): number {
+        if (!this._isMoving) {
+            return 0;
+        }
+        
+        // Convert speed from km/h to km/s, then multiply by time and direction
+        const speedKmPerSecond = this._speed / 3600; // Convert km/h to km/s
+        return speedKmPerSecond * timeElapsedSeconds * this._direction*SimulationConfig.simulationScale;
     }
 
     // Method to get train info for debugging/logging
