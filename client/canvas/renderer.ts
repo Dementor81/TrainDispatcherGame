@@ -2,6 +2,7 @@ import * as PIXI from "pixi.js";
 import Track from "../sim/track";
 import Switch from "../sim/switch";
 import Train from "../sim/train";
+import Signal from "../sim/signal";
 import TrackLayoutManager from "../manager/trackLayout_manager";
 import { EventManager } from "../manager/event_manager";
 import { RendererConfig } from "../core/config";
@@ -22,12 +23,18 @@ interface TrainContainer extends PIXI.Container {
    trainNumber?: string;
 }
 
+interface SignalContainer extends PIXI.Container {
+   signalTrackId?: number;
+   signalPosition?: number;
+}
+
 export class Renderer {
    private _pixiApp: PIXI.Application;
    private _trackContainer: PIXI.Container;
    private _switchContainer: PIXI.Container;
    private _exitContainer: PIXI.Container;
    private _trainContainer: PIXI.Container;
+   private _signalContainer: PIXI.Container;
    private _trackLayoutManager: TrackLayoutManager;
    private _eventManager: EventManager;
 
@@ -56,10 +63,12 @@ export class Renderer {
       this._switchContainer = new PIXI.Container();
       this._exitContainer = new PIXI.Container();
       this._trainContainer = new PIXI.Container();
+      this._signalContainer = new PIXI.Container();
       // Add containers directly to the stage
       this._pixiApp.stage.addChild(this._trackContainer);
       this._pixiApp.stage.addChild(this._switchContainer);
       this._pixiApp.stage.addChild(this._exitContainer);
+      this._pixiApp.stage.addChild(this._signalContainer);
       this._pixiApp.stage.addChild(this._trainContainer);
 
       this._trackLayoutManager = trackLayoutManager;
@@ -247,6 +256,9 @@ export class Renderer {
          this.renderSwitch(sw);
       });
 
+      // Render signals
+      this.renderSignals();
+
       // Auto-zoom to fit on first load
       this.zoomToFit();
    }
@@ -376,6 +388,112 @@ export class Renderer {
       const end = position.add(unit.multiply(15));
       drawArrow(exitContainer, position, end, { color: RendererConfig.trackColor, width: 2 });
       this._exitContainer.addChild(exitContainer);
+   }
+
+   public renderSignals(): void {
+      // Clear existing signals
+      this._signalContainer.removeChildren();
+
+      // Render signals from all tracks
+      const tracks = this._trackLayoutManager.tracks;
+      tracks.forEach((track) => {
+         track.signals.forEach((signal) => {
+            this.renderSignal(signal, track);
+         });
+      });
+   }
+
+   private renderSignal(signal: Signal, track: Track): void {
+      // Create a container for this signal
+      const signalContainer = new PIXI.Container() as SignalContainer;
+      signalContainer.signalTrackId = track.id;
+      signalContainer.signalPosition = signal.position;
+
+      // Calculate signal position on track centerline
+      const trackCenterPosition = this.getPointFromPosition(track, signal.position);
+      
+      // Calculate perpendicular offset based on signal direction
+      // Direction 1 (forward): signal on right side of track
+      // Direction -1 (backward): signal on left side of track
+      const perpendicular = signal.direction === 1 
+         ? new Point(-track.unit.y, track.unit.x)  // Right side (perpendicular clockwise)
+         : new Point(track.unit.y, -track.unit.x); // Left side (perpendicular counter-clockwise)
+      
+      // Apply offset to position signal beside the track
+      const offset = new Point(
+         perpendicular.x * RendererConfig.signalTrackOffset,
+         perpendicular.y * RendererConfig.signalTrackOffset
+      );
+      const signalPosition = trackCenterPosition.add(offset);
+      
+      // Create rounded rectangle background (horizontal layout)
+      const background = new PIXI.Graphics();
+      background
+         .roundRect(-RendererConfig.signalWidth / 2, -RendererConfig.signalHeight / 2, 
+                    RendererConfig.signalWidth, RendererConfig.signalHeight, RendererConfig.signalRadius)
+         .fill(RendererConfig.signalBackgroundColor);
+
+      // Add red circle (left side)
+      const redCircle = new PIXI.Graphics();
+      const redX = -RendererConfig.signalWidth / 2 + RendererConfig.signalCircleRadius + RendererConfig.signalCircleSpacing;
+      redCircle
+         .circle(redX, 0, RendererConfig.signalCircleRadius)
+         .fill(signal.state ? RendererConfig.signalInactiveColor : RendererConfig.signalRedColor);
+
+      // Add green circle (right side)  
+      const greenCircle = new PIXI.Graphics();
+      const greenX = RendererConfig.signalWidth / 2 - RendererConfig.signalCircleRadius - RendererConfig.signalCircleSpacing;
+      greenCircle
+         .circle(greenX, 0, RendererConfig.signalCircleRadius)
+         .fill(signal.state ? RendererConfig.signalGreenColor : RendererConfig.signalInactiveColor);
+
+      // Position the signal container
+      signalContainer.x = signalPosition.x;
+      signalContainer.y = signalPosition.y;
+      
+      // Make signal interactive
+      signalContainer.eventMode = "static";
+      signalContainer.on("click", (event) => {
+         console.log("Signal clicked at:", event.global.x, event.global.y);
+         // Emit signal click event with both signal and track
+         this._eventManager.emit("signalClicked", signal, track);
+      });
+      signalContainer.on("pointerover", (event) => {
+         this._pixiApp.canvas.style.cursor = "pointer";
+      });
+      signalContainer.on("pointerout", (event) => {
+         this._pixiApp.canvas.style.cursor = "default";
+      });
+      
+      // Add all graphics to the signal container
+      signalContainer.addChild(background);
+      signalContainer.addChild(redCircle);
+      signalContainer.addChild(greenCircle);
+
+      this._signalContainer.addChild(signalContainer);
+   }
+
+   public redrawSignal(signal: Signal, track: Track): void {
+      // Find the container for this signal by searching through children
+      let signalContainer: SignalContainer | null = null;
+      for (let i = 0; i < this._signalContainer.children.length; i++) {
+         const child = this._signalContainer.children[i] as SignalContainer;
+         if (child.signalTrackId === track.id && child.signalPosition === signal.position) {
+            signalContainer = child;
+            break;
+         }
+      }
+
+      if (!signalContainer) {
+         console.warn(`Signal container not found for signal at position ${signal.position} on track ${track.id}`);
+         return;
+      }
+
+      // Remove the old signal container
+      this._signalContainer.removeChild(signalContainer);
+
+      // Redraw the signal
+      this.renderSignal(signal, track);
    }
 
    public renderTrain(train: Train): void {
@@ -548,7 +666,6 @@ export class Renderer {
       // t = 1 when at connection point (use full curve)
       let t = Math.max(0, Math.min(1, 1 - distanceToConnection / transitionZone));
       t = t / 2;
-      console.log(`getPointFromPositionAdvanced: track=${track.id}, nextTrack=${nextTrack.id},km=${km}, t=${t}`);
 
       // If we're very close to the connection, use the curve
       if (distanceToConnection < transitionZone) {
@@ -577,7 +694,6 @@ export class Renderer {
       // t = 1 when at connection point (use full curve)
       let t = Math.max(0, Math.min(1, 1 - distanceToConnection / transitionZone));
       t = t / 2;
-      console.log(`getRotationFromPosition: track=${track.id}, nextTrack=${nextTrack.id},km=${km}, t=${t}`);
 
       // If we're very close to the connection, use the curve
       if (distanceToConnection < transitionZone) {
@@ -594,6 +710,7 @@ export class Renderer {
       this._trackContainer.removeChildren();
       this._switchContainer.removeChildren();
       this._exitContainer.removeChildren();
+      this._signalContainer.removeChildren();
       this._trainContainer.removeChildren();
    }
 

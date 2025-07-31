@@ -2,6 +2,7 @@ import Train from '../sim/train';
 import Track from '../sim/track';
 import Switch from '../sim/switch';
 import Exit from '../sim/exit';
+import Signal from '../sim/signal';
 import { EventManager } from './event_manager';
 import { TrackLayoutManager, MovementException } from './trackLayout_manager';
 import { SimulationConfig } from '../core/config';
@@ -122,6 +123,16 @@ export class TrainManager {
             return false; // Movement too small to process
         }
 
+        // Check for signals ahead before moving
+        const stoppingSignal = this.checkSignalsAhead(train, Math.abs(signedDistance));
+        if (stoppingSignal) {
+            // Signal is red - stop the train and store the signal reference
+            train.setStoppedBySignal(stoppingSignal);
+            console.log(`Train ${train.number} stopped by signal at km ${stoppingSignal.position} on track ${train.track.id}`);
+            this._eventManager.emit('trainStoppedBySignal', train, stoppingSignal);
+            return false;
+        }
+
         // Use TrackLayoutManager to calculate new position
         try {
             const result = this._trackLayoutManager.followRailNetwork(
@@ -132,24 +143,35 @@ export class TrainManager {
 
             // Check what type of element we got
             if (result.element instanceof Track) {
+                // Store previous position before updating
+                const previousTrack = train.track;
+                const previousKm = train.km;
+                
                 // Normal movement - update train position
                 train.setPosition(result.element, result.km);
                 train.setDirection(result.direction);
+                
+                // Check if train passed any signals during this movement
+                this.checkSignalsPassed(train, previousTrack, previousKm, result.element, result.km);
+                
                 return true; // Train was updated
             } else if (result.element instanceof Exit) {
-                // Train reached exit
+                // Train reached exit - clear signal reference since this isn't a signal stop
+                train.setStoppedBySignal(null);
                 train.setMoving(false);
                 console.log(`Train ${train.number} reached exit ${result.element.id}`);
                 this._eventManager.emit('trainReachedExit', train, result.element.id);
                 return false;
             } else if (result.element instanceof Switch) {
-                // Train stopped at switch (wrong direction/position)
+                // Train stopped at switch (wrong direction/position) - clear signal reference
+                train.setStoppedBySignal(null);
                 train.setMoving(false);
                 console.log(`Train ${train.number} stopped at switch ${result.element.id}`);
                 this._eventManager.emit('trainStoppedAtSwitch', train, result.element);
                 return false;
             } else {
-                // Unknown element type
+                // Unknown element type - clear signal reference
+                train.setStoppedBySignal(null);
                 train.setMoving(false);
                 console.log(`Train ${train.number} encountered unknown element`);
                 this._eventManager.emit('trainStopped', train, result);
@@ -157,9 +179,138 @@ export class TrainManager {
             }
         } catch (error) {
             // Movement blocked by actual error (invalid track, zero distance, etc.)
+            train.setStoppedBySignal(null); // Clear signal reference for error stops
             train.setMoving(false);
             this.handleMovementException(train, error);
             return false;
+        }
+    }
+
+    // Check for signals ahead of the train that would stop it
+    private checkSignalsAhead(train: Train, movementDistance: number): Signal | null {
+        if (!train.track) {
+            return null;
+        }
+
+        // Total distance to look ahead: movement distance + lookahead distance
+        const totalLookaheadDistance = movementDistance + SimulationConfig.signalLookaheadDistance;
+        
+        try {
+            // Use followRailNetwork to trace the path ahead
+            const result = this._trackLayoutManager.followRailNetwork(
+                train.track,
+                train.km,
+                totalLookaheadDistance * train.direction
+            );
+
+            // Check for signals on the current track first
+            const currentTrackSignals = this.checkSignalsOnTrack(
+                train.track, 
+                train.km, 
+                train.km + (totalLookaheadDistance * train.direction),
+                train.direction
+            );
+            
+            if (currentTrackSignals) {
+                return currentTrackSignals;
+            }
+
+            // If we moved to a different track, check signals on that track too
+            if (result.element instanceof Track && result.element !== train.track) {
+                const nextTrackSignals = this.checkSignalsOnTrack(
+                    result.element,
+                    result.element === train.track ? train.km : (train.direction > 0 ? 0 : result.element.length),
+                    result.km,
+                    train.direction
+                );
+                
+                if (nextTrackSignals) {
+                    return nextTrackSignals;
+                }
+            }
+
+        } catch (error) {
+            // If we can't trace ahead (dead end, etc.), no signals to worry about
+        }
+
+        return null;
+    }
+
+    // Check for stopping signals on a specific track segment
+    private checkSignalsOnTrack(track: Track, startKm: number, endKm: number, direction: number): Signal | null {
+        // Ensure startKm <= endKm for comparison
+        const minKm = Math.min(startKm, endKm);
+        const maxKm = Math.max(startKm, endKm);
+
+        for (const signal of track.signals) {
+            // Check if signal is in the correct direction for this train
+            if (signal.direction !== direction) {
+                continue; // Signal doesn't apply to this direction
+            }
+
+            // Check if signal is within the lookahead range
+            if (signal.position >= minKm && signal.position <= maxKm) {
+                // Check if signal is set to stop (red)
+                if (!signal.isTrainAllowedToGo()) {
+                    return signal; // Found a stopping signal
+                }
+            }
+        }
+
+        return null; // No stopping signals found
+    }
+
+    // Check if train passed any signals during movement and emit events
+    private checkSignalsPassed(train: Train, previousTrack: Track | null, previousKm: number, newTrack: Track, newKm: number): void {
+        if (!previousTrack) {
+            return; // No previous position to compare
+        }
+
+        // Check signals on the previous track (if train was moving along it)
+        if (previousTrack === newTrack) {
+            // Train stayed on same track - check for passed signals
+            this.checkSignalsPassedOnTrack(train, previousTrack, previousKm, newKm);
+        } else {
+            // Train moved to different track - check both tracks
+            
+            // Check remaining signals on previous track (from previous position to end)
+            const endKm = train.direction > 0 ? previousTrack.length : 0;
+            this.checkSignalsPassedOnTrack(train, previousTrack, previousKm, endKm);
+            
+            // Check signals on new track (from start to new position)
+            const startKm = train.direction > 0 ? 0 : newTrack.length;
+            this.checkSignalsPassedOnTrack(train, newTrack, startKm, newKm);
+        }
+    }
+
+    // Check for passed signals on a specific track segment
+    private checkSignalsPassedOnTrack(train: Train, track: Track, startKm: number, endKm: number): void {
+        // Ensure proper order for comparison
+        const minKm = Math.min(startKm, endKm);
+        const maxKm = Math.max(startKm, endKm);
+
+        for (const signal of track.signals) {
+            // Check if signal is in the correct direction for this train
+            if (signal.direction !== train.direction) {
+                continue; // Signal doesn't apply to this direction
+            }
+
+            // Check if train passed this signal during the movement
+            let signalPassed = false;
+            
+            if (train.direction > 0) {
+                // Moving forward: passed if signal is between start and end positions
+                signalPassed = signal.position > startKm && signal.position <= endKm;
+            } else {
+                // Moving backward: passed if signal is between end and start positions  
+                signalPassed = signal.position < startKm && signal.position >= endKm;
+            }
+
+            if (signalPassed) {
+                console.log(`Train ${train.number} passed signal at km ${signal.position} on track ${track.id}`);
+                // Emit event for signal passed
+                this._eventManager.emit('trainPassedSignal', train, signal, track);
+            }
         }
     }
 
@@ -244,6 +395,22 @@ export class TrainManager {
         
         console.log(`Cleared ${count} trains`);
         this._eventManager.emit('trainsCleared');
+    }
+
+    // Resume trains that were stopped by signals (check if signals are now clear)
+    resumeTrainsStoppedBySignals(): void {
+        for (const train of this._trains) {
+            // Only check trains that are stopped by a specific signal
+            if (!train.isMoving && train.stoppedBySignal) {
+                // Check if the specific signal that stopped the train is now clear
+                if (train.stoppedBySignal.isTrainAllowedToGo()) {
+                    // Signal is now green - resume movement
+                    train.setMoving(true); // This automatically clears the stoppedBySignal
+                    console.log(`Train ${train.number} resumed movement`);
+                    this._eventManager.emit('trainResumed', train);
+                }
+            }
+        }
     }
 
     // Get train info for debugging

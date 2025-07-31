@@ -1,6 +1,8 @@
 import Track from "../sim/track";
 import Switch from "../sim/switch";
 import Exit from "../sim/exit";
+import Signal from "../sim/signal";
+import Train from "../sim/train";
 import api from "../network/api";
 import Storage from "../core/storage";
 import { Renderer } from "../canvas/renderer";
@@ -18,6 +20,7 @@ export class TrackLayoutManager {
    private _tracks: Track[] = [];
    private _switches: Switch[] = [];
    private _exits: Exit[] = [];
+   private _signals: Signal[] = [];
    private _renderer: Renderer | null = null;
    private _onLayoutLoaded: (() => void) | null = null;
    private _application: Application;
@@ -26,6 +29,7 @@ export class TrackLayoutManager {
       this._tracks = [];
       this._switches = [];
       this._exits = [];
+      this._signals = [];
       this._application = application;
    }
 
@@ -35,6 +39,16 @@ export class TrackLayoutManager {
       this._application.eventManager.on("switchClicked", (sw: Switch) => {
          console.log(`Switch ${sw.id} clicked`);
          this.handleSwitchClick(sw);
+      });
+
+      this._application.eventManager.on("signalClicked", (signal: Signal, track: Track) => {
+         console.log(`Signal at km ${signal.position} on track ${track.id} clicked`);
+         this.handleSignalClick(signal, track);
+      });
+
+      this._application.eventManager.on("trainPassedSignal", (train: Train, signal: Signal, track: Track) => {
+         console.log(`Train ${train.number} passed signal at km ${signal.position} on track ${track.id}`);
+         this.handleTrainPassedSignal(train, signal, track);
       });
    }
 
@@ -52,6 +66,10 @@ export class TrackLayoutManager {
 
    get exits(): Exit[] {
       return this._exits;
+   }
+
+   get signals(): Signal[] {
+      return this._signals;
    }
 
    // Find the track and kilometer position for an exit point
@@ -111,7 +129,7 @@ export class TrackLayoutManager {
       console.log("Loading track layout:", layoutID);
       try {
          const trackLayoutDto = await api.fetchLayout(layoutID);
-         const trackLayout: { tracks: Track[]; switches: Switch[]; exits: Exit[] } | null =
+         const trackLayout: { tracks: Track[]; switches: Switch[]; exits: Exit[]; signals: Signal[] } | null =
             Storage.loadTrackLayoutFromJson(trackLayoutDto);
          if (trackLayout === null) {
             console.error("Failed to load track layout");
@@ -120,6 +138,7 @@ export class TrackLayoutManager {
          this._tracks = trackLayout.tracks;
          this._switches = trackLayout.switches;
          this._exits = trackLayout.exits;
+         this._signals = trackLayout.signals;
          console.log(
             "Track layout loaded:",
             this._tracks.length,
@@ -127,7 +146,9 @@ export class TrackLayoutManager {
             this._switches.length,
             "switches,",
             this._exits.length,
-            "exits"
+            "exits,",
+            this._signals.length,
+            "signals"
          );
 
          // Notify that layout is loaded
@@ -141,6 +162,39 @@ export class TrackLayoutManager {
 
    private handleSwitchClick(sw: Switch): void {
       sw.toggle();
+   }
+
+   private handleSignalClick(signal: Signal, track: Track): void {
+      // Toggle signal state
+      signal.state = !signal.state;
+      console.log(`Signal at km ${signal.position} on track ${track.id} changed to ${signal.state ? 'green' : 'red'}`);
+      
+      // Redraw the signal to reflect new state
+      if (this._renderer) {
+         this._renderer.redrawSignal(signal, track);
+      }
+
+      // If signal changed to green, check if any trains can resume
+      if (signal.state) {
+         // Get TrainManager from Application to resume trains
+         const trainManager = this._application.trainManager;
+         if (trainManager) {
+            trainManager.resumeTrainsStoppedBySignals();
+         }
+      }
+   }
+
+   private handleTrainPassedSignal(train: Train, signal: Signal, track: Track): void {
+      // Automatically set signal to red (stop) after train passes
+      if (signal.state) {
+         signal.state = false; // Set to red
+         console.log(`Signal at km ${signal.position} on track ${track.id} automatically set to red after train ${train.number} passed`);
+         
+         // Redraw the signal to reflect new state
+         if (this._renderer) {
+            this._renderer.redrawSignal(signal, track);
+         }
+      }
    }
 
    /**

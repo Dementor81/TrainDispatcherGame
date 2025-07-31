@@ -25,6 +25,18 @@ export class RendererConfig {
     static readonly trainTextSize = 10;
     static readonly trainCarSpacing = 4; // Distance between cars in pixels
 
+    // Signal rendering configuration
+    static readonly signalBackgroundColor = 0x333333;
+    static readonly signalRedColor = 0xff0000;
+    static readonly signalGreenColor = 0x00ff00;
+    static readonly signalInactiveColor = 0x444444;
+    static readonly signalWidth = 40; // Wider for horizontal layout
+    static readonly signalHeight = 20; // Shorter for horizontal layout
+    static readonly signalRadius = 3;
+    static readonly signalCircleRadius = 5;
+    static readonly signalCircleSpacing = 5; // Horizontal spacing between circles
+    static readonly signalTrackOffset = 15; // Distance from track centerline to signal
+
     static readonly curveTransitionZone = 30;
 }
 
@@ -32,4 +44,5 @@ export class SimulationConfig {
     static readonly simulationSpeed = 1.0;
     static readonly simulationIntervalMs = 20;
     static readonly simulationScale = 1000;
+    static readonly signalLookaheadDistance = 50; // How far ahead trains look for signals (in pixels/km)
 }

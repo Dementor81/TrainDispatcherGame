@@ -71,7 +71,8 @@
       },
       "signals": [{
         "type":"main",
-        "position":600
+        "position":650,
+        "direction":1
       }],
       "switches": [
         {
@@ -120,7 +121,8 @@
       },
       "signals": [{
         "type":"main",
-        "position":600
+        "position":750,
+        "direction":1
       }],
       "switches": [
         {

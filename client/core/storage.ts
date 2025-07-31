@@ -19,7 +19,7 @@ class Storage {
     constructor() {
     }
 
-    static loadTrackLayoutFromJson(trackLayoutDto: TrackLayoutDto): {tracks: Track[], switches: Switch[], exits: Exit[]} | null {
+    static loadTrackLayoutFromJson(trackLayoutDto: TrackLayoutDto): {tracks: Track[], switches: Switch[], exits: Exit[], signals: Signal[]} | null {
         
         const tracks = trackLayoutDto.tracks.map((trackObj: TrackDto) => Track.fromObject(trackObj));        
         const switches = trackLayoutDto.switches.map((switchObj: SwitchDto) => Switch.fromObject(switchObj));
@@ -71,8 +71,15 @@ class Storage {
             sw.from = sw.tracks.find((t: Track) => t.id === sw_loaded.from);
         });
 
+        // Collect all signals from tracks
+        const signals: Signal[] = [];
+        tracks.forEach((track: Track) => {
+            track.signals.forEach((signal: Signal) => {
+                signals.push(signal);
+            });
+        });
         
-        return { tracks, switches, exits };
+        return { tracks, switches, exits, signals };
     }
 }
 

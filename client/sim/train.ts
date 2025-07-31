@@ -1,4 +1,5 @@
 import Track from "./track";
+import Signal from "./signal";
 import { SimulationConfig } from "../core/config";
 
 class Train {
@@ -10,6 +11,7 @@ class Train {
     private _speed: number; // km per simulation step
     private _direction: number; // 1 for forward, -1 for backward
     private _isMoving: boolean;
+    private _stoppedBySignal: Signal | null; // Signal that currently stops this train
 
     constructor(number: string, track: Track|null, km: number) {
         this._number = number;
@@ -20,6 +22,7 @@ class Train {
         this._speed = 50; // Default speed: 50 km/h
         this._direction = 1; // Default direction: forward
         this._isMoving = true; // Default: train is moving
+        this._stoppedBySignal = null; // Initially not stopped by any signal
     }
 
     // Static factory method to create a train from server data
@@ -60,6 +63,10 @@ class Train {
         return this._isMoving;
     }
 
+    get stoppedBySignal(): Signal | null {
+        return this._stoppedBySignal;
+    }
+
     // Set the train's position
     setPosition(track: Track, km: number): void {
         this._track = track;
@@ -79,6 +86,19 @@ class Train {
     // Start/stop the train
     setMoving(isMoving: boolean): void {
         this._isMoving = isMoving;
+        // Clear stopped signal when train starts moving
+        if (isMoving) {
+            this._stoppedBySignal = null;
+        }
+    }
+
+    // Set the signal that is currently stopping this train
+    setStoppedBySignal(signal: Signal | null): void {
+        this._stoppedBySignal = signal;
+        // If stopped by a signal, ensure train is not moving
+        if (signal) {
+            this._isMoving = false;
+        }
     }
 
     // Update train position based on current speed and direction
