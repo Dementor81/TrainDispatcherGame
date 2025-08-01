@@ -315,5 +315,35 @@ namespace TrainDispatcherGame.Server.Simulation
                 .Take(count)
                 .ToList();
         }
+
+        public void ReturnTrainFromClient(Train train)
+        {
+            try
+            {
+                Console.WriteLine($"Train {train.Number} returned from client at {train.CurrentLocation}");
+                
+                // Train is back in simulation control, advance to next event
+                train.AdvanceToNextEvent();
+                
+                var currentEvent = train.GetCurrentEvent();
+                if (currentEvent != null)
+                {
+                    Console.WriteLine($"Train {train.Number} advanced to next event: {currentEvent.Type} at {currentEvent.LocationId} scheduled for {currentEvent.ScheduledTime}");
+                    
+                    // The train will be processed in the normal simulation tick when its time comes
+                    // No immediate forwarding - it waits for the scheduled time
+                }
+                else
+                {
+                    Console.WriteLine($"Train {train.Number} has completed all events");
+                    train.State = TrainState.Completed;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error returning train from client: {ex.Message}");
+                throw;
+            }
+        }
     }
 }

@@ -2,187 +2,75 @@
   "id": "a_stadt",
   "title": "A-Stadt",
   "exits": [
-    {
-      "destination": "Berlin",
-      "id": 0
-    },
-    {
-      "destination": "b_stadt",
-      "id": 1
-    }
+    {"destination": "Berlin",  "id": 0},
+    {"destination": "b_stadt", "id": 1}
   ],
   "tracks": [
     {
-      "_class": "Track",
-      "id": 2,
-      "start": {
-        "x": 500,
-        "y": 500
-      },
-      "end": {
-        "x": 550,
-        "y": 450
-      },
+      "id": 12,
+      "start": {"x": 500, "y": 600},
+      "end": {"x": 550, "y": 550},
       "signals": [],
-      "switches": [
-        {
-          "type": "Switch",
-          "id": 0
-        },
-        {
-          "type": "Track",
-          "id": 5
-        }
-      ]
+      "switches": [ {"type": "Switch", "id": 0}, {"type": "Track", "id": 15} ]
     },
     {
-      "_class": "Track",
-      "id": 3,
-      "start": {
-        "x": 200,
-        "y": 500
-      },
-      "end": {
-        "x": 500,
-        "y": 500
-      },
-      "signals": [],
-      "switches": [
-        {
-          "type":"Exit",
-          "id":0
-        },
-        {
-          "type": "Switch",
-          "id": 0
-        }
-      ]
+      "id": 15,
+      "start": {"x": 550, "y": 550},
+      "end": {"x": 1150, "y": 550},
+      "signals": [
+        {"type": "main", "position":  51, "direction": -1},
+        {"type": "main", "position": 530, "direction":  1}
+      ],
+      "switches": [ {"type": "Track", "id": 12}, {"type": "Track", "id": 16} ]
     },
     {
-      "_class": "Track",
-      "id": 5,
-      "start": {
-        "x": 550,
-        "y": 450
-      },
-      "end": {
-        "x": 1250,
-        "y": 450
-      },
+      "id": 16,
+      "start": {"x": 1150, "y": 550},
+      "end": {"x": 1200, "y": 600},
       "signals": [],
-      "switches": [
-        {
-          "type": "Track",
-          "id": 2
-        },
-        {
-          "type": "Track",
-          "id": 6
-        }
-      ]
+      "switches": [ {"type": "Track", "id": 15}, {"type": "Switch", "id": 1} ]
     },
     {
-      "_class": "Track",
-      "id": 6,
-      "start": {
-        "x": 1250,
-        "y": 450
-      },
-      "end": {
-        "x": 1300,
-        "y": 500
-      },
-      "signals": [],
-      "switches": [
-        {
-          "type": "Track",
-          "id": 5
-        },
-        {
-          "type": "Switch",
-          "id": 1
-        }
-      ]
+      "id": 17,
+      "start": {"x": 500, "y": 600},
+      "end": {"x": 1200, "y": 600},
+      "signals": [
+        {"type": "main", "position":  98, "direction": -1},
+        {"type": "main", "position": 620, "direction":  1}
+      ],
+      "switches": [ {"type": "Switch", "id": 0}, {"type": "Switch", "id": 1} ]
     },
     {
-      "_class": "Track",
-      "id": 7,
-      "start": {
-        "x": 500,
-        "y": 500
-      },
-      "end": {
-        "x": 1300,
-        "y": 500
-      },
-      "signals": [],
-      "switches": [
-        {
-          "type": "Switch",
-          "id": 0
-        },
-        {
-          "type": "Switch",
-          "id": 1
-        }
-      ]
+      "id": 18,
+      "start": {"x": 1200, "y": 600},
+      "end": {"x": 1850, "y": 600},
+      "signals": [ {"type": "main", "position": 268, "direction": -1} ],
+      "switches": [ {"type": "Switch", "id": 1}, {"type": "Exit", "id": 1} ]
     },
     {
-      "_class": "Track",
-      "id": 8,
-      "start": {
-        "x": 1300,
-        "y": 500
-      },
-      "end": {
-        "x": 1650,
-        "y": 500
-      },
-      "signals": [],
-      "switches": [
-        {
-          "type": "Switch",
-          "id": 1
-        },
-        {
-          "type": "Exit",
-          "id": 1
-        }
-      ]
+      "id": 19,
+      "start": {"x": -100, "y": 600},
+      "end": {"x": 500, "y": 600},
+      "signals": [ {"type": "main", "position": 320, "direction": 1} ],
+      "switches": [ {"type": "Exit", "id": 0}, {"type": "Switch", "id": 0} ]
     }
   ],
   "switches": [
     {
       "_class": "Switch",
       "id": 0,
-      "location": {
-        "x": 500,
-        "y": 500
-      },
-      "tracks": [
-        3,
-        7,
-        2,
-        null
-      ],
-      "branch": 7,
-      "from": 3
+      "location": {"x": 500, "y": 600},
+      "tracks": [19, 17, 12, null],
+      "branch": 17,
+      "from": 19
     },
     {
       "_class": "Switch",
       "id": 1,
-      "location": {
-        "x": 1300,
-        "y": 500
-      },
-      "tracks": [
-        8,
-        7,
-        6,
-        null
-      ],
-      "branch": 7,
-      "from": 8
+      "location": {"x": 1200, "y": 600},
+      "tracks": [18, 17, 16, null],
+      "branch": 17,
+      "from": 18
     }
   ]
 }

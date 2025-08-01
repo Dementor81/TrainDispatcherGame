@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 using TrainDispatcherGame.Server.Models;
 using TrainDispatcherGame.Server.Managers;
 using TrainDispatcherGame.Server.Simulation;
+using System.Linq;
 
 namespace TrainDispatcherGame.Server.Hubs
 {
@@ -113,6 +114,40 @@ namespace TrainDispatcherGame.Server.Hubs
         public async Task Ping()
         {
             await Clients.Caller.SendAsync("Pong", DateTime.UtcNow);
+        }
+
+        public async Task ReceiveTrain(string playerId, string trainNumber, string destinationStationId)
+        {
+            try
+            {
+                var player = _playerManager.GetPlayer(playerId);
+                if (player == null)
+                {
+                    Console.WriteLine($"Failed to receive train {trainNumber}: Player {playerId} not found");
+                    return;
+                }
+
+                // Find the existing train in simulation
+                var train = _simulation.Trains.FirstOrDefault(t => t.Number == trainNumber);
+                if (train == null)
+                {
+                    Console.WriteLine($"Failed to receive train {trainNumber}: Train not found in simulation");
+                    return;
+                }
+
+                // Update train status - it's no longer controlled by player
+                train.controlledByPlayer = false;
+                train.CurrentLocation = player.StationId;
+
+                // Notify simulation that train has returned
+                _simulation.ReturnTrainFromClient(train);
+
+                Console.WriteLine($"Successfully received train {trainNumber} from player {playerId} at station {player.StationId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error receiving train {trainNumber}: {ex.Message}");
+            }
         }
     }
 } 

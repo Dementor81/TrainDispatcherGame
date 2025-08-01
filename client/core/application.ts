@@ -22,6 +22,8 @@ export class Application {
       this._trackLayoutManager = new TrackLayoutManager(this);
       this._trainManager = new TrainManager(this._eventManager, this._trackLayoutManager);
       this._signalRManager = new SignalRManager(this._eventManager);
+
+      (window as any).app = this;
    }
 
    async init() {
@@ -111,23 +113,23 @@ export class Application {
    }
 
    private setupEventListeners(): void {
-      // Listen for switch click events
-      this._eventManager.on('switchClicked', (sw: Switch) => {
-         this.handleSwitchClick(sw);
-      });
-
+      
       // Listen for train events and update renderer
       this._eventManager.on('trainAdded', (train: Train) => {
          this.handleTrainAdded(train);
       });
+
+      // Listen for simulation updates and update renderer
+      this._eventManager.on('trainsUpdated', (trains: Train[]) => {
+         this.handleTrainUpdated(trains);
+      });
+
+      // Train sending events
+      this._eventManager.on('sendTrainToServer', async (trainNumber: string, destinationStationId: string) => {
+         await this.handleSendTrainToServer(trainNumber, destinationStationId);
+      });
       
       console.log("Event listeners setup complete");
-   }
-
-   private handleSwitchClick(sw: Switch): void {
-      // Toggle the switch state
-      sw.toggle();
-      
    }
 
    private handleTrainAdded(train: Train): void {
@@ -135,6 +137,27 @@ export class Application {
       if (this._renderer) {
          // Re-render all trains
          this._renderer.renderTrains(this._trainManager.getAllTrains());
+      }
+   }
+
+   private handleTrainUpdated(trains: Train[]): void {
+      if (this._renderer) {
+         this._renderer.renderTrains(trains);
+      }
+   }
+
+   private async handleSendTrainToServer(trainNumber: string, destinationStationId: string): Promise<void> {
+      if (!this._currentPlayerId) {
+         console.error('Cannot send train: No current player ID');
+         return;
+      }
+
+      try {
+         console.log(`Application: Sending train ${trainNumber} to server for destination ${destinationStationId}`);
+         await this._signalRManager.sendTrain(this._currentPlayerId, trainNumber, destinationStationId);
+         console.log(`Application: Successfully initiated sending train ${trainNumber} to ${destinationStationId}`);
+      } catch (error) {
+         console.error(`Application: Failed to send train ${trainNumber}:`, error);
       }
    }
 
@@ -150,6 +173,8 @@ export class Application {
          console.warn("No exit points available for test train");
       }
    }
+
+   
 
 
    get uiManager(): UIManager {

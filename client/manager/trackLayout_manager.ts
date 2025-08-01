@@ -290,6 +290,8 @@ export class TrackLayoutManager {
 
       throw new MovementException(`Unknown connection type on track ${currentTrack.id}`);
    }
+
+
 }
 
 export default TrackLayoutManager;

@@ -1,0 +1,3 @@
+- save delay on incoming trains
+- create new train schedule event when the trains was missrouted
+- add the abiltiy for the train to stop at a station

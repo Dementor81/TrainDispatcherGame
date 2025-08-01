@@ -79,6 +79,8 @@ export class SignalRManager {
             console.log('Train sent:', data);
             this.handleTrainSent(data);
         });
+
+
     }
 
     public async connect(): Promise<void> {
@@ -157,6 +159,19 @@ export class SignalRManager {
         }
     }
 
+    public async sendTrain(playerId: string, trainNumber: string, destinationStationId: string): Promise<void> {
+        if (!this.connection || !this.isConnected) {
+            throw new Error('SignalR connection not established');
+        }
+
+        try {
+            await this.connection.invoke('ReceiveTrain', playerId, trainNumber, destinationStationId);
+        } catch (error) {
+            console.error('Failed to send train:', error);
+            throw error;
+        }
+    }
+
     // Event handlers - these can be overridden or extended
     private handleStationJoined(data: any): void {
         // Override this method to handle station joined events
@@ -195,6 +210,8 @@ export class SignalRManager {
         this.eventManager.emit('trainCreated', train,data.exitPointId);
         console.log(`Emitted trainCreated event for train ${train.number}`);
     }
+
+
 
     public get connectionState(): string {
         return this.connection?.state || 'Disconnected';

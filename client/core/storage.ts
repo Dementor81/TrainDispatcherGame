@@ -63,12 +63,16 @@ class Storage {
             }
             sw.tracks = sw_loaded.tracks.map((id: number | null):(Track|null) => {
                 if (typeof id === "number") {
-                    return tracks.find((t: Track) => t.id === id) || null;
+                    const tr = tracks.find((t: Track) => t.id === id);
+                    if (tr === undefined) {
+                        throw new Error(`Track ${id} not found in loaded layout`);
+                    }
+                    return tr;
                 }
                 return null;
             });
-            sw.branch = sw.tracks.find((t: Track) => t.id === sw_loaded.branch);
-            sw.from = sw.tracks.find((t: Track) => t.id === sw_loaded.from);
+            sw.branch = sw.tracks.find((t: Track) => t.id === sw_loaded.branch) || null;
+            sw.from = sw.tracks.find((t: Track) => t.id === sw_loaded.from) || null;
         });
 
         // Collect all signals from tracks

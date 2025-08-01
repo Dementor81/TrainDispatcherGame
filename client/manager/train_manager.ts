@@ -11,7 +11,6 @@ export class TrainManager {
     private _trains: Train[] = [];
     private _eventManager: EventManager;
     private _trackLayoutManager: TrackLayoutManager;
-    
     // Simulation properties
     private _simulationTimer: NodeJS.Timeout | null = null;
     private _isSimulationRunning: boolean = false;
@@ -26,6 +25,11 @@ export class TrainManager {
         // Subscribe to train creation events
         this._eventManager.on('trainCreated', (train: Train, exitPointId: string) => {
             this.handleTrainCreated(train, exitPointId);
+        });
+
+        // Subscribe to train reached exit events to handle sending back to server
+        this._eventManager.on('trainReachedExit', (train: Train, exit: Exit) => {
+            this.handleTrainReachedExit(train, exit);
         });
         
         console.log('TrainManager initialized and subscribed to train events');
@@ -160,7 +164,7 @@ export class TrainManager {
                 train.setStoppedBySignal(null);
                 train.setMoving(false);
                 console.log(`Train ${train.number} reached exit ${result.element.id}`);
-                this._eventManager.emit('trainReachedExit', train, result.element.id);
+                this._eventManager.emit('trainReachedExit', train, result.element);
                 return false;
             } else if (result.element instanceof Switch) {
                 // Train stopped at switch (wrong direction/position) - clear signal reference
@@ -344,6 +348,12 @@ export class TrainManager {
         this._trains.push(train);
         console.log(`Train added: ${train.getInfo()}`);
         console.log(`Total trains: ${this._trains.length}`);
+
+        // Auto-start simulation if this is the first train and simulation is not running
+        if (this._trains.length === 1 && !this._isSimulationRunning) {
+            this.startSimulation();
+            console.log("Auto-started simulation for first train");
+        }
         
         // Emit train added event for other components
         this._eventManager.emit('trainAdded', train);
@@ -422,6 +432,24 @@ export class TrainManager {
     private handleTrainCreated(train: Train, exitPointId: string): void {
         console.log(`TrainManager: Received train ${train.getInfo()}`);
         this.addTrainAtExitPoint(train, exitPointId);
+    }
 
+    // Handle train reached exit events
+    private handleTrainReachedExit(train: Train, exit: Exit): void {
+        console.log(`TrainManager: Train ${train.number} reached exit ${exit.id}`);
+        
+        if (exit.destination) {
+            console.log(`TrainManager: Sending train ${train.number} to destination ${exit.destination}`);
+            
+            // Remove the train from local simulation
+            this.removeTrain(train.number);
+            
+            // Emit event for application to handle server communication
+            this._eventManager.emit('sendTrainToServer', train.number, exit.destination);
+        } else {
+            console.error(`TrainManager: Exit ${exit.id} has no destination`);
+            // Still remove the train even if we can't send it
+            this.removeTrain(train.number);
+        }
     }
 } 
