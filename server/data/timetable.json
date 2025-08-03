@@ -4,19 +4,26 @@
     "trains": [
       {
         "number": "1001",
-        "entries": [
+        "type": "Passenger",
+        "speed": 100,
+        "path": [
+            "Berlin",
+            "München"
+        ],
+        "spawn":{
+            "type": "exit",
+            "time": "00:00:05"
+        },
+        "timetable": [          
           {
-            "type": "spawn",
-            "id": "0",
             "station": "a_stadt",
-            "time": "00:01",
-            "stops": false
-          },
+            "arrival": "00:00:50",
+            "departure": "00:01:00"
+          },          
           {
-            "type": "station",
             "station": "b_stadt",
-            "time": "00:02",
-            "stops": true
+            "arrival": "00:04",
+            "departure": "00:05"
           }
         ]
       }

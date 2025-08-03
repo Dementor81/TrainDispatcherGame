@@ -25,18 +25,34 @@ namespace TrainDispatcherGame.Server.Managers
             var player = _playerManager.GetPlayerByStation(stationId);
             if (player != null)
             {
+                // Get the current event for this train
+                var currentEvent = train.GetCurrentEvent();
+                bool shouldStopAtStation = currentEvent?.Stops == true && 
+                                         currentEvent.Station == stationId;
                 
+                // Prepare arrival and departure times
+                DateTime? arrivalTime = null;
+                DateTime? departureTime = null;
+                
+                if (currentEvent != null && currentEvent.Station == stationId)
+                {
+                    arrivalTime = currentEvent.ArrivalTime;
+                    departureTime = currentEvent.DepartureTime;
+                }
                 
                 await _hubContext.Clients.Group($"station_{stationId}").SendAsync("TrainSent", new
                 {
                     trainNumber = train.Number,
                     stationId = stationId,
                     exitPointId = exitPointId,
+                    shouldStopAtStation = shouldStopAtStation,
+                    arrivalTime = arrivalTime,
+                    departureTime = departureTime,
                     sendTime = DateTime.UtcNow,
                     message = $"Train {train.Number} is ready for control at station {stationId}"
                 });
                 
-                Console.WriteLine($"Sent train {train.Number} to player {player.Id} at station {stationId}, exit point {exitPointId}");
+                Console.WriteLine($"Sent train {train.Number} to player {player.Id} at station {stationId}, exit point {exitPointId}, should stop: {shouldStopAtStation}, arrival: {arrivalTime}, departure: {departureTime}");
             }
             else
             {

@@ -14,6 +14,7 @@ export class Application {
    private _trainManager: TrainManager;
    private _renderer: Renderer | null = null;
    private _currentPlayerId: string | null = null;
+   private _currentStationId: string | null = null;
    private _signalRManager: SignalRManager;
 
    constructor() {
@@ -44,26 +45,7 @@ export class Application {
       }
 
       this._uiManager.showStationSelectionScreen(async (layout: string, playerId: string) => {
-         console.log("Selected layout:", layout, "Player ID:", playerId);
-         
-         try {
-            // Join the station via SignalR for real-time updates
-            await this._signalRManager.joinStation(playerId, layout);
-            console.log('Successfully joined station via SignalR');
-            
-            // Store the player ID and load the layout
-            this._currentPlayerId = playerId;
-            this._trackLayoutManager.loadTrackLayout(layout);
-            
-         } catch (error) {
-            console.error('Failed to join station:', error);
-            alert(`Fehler beim Übernehmen der Station: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`);
-            
-            // Show the station selector again if there was an error
-            this._uiManager.showStationSelectionScreen(async (layout: string, playerId: string) => {
-               this.handleStationSelection(layout, playerId);
-            });
-         }
+         await this.handleStationSelection(layout, playerId);
       });
    }
 
@@ -75,8 +57,9 @@ export class Application {
          await this._signalRManager.joinStation(playerId, layout);
          console.log('Successfully joined station via SignalR');
          
-         // Store the player ID and load the layout
+         // Store the player ID and station ID, then load the layout
          this._currentPlayerId = playerId;
+         this._currentStationId = layout;
          this._trackLayoutManager.loadTrackLayout(layout);
          
          // Show the control panel after successfully joining a station
@@ -128,6 +111,24 @@ export class Application {
       this._eventManager.on('sendTrainToServer', async (trainNumber: string, destinationStationId: string) => {
          await this.handleSendTrainToServer(trainNumber, destinationStationId);
       });
+
+      // Train stop reporting events
+      this._eventManager.on('reportTrainStoppedToServer', async (trainNumber: string, stationId: string) => {
+         await this.handleReportTrainStoppedToServer(trainNumber, stationId);
+      });
+
+      // Train departure reporting events
+      this._eventManager.on('reportTrainDepartedToServer', async (trainNumber: string, stationId: string) => {
+         await this.handleReportTrainDepartedToServer(trainNumber, stationId);
+      });
+
+      // Connection status events
+      this._eventManager.on('connectionStatusChanged', (isConnected: boolean, isReconnecting: boolean) => {
+         this._uiManager.updateConnectionStatus(isConnected, isReconnecting);
+         if (isConnected) {
+            this._uiManager.showHUD();
+         }
+      });
       
       console.log("Event listeners setup complete");
    }
@@ -161,6 +162,34 @@ export class Application {
       }
    }
 
+   private async handleReportTrainStoppedToServer(trainNumber: string, stationId: string): Promise<void> {
+      if (!this._currentPlayerId) {
+         console.error('Cannot report train stopped: No current player ID');
+         return;
+      }
+
+      try {
+         console.log(`Application: Reporting train ${trainNumber} stopped at station ${stationId}`);
+         await this._signalRManager.reportTrainStopped(this._currentPlayerId, trainNumber, stationId);
+      } catch (error) {
+         console.error(`Application: Failed to report train ${trainNumber} stopped:`, error);
+      }
+   }
+
+   private async handleReportTrainDepartedToServer(trainNumber: string, stationId: string): Promise<void> {
+      if (!this._currentPlayerId) {
+         console.error('Cannot report train departed: No current player ID');
+         return;
+      }
+
+      try {
+         console.log(`Application: Reporting train ${trainNumber} departed from station ${stationId}`);
+         await this._signalRManager.reportTrainDeparted(this._currentPlayerId, trainNumber, stationId);
+      } catch (error) {
+         console.error(`Application: Failed to report train ${trainNumber} departed:`, error);
+      }
+   }
+
    // Method to manually add a test train for demonstration
    public addTestTrain(trainNumber: string): void {
       // Get the first available exit point for testing
@@ -189,6 +218,10 @@ export class Application {
       return this._currentPlayerId;
    }
 
+   get currentStationId(): string | null {
+      return this._currentStationId;
+   }
+
    get signalRManager(): SignalRManager {
       return this._signalRManager;
    }
@@ -203,6 +236,18 @@ export class Application {
 
    get trackLayoutManager(): TrackLayoutManager {
       return this._trackLayoutManager;
+   }
+
+   public async handleReconnection(): Promise<void> {
+      const lastStationInfo = this._signalRManager.lastStationInfo;
+      if (lastStationInfo.playerId && lastStationInfo.stationId) {
+         console.log('Application: Attempting to rejoin station after reconnection');
+         try {
+            await this.handleStationSelection(lastStationInfo.stationId, lastStationInfo.playerId);
+         } catch (error) {
+            console.error('Application: Failed to rejoin station after reconnection:', error);
+         }
+      }
    }
 }
 

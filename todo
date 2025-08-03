@@ -1,3 +1,26 @@
-- save delay on incoming trains
-- create new train schedule event when the trains was missrouted
-- add the abiltiy for the train to stop at a station
+☐ save delay on incoming trains
+✘ create new train schedule event when the trains was missrouted @cancelled(25-08-03 12:05)
+☐ add the abiltiy for the train to stop at a station
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'It adds 6 shortcuts when editing a Todo file:'
+
+'Cmd/Ctrl+Enter' // Triggers `Todo: Toggle Box`
+'Alt+Enter' // Triggers `Todo: Toggle Box`
+'Alt+D' // Triggers `Todo: Toggle Done`
+'Alt+C' // Triggers `Todo: Toggle Cancelled`
+'Alt+S' // Triggers `Todo: Toggle Start`
+'Cmd/Ctrl+Shift+A' // Triggers  `Todo: Archive`
+Archive:

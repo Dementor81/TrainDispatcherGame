@@ -1,19 +1,21 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.FileProviders;
+
 using TrainDispatcherGame.Server.Simulation;
 using TrainDispatcherGame.Server.Managers;
 using TrainDispatcherGame.Server.Hubs;
-using System.Text.Json;
+using TrainDispatcherGame.Server.Services;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowDevClient", policy =>
     {
-        policy.WithOrigins("http://localhost:9000") 
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials();
+              .DisallowCredentials();
     });
 });
 
@@ -29,66 +31,64 @@ builder.Services.AddSingleton<PlayerManager>();
 // Add notification manager as a singleton service
 builder.Services.AddSingleton<INotificationManager, NotificationManager>();
 
+// Add track layout service as a singleton service
+builder.Services.AddSingleton<ITrackLayoutService, TrackLayoutService>();
+
 var app = builder.Build();
 
+// Configure CORS for both API and SignalR
 app.UseCors("AllowDevClient");
 
-// Map SignalR hub
-app.MapHub<GameHub>("/gamehub");
+// Map SignalR hub with CORS
+app.MapHub<GameHub>("/gamehub").RequireCors("AllowDevClient");
 
 // Endpoint to serve a specific track layout JSON file
-app.MapGet("/api/layouts/{stationName}", (string stationName) =>
+app.MapGet("/api/layouts/{stationName}", (string stationName, ITrackLayoutService trackLayoutService) =>
 {
-    var filePath = Path.Combine("TrackLayouts", $"{stationName}.json");
-
-    if (!File.Exists(filePath))
+    var layout = trackLayoutService.GetTrackLayout(stationName);
+    if (layout == null)
     {
         return Results.NotFound($"No layout found for station: {stationName}");
     }
 
-    var json = File.ReadAllText(filePath);
+    var json = File.ReadAllText(Path.Combine("TrackLayouts", $"{stationName}.json"));
     return Results.Content(json, "application/json");
 });
 
-app.MapGet("/api/layouts", () =>
+app.MapGet("/api/layouts", (ITrackLayoutService trackLayoutService) =>
 {
-    var directoryPath = Path.Combine("TrackLayouts");
-    if (!Directory.Exists(directoryPath))
+    var layouts = trackLayoutService.GetAllTrackLayouts();
+    var stations = layouts.Select(layout => new
     {
-        return Results.Problem("TrackLayouts folder not found.");
-    }
-
-    var stations = new List<object>();
-    
-    foreach (var file in Directory.GetFiles(directoryPath, "*.json"))
-    {
-        try
-        {
-            var json = File.ReadAllText(file);
-            var layoutData = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(json);
-            
-            var stationId = Path.GetFileNameWithoutExtension(file);
-            var title = layoutData.GetProperty("title").GetString() ?? stationId;
-            
-            stations.Add(new
-            {
-                id = stationId,
-                title = title
-            });
-        }
-        catch (Exception ex)
-        {
-            // If we can't read the title, use the filename as both id and title
-            var stationId = Path.GetFileNameWithoutExtension(file);
-            stations.Add(new
-            {
-                id = stationId,
-                title = stationId
-            });
-        }
-    }
+        id = layout.Id,
+        title = layout.Title
+    }).ToList();
 
     return Results.Json(stations);
+});
+
+// Endpoint to get exit points for a station
+app.MapGet("/api/layouts/{stationName}/exits", (string stationName, ITrackLayoutService trackLayoutService) =>
+{
+    var layout = trackLayoutService.GetTrackLayout(stationName);
+    if (layout == null)
+    {
+        return Results.NotFound($"No layout found for station: {stationName}");
+    }
+
+    return Results.Json(layout.Exits);
+});
+
+// Endpoint to get exit point from one station to another
+app.MapGet("/api/layouts/{fromStation}/exit-to/{toStation}", (string fromStation, string toStation, ITrackLayoutService trackLayoutService) =>
+{
+    var exitPoint = trackLayoutService.GetExitPointToStation(fromStation, toStation);
+    if (exitPoint == null)
+    {
+        return Results.NotFound($"No exit found from {fromStation} to {toStation}");
+    }
+
+    return Results.Json(exitPoint);
 });
 
 // Simulation control endpoints
@@ -137,11 +137,7 @@ app.MapGet("/api/simulation/timetable", (Simulation simulation) =>
     return Results.Ok(simulation.Timetable);
 });
 
-app.MapGet("/api/simulation/events", (Simulation simulation, int? count) =>
-{
-    var events = simulation.GetUpcomingEvents(count ?? 10);
-    return Results.Ok(events);
-});
+
 
 app.MapGet("/api/simulation/trains", (Simulation simulation) =>
 {
@@ -154,11 +150,7 @@ app.MapGet("/api/simulation/trains/active", (Simulation simulation) =>
     return Results.Ok(activeTrains);
 });
 
-app.MapGet("/api/simulation/trains/waiting", (Simulation simulation) =>
-{
-    var waitingTrains = simulation.GetWaitingTrains();
-    return Results.Ok(waitingTrains);
-});
+
 
 app.MapGet("/api/simulation/trains/completed", (Simulation simulation) =>
 {

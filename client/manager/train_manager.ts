@@ -1,4 +1,4 @@
-import Train from '../sim/train';
+import Train, { TrainStopReason } from '../sim/train';
 import Track from '../sim/track';
 import Switch from '../sim/switch';
 import Exit from '../sim/exit';
@@ -6,6 +6,7 @@ import Signal from '../sim/signal';
 import { EventManager } from './event_manager';
 import { TrackLayoutManager, MovementException } from './trackLayout_manager';
 import { SimulationConfig } from '../core/config';
+import { getSimulationStatus } from '../network/api';
 
 export class TrainManager {
     private _trains: Train[] = [];
@@ -17,6 +18,8 @@ export class TrainManager {
     private _simulationIntervalMs: number = SimulationConfig.simulationIntervalMs; // Update every 100ms
     private _simulationSpeed: number = SimulationConfig.simulationSpeed; // Speed multiplier (1.0 = normal speed)
     private _lastUpdateTime: number = 0; // Timestamp of last update
+    private _currentSimulationTime: Date | null = null; // Current simulation time from server
+    private _lastSimulationTimeUpdate: number = 0; // When we last updated simulation time
 
     constructor(eventManager: EventManager, trackLayoutManager: TrackLayoutManager) {
         this._eventManager = eventManager;
@@ -30,6 +33,16 @@ export class TrainManager {
         // Subscribe to train reached exit events to handle sending back to server
         this._eventManager.on('trainReachedExit', (train: Train, exit: Exit) => {
             this.handleTrainReachedExit(train, exit);
+        });
+
+        // Subscribe to train stop events to handle station stop reporting
+        this._eventManager.on('trainStoppedAtStation', (train: Train, stationId: string) => {
+            this.handleTrainStoppedAtStation(train, stationId);
+        });
+
+        // Subscribe to train departure events to handle station departure reporting
+        this._eventManager.on('trainDepartedFromStation', (train: Train, stationId: string) => {
+            this.handleTrainDepartedFromStation(train, stationId);
         });
         
         console.log('TrainManager initialized and subscribed to train events');
@@ -87,6 +100,25 @@ export class TrainManager {
         return this._simulationSpeed;
     }
 
+    // Get current simulation time from server (with caching)
+    private async getCurrentSimulationTime(): Promise<Date> {
+        const now = Date.now();
+        
+        // Cache simulation time for 1 second to avoid too many API calls
+        if (!this._currentSimulationTime || (now - this._lastSimulationTimeUpdate) > 1000) {
+            try {
+                const status = await getSimulationStatus();
+                this._currentSimulationTime = new Date(status.currentTime);
+                this._lastSimulationTimeUpdate = now;
+            } catch (error) {
+                console.warn('Failed to get simulation time from server, using real time:', error);
+                this._currentSimulationTime = new Date();
+            }
+        }
+        
+        return this._currentSimulationTime;
+    }
+
     // Main simulation update loop
     private updateSimulation(): void {
         if (this._trains.length === 0) {
@@ -98,6 +130,13 @@ export class TrainManager {
         const timeElapsedMs = currentTime - this._lastUpdateTime;
         const timeElapsedSeconds = (timeElapsedMs / 1000) * this._simulationSpeed; // Apply speed multiplier to time
         this._lastUpdateTime = currentTime;
+
+        // Update simulation time from server periodically (every 5 seconds)
+        if (!this._currentSimulationTime || (currentTime - this._lastSimulationTimeUpdate) > 5000) {
+            this.getCurrentSimulationTime().catch(error => {
+                console.warn('Failed to update simulation time:', error);
+            });
+        }
 
         let trainsUpdated = false;
 
@@ -116,19 +155,17 @@ export class TrainManager {
 
     // Update a single train's position
     private updateTrain(train: Train, timeElapsedSeconds: number): boolean {
-        if (!train.track || !train.isMoving) {
+        if (!train.track) {
+            console.log(`Train ${train.number} can't move or is stopped`);
             return false; // Train can't move or is stopped
         }
 
         // Calculate movement distance based on elapsed time
-        const signedDistance = train.getMovementDistance(timeElapsedSeconds);
-
-        if (Math.abs(signedDistance) < 0.001) {
-            return false; // Movement too small to process
-        }
-
+        
+        
+        
         // Check for signals ahead before moving
-        const stoppingSignal = this.checkSignalsAhead(train, Math.abs(signedDistance));
+        const stoppingSignal = this.checkSignalsAhead(train);
         if (stoppingSignal) {
             // Signal is red - stop the train and store the signal reference
             train.setStoppedBySignal(stoppingSignal);
@@ -136,13 +173,24 @@ export class TrainManager {
             this._eventManager.emit('trainStoppedBySignal', train, stoppingSignal);
             return false;
         }
+        
+        // Check if train should stop at a station or depart
+        if (this.checkStationStop(train)) {
+            return false;
+        }
+        
+        const movedDistance = train.getMovementDistance(timeElapsedSeconds);
 
+        if(movedDistance<=0.001){
+            return false;
+        }
+        
         // Use TrackLayoutManager to calculate new position
         try {
             const result = this._trackLayoutManager.followRailNetwork(
                 train.track,
                 train.km,
-                signedDistance
+                movedDistance
             );
 
             // Check what type of element we got
@@ -157,6 +205,8 @@ export class TrainManager {
                 
                 // Check if train passed any signals during this movement
                 this.checkSignalsPassed(train, previousTrack, previousKm, result.element, result.km);
+                
+                
                 
                 return true; // Train was updated
             } else if (result.element instanceof Exit) {
@@ -191,13 +241,13 @@ export class TrainManager {
     }
 
     // Check for signals ahead of the train that would stop it
-    private checkSignalsAhead(train: Train, movementDistance: number): Signal | null {
+    private checkSignalsAhead(train: Train,): Signal | null {
         if (!train.track) {
             return null;
         }
 
         // Total distance to look ahead: movement distance + lookahead distance
-        const totalLookaheadDistance = movementDistance + SimulationConfig.signalLookaheadDistance;
+        const totalLookaheadDistance = SimulationConfig.signalLookaheadDistance;
         
         try {
             // Use followRailNetwork to trace the path ahead
@@ -361,6 +411,8 @@ export class TrainManager {
 
     // Remove a train from the manager
     removeTrain(trainNumber: string): boolean {
+        this._eventManager.emit('trainRemoved', trainNumber);
+        
         const index = this._trains.findIndex(train => train.number === trainNumber);
         if (index !== -1) {
             const removedTrain = this._trains.splice(index, 1)[0];
@@ -452,4 +504,69 @@ export class TrainManager {
             this.removeTrain(train.number);
         }
     }
+
+    // Handle train stopped at station events
+    private handleTrainStoppedAtStation(train: Train, stationId: string): void {
+        console.log(`TrainManager: Train ${train.number} stopped at station ${stationId}`);
+        
+        // Emit event for application to handle server communication
+        this._eventManager.emit('reportTrainStoppedToServer', train.number, stationId);
+    }
+
+    // Handle train departed from station events
+    private handleTrainDepartedFromStation(train: Train, stationId: string): void {
+        console.log(`TrainManager: Train ${train.number} departed from station ${stationId}`);
+        
+        // Emit event for application to handle server communication
+        this._eventManager.emit('reportTrainDepartedToServer', train.number, stationId);
+    }
+
+    // Check if train should stop at a station or depart based on schedule
+    // returns true if train should stop at a station or is already stopped, false if it should depart or it is not near the station
+    private checkStationStop(train: Train): boolean {
+        // Early return if no simulation time or no station stop needed
+        if (!this._currentSimulationTime || !train.shouldStopAtCurrentStation || !train.track || !train.track.halt) {
+            return false;
+        }
+
+        // Check if train is already stopped at this station
+        if (train.stopReason === TrainStopReason.STATION) {
+            // Train is already stopped - check if it's time to depart
+            if (train.departureTime && this._currentSimulationTime >= train.departureTime) {
+                // Check if the next signal allows departure
+                const nextSignal = this._trackLayoutManager.getNextSignal(train.track, train.km, train.direction);
+                if (nextSignal && !nextSignal.isTrainAllowedToGo()) {
+                    console.log(`Train ${train.number} cannot depart from station ${train.shouldStopAtCurrentStation}: Next signal at km ${nextSignal.position} is red`);
+                    return true; // Signal is red, cannot depart
+                }
+
+                console.log(`Train ${train.number} departing from station ${train.shouldStopAtCurrentStation} at scheduled time ${train.departureTime.toLocaleTimeString()}`);
+                train.setMoving(true);
+                train.setStopReason(TrainStopReason.NONE);
+                train.setShouldStopAtCurrentStation(null);
+                train.setScheduleTimes(null, null); // Clear schedule times
+                this._eventManager.emit('trainDepartedFromStation', train, train.shouldStopAtCurrentStation);
+                return false;
+            }
+            return true; // Train is stopped but not time to depart yet
+        }
+
+        // Train is not stopped - check if it needs to stop (only calculate distance if needed)
+        const trackCenter = train.track.length / 2;
+        const distanceFromCenter = Math.abs(train.km - trackCenter);
+        const isNearStation = distanceFromCenter < 0.1;
+
+        if (isNearStation) {
+            // Train is arriving and near the station - stop it
+            console.log(`Train ${train.number} stopped at station ${train.shouldStopAtCurrentStation}`);
+            train.setMoving(false);
+            train.setStopReason(TrainStopReason.STATION);
+            this._eventManager.emit('trainStoppedAtStation', train, train.shouldStopAtCurrentStation);
+            return true;
+        }
+
+        return false; // Train is not near the station
+    }
+
+
 } 

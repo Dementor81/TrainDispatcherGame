@@ -74,6 +74,10 @@ export class Renderer {
       this._trackLayoutManager = trackLayoutManager;
       this._eventManager = eventManager;
 
+      this._eventManager.on('trainRemoved', (trainNumber: string) => {
+         this.removeTrain(trainNumber);
+      });
+
       // Setup interactive controls
       this.setupInteractivity(canvas);
 
@@ -245,6 +249,9 @@ export class Renderer {
 
       const tracks = this._trackLayoutManager.tracks;
       const switches = this._trackLayoutManager.switches;
+
+      // Render station name
+      this.renderStationName();
 
       // Render tracks
       tracks.forEach((track) => {
@@ -619,10 +626,18 @@ export class Renderer {
 
    public redrawTrain(train: Train): void {
       // Find and remove the existing train container
+      this.removeTrain(train.number);
+
+      // Render the train again
+      this.renderTrain(train);
+   }
+
+   private removeTrain(trainNumber: string): void {
+      // Find and remove the existing train container
       let trainContainer: TrainContainer | null = null;
       for (let i = 0; i < this._trainContainer.children.length; i++) {
          const child = this._trainContainer.children[i] as TrainContainer;
-         if (child.trainNumber === train.number) {
+         if (child.trainNumber === trainNumber) {
             trainContainer = child;
             break;
          }
@@ -631,17 +646,6 @@ export class Renderer {
       if (trainContainer) {
          this._trainContainer.removeChild(trainContainer);
       }
-
-      // Render the train again
-      this.renderTrain(train);
-   }
-
-   private calculateTrainPosition(train: Train): Point {
-      if (!train.track) {
-         return new Point(0, 0);
-      }
-
-      return this.getPointFromPosition(train.track, train.km);
    }
 
    private getPointFromPosition(track: Track, km: number): Point {
@@ -704,6 +708,45 @@ export class Renderer {
          // Use regular straight track positioning when far from connection
          return track.rad;
       }
+   }
+
+   private renderStationName(): void {
+      const stationName = this._trackLayoutManager.layoutTitle;
+      if (!stationName) return;
+
+      // Calculate the center position of the layout
+      const tracks = this._trackLayoutManager.tracks;
+      if (tracks.length === 0) return;
+
+      // Calculate bounds of all tracks
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      tracks.forEach((track) => {
+         minX = Math.min(minX, track.start.x, track.end.x);
+         minY = Math.min(minY, track.start.y, track.end.y);
+         maxX = Math.max(maxX, track.start.x, track.end.x);
+         maxY = Math.max(maxY, track.start.y, track.end.y);
+      });
+
+      // Calculate center position
+      const centerX = (minX + maxX) / 2;
+      const centerY = minY - RendererConfig.stationTextOffset;
+
+      // Create station name text
+      const text = new PIXI.Text({
+         text: stationName,
+         style: {
+            fontSize: RendererConfig.stationTextSize,
+            fill: RendererConfig.stationTextColor,
+            align: "center",
+            fontFamily: RendererConfig.stationTextFont,
+         },
+      });
+      text.anchor.set(0.5);
+      text.x = centerX;
+      text.y = centerY;
+
+      // Add to the track container so it's rendered with the layout
+      this._trackContainer.addChild(text);
    }
 
    public clear(): void {

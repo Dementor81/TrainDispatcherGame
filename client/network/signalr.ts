@@ -9,6 +9,8 @@ export class SignalRManager {
     private maxReconnectAttempts = 5;
     private reconnectDelay = 2000; // 2 seconds
     private eventManager: EventManager;
+    private lastPlayerId: string | null = null;
+    private lastStationId: string | null = null;
 
     constructor(eventManager: EventManager) {
         this.eventManager = eventManager;
@@ -17,7 +19,7 @@ export class SignalRManager {
 
     private initializeConnection(): void {
         this.connection = new HubConnectionBuilder()
-            .withUrl('http://localhost:5070/gamehub')
+            .withUrl('http://localhost:5070/gamehub', { withCredentials: false })
             .withAutomaticReconnect([0, 2000, 5000, 10000, 30000]) // Reconnect intervals
             .configureLogging(LogLevel.Information)
             .build();
@@ -32,17 +34,23 @@ export class SignalRManager {
         this.connection.onreconnecting((error) => {
             console.log('SignalR: Attempting to reconnect...', error);
             this.isConnected = false;
+            this.notifyConnectionStatusChange(false, true);
         });
 
         this.connection.onreconnected((connectionId) => {
             console.log('SignalR: Reconnected with connection ID:', connectionId);
             this.isConnected = true;
             this.reconnectAttempts = 0;
+            this.notifyConnectionStatusChange(true, false);
+            
+            // Try to rejoin the station if we were previously connected
+            this.tryRejoinStation();
         });
 
         this.connection.onclose((error) => {
             console.log('SignalR: Connection closed', error);
             this.isConnected = false;
+            this.notifyConnectionStatusChange(false, false);
         });
 
         // Game-specific events
@@ -92,9 +100,11 @@ export class SignalRManager {
             await this.connection?.start();
             this.isConnected = true;
             console.log('SignalR: Connected successfully');
+            this.notifyConnectionStatusChange(true, false);
         } catch (error) {
             console.error('SignalR: Failed to connect', error);
             this.isConnected = false;
+            this.notifyConnectionStatusChange(false, false);
             throw error;
         }
     }
@@ -114,6 +124,10 @@ export class SignalRManager {
 
         try {
             await this.connection.invoke('JoinStation', playerId, stationId);
+            
+            // Store the player and station IDs for reconnection
+            this.lastPlayerId = playerId;
+            this.lastStationId = stationId;
         } catch (error) {
             console.error('Failed to join station:', error);
             throw error;
@@ -127,6 +141,10 @@ export class SignalRManager {
 
         try {
             await this.connection.invoke('LeaveStation', playerId);
+            
+            // Clear stored IDs when leaving station
+            this.lastPlayerId = null;
+            this.lastStationId = null;
         } catch (error) {
             console.error('Failed to leave station:', error);
             throw error;
@@ -172,6 +190,47 @@ export class SignalRManager {
         }
     }
 
+    public async reportTrainStopped(playerId: string, trainNumber: string, stationId: string): Promise<void> {
+        if (!this.connection || !this.isConnected) {
+            throw new Error('SignalR connection not established');
+        }
+
+        try {
+            await this.connection.invoke('ReportTrainStopped', playerId, trainNumber, stationId);
+            console.log(`Reported train ${trainNumber} stopped at station ${stationId}`);
+        } catch (error) {
+            console.error('Failed to report train stopped:', error);
+            throw error;
+        }
+    }
+
+    public async reportTrainDeparted(playerId: string, trainNumber: string, stationId: string): Promise<void> {
+
+        if (!this.connection || !this.isConnected) {
+            throw new Error('SignalR connection not established');
+        }
+
+        try {
+            await this.connection.invoke('ReportTrainDeparted', playerId, trainNumber, stationId);
+            console.log(`Reported train ${trainNumber} departed from station ${stationId}`);
+        } catch (error) {
+            console.error('Failed to report train departed:', error);
+            throw error;
+        }
+    }
+
+    private async tryRejoinStation(): Promise<void> {
+        if (this.lastPlayerId && this.lastStationId) {
+            console.log(`SignalR: Attempting to rejoin station ${this.lastStationId} as player ${this.lastPlayerId}`);
+            try {
+                await this.joinStation(this.lastPlayerId, this.lastStationId);
+                console.log('SignalR: Successfully rejoined station after reconnection');
+            } catch (error) {
+                console.error('SignalR: Failed to rejoin station after reconnection:', error);
+            }
+        }
+    }
+
     // Event handlers - these can be overridden or extended
     private handleStationJoined(data: any): void {
         // Override this method to handle station joined events
@@ -200,14 +259,26 @@ export class SignalRManager {
 
     private handleTrainSent(data: any): void {
         // Handle train sent event (train is ready for player control)
-        console.log(`Train ${data.trainNumber} is ready for control at station ${data.stationId}, exit point ${data.exitPointId}`);
+        console.log(`Train ${data.trainNumber} is ready for control at station ${data.stationId}, exit point ${data.exitPointId}, should stop: ${data.shouldStopAtStation}`);
         
         // Create a new Train instance from the server data
         const train = Train.fromServerData(data);
+        
+        // Set station stop information if provided
+        if (data.shouldStopAtStation && data.stationId) {
+            train.setShouldStopAtCurrentStation(data.stationId);
+            console.log(`Train ${train.number} should stop at station ${data.stationId}`);
+        }
+        
+        // Log schedule information if available
+        if (data.arrivalTime) {
+            console.log(`Train ${train.number} scheduled arrival: ${new Date(data.arrivalTime).toLocaleTimeString()}, departure: ${data.departureTime ? new Date(data.departureTime).toLocaleTimeString() : 'N/A'}`);
+        }
+        
         console.log(`Created train: ${train.getInfo()}`)     
         
         // Emit the train created event through the EventManager
-        this.eventManager.emit('trainCreated', train,data.exitPointId);
+        this.eventManager.emit('trainCreated', train, data.exitPointId);
         console.log(`Emitted trainCreated event for train ${train.number}`);
     }
 
@@ -219,6 +290,18 @@ export class SignalRManager {
 
     public get connected(): boolean {
         return this.isConnected;
+    }
+
+    public get lastStationInfo(): { playerId: string | null, stationId: string | null } {
+        return {
+            playerId: this.lastPlayerId,
+            stationId: this.lastStationId
+        };
+    }
+
+    private notifyConnectionStatusChange(isConnected: boolean, isReconnecting: boolean): void {
+        // Emit an event that the Application can listen to
+        this.eventManager.emit('connectionStatusChanged', isConnected, isReconnecting);
     }
 
 

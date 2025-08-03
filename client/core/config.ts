@@ -38,6 +38,12 @@ export class RendererConfig {
     static readonly signalTrackOffset = 15; // Distance from track centerline to signal
 
     static readonly curveTransitionZone = 30;
+    
+    // Station rendering configuration
+    static readonly stationTextColor = 0xffffff;
+    static readonly stationTextSize = 24;
+    static readonly stationTextFont = "Arial";
+    static readonly stationTextOffset = 30; // Distance above the layout
 }
 
 export class SimulationConfig {

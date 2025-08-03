@@ -21,6 +21,7 @@ export class TrackLayoutManager {
    private _switches: Switch[] = [];
    private _exits: Exit[] = [];
    private _signals: Signal[] = [];
+   private _layoutTitle: string = "";
    private _renderer: Renderer | null = null;
    private _onLayoutLoaded: (() => void) | null = null;
    private _application: Application;
@@ -70,6 +71,10 @@ export class TrackLayoutManager {
 
    get signals(): Signal[] {
       return this._signals;
+   }
+
+   get layoutTitle(): string {
+      return this._layoutTitle;
    }
 
    // Find the track and kilometer position for an exit point
@@ -139,6 +144,7 @@ export class TrackLayoutManager {
          this._switches = trackLayout.switches;
          this._exits = trackLayout.exits;
          this._signals = trackLayout.signals;
+         this._layoutTitle = trackLayoutDto.title;
          console.log(
             "Track layout loaded:",
             this._tracks.length,
@@ -242,6 +248,83 @@ export class TrackLayoutManager {
       }
 
       return { element: track, km, direction: currentDirection };
+   }
+
+   /**
+    * Finds the next signal on a track in the given direction from a certain point
+    * @param currentTrack - The current track to search on
+    * @param currentKm - The current kilometer position on the track
+    * @param direction - Direction to search (1 = forward, -1 = backward)
+    * @returns The next signal in the given direction, or null if no signal found
+    */
+   getNextSignal(currentTrack: Track, currentKm: number, direction: number): Signal | null {
+      if (!currentTrack) return null;
+
+      // First, check for signals on the current track
+      const currentTrackSignals = currentTrack.signals.filter(signal => {
+         if (signal.direction !== direction) return false;
+         
+         if (direction > 0) {
+            // Moving forward: look for signals ahead
+            return signal.position > currentKm;
+         } else {
+            // Moving backward: look for signals behind
+            return signal.position < currentKm;
+         }
+      });
+
+      if (currentTrackSignals.length > 0) {
+         // Return the closest signal in the direction of travel
+         if (direction > 0) {
+            return currentTrackSignals.reduce((closest, signal) => 
+               signal.position < closest.position ? signal : closest
+            );
+         } else {
+            return currentTrackSignals.reduce((closest, signal) => 
+               signal.position > closest.position ? signal : closest
+            );
+         }
+      }
+
+      // If no signals on current track, check the next track
+      try {
+         const nextElement = this.findNextTrack(currentTrack, direction);
+         if (nextElement.element instanceof Track) {
+            const nextTrack = nextElement.element;
+            const startKm = direction > 0 ? 0 : nextTrack.length;
+            
+            // Look for signals on the next track
+            const nextTrackSignals = nextTrack.signals.filter(signal => {
+               if (signal.direction !== direction) return false;
+               
+               if (direction > 0) {
+                  // Moving forward: look for signals from start of track
+                  return signal.position >= startKm;
+               } else {
+                  // Moving backward: look for signals from end of track
+                  return signal.position <= startKm;
+               }
+            });
+
+            if (nextTrackSignals.length > 0) {
+               // Return the closest signal in the direction of travel
+               if (direction > 0) {
+                  return nextTrackSignals.reduce((closest, signal) => 
+                     signal.position < closest.position ? signal : closest
+                  );
+               } else {
+                  return nextTrackSignals.reduce((closest, signal) => 
+                     signal.position > closest.position ? signal : closest
+                  );
+               }
+            }
+         }
+      } catch (error) {
+         // If we can't find the next track (dead end), no signals to worry about
+         console.log(`No next track found for signal search: ${error}`);
+      }
+
+      return null; // No signals found
    }
 
    /**

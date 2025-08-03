@@ -73,16 +73,16 @@ export class StationSelector {
     if (!this.dropdown || !this.playerNameInput || !this.onStationSelected) return;
 
     const selectedStation = this.dropdown.value;
-    const playerName = this.playerNameInput.value.trim();
+    let playerName = this.playerNameInput.value.trim();
 
     if (!selectedStation) {
       alert('Bitte wählen Sie einen Bahnhof aus.');
       return;
     }
 
+    // If no player name was entered, set it to "player one"
     if (!playerName) {
-      alert('Bitte geben Sie Ihren Namen ein.');
-      return;
+      playerName = "player one";
     }
 
     // Call the callback with the selected station and player ID

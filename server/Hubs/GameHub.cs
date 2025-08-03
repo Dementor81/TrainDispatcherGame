@@ -28,8 +28,9 @@ namespace TrainDispatcherGame.Server.Hubs
             Console.WriteLine($"Client disconnected: {Context.ConnectionId}");
             
             // Find and disconnect player associated with this connection
+            // We need to track which connection belongs to which player
             var players = _playerManager.GetAllPlayers();
-            var player = players.FirstOrDefault(p => p.Id == Context.ConnectionId);
+            var player = players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId);
             if (player != null)
             {
                 _playerManager.DisconnectPlayer(player.Id);
@@ -41,7 +42,7 @@ namespace TrainDispatcherGame.Server.Hubs
 
         public async Task JoinStation(string playerId, string stationId)
         {
-            var success = _playerManager.TakeControlOfStation(playerId, stationId);
+            var success = _playerManager.TakeControlOfStation(playerId, stationId, Context.ConnectionId);
             
             if (success)
             {
@@ -119,14 +120,7 @@ namespace TrainDispatcherGame.Server.Hubs
         public async Task ReceiveTrain(string playerId, string trainNumber, string destinationStationId)
         {
             try
-            {
-                var player = _playerManager.GetPlayer(playerId);
-                if (player == null)
-                {
-                    Console.WriteLine($"Failed to receive train {trainNumber}: Player {playerId} not found");
-                    return;
-                }
-
+            {      
                 // Find the existing train in simulation
                 var train = _simulation.Trains.FirstOrDefault(t => t.Number == trainNumber);
                 if (train == null)
@@ -135,18 +129,61 @@ namespace TrainDispatcherGame.Server.Hubs
                     return;
                 }
 
-                // Update train status - it's no longer controlled by player
-                train.controlledByPlayer = false;
-                train.CurrentLocation = player.StationId;
-
-                // Notify simulation that train has returned
-                _simulation.ReturnTrainFromClient(train);
-
-                Console.WriteLine($"Successfully received train {trainNumber} from player {playerId} at station {player.StationId}");
+                _simulation.TrainReturnedFromClient(train,destinationStationId);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error receiving train {trainNumber}: {ex.Message}");
+            }
+        }
+
+        public async Task ReportTrainStopped(string playerId, string trainNumber, string stationId)
+        {
+            try
+            {
+                // Find the existing train in simulation
+                var train = _simulation.Trains.FirstOrDefault(t => t.Number == trainNumber);
+                if (train == null)
+                {
+                    Console.WriteLine($"Failed to report train stopped {trainNumber}: Train not found in simulation");
+                    return;
+                }
+
+                var success = _simulation.ReportTrainStopped(train, stationId);
+                
+                if (success)
+                {
+                    Console.WriteLine($"Train {trainNumber} reported stopped at station {stationId}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reporting train stopped {trainNumber}: {ex.Message}");
+            }
+        }
+
+        public async Task ReportTrainDeparted(string playerId, string trainNumber, string stationId)
+        {
+            try
+            {
+                // Find the existing train in simulation
+                var train = _simulation.Trains.FirstOrDefault(t => t.Number == trainNumber);
+                if (train == null)
+                {
+                    Console.WriteLine($"Failed to report train departed {trainNumber}: Train not found in simulation");
+                    return;
+                }
+
+                var success = _simulation.ReportTrainDeparted(train, stationId);
+                
+                if (success)
+                {
+                    Console.WriteLine($"Train {trainNumber} reported departed from station {stationId}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reporting train departed {trainNumber}: {ex.Message}");
             }
         }
     }

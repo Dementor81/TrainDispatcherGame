@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace TrainDispatcherGame.Server.Models
+namespace TrainDispatcherGame.Server.Models.DTOs
 {
     public class Timetable
     {

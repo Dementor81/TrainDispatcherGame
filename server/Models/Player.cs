@@ -6,13 +6,15 @@ namespace TrainDispatcherGame.Server.Models
     {
         public string Id { get; set; } = string.Empty;
         public string StationId { get; set; } = string.Empty;
+        public string ConnectionId { get; set; } = string.Empty;
         public DateTime ConnectedAt { get; set; }
         public bool IsActive { get; set; } = true;
 
-        public Player(string id, string stationId)
+        public Player(string id, string stationId, string connectionId = "")
         {
             Id = id;
             StationId = stationId;
+            ConnectionId = connectionId;
             ConnectedAt = DateTime.UtcNow;
         }
     }

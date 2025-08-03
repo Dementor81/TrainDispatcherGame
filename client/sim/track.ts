@@ -13,6 +13,7 @@ class Track extends BaseSimModule {
       track._id = object.id;
       track._signals = object.signals ? object.signals.map((signalObj: any) => Signal.fromObject(signalObj)) : [];
       track._switches = [null, null];
+      track._halt = object.halt;
       return track;
    }
 
@@ -21,7 +22,7 @@ class Track extends BaseSimModule {
    private _start: Point;
    private _end: Point;
    private _signals: Signal[];
-
+   private _halt: boolean;
    private _switches: (Switch | Track | Exit | null)[];
    private _id: number = 0;
 
@@ -41,6 +42,7 @@ class Track extends BaseSimModule {
       this._id = -1;
       this._signals = [];
       this._switches = [null, null];
+      this._halt = false;
    }
 
    get id(): number {
@@ -106,6 +108,10 @@ class Track extends BaseSimModule {
    get cos() {
       if (!this._cos) this._cos = Math.cos(this.rad);
       return this._cos;
+   }
+
+   get halt(): boolean {
+      return this._halt;
    }
 
    private resetCache() {

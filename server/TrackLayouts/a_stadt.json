@@ -21,7 +21,8 @@
         {"type": "main", "position":  51, "direction": -1},
         {"type": "main", "position": 530, "direction":  1}
       ],
-      "switches": [ {"type": "Track", "id": 12}, {"type": "Track", "id": 16} ]
+      "switches": [ {"type": "Track", "id": 12}, {"type": "Track", "id": 16} ],
+      "halt": true
     },
     {
       "id": 16,
@@ -38,7 +39,8 @@
         {"type": "main", "position":  98, "direction": -1},
         {"type": "main", "position": 620, "direction":  1}
       ],
-      "switches": [ {"type": "Switch", "id": 0}, {"type": "Switch", "id": 1} ]
+      "switches": [ {"type": "Switch", "id": 0}, {"type": "Switch", "id": 1} ],
+      "halt": true
     },
     {
       "id": 18,

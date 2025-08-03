@@ -1,10 +1,12 @@
 import { StationSelector } from "../ui/stationSelector";
 import { ControlPanel } from "../ui/controlPanel";
+import { HUD } from "../ui/hud";
 import { Application } from "../core/application";
 
 export class UIManager {
     private _application: Application;
     private _controlPanel: ControlPanel | null = null;
+    private _hud: HUD | null = null;
 
     constructor(application: Application) {
         this._application = application;
@@ -12,6 +14,7 @@ export class UIManager {
 
     init() {
         this._controlPanel = new ControlPanel();
+        this._hud = new HUD();
         this.setupControlPanelToggle();
     }
 
@@ -45,6 +48,18 @@ export class UIManager {
 
     toggleControlPanel(): void {
         this._controlPanel?.toggle();
+    }
+
+    showHUD(): void {
+        this._hud?.show();
+    }
+
+    hideHUD(): void {
+        this._hud?.hide();
+    }
+
+    updateConnectionStatus(isConnected: boolean, isReconnecting: boolean = false): void {
+        this._hud?.updateConnectionStatus(isConnected, isReconnecting);
     }
 }
 
