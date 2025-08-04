@@ -1,6 +1,6 @@
 import Track from "./track";
 import Signal from "./signal";
-import { SimulationConfig } from "../core/config";
+import { SimulationConfig, RendererConfig } from "../core/config";
 
 // Enum for reasons why a train might be stopped
 export enum TrainStopReason {
@@ -20,7 +20,7 @@ class Train {
     private _direction: number; // 1 for forward, -1 for backward
     private _isMoving: boolean;
     private _stoppedBySignal: Signal | null; // Signal that currently stops this train
-    private _shouldStopAtCurrentStation: string | null = null; // Station ID where train should stop, or null if no stop needed
+    private _shouldStopAtCurrentStation: boolean = false; // Station ID where train should stop, or null if no stop needed
     private _arrivalTime: Date | null = null; // Scheduled arrival time at current station
     private _departureTime: Date | null = null; // Scheduled departure time at current station
     private _stopReason: TrainStopReason = TrainStopReason.NONE; // Current reason why the train is stopped
@@ -42,8 +42,9 @@ class Train {
         const train = new Train(data.trainNumber, null, 0);
         
         // Set schedule times if provided
-        if (data.arrivalTime) {
-            train.setScheduleTimes(new Date(data.arrivalTime), data.departureTime ? new Date(data.departureTime) : null);
+        if (data.departureTime) {
+            train.setScheduleTimes(data.arrivalTime ? new Date(data.arrivalTime) : null, new Date(data.departureTime));
+            train.shouldStopAtCurrentStation = data.shouldStopAtStation;
         }
         
         return train;
@@ -86,8 +87,12 @@ class Train {
         return this._stoppedBySignal;
     }
 
-    get shouldStopAtCurrentStation(): string | null {
+    get shouldStopAtCurrentStation(): boolean {
         return this._shouldStopAtCurrentStation;
+    }
+
+    set shouldStopAtCurrentStation(shouldStop: boolean) {
+        this._shouldStopAtCurrentStation = shouldStop;
     }
 
     get arrivalTime(): Date | null {
@@ -100,6 +105,25 @@ class Train {
 
     get stopReason(): TrainStopReason {
         return this._stopReason;
+    }
+
+    // Calculate the actual length of the train based on configured car width and spacing
+    getLength(): number {
+        if (this._cars === 0) {
+            return 0;
+        }
+        
+        // First car (locomotive) uses locomotive width
+        const locomotiveLength = RendererConfig.locomotiveWidth;
+        
+        // Remaining cars use car width
+        const carLength = RendererConfig.carWidth;
+        const remainingCars = this._cars - 1;
+        
+        // Calculate total length: locomotive + cars + spacing between cars
+        const totalLength = locomotiveLength + (remainingCars * carLength) + (remainingCars * RendererConfig.trainCarSpacing);
+        
+        return totalLength;
     }
 
     // Set the train's position
@@ -143,10 +167,7 @@ class Train {
         }
     }
 
-    // Set the station where this train should stop
-    setShouldStopAtCurrentStation(stationId: string | null): void {
-        this._shouldStopAtCurrentStation = stationId;
-    }
+    
 
     // Set the scheduled arrival and departure times for the current station
     setScheduleTimes(arrivalTime: Date | null, departureTime: Date | null): void {
@@ -166,7 +187,9 @@ class Train {
     // Update train position based on current speed and direction
     // Returns the distance the train should move based on elapsed time
     // speed is in km/h, timeElapsedSeconds is in seconds
-    getMovementDistance(timeElapsedSeconds: number): number {
+    getMovementDistance(): number {
+
+        const timeElapsedSeconds = SimulationConfig.simulationIntervalSeconds * SimulationConfig.simulationSpeed;
         if (!this._isMoving) {
             return 0;
         }

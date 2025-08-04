@@ -64,6 +64,8 @@ export class Application {
          
          // Show the control panel after successfully joining a station
          this._uiManager.showControlPanel();
+
+         this._trainManager.startSimulation();
          
       } catch (error) {
          console.error('Failed to join station:', error);
@@ -112,14 +114,14 @@ export class Application {
          await this.handleSendTrainToServer(trainNumber, destinationStationId);
       });
 
-      // Train stop reporting events
-      this._eventManager.on('reportTrainStoppedToServer', async (trainNumber: string, stationId: string) => {
-         await this.handleReportTrainStoppedToServer(trainNumber, stationId);
+      // Train stop events
+      this._eventManager.on('trainStoppedAtStation', async (train: Train) => {
+         await this.handleTrainStoppedAtStation(train);
       });
 
-      // Train departure reporting events
-      this._eventManager.on('reportTrainDepartedToServer', async (trainNumber: string, stationId: string) => {
-         await this.handleReportTrainDepartedToServer(trainNumber, stationId);
+      // Train departure events
+      this._eventManager.on('trainDepartedFromStation', async (train: Train) => {
+         await this.handleTrainDepartedFromStation(train);
       });
 
       // Connection status events
@@ -162,31 +164,31 @@ export class Application {
       }
    }
 
-   private async handleReportTrainStoppedToServer(trainNumber: string, stationId: string): Promise<void> {
-      if (!this._currentPlayerId) {
-         console.error('Cannot report train stopped: No current player ID');
+   private async handleTrainStoppedAtStation(train: Train): Promise<void> {
+      if (!this._currentPlayerId || !this._currentStationId) {
+         console.error('Cannot report train stopped: No current player ID or station ID');
          return;
       }
 
       try {
-         console.log(`Application: Reporting train ${trainNumber} stopped at station ${stationId}`);
-         await this._signalRManager.reportTrainStopped(this._currentPlayerId, trainNumber, stationId);
+         console.log(`Application: Reporting train ${train.number} stopped at station ${this._currentStationId}`);
+         await this._signalRManager.reportTrainStopped(this._currentPlayerId, train.number, this._currentStationId);
       } catch (error) {
-         console.error(`Application: Failed to report train ${trainNumber} stopped:`, error);
+         console.error(`Application: Failed to report train ${train.number} stopped:`, error);
       }
    }
 
-   private async handleReportTrainDepartedToServer(trainNumber: string, stationId: string): Promise<void> {
-      if (!this._currentPlayerId) {
-         console.error('Cannot report train departed: No current player ID');
+   private async handleTrainDepartedFromStation(train: Train): Promise<void> {
+      if (!this._currentPlayerId || !this._currentStationId) {
+         console.error('Cannot report train departed: No current player ID or station ID');
          return;
       }
 
       try {
-         console.log(`Application: Reporting train ${trainNumber} departed from station ${stationId}`);
-         await this._signalRManager.reportTrainDeparted(this._currentPlayerId, trainNumber, stationId);
+         console.log(`Application: Reporting train ${train.number} departed from station ${this._currentStationId}`);
+         await this._signalRManager.reportTrainDeparted(this._currentPlayerId, train.number, this._currentStationId);
       } catch (error) {
-         console.error(`Application: Failed to report train ${trainNumber} departed:`, error);
+         console.error(`Application: Failed to report train ${train.number} departed:`, error);
       }
    }
 

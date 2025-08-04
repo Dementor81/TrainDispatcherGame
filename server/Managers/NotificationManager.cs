@@ -47,9 +47,7 @@ namespace TrainDispatcherGame.Server.Managers
                     exitPointId = exitPointId,
                     shouldStopAtStation = shouldStopAtStation,
                     arrivalTime = arrivalTime,
-                    departureTime = departureTime,
-                    sendTime = DateTime.UtcNow,
-                    message = $"Train {train.Number} is ready for control at station {stationId}"
+                    departureTime = departureTime
                 });
                 
                 Console.WriteLine($"Sent train {train.Number} to player {player.Id} at station {stationId}, exit point {exitPointId}, should stop: {shouldStopAtStation}, arrival: {arrivalTime}, departure: {departureTime}");

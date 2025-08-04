@@ -7,6 +7,7 @@ import {
   getActiveTrains 
 } from '../network/api';
 import { SimulationStatusDto } from '../network/dto';
+import { TrainManager } from '../manager/train_manager';
 
 export class ControlPanel {
   private container: HTMLDivElement;
@@ -14,8 +15,10 @@ export class ControlPanel {
   private controlsContainer: HTMLDivElement;
   private updateInterval: number | null = null;
   private isVisible: boolean = false;
+  private trainManager: TrainManager | null = null;
 
-  constructor() {
+  constructor(trainManager: TrainManager) {
+    this.trainManager = trainManager;
     this.container = this.createContainer();
     this.statusContainer = this.createStatusContainer();
     this.controlsContainer = this.createControlsContainer();
@@ -60,8 +63,8 @@ export class ControlPanel {
     const trainsCol = document.createElement('div');
     trainsCol.className = 'col-6';
     trainsCol.innerHTML = `
-      <div class="small text-muted">Active Trains</div>
-      <div id="activeTrainsCount" class="fw-bold">0</div>
+      <div class="small text-muted">Trains (Server/Client)</div>
+      <div id="activeTrainsCount" class="fw-bold">0/0</div>
     `;
     
     // Simulation status
@@ -173,7 +176,9 @@ export class ControlPanel {
       // Update active trains count
       const trainsElement = document.getElementById('activeTrainsCount');
       if (trainsElement) {
-        trainsElement.textContent = activeTrains.length.toString();
+        const clientTrains = this.trainManager?.getTrainCount() || 0;
+        const serverTrains = activeTrains.length;
+        trainsElement.textContent = `${serverTrains}/${clientTrains}`;
       }
 
       // Update simulation status
@@ -182,23 +187,26 @@ export class ControlPanel {
         let statusText: string;
         let statusClass: string;
         
+        // Check client simulation status
+        const clientRunning = this.trainManager?.isSimulationRunning() || false;
+        
         switch (status.state) {
           case 'Error':
             statusText = 'Error';
             statusClass = 'text-danger';
             break;
           case 'Paused':
-            statusText = 'Paused';
+            statusText = clientRunning ? 'Server Paused, Client Running' : 'Paused';
             statusClass = 'text-warning';
             break;
           case 'Running':
-            statusText = 'Running';
-            statusClass = 'text-success';
+            statusText = clientRunning ? 'Running' : 'Server Running, Client Stopped';
+            statusClass = clientRunning ? 'text-success' : 'text-warning';
             break;
           case 'Stopped':
           default:
-            statusText = 'Stopped';
-            statusClass = 'text-secondary';
+            statusText = clientRunning ? 'Server Stopped, Client Running' : 'Stopped';
+            statusClass = clientRunning ? 'text-warning' : 'text-secondary';
             break;
         }
         
@@ -251,7 +259,14 @@ export class ControlPanel {
 
   private async handleStart(): Promise<void> {
     try {
+      // Start server simulation
       await startSimulation();
+      
+      // Start client simulation if train manager is available
+      if (this.trainManager) {
+        this.trainManager.startSimulation();
+      }
+      
       this.updateStatus();
     } catch (error) {
       console.error('Failed to start simulation:', error);
@@ -261,7 +276,14 @@ export class ControlPanel {
 
   private async handleStop(): Promise<void> {
     try {
+      // Stop server simulation
       await stopSimulation();
+      
+      // Stop client simulation if train manager is available
+      if (this.trainManager) {
+        this.trainManager.stopSimulation();
+      }
+      
       this.updateStatus();
     } catch (error) {
       console.error('Failed to stop simulation:', error);
@@ -271,7 +293,14 @@ export class ControlPanel {
 
   private async handlePause(): Promise<void> {
     try {
+      // Pause server simulation
       await pauseSimulation();
+      
+      // Stop client simulation if train manager is available
+      if (this.trainManager) {
+        this.trainManager.pauseSimulation();
+      }
+      
       this.updateStatus();
     } catch (error) {
       console.error('Failed to pause simulation:', error);
@@ -281,7 +310,14 @@ export class ControlPanel {
 
   private async handleResume(): Promise<void> {
     try {
+      // Resume server simulation
       await resumeSimulation();
+      
+      // Start client simulation if train manager is available
+      if (this.trainManager) {
+        this.trainManager.resumeSimulation();
+      }
+      
       this.updateStatus();
     } catch (error) {
       console.error('Failed to resume simulation:', error);

@@ -277,9 +277,8 @@ namespace TrainDispatcherGame.Server.Simulation
                 train.CurrentLocation = station;
                 train.HeadingForStation = null;
 
-                train.Spawn = null;
-
                 Console.WriteLine($"Train {train.Number} spawned at spawn point {train.Spawn.Type} {locationId} heading for {station}");
+                train.Spawn = null;
             }
             catch (Exception ex)
             {
@@ -337,7 +336,7 @@ namespace TrainDispatcherGame.Server.Simulation
                         Console.WriteLine($"Train {train.Number} was missrouted to {_trackLayoutService.GetLayoutTitle(train.HeadingForStation)} instead of {_trackLayoutService.GetLayoutTitle(nextEvent.Station)}");
                         // TODO: handle missrouted train
                     }
-                    Console.WriteLine($"Train {train.Number} advanced to next event: {nextEvent.Station}");
+                    
                     var exitPoint = _trackLayoutService.GetExitPointToStation(nextEvent.Station, train.LastLocation);
                     if (exitPoint == null) throw new Exception($"No exit point found for train {train.Number} from {nextEvent.Station} to {train.LastLocation}");
                     train.Spawn = new TrainSpawn(
@@ -346,6 +345,7 @@ namespace TrainDispatcherGame.Server.Simulation
                         nextEvent.Station,
                         exitPoint.Id
                     );
+                    Console.WriteLine($"Train {train.Number} advanced to next event: {nextEvent.Station} at {train.Spawn.ScheduledTime:HH:mm:ss}");
                 }
             }
             catch (Exception ex)
@@ -413,19 +413,7 @@ namespace TrainDispatcherGame.Server.Simulation
                     Console.WriteLine($"Train {train.Number} station event at {stationId} is not yet processed (must stop before departing)");
                     return false;
                 }
-
-                // Advance to the next event since the train has departed
-                var nextEvent = train.AdvanceToNextEvent();
-                if (nextEvent == null)
-                {
-                    Console.WriteLine($"Train {train.Number} has completed all events after departing from {stationId}");
-                    train.completed = true;
-                }
-                else
-                {
-                    Console.WriteLine($"Train {train.Number} advanced to next event: {nextEvent.Station} after departing from {stationId}");
-                }
-
+                
                 Console.WriteLine($"Train {train.Number} successfully departed from station {stationId}");
                 return true;
             }

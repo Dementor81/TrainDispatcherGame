@@ -1,6 +1,9 @@
 ☐ save delay on incoming trains
 ✘ create new train schedule event when the trains was missrouted @cancelled(25-08-03 12:05)
-☐ add the abiltiy for the train to stop at a station
+✔ add the abiltiy for the train to stop at a station @done(25-08-04 17:45)
+☐ check for collisions on client side
+☐ check collisions on server side
+☐ show player upcoming trains 
 
 
 

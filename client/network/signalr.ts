@@ -263,17 +263,7 @@ export class SignalRManager {
         
         // Create a new Train instance from the server data
         const train = Train.fromServerData(data);
-        
-        // Set station stop information if provided
-        if (data.shouldStopAtStation && data.stationId) {
-            train.setShouldStopAtCurrentStation(data.stationId);
-            console.log(`Train ${train.number} should stop at station ${data.stationId}`);
-        }
-        
-        // Log schedule information if available
-        if (data.arrivalTime) {
-            console.log(`Train ${train.number} scheduled arrival: ${new Date(data.arrivalTime).toLocaleTimeString()}, departure: ${data.departureTime ? new Date(data.departureTime).toLocaleTimeString() : 'N/A'}`);
-        }
+              
         
         console.log(`Created train: ${train.getInfo()}`)     
         

@@ -13,7 +13,7 @@ export class UIManager {
     }
 
     init() {
-        this._controlPanel = new ControlPanel();
+        this._controlPanel = new ControlPanel(this._application.trainManager);
         this._hud = new HUD();
         this.setupControlPanelToggle();
     }
@@ -39,7 +39,9 @@ export class UIManager {
     }
 
     showControlPanel(): void {
-        this._controlPanel?.show();
+        if (this._controlPanel) {
+            this._controlPanel.show();
+        }
     }
 
     hideControlPanel(): void {

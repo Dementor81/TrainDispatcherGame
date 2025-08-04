@@ -14,11 +14,6 @@
             "args": [],
             "cwd": "${workspaceFolder}/server",
             "stopAtEntry": false,
-            // Aktivieren Sie das Starten eines Webbrowsers, wenn ASP.NET Core gestartet wird. Weitere Informationen: https://aka.ms/VSCode-CS-LaunchJson-WebBrowser
-            "serverReadyAction": {
-                "action": "openExternally",
-                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-            },
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
