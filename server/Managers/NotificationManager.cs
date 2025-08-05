@@ -7,6 +7,7 @@ namespace TrainDispatcherGame.Server.Managers
     public interface INotificationManager
     {
         Task SendTrain(string stationId, Train train, string? exitPointId = null);
+        Task SendSimulationStateChange(SimulationState newState);
     }
 
     public class NotificationManager : INotificationManager
@@ -56,6 +57,17 @@ namespace TrainDispatcherGame.Server.Managers
             {
                 Console.WriteLine($"No player found for station {stationId}");
             }
+        }
+
+        public async Task SendSimulationStateChange(SimulationState newState)
+        {
+            await _hubContext.Clients.All.SendAsync("SimulationStateChanged", new
+            {
+                state = newState.ToString(),
+                timestamp = DateTime.UtcNow
+            });
+            
+            Console.WriteLine($"Sent simulation state change to all clients: {newState}");
         }
     }
 } 

@@ -30,7 +30,7 @@ class Train {
         this._spawnTime = new Date();
         this._track = track;
         this._km = km;
-        this._cars = 4;
+        this._cars = 1;
         this._speed = 150; // Default speed: 50 km/h
         this._direction = 1; // Default direction: forward
         this._isMoving = true; // Default: train is moving

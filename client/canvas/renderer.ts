@@ -6,45 +6,25 @@ import Signal from "../sim/signal";
 import TrackLayoutManager from "../manager/trackLayout_manager";
 import { EventManager } from "../manager/event_manager";
 import { RendererConfig } from "../core/config";
-import Exit from "../sim/exit";
-import { Point } from "../utils/point";
-import { drawArrow } from "./pixi_extension";
-import { Geometry } from "../utils/geometry";
-
-interface SwitchContainer extends PIXI.Container {
-   switchId?: number;
-}
-
-interface ExitContainer extends PIXI.Container {
-   exitId?: number;
-}
-
-interface TrainContainer extends PIXI.Container {
-   trainNumber?: string;
-}
-
-interface SignalContainer extends PIXI.Container {
-   signalTrackId?: number;
-   signalPosition?: number;
-}
+import { Camera } from "./camera";
+import { InputHandler } from "./input_handler";
+import { TrackRenderer } from "./renderers/track_renderer";
+import { SwitchRenderer } from "./renderers/switch_renderer";
+import { SignalRenderer } from "./renderers/signal_renderer";
+import { TrainRenderer } from "./renderers/train_renderer";
+import { StationRenderer } from "./renderers/station_renderer";
 
 export class Renderer {
    private _pixiApp: PIXI.Application;
-   private _trackContainer: PIXI.Container;
-   private _switchContainer: PIXI.Container;
-   private _exitContainer: PIXI.Container;
-   private _trainContainer: PIXI.Container;
-   private _signalContainer: PIXI.Container;
+   private _camera: Camera;
+   private _inputHandler: InputHandler;
+   private _trackRenderer: TrackRenderer;
+   private _switchRenderer: SwitchRenderer;
+   private _signalRenderer: SignalRenderer;
+   private _trainRenderer: TrainRenderer;
+   private _stationRenderer: StationRenderer;
    private _trackLayoutManager: TrackLayoutManager;
    private _eventManager: EventManager;
-
-   // Zoom and pan state
-   private _isDragging = false;
-   private _dragStart = { x: 0, y: 0 };
-   private _stageStart = { x: 0, y: 0 };
-   private _currentZoom = 1;
-   private _minZoom = 0.1;
-   private _maxZoom = 5;
 
    constructor(canvas: HTMLCanvasElement, trackLayoutManager: TrackLayoutManager, eventManager: EventManager) {
       // Create PIXI application
@@ -58,185 +38,27 @@ export class Renderer {
          autoDensity: true,
       });
 
-      // Create containers for different elements
-      this._trackContainer = new PIXI.Container();
-      this._switchContainer = new PIXI.Container();
-      this._exitContainer = new PIXI.Container();
-      this._trainContainer = new PIXI.Container();
-      this._signalContainer = new PIXI.Container();
-      // Add containers directly to the stage
-      this._pixiApp.stage.addChild(this._trackContainer);
-      this._pixiApp.stage.addChild(this._switchContainer);
-      this._pixiApp.stage.addChild(this._exitContainer);
-      this._pixiApp.stage.addChild(this._signalContainer);
-      this._pixiApp.stage.addChild(this._trainContainer);
-
       this._trackLayoutManager = trackLayoutManager;
       this._eventManager = eventManager;
 
-      this._eventManager.on('trainRemoved', (trainNumber: string) => {
-         this.removeTrain(trainNumber);
-      });
+      // Initialize camera and input handler
+      this._camera = new Camera(this._pixiApp.stage, canvas);
+      this._inputHandler = new InputHandler(canvas, this._camera, eventManager);
 
-      // Setup interactive controls
-      this.setupInteractivity(canvas);
+      // Initialize renderers
+      this._trackRenderer = new TrackRenderer(this._pixiApp.stage, trackLayoutManager);
+      this._switchRenderer = new SwitchRenderer(this._pixiApp.stage, eventManager, canvas);
+      this._signalRenderer = new SignalRenderer(this._pixiApp.stage, eventManager, canvas);
+      this._trainRenderer = new TrainRenderer(this._pixiApp.stage, trackLayoutManager);
+      this._stationRenderer = new StationRenderer(this._pixiApp.stage, trackLayoutManager);
+
+      // Set up event listeners
+      this._eventManager.on('trainRemoved', (trainNumber: string) => {
+         this._trainRenderer.removeTrain(trainNumber);
+      });
 
       // Handle window resize
       window.addEventListener("resize", this.handleResize.bind(this));
-   }
-
-   private setupInteractivity(canvas: HTMLCanvasElement): void {
-      // Mouse wheel zoom
-      canvas.addEventListener("wheel", (e) => {
-         e.preventDefault();
-         this.handleZoom(e);
-      });
-
-      // Mouse drag pan
-      canvas.addEventListener("mousedown", (e) => {
-         this.handleMouseDown(e);
-      });
-
-      canvas.addEventListener("mousemove", (e) => {
-         this.handleMouseMove(e);
-      });
-
-      canvas.addEventListener("mouseup", (e) => {
-         this.handleMouseUp(e);
-      });
-
-      // Touch support for mobile
-      canvas.addEventListener("touchstart", (e) => {
-         e.preventDefault();
-         if (e.touches.length === 1) {
-            this.handleTouchStart(e);
-         }
-      });
-
-      canvas.addEventListener("touchmove", (e) => {
-         e.preventDefault();
-         if (e.touches.length === 1) {
-            this.handleTouchMove(e);
-         }
-      });
-
-      canvas.addEventListener("touchend", () => {
-         this.handleTouchEnd();
-      });
-   }
-
-   private handleZoom(e: WheelEvent): void {
-      const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-      const newZoom = Math.max(this._minZoom, Math.min(this._maxZoom, this._currentZoom * zoomFactor));
-
-      if (newZoom !== this._currentZoom) {
-         const rect = this._pixiApp.canvas.getBoundingClientRect();
-         const mouseX = e.clientX - rect.left;
-         const mouseY = e.clientY - rect.top;
-
-         this.zoomAtPoint(mouseX, mouseY, newZoom);
-      }
-   }
-
-   private zoomAtPoint(x: number, y: number, newZoom: number): void {
-      const oldZoom = this._currentZoom;
-      this._currentZoom = newZoom;
-
-      // Calculate zoom center in world coordinates
-      const worldX = (x - this._pixiApp.stage.x) / oldZoom;
-      const worldY = (y - this._pixiApp.stage.y) / oldZoom;
-
-      // Update stage transform
-      this._pixiApp.stage.scale.set(newZoom);
-      this._pixiApp.stage.x = x - worldX * newZoom;
-      this._pixiApp.stage.y = y - worldY * newZoom;
-   }
-
-   private handleMouseDown(e: MouseEvent): void {
-      if (e.button == 0) {
-         this._isDragging = true;
-         this._dragStart = { x: e.clientX, y: e.clientY };
-         this._stageStart = { x: this._pixiApp.stage.x, y: this._pixiApp.stage.y };
-         this._pixiApp.canvas.style.cursor = "grabbing";
-      }
-   }
-
-   private handleMouseMove(e: MouseEvent): void {
-      if (this._isDragging) {
-         const deltaX = e.clientX - this._dragStart.x;
-         const deltaY = e.clientY - this._dragStart.y;
-
-         this._pixiApp.stage.x = this._stageStart.x + deltaX;
-         this._pixiApp.stage.y = this._stageStart.y + deltaY;
-      }
-   }
-
-   private handleMouseUp(e: MouseEvent): void {
-      this._isDragging = false;
-      this._pixiApp.canvas.style.cursor = "default";
-   }
-
-   private handleTouchStart(e: TouchEvent): void {
-      const touch = e.touches[0];
-      this._isDragging = true;
-      this._dragStart = { x: touch.clientX, y: touch.clientY };
-      this._stageStart = { x: this._pixiApp.stage.x, y: this._pixiApp.stage.y };
-   }
-
-   private handleTouchMove(e: TouchEvent): void {
-      if (this._isDragging) {
-         const touch = e.touches[0];
-         const deltaX = touch.clientX - this._dragStart.x;
-         const deltaY = touch.clientY - this._dragStart.y;
-
-         this._pixiApp.stage.x = this._stageStart.x + deltaX;
-         this._pixiApp.stage.y = this._stageStart.y + deltaY;
-      }
-   }
-
-   private handleTouchEnd(): void {
-      this._isDragging = false;
-   }
-
-   public zoomToFit(): void {
-      const tracks = this._trackLayoutManager.tracks;
-      if (tracks.length === 0) return;
-
-      // Calculate bounds of all tracks
-      let minX = Infinity,
-         minY = Infinity,
-         maxX = -Infinity,
-         maxY = -Infinity;
-
-      tracks.forEach((track) => {
-         minX = Math.min(minX, track.start.x, track.end.x);
-         minY = Math.min(minY, track.start.y, track.end.y);
-         maxX = Math.max(maxX, track.start.x, track.end.x);
-         maxY = Math.max(maxY, track.start.y, track.end.y);
-      });
-
-      // Add padding
-      const padding = 50;
-      minX -= padding;
-      minY -= padding;
-      maxX += padding;
-      maxY += padding;
-
-      const trackWidth = maxX - minX;
-      const trackHeight = maxY - minY;
-      const canvasWidth = this._pixiApp.canvas.width;
-      const canvasHeight = this._pixiApp.canvas.height;
-
-      // Calculate zoom to fit
-      const zoomX = canvasWidth / trackWidth;
-      const zoomY = canvasHeight / trackHeight;
-      const zoom = Math.min(zoomX, zoomY, this._maxZoom);
-
-      // Center the stage
-      this._currentZoom = zoom;
-      this._pixiApp.stage.scale.set(zoom);
-      this._pixiApp.stage.x = (canvasWidth - trackWidth * zoom) / 2 - minX * zoom;
-      this._pixiApp.stage.y = (canvasHeight - trackHeight * zoom) / 2 - minY * zoom;
    }
 
    private handleResize(): void {
@@ -251,519 +73,50 @@ export class Renderer {
       const switches = this._trackLayoutManager.switches;
 
       // Render station name
-      this.renderStationName();
+      this._stationRenderer.renderStationName();
 
       // Render tracks
-      tracks.forEach((track) => {
-         this.renderTrack(track);
-      });
+      this._trackRenderer.renderAll(tracks);
 
       // Render switches
-      switches.forEach((sw) => {
-         this.renderSwitch(sw);
-      });
+      this._switchRenderer.renderAll(switches);
 
       // Render signals
-      this.renderSignals();
+      this._signalRenderer.renderAll(tracks);
 
       // Auto-zoom to fit on first load
-      this.zoomToFit();
-   }
-
-   private renderTrack(track: Track): void {
-      const graphics = new PIXI.Graphics();
-      graphics
-         .moveTo(track.start.x, track.start.y)
-         .lineTo(track.end.x, track.end.y)
-         .stroke({ width: RendererConfig.trackWidth, color: RendererConfig.trackColor, alpha: 1, cap: "round" });
-
-      if (track.switches[0] !== null) {
-         if (track.switches[0] instanceof Exit) {
-            const exit = track.switches[0] as Exit;
-            this.renderExit(exit, track, true);
-         }
-      }
-      if (track.switches[1] !== null) {
-         if (track.switches[1] instanceof Exit) {
-            const exit = track.switches[1] as Exit;
-            this.renderExit(exit, track, false);
-         }
-      }
-
-      this._trackContainer.addChild(graphics);
-   }
-
-   private renderSwitch(sw: Switch): void {
-      // Create a separate container for this switch
-      const switchContainer = new PIXI.Container() as SwitchContainer;
-      switchContainer.switchId = sw.id; // Tag the container with switch ID
-      this._switchContainer.addChild(switchContainer);
-
-      const graphics = new PIXI.Graphics();
-
-      // Draw switch point
-      graphics.circle(sw.location.x, sw.location.y, 8).fill(RendererConfig.switchColor);
-
-      // Draw switch outline
-      graphics.circle(sw.location.x, sw.location.y, 12).stroke(RendererConfig.switchColor);
-      graphics.eventMode = "static";
-      graphics.on("click", (event) => {
-         console.log("Switch clicked at:", event.global.x, event.global.y);
-         // Emit switch click event
-         this._eventManager.emit("switchClicked", sw);
-         this.redrawSwitch(sw);
-      });
-      graphics.on("pointerover", (event) => {
-         this._pixiApp.canvas.style.cursor = "pointer";
-      });
-      graphics.on("pointerout", (event) => {
-         this._pixiApp.canvas.style.cursor = "default";
-      });
-
-      switchContainer.addChild(graphics);
-
-      // Draw track lines for each connected track
-      sw.tracks.forEach((track, index) => {
-         if (track) {
-            const activeTrack = track === sw.branch || track === sw.from;
-            const color = activeTrack ? RendererConfig.trackColor : RendererConfig.inactiveTrackColor;
-
-            // Determine if switch is at start or end of track
-            const isAtStart = track.start.equals(sw.location);
-            const unitVector = isAtStart ? track.unit : track.unit.multiply(-1);
-
-            // Draw short line from switch to inner circle
-            const end = sw.location.add(unitVector.multiply(RendererConfig.switchCircleRadius));
-
-            const lineGraphics = new PIXI.Graphics();
-            lineGraphics
-               .moveTo(sw.location.x, sw.location.y)
-               .lineTo(end.x, end.y)
-               .stroke({ width: RendererConfig.trackWidth, color: color, alpha: 1, cap: "round" });
-            if (activeTrack) {
-               switchContainer.addChild(lineGraphics);
-            } else {
-               //switchContainer.addChildAt(lineGraphics, 0);
-            }
-         }
-      });
-
-      // Add switch ID text
-      const text = new PIXI.Text({
-         text: sw.id.toString(),
-         style: {
-            fontSize: 12,
-            fill: RendererConfig.switchTextColor,
-            align: "center",
-         },
-      });
-      text.anchor.set(0.5);
-      text.x = sw.location.x;
-      text.y = sw.location.y - 25;
-
-      switchContainer.addChild(text);
-   }
-
-   public redrawSwitch(sw: Switch): void {
-      // Find the container for this switch by searching through children
-      let switchContainer: SwitchContainer | null = null;
-      for (let i = 0; i < this._switchContainer.children.length; i++) {
-         const child = this._switchContainer.children[i] as SwitchContainer;
-         if (child.switchId === sw.id) {
-            switchContainer = child;
-            break;
-         }
-      }
-
-      if (!switchContainer) {
-         console.warn(`Switch container not found for switch ${sw.id}`);
-         return;
-      }
-
-      // Remove the old switch container
-      this._switchContainer.removeChild(switchContainer);
-
-      // Redraw the switch
-      this.renderSwitch(sw);
-   }
-
-   public renderExit(exit: Exit, track: Track, inverted: boolean): void {
-      const exitContainer = new PIXI.Container() as ExitContainer;
-      exitContainer.exitId = exit.id;
-      const unit = track.unit.multiply(inverted ? -1 : 1);
-      const position = (inverted ? track.start : track.end).add(unit.multiply(5));
-      const end = position.add(unit.multiply(15));
-      drawArrow(exitContainer, position, end, { color: RendererConfig.trackColor, width: 2 });
-      this._exitContainer.addChild(exitContainer);
-   }
-
-   public renderSignals(): void {
-      // Clear existing signals
-      this._signalContainer.removeChildren();
-
-      // Render signals from all tracks
-      const tracks = this._trackLayoutManager.tracks;
-      tracks.forEach((track) => {
-         track.signals.forEach((signal) => {
-            this.renderSignal(signal, track);
-         });
-      });
-   }
-
-   private renderSignal(signal: Signal, track: Track): void {
-      // Create a container for this signal
-      const signalContainer = new PIXI.Container() as SignalContainer;
-      signalContainer.signalTrackId = track.id;
-      signalContainer.signalPosition = signal.position;
-
-      // Calculate signal position on track centerline
-      const trackCenterPosition = this.getPointFromPosition(track, signal.position);
-      
-      // Calculate perpendicular offset based on signal direction
-      // Direction 1 (forward): signal on right side of track
-      // Direction -1 (backward): signal on left side of track
-      const perpendicular = signal.direction === 1 
-         ? new Point(-track.unit.y, track.unit.x)  // Right side (perpendicular clockwise)
-         : new Point(track.unit.y, -track.unit.x); // Left side (perpendicular counter-clockwise)
-      
-      // Apply offset to position signal beside the track
-      const offset = new Point(
-         perpendicular.x * RendererConfig.signalTrackOffset,
-         perpendicular.y * RendererConfig.signalTrackOffset
-      );
-      const signalPosition = trackCenterPosition.add(offset);
-      
-      // Create rounded rectangle background (horizontal layout)
-      const background = new PIXI.Graphics();
-      background
-         .roundRect(-RendererConfig.signalWidth / 2, -RendererConfig.signalHeight / 2, 
-                    RendererConfig.signalWidth, RendererConfig.signalHeight, RendererConfig.signalRadius)
-         .fill(RendererConfig.signalBackgroundColor);
-
-      // Add red circle (left side)
-      const redCircle = new PIXI.Graphics();
-      const redX = -RendererConfig.signalWidth / 2 + RendererConfig.signalCircleRadius + RendererConfig.signalCircleSpacing;
-      redCircle
-         .circle(redX, 0, RendererConfig.signalCircleRadius)
-         .fill(signal.state ? RendererConfig.signalInactiveColor : RendererConfig.signalRedColor);
-
-      // Add green circle (right side)  
-      const greenCircle = new PIXI.Graphics();
-      const greenX = RendererConfig.signalWidth / 2 - RendererConfig.signalCircleRadius - RendererConfig.signalCircleSpacing;
-      greenCircle
-         .circle(greenX, 0, RendererConfig.signalCircleRadius)
-         .fill(signal.state ? RendererConfig.signalGreenColor : RendererConfig.signalInactiveColor);
-
-      // Position the signal container
-      signalContainer.x = signalPosition.x;
-      signalContainer.y = signalPosition.y;
-      
-      // Make signal interactive
-      signalContainer.eventMode = "static";
-      signalContainer.on("click", (event) => {
-         console.log("Signal clicked at:", event.global.x, event.global.y);
-         // Emit signal click event with both signal and track
-         this._eventManager.emit("signalClicked", signal, track);
-      });
-      signalContainer.on("pointerover", (event) => {
-         this._pixiApp.canvas.style.cursor = "pointer";
-      });
-      signalContainer.on("pointerout", (event) => {
-         this._pixiApp.canvas.style.cursor = "default";
-      });
-      
-      // Add all graphics to the signal container
-      signalContainer.addChild(background);
-      signalContainer.addChild(redCircle);
-      signalContainer.addChild(greenCircle);
-
-      this._signalContainer.addChild(signalContainer);
-   }
-
-   public redrawSignal(signal: Signal, track: Track): void {
-      // Find the container for this signal by searching through children
-      let signalContainer: SignalContainer | null = null;
-      for (let i = 0; i < this._signalContainer.children.length; i++) {
-         const child = this._signalContainer.children[i] as SignalContainer;
-         if (child.signalTrackId === track.id && child.signalPosition === signal.position) {
-            signalContainer = child;
-            break;
-         }
-      }
-
-      if (!signalContainer) {
-         console.warn(`Signal container not found for signal at position ${signal.position} on track ${track.id}`);
-         return;
-      }
-
-      // Remove the old signal container
-      this._signalContainer.removeChild(signalContainer);
-
-      // Redraw the signal
-      this.renderSignal(signal, track);
-   }
-
-   public renderTrain(train: Train): void {
-      if (!train.track) {
-         console.warn(`Cannot render train ${train.number}: no track assigned`);
-         return;
-      }
-
-      // Create a container for this train
-      const trainContainer = new PIXI.Container() as TrainContainer;
-      trainContainer.trainNumber = train.number;
-
-      // Render each car
-      for (let carIndex = 0; carIndex < train.cars; carIndex++) {
-         // Calculate how far behind the locomotive this car should be
-
-         let carTrack = train.track;
-         let carKm = train.km;
-
-         // Use followRailNetwork to find the correct position for this car
-         if (carIndex !== 0) {
-            const carOffsetDistance = carIndex * (RendererConfig.trainCarSpacing + RendererConfig.carWidth);
-            try {
-               const result = this._trackLayoutManager.followRailNetwork(
-                  train.track,
-                  train.km,
-                  carOffsetDistance * -train.direction
-               );
-
-               if (result.element instanceof Track) {
-                  carTrack = result.element;
-                  carKm = result.km;
-               } else {
-                  continue;
-               }
-            } catch (error) {
-               continue;
-            }
-         }
-
-         let curveTrack: Track | null = null;
-         // Look ahead
-         try {
-            const ahead = this._trackLayoutManager.followRailNetwork(carTrack, carKm, RendererConfig.curveTransitionZone);
-            if (ahead.element instanceof Track && ahead.element !== carTrack) {
-               curveTrack = ahead.element;
-            }
-         } catch {}
-         // Look behind if not found ahead
-         if (!curveTrack) {
-            try {
-               const behind = this._trackLayoutManager.followRailNetwork(carTrack, carKm, -RendererConfig.curveTransitionZone);
-               if (behind.element instanceof Track && behind.element !== carTrack) {
-                  curveTrack = behind.element;
-               }
-            } catch {}
-         }
-
-         // Calculate car's screen position
-         let carPosition = this.getPointFromPosition(carTrack, carKm);
-         let trackAngle = carTrack.rad;
-         if (curveTrack && curveTrack.slope != carTrack.slope) {
-            carPosition = this.getPointFromPositionAdvanced(carTrack, carKm, curveTrack);
-            trackAngle = this.getRotationFromPosition(carTrack, carKm, curveTrack);
-         }
-
-         // Create rounded rectangle for car body
-         const carGraphics = new PIXI.Graphics();
-
-         // Make the first car (locomotive) slightly different
-         const isLocomotive = carIndex === 0;
-
-         let carColor: number;
-         let carRadius: number;
-         let carWidth: number = RendererConfig.carWidth;
-         if (isLocomotive) {
-            carColor = RendererConfig.locomotiveColor;
-            carRadius = RendererConfig.locomotiveRadius;
-         } else {
-            carColor = RendererConfig.carColor;
-            carRadius = RendererConfig.carRadius;
-         }
-
-         carGraphics
-            .roundRect(-carWidth / 2, -RendererConfig.trainHeight / 2, carWidth, RendererConfig.trainHeight, carRadius)
-            .fill(carColor);
-
-         // Position and rotate the car graphics
-         carGraphics.x = carPosition.x;
-         carGraphics.y = carPosition.y;
-         carGraphics.rotation = trackAngle;
-
-         trainContainer.addChild(carGraphics);
-      }
-
-      // Add train number text above the locomotive (first car at index 0)
-      const locomotivePosition = this.getPointFromPosition(train.track, train.km);
-      const text = new PIXI.Text({
-         text: train.number,
-         style: {
-            fontSize: RendererConfig.trainTextSize,
-            fill: RendererConfig.trainTextColor,
-            align: "center",
-         },
-      });
-      text.anchor.set(0.5);
-      text.x = locomotivePosition.x;
-      text.y = locomotivePosition.y - RendererConfig.trainHeight / 2 - 15;
-
-      trainContainer.addChild(text);
-      this._trainContainer.addChild(trainContainer);
+      this._camera.zoomToFit(tracks, this._pixiApp.canvas.width, this._pixiApp.canvas.height);
    }
 
    public renderTrains(trains: Train[]): void {
-      // Clear existing trains
-      this._trainContainer.removeChildren();
+      this._trainRenderer.renderAll(trains);
+   }
 
-      // Render each train
-      trains.forEach((train) => {
-         this.renderTrain(train);
-      });
+   public redrawSwitch(sw: Switch): void {
+      this._switchRenderer.redrawSwitch(sw);
+   }
+
+   public redrawSignal(signal: Signal, track: Track): void {
+      this._signalRenderer.redrawSignal(signal, track);
    }
 
    public redrawTrain(train: Train): void {
-      // Find and remove the existing train container
-      this.removeTrain(train.number);
-
-      // Render the train again
-      this.renderTrain(train);
-   }
-
-   private removeTrain(trainNumber: string): void {
-      // Find and remove the existing train container
-      let trainContainer: TrainContainer | null = null;
-      for (let i = 0; i < this._trainContainer.children.length; i++) {
-         const child = this._trainContainer.children[i] as TrainContainer;
-         if (child.trainNumber === trainNumber) {
-            trainContainer = child;
-            break;
-         }
-      }
-
-      if (trainContainer) {
-         this._trainContainer.removeChild(trainContainer);
-      }
-   }
-
-   private getPointFromPosition(track: Track, km: number): Point {
-      // Use the track's unit vector multiplied by km distance from the start
-      const offset = track.unit.multiply(km);
-      return track.start.add(offset);
-   }
-
-   private getPointFromPositionAdvanced(track: Track, km: number, nextTrack: Track): Point {
-      // Determine the connection point between tracks
-      const cp = track.start.equals(nextTrack.end) ? track.start : track.end;
-
-      // Calculate distance from train car position to connection point
-      const trainPosition = this.getPointFromPosition(track, km);
-      const distanceToConnection = Math.sqrt(Math.pow(trainPosition.x - cp.x, 2) + Math.pow(trainPosition.y - cp.y, 2));
-
-      // Define the transition zone (cars within this distance will use the curve)
-      const transitionZone = RendererConfig.curveTransitionZone; // Same as the curve control point distance
-
-      // Calculate t based on proximity to connection point
-      // t = 0 when far from connection (use straight track)
-      // t = 1 when at connection point (use full curve)
-      let t = Math.max(0, Math.min(1, 1 - distanceToConnection / transitionZone));
-      t = t / 2;
-
-      // If we're very close to the connection, use the curve
-      if (distanceToConnection < transitionZone) {
-         const p0 = track.along(cp, transitionZone);
-         const p1 = nextTrack.along(cp, transitionZone);
-         return Geometry.getPointOnCurve(t, p0, cp, p1);
-      } else {
-         // Use regular straight track positioning when far from connection
-         return this.getPointFromPosition(track, km);
-      }
-   }
-
-   private getRotationFromPosition(track: Track, km: number, nextTrack: Track): number {
-      // Determine the connection point between tracks
-      const cp = track.start.equals(nextTrack.end) ? track.start : track.end;
-
-      // Calculate distance from train car position to connection point
-      const trainPosition = this.getPointFromPosition(track, km);
-      const distanceToConnection = Math.sqrt(Math.pow(trainPosition.x - cp.x, 2) + Math.pow(trainPosition.y - cp.y, 2));
-
-      // Define the transition zone (cars within this distance will use the curve)
-      const transitionZone = RendererConfig.curveTransitionZone; // Same as the curve control point distance
-
-      // Calculate t based on proximity to connection point
-      // t = 0 when far from connection (use straight track)
-      // t = 1 when at connection point (use full curve)
-      let t = Math.max(0, Math.min(1, 1 - distanceToConnection / transitionZone));
-      t = t / 2;
-
-      // If we're very close to the connection, use the curve
-      if (distanceToConnection < transitionZone) {
-         const p0 = track.along(cp, transitionZone);
-         const p1 = nextTrack.along(cp, transitionZone);
-         return Geometry.getDegreeOfTangentOnCurve(t, p0, cp, p1);
-      } else {
-         // Use regular straight track positioning when far from connection
-         return track.rad;
-      }
-   }
-
-   private renderStationName(): void {
-      const stationName = this._trackLayoutManager.layoutTitle;
-      if (!stationName) return;
-
-      // Calculate the center position of the layout
-      const tracks = this._trackLayoutManager.tracks;
-      if (tracks.length === 0) return;
-
-      // Calculate bounds of all tracks
-      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-      tracks.forEach((track) => {
-         minX = Math.min(minX, track.start.x, track.end.x);
-         minY = Math.min(minY, track.start.y, track.end.y);
-         maxX = Math.max(maxX, track.start.x, track.end.x);
-         maxY = Math.max(maxY, track.start.y, track.end.y);
-      });
-
-      // Calculate center position
-      const centerX = (minX + maxX) / 2;
-      const centerY = minY - RendererConfig.stationTextOffset;
-
-      // Create station name text
-      const text = new PIXI.Text({
-         text: stationName,
-         style: {
-            fontSize: RendererConfig.stationTextSize,
-            fill: RendererConfig.stationTextColor,
-            align: "center",
-            fontFamily: RendererConfig.stationTextFont,
-         },
-      });
-      text.anchor.set(0.5);
-      text.x = centerX;
-      text.y = centerY;
-
-      // Add to the track container so it's rendered with the layout
-      this._trackContainer.addChild(text);
+      this._trainRenderer.redrawTrain(train);
    }
 
    public clear(): void {
-      this._trackContainer.removeChildren();
-      this._switchContainer.removeChildren();
-      this._exitContainer.removeChildren();
-      this._signalContainer.removeChildren();
-      this._trainContainer.removeChildren();
+      this._trackRenderer.clear();
+      this._switchRenderer.clear();
+      this._signalRenderer.clear();
+      this._trainRenderer.clear();
+      this._stationRenderer.clear();
    }
 
    public getCurrentZoom(): number {
-      return this._currentZoom;
+      return this._camera.getCurrentZoom();
    }
 
    public setZoom(zoom: number): void {
-      const clampedZoom = Math.max(this._minZoom, Math.min(this._maxZoom, zoom));
-      this._currentZoom = clampedZoom;
-      this._pixiApp.stage.scale.set(clampedZoom);
+      this._camera.setZoom(zoom);
    }
 }

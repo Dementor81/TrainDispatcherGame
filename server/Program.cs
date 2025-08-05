@@ -110,9 +110,9 @@ app.MapPost("/api/simulation/pause", (Simulation simulation) =>
     return Results.Ok(new { message = "Simulation paused", state = simulation.State.ToString() });
 });
 
-app.MapPost("/api/simulation/resume", (Simulation simulation) =>
+app.MapPost("/api/simulation/resume", async (Simulation simulation) =>
 {
-    simulation.Resume();
+    await simulation.Resume();
     return Results.Ok(new { message = "Simulation resumed", state = simulation.State.ToString() });
 });
 

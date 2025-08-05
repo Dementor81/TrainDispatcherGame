@@ -88,6 +88,11 @@ export class SignalRManager {
             this.handleTrainSent(data);
         });
 
+        this.connection.on('SimulationStateChanged', (data) => {
+            console.log('Simulation state changed:', data);
+            this.handleSimulationStateChanged(data);
+        });
+
 
     }
 
@@ -270,6 +275,15 @@ export class SignalRManager {
         // Emit the train created event through the EventManager
         this.eventManager.emit('trainCreated', train, data.exitPointId);
         console.log(`Emitted trainCreated event for train ${train.number}`);
+    }
+
+    private handleSimulationStateChanged(data: any): void {
+        // Handle simulation state change event from server
+        console.log(`Simulation state changed to: ${data.state} at ${data.timestamp}`);
+        
+        // Emit the simulation state change event through the EventManager
+        this.eventManager.emit('simulationStateChanged', data.state, data.timestamp);
+        console.log(`Emitted simulationStateChanged event for state: ${data.state}`);
     }
 
 

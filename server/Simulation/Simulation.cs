@@ -128,7 +128,7 @@ namespace TrainDispatcherGame.Server.Simulation
             }
         }
 
-        public void Start()
+        public async void Start()
         {
             if (_state == SimulationState.Running)
             {
@@ -138,7 +138,7 @@ namespace TrainDispatcherGame.Server.Simulation
             if (_state == SimulationState.Paused)
             {
                 // Resume from pause
-                Resume();
+                await Resume();
                 return;
             }
 
@@ -153,16 +153,20 @@ namespace TrainDispatcherGame.Server.Simulation
                 _timer = new Timer(UpdateSimulation, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
 
                 Console.WriteLine($"Simulation started at {_simulationStartTime:HH:mm:ss}");
+                
+                // Notify all clients about the state change
+                await _notificationManager.SendSimulationStateChange(_state);
             }
             catch (Exception ex)
             {
                 _state = SimulationState.Error;
                 _errorMessage = ex.Message;
                 Console.WriteLine($"Error starting simulation: {ex.Message}");
+                await _notificationManager.SendSimulationStateChange(_state);
             }
         }
 
-        public void Stop()
+        public async void Stop()
         {
             if (_state == SimulationState.Stopped)
             {
@@ -178,9 +182,12 @@ namespace TrainDispatcherGame.Server.Simulation
             ProcessTimetable();
 
             Console.WriteLine("Simulation stopped");
+            
+            // Notify all clients about the state change
+            await _notificationManager.SendSimulationStateChange(_state);
         }
 
-        public void Pause()
+        public async void Pause()
         {
             if (_state != SimulationState.Running)
             {
@@ -192,9 +199,12 @@ namespace TrainDispatcherGame.Server.Simulation
             _state = SimulationState.Paused;
 
             Console.WriteLine($"Simulation paused at {CurrentTime:HH:mm:ss}");
+            
+            // Notify all clients about the state change
+            await _notificationManager.SendSimulationStateChange(_state);
         }
 
-        public void Resume()
+        public async Task Resume()
         {
             if (_state != SimulationState.Paused)
             {
@@ -209,6 +219,9 @@ namespace TrainDispatcherGame.Server.Simulation
                 _timer = new Timer(UpdateSimulation, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
 
                 Console.WriteLine($"Simulation resumed at {CurrentTime:HH:mm:ss}");
+                
+                // Notify all clients about the state change
+                await _notificationManager.SendSimulationStateChange(_state);
             }
             catch (Exception ex)
             {
@@ -226,12 +239,8 @@ namespace TrainDispatcherGame.Server.Simulation
                 {
                     try
                     {
-                        // Calculate actual elapsed time since real start
-                        var actualElapsed = (DateTime.Now - _realStartTime).TotalSeconds;
-                        ElapsedSeconds = actualElapsed;
-
+                        this.ElapsedSeconds = (DateTime.Now - _realStartTime).TotalSeconds;
                         CheckTrainEvents();
-
                     }
                     catch (Exception ex)
                     {
@@ -244,20 +253,15 @@ namespace TrainDispatcherGame.Server.Simulation
         }
 
         private void CheckTrainEvents()
-        {
-            var currentSimTime = CurrentTime;
-
+        {            
             foreach (var train in _trains)
             {
                 if (train.completed || train.controlledByPlayer) continue;
-
                 // Check if train should spawn
-                if (train.Spawn != null && train.Spawn.IsDue(currentSimTime))
+                if (train.Spawn != null && train.Spawn.IsDue(this.CurrentTime))
                 {
                     HandleTrainSpawn(train);
                 }
-
-
             }
         }
 

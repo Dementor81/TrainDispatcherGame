@@ -55,12 +55,7 @@ module.exports = (env, argv) => {
             directory: path.join(__dirname, "dist"),
          },
          port: 9000,
-         open: {
-            app: {
-               name: "google chrome",
-            },
-            target: ["/main.html"],
-         },
+         
          hot: true,
          compress: true,
       },

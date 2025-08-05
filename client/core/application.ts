@@ -6,6 +6,7 @@ import { Renderer } from "../canvas/renderer";
 import Switch from "../sim/switch";
 import SignalRManager from "../network/signalr";
 import Train from "../sim/train";
+import { getSimulationStatus } from "../network/api";
 
 export class Application {
    private _uiManager: UIManager;
@@ -65,7 +66,13 @@ export class Application {
          // Show the control panel after successfully joining a station
          this._uiManager.showControlPanel();
 
-         this._trainManager.startSimulation();
+         // Retrieve simulation state from the server and handle accordingly
+         try {
+            const status = await getSimulationStatus();
+            this.handleSimulationStateChanged(status.state, status.currentTime);            
+         } catch (error) {
+            console.error("Failed to retrieve simulation state:", error);
+         }
          
       } catch (error) {
          console.error('Failed to join station:', error);
@@ -131,6 +138,11 @@ export class Application {
             this._uiManager.showHUD();
          }
       });
+
+      // Simulation state change events
+      this._eventManager.on('simulationStateChanged', (state: string, timestamp: string) => {
+         this.handleSimulationStateChanged(state, timestamp);
+      });
       
       console.log("Event listeners setup complete");
    }
@@ -189,6 +201,27 @@ export class Application {
          await this._signalRManager.reportTrainDeparted(this._currentPlayerId, train.number, this._currentStationId);
       } catch (error) {
          console.error(`Application: Failed to report train ${train.number} departed:`, error);
+      }
+   }
+
+   private handleSimulationStateChanged(state: string, timestamp: string): void {     
+      
+      // Update the train manager simulation state based on server state
+      switch (state.toLowerCase()) {
+         case 'running':
+            this._trainManager.resumeSimulation();
+            console.log('Application: Resumed client simulation');
+            break;
+         case 'paused':
+            this._trainManager.pauseSimulation();
+            console.log('Application: Paused client simulation');
+            break;
+         case 'stopped':
+            this._trainManager.stopSimulation();
+            console.log('Application: Stopped client simulation');
+            break;
+         default:
+            console.log(`Application: Unknown simulation state: ${state}`);
       }
    }
 
