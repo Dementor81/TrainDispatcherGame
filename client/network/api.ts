@@ -1,4 +1,4 @@
-import { TrackLayoutDto } from "./dto";
+import { TrackLayoutDto, StationTimetableEventDto } from "./dto";
 
 const API_BASE_URL = "http://localhost:5070/api";
 
@@ -111,6 +111,14 @@ export async function getActiveTrains(): Promise<any[]> {
   return response.json();
 }
 
+export async function getUpcomingTrains(stationId: string): Promise<StationTimetableEventDto[]> {
+  const response = await fetch(`${API_BASE_URL}/stations/${encodeURIComponent(stationId)}/upcoming-trains`);
+  if (!response.ok) {
+    throw new Error(`Failed to get upcoming trains for station ${stationId}: ${response.statusText}`);
+  }
+  return response.json();
+}
+
 export default {
   fetchAvailableLayouts,
   fetchAvailableStations,
@@ -122,4 +130,5 @@ export default {
   resetSimulation,
   getSimulationStatus,
   getActiveTrains,
+  getUpcomingTrains,
 };

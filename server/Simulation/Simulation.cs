@@ -1,12 +1,10 @@
 using System;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using TrainDispatcherGame.Server.Models;
 using TrainDispatcherGame.Server.Managers;
 using TrainDispatcherGame.Server.Services;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using TrainDispatcherGame.Server.Models.DTOs;
 
@@ -15,117 +13,34 @@ namespace TrainDispatcherGame.Server.Simulation
     public class Simulation
     {
         private Timer? _timer;
-        private DateTime _simulationStartTime; // The actual simulation start time from timetable
         private DateTime _realStartTime; // When we actually started the simulation
         private SimulationState _state = SimulationState.Stopped;
         private string? _errorMessage;
-        private Timetable? _timetable;
         private List<Train> _trains = new();
         private readonly INotificationManager _notificationManager;
         private readonly ITrackLayoutService _trackLayoutService;
+        private readonly ITimeTableService _timeTableService;
         private readonly object _simulationLock = new object(); // Thread synchronization object
 
-        public DateTime CurrentTime => _simulationStartTime.AddSeconds(ElapsedSeconds);
+        public DateTime SimulationTime => _timeTableService.SimulationStartTime.AddSeconds(ElapsedSeconds);
         public double ElapsedSeconds { get; private set; } = 0;
         public SimulationState State => _state;
         public string? ErrorMessage => _errorMessage;
-        public Timetable? Timetable => _timetable;
+        public Timetable? Timetable => _timeTableService.Timetable;
         public List<Train> Trains => _trains;
 
-        public Simulation(INotificationManager notificationManager, ITrackLayoutService trackLayoutService)
+        public Simulation(INotificationManager notificationManager, ITrackLayoutService trackLayoutService, ITimeTableService timeTableService)
         {
             _notificationManager = notificationManager;
             _trackLayoutService = trackLayoutService;
-            LoadTimetable();
+            _timeTableService = timeTableService;
+            LoadTrainsFromTimetable();
         }
 
-        private void LoadTimetable()
+        private void LoadTrainsFromTimetable()
         {
-            try
-            {
-                var filePath = Path.Combine("data", "timetable.json");
-                if (File.Exists(filePath))
-                {
-                    var json = File.ReadAllText(filePath);
-                    _timetable = JsonSerializer.Deserialize<Timetable>(json);
-
-                    if (_timetable != null) ProcessTimetable();
-
-                }
-                else
-                {
-                    Console.WriteLine($"Timetable file not found at: {filePath}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading timetable: {ex.Message}");
-            }
-        }
-
-        private void ProcessTimetable()
-        {
-            if (_timetable == null) return;
-
             _trains.Clear();
-
-            // Parse the start time - this is the actual simulation start time
-            if (TimeSpan.TryParse(_timetable.StartTime, out var startTime))
-            {
-                _simulationStartTime = DateTime.Today.Add(startTime);
-
-                foreach (var trainSchedule in _timetable.Trains)
-                {
-                    var train = new Train(trainSchedule.Number)
-                    {
-                        Type = trainSchedule.Type,
-                        Speed = trainSchedule.Speed,
-                        Path = trainSchedule.Path
-                    };
-
-
-
-                    // Add station events from timetable only
-                    foreach (var timetableEntry in trainSchedule.Timetable)
-                    {
-                        if (DateTime.TryParse(timetableEntry.Arrival, out var arrivalTime) && DateTime.TryParse(timetableEntry.Departure, out var departureTime))
-                        {
-
-                            train.Events.Add(new TrainEvent
-                            {
-                                Station = timetableEntry.Station,
-                                LocationId = timetableEntry.Station,
-                                ArrivalTime = arrivalTime,
-                                DepartureTime = departureTime,
-                            });
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Error parsing arrival time for train {trainSchedule.Number} at {timetableEntry.Station}: {timetableEntry.Arrival}");
-                        }
-                    }// Convert spawn info to TrainSpawn struct
-                    if (TimeSpan.TryParse(trainSchedule.Spawn.Time, out var spawnTime))
-                    {
-                        var spawnDateTime = _simulationStartTime.Add(spawnTime);
-                        var firstStation = train.Events.First().Station;
-
-                        // Find the exit point that leads to the first station
-                        var exitPoint = _trackLayoutService.GetExitPointToStation(firstStation, train.Path.First());
-
-                        train.Spawn = new TrainSpawn(
-                            trainSchedule.Spawn.Type,
-                            spawnDateTime,
-                            firstStation,
-                            exitPoint?.Id ?? -1
-                        );
-                    }
-
-
-                    _trains.Add(train);
-                }
-
-                Console.WriteLine($"Loaded {_trains.Count} trains from timetable starting at {_simulationStartTime:HH:mm:ss}");
-            }
+            _trains = _timeTableService.LoadTrainsFromTimetable(_trackLayoutService);
         }
 
         public async void Start()
@@ -152,7 +67,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 // Start timer that updates every 100ms (10 times per second)
                 _timer = new Timer(UpdateSimulation, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
 
-                Console.WriteLine($"Simulation started at {_simulationStartTime:HH:mm:ss}");
+                Console.WriteLine($"Simulation started at {_timeTableService.SimulationStartTime:HH:mm:ss}");
                 
                 // Notify all clients about the state change
                 await _notificationManager.SendSimulationStateChange(_state);
@@ -179,7 +94,7 @@ namespace TrainDispatcherGame.Server.Simulation
             _errorMessage = null;
 
             _trains.Clear();
-            ProcessTimetable();
+            LoadTrainsFromTimetable();
 
             Console.WriteLine("Simulation stopped");
             
@@ -198,7 +113,7 @@ namespace TrainDispatcherGame.Server.Simulation
             _timer = null;
             _state = SimulationState.Paused;
 
-            Console.WriteLine($"Simulation paused at {CurrentTime:HH:mm:ss}");
+            Console.WriteLine($"Simulation paused at {SimulationTime:HH:mm:ss}");
             
             // Notify all clients about the state change
             await _notificationManager.SendSimulationStateChange(_state);
@@ -218,7 +133,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 _errorMessage = null;
                 _timer = new Timer(UpdateSimulation, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
 
-                Console.WriteLine($"Simulation resumed at {CurrentTime:HH:mm:ss}");
+                Console.WriteLine($"Simulation resumed at {SimulationTime:HH:mm:ss}");
                 
                 // Notify all clients about the state change
                 await _notificationManager.SendSimulationStateChange(_state);
@@ -258,7 +173,7 @@ namespace TrainDispatcherGame.Server.Simulation
             {
                 if (train.completed || train.controlledByPlayer) continue;
                 // Check if train should spawn
-                if (train.Spawn != null && train.Spawn.IsDue(this.CurrentTime))
+                if (train.Spawn != null && train.Spawn.IsDue(this.SimulationTime))
                 {
                     HandleTrainSpawn(train);
                 }
@@ -269,6 +184,7 @@ namespace TrainDispatcherGame.Server.Simulation
         {
             try
             {
+                if (train.Spawn == null) throw new Exception($"Train {train.Number} has no spawn point");
                 var spawn = train.Spawn;
                 var station = spawn.StationId;
                 var exitPointId = spawn.ExitPointId;
@@ -310,13 +226,53 @@ namespace TrainDispatcherGame.Server.Simulation
             return _trains.Where(t => t.completed).ToList();
         }
 
+        public List<StationTimetableEvent> GetStationTimetableEvents(string stationId)
+        {
+            var stationEvents = new List<StationTimetableEvent>();
+
+            foreach (var train in _trains)
+            {
+                if (train.completed) continue;
+
+                var currentEvent = train.GetCurrentEvent();
+                if (currentEvent == null) continue;
+
+                // Check if this train has any future events at the requested station
+                var futureEvents = train.GetFutureEvents().Where(e => e.Station.Equals(stationId, StringComparison.OrdinalIgnoreCase));
+                
+                foreach (var futureEvent in futureEvents)
+                {
+                    stationEvents.Add(new StationTimetableEvent
+                    {
+                        TrainNumber = train.Number,
+                        Arrival = futureEvent.ArrivalTime.ToString("HH:mm:ss"),
+                        Departure = futureEvent.DepartureTime.ToString("HH:mm:ss"),
+                        CurrentDelay = train.delay
+                    });
+                }
+            }
+
+            // Sort by arrival time
+            stationEvents.Sort((a, b) => 
+            {
+                if (DateTime.TryParse(a.Arrival, out var arrivalA) && 
+                    DateTime.TryParse(b.Arrival, out var arrivalB))
+                {
+                    return arrivalA.CompareTo(arrivalB);
+                }
+                return string.Compare(a.Arrival, b.Arrival, StringComparison.Ordinal);
+            });
+
+            return stationEvents;
+        }
+
         public void TrainReturnedFromClient(Train train, string destinationStationId)
         {
             try
             {
                 Console.WriteLine($"Train {train.Number} returned from client at {train.CurrentLocation} heading for {destinationStationId}");
                 train.controlledByPlayer = false;
-                train.LastLocation = train.CurrentLocation;
+                var lastLocation = train.CurrentLocation;
                 train.CurrentLocation = null;
                 train.HeadingForStation = destinationStationId;
 
@@ -341,11 +297,11 @@ namespace TrainDispatcherGame.Server.Simulation
                         // TODO: handle missrouted train
                     }
                     
-                    var exitPoint = _trackLayoutService.GetExitPointToStation(nextEvent.Station, train.LastLocation);
-                    if (exitPoint == null) throw new Exception($"No exit point found for train {train.Number} from {nextEvent.Station} to {train.LastLocation}");
+                    var exitPoint = _trackLayoutService.GetExitPointToStation(nextEvent.Station, lastLocation);
+                    if (exitPoint == null) throw new Exception($"No exit point found for train {train.Number} from {nextEvent.Station} to {lastLocation}");
                     train.Spawn = new TrainSpawn(
                         "exit",
-                        CurrentTime.AddMinutes(1),
+                        SimulationTime.AddMinutes(1),
                         nextEvent.Station,
                         exitPoint.Id
                     );
@@ -384,8 +340,9 @@ namespace TrainDispatcherGame.Server.Simulation
 
                 // Mark the current station event as processed
                 currentEvent.Processed = true;
+                train.delay = (int)(SimulationTime - currentEvent.ArrivalTime).TotalSeconds;
 
-                Console.WriteLine($"Train {train.Number} successfully stopped at station {stationId}");
+                Console.WriteLine($"Train {train.Number} successfully stopped at station {stationId} with delay {train.delay} seconds");
                 return true;
             }
             catch (Exception ex)
@@ -417,8 +374,11 @@ namespace TrainDispatcherGame.Server.Simulation
                     Console.WriteLine($"Train {train.Number} station event at {stationId} is not yet processed (must stop before departing)");
                     return false;
                 }
+
                 
-                Console.WriteLine($"Train {train.Number} successfully departed from station {stationId}");
+                train.delay = (int)(SimulationTime - currentEvent.DepartureTime).TotalSeconds;
+                
+                Console.WriteLine($"Train {train.Number} successfully departed from station {stationId} with delay {train.delay} seconds");
                 return true;
             }
             catch (Exception ex)

@@ -8,36 +8,40 @@ import {
 } from '../network/api';
 import { SimulationStatusDto } from '../network/dto';
 import { TrainManager } from '../manager/train_manager';
+import { BasePanel } from './basePanel';
+import { Application } from '../core/application';
 
-export class ControlPanel {
-  private container: HTMLDivElement;
+export class ControlPanel extends BasePanel {
   private statusContainer: HTMLDivElement;
   private controlsContainer: HTMLDivElement;
-  private updateInterval: number | null = null;
-  private isVisible: boolean = false;
   private trainManager: TrainManager | null = null;
 
-  constructor(trainManager: TrainManager) {
-    this.trainManager = trainManager;
-    this.container = this.createContainer();
+  constructor(application: Application) {
+    super(application, 500);
+    this.trainManager = application.trainManager;
     this.statusContainer = this.createStatusContainer();
     this.controlsContainer = this.createControlsContainer();
     
     this.container.appendChild(this.statusContainer);
     this.container.appendChild(this.controlsContainer);
-    
-    document.body.appendChild(this.container);
   }
 
-  private createContainer(): HTMLDivElement {
+  protected createContainer(): HTMLDivElement {
     const container = document.createElement('div');
     container.id = 'controlPanel';
-    container.className = 'position-absolute top-0 start-0 m-3 p-3 bg-dark text-light rounded shadow-lg';
-    container.style.zIndex = '1000';
-    container.style.minWidth = '300px';
-    container.style.maxWidth = '400px';
-    container.style.display = 'none';
+    container.className = this.getContainerClasses() + ' top-0 start-0';
+    
+    // Apply container styles
+    const styles = this.getContainerStyles();
+    Object.assign(container.style, styles);
+    
     return container;
+  }
+
+  protected createContent(): HTMLDivElement {
+    // This is not used in ControlPanel as we manually add status and controls containers
+    const content = document.createElement('div');
+    return content;
   }
 
   private createStatusContainer(): HTMLDivElement {
@@ -125,38 +129,8 @@ export class ControlPanel {
     return controlsContainer;
   }
 
-  public show(): void {
-    this.container.style.display = 'block';
-    this.isVisible = true;
-    this.startStatusUpdates();
-  }
-
-  public hide(): void {
-    this.container.style.display = 'none';
-    this.isVisible = false;
-    this.stopStatusUpdates();
-  }
-
-  public toggle(): void {
-    if (this.isVisible) {
-      this.hide();
-    } else {
-      this.show();
-    }
-  }
-
-  private startStatusUpdates(): void {
-    this.updateStatus();
-    this.updateInterval = window.setInterval(() => {
-      this.updateStatus();
-    }, 500); // Update every second
-  }
-
-  private stopStatusUpdates(): void {
-    if (this.updateInterval) {
-      clearInterval(this.updateInterval);
-      this.updateInterval = null;
-    }
+  protected async Updates(): Promise<void> {
+    await this.updateStatus();
   }
 
   private async updateStatus(): Promise<void> {
@@ -325,10 +299,5 @@ export class ControlPanel {
     }
   }
 
-  public destroy(): void {
-    this.stopStatusUpdates();
-    if (this.container.parentNode) {
-      this.container.parentNode.removeChild(this.container);
-    }
-  }
+
 } 

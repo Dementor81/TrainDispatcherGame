@@ -68,3 +68,10 @@ export interface TrainDto {
   currentLocation?: string;
   spawnTime?: string;
 }
+
+export interface StationTimetableEventDto {
+  trainNumber: string;
+  arrival: string;
+  departure: string;
+  currentDelay: number;
+}

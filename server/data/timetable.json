@@ -1,32 +1,29 @@
 {
-    "title": "Fahrplan",
-    "start_time": "00:00",
-    "trains": [
+   "title": "Fahrplan",
+   "start_time": "00:00",
+   "trains": [
       {
-        "number": "1001",
-        "type": "Passenger",
-        "speed": 100,
-        "path": [
-            "Berlin",
-            "München"
-        ],
-        "spawn":{
+         "number": "1001",
+         "type": "Passenger",
+         "speed": 100,
+         "cars": 4,
+         "path": ["Berlin", "München"],
+         "spawn": {
             "type": "exit",
             "time": "00:00:05"
-        },
-        "timetable": [          
-          {
-            "station": "a_stadt",
-            "arrival": "00:00:50",
-            "departure": "00:01:00"
-          },          
-          {
-            "station": "b_stadt",
-            "arrival": "00:04",
-            "departure": "00:05"
-          }
-        ]
+         },
+         "timetable": [
+            {
+               "station": "a_stadt",
+               "arrival": "00:00:50",
+               "departure": "00:01:00"
+            },
+            {
+               "station": "b_stadt",
+               "arrival": "00:04",
+               "departure": "00:05"
+            }
+         ]
       }
-      
-    ]
-  }
+   ]
+}

@@ -13,7 +13,7 @@ export class HUD {
     private createContainer(): HTMLDivElement {
         const container = document.createElement('div');
         container.id = 'hud';
-        container.className = 'position-fixed top-0 end-0 m-3 p-2 bg-dark text-light rounded shadow-lg';
+        container.className = 'position-fixed bottom-0 end-0 m-3 p-2 bg-dark text-light rounded shadow-lg';
         container.style.zIndex = '1000';
         container.style.minWidth = '200px';
         container.style.display = 'none';

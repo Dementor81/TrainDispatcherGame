@@ -192,12 +192,6 @@ class PlaygroundApplication {
         }
     }
 
-    
-
-
-
-
-
     addTrain() {
         if (!this.currentLayout || this.currentLayout.exits.length === 0) {
             console.warn("No layout loaded or no exits available. Please load a layout first.");
@@ -214,10 +208,10 @@ class PlaygroundApplication {
         
         // Create a new train with a unique identifier
         const trainNumber = `T${this.trains.length + 1}`;
-        const train = new Train(trainNumber, null, 0); // Create train without position - will be set by TrainManager
+        const train = new Train(trainNumber, 1); // Create train without position - will be set by TrainManager
 
         // Use TrainManager to add the train at the selected exit point
-        this.trainManager.addTrainAtExitPoint(train, exitPointId);
+        this.trainManager.spawnTrainAtExitPoint(train, exitPointId);
         
         this.trains.push(train);
         console.log(`Added train ${trainNumber} at exit point ${exitPointId}`);

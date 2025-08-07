@@ -30,15 +30,7 @@ export class StationSelector {
     }
 
     // Manual trigger button
-    const manualButton = document.getElementById('showStationSelector');
-    if (manualButton) {
-      manualButton.addEventListener('click', () => {
-        this.showModal((layout, playerId) => {
-          console.log("Manual selection - Selected layout:", layout, "Player ID:", playerId);
-          // TODO: Initialize the simulation with the selected layout
-        });
-      });
-    }
+    
   }
 
   private async loadStations(): Promise<void> {

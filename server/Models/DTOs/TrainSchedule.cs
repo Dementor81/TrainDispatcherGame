@@ -13,6 +13,9 @@ namespace TrainDispatcherGame.Server.Models.DTOs
         [JsonPropertyName("speed")]
         public int Speed { get; set; }
 
+        [JsonPropertyName("cars")]
+        public int Cars { get; set; }
+
         [JsonPropertyName("path")]
         public List<string> Path { get; set; } = new();
 

@@ -372,7 +372,7 @@ export class TrainManager {
    // ==================== TRAIN MANAGEMENT METHODS ====================
 
    // Add a new train to the manager at a specific exit point
-   addTrainAtExitPoint(train: Train, exitPointId: string): void {
+   spawnTrainAtExitPoint(train: Train, exitPointId: string): void {
       // Get the track and kilometer position for this exit point
       const location = this._trackLayoutManager.getExitPointLocation(exitPointId);
       const direction = this._trackLayoutManager.getExitPointDirection(exitPointId);
@@ -473,7 +473,7 @@ export class TrainManager {
    // Handle train creation events
    private handleTrainCreated(train: Train, exitPointId: string): void {
       console.log(`TrainManager: Received train ${train.getInfo()}`);
-      this.addTrainAtExitPoint(train, exitPointId);
+      this.spawnTrainAtExitPoint(train, exitPointId);
    }
 
    // Handle train reached exit events
@@ -536,7 +536,14 @@ export class TrainManager {
 
       if (isNearStation) {
          // Train is arriving and near the station - stop it
-         console.log(`Train ${train.number} stopped at station as scheduled`);
+         if (train.arrivalTime && train.departureTime && this._currentSimulationTime > train.arrivalTime) {
+            const delay = this._currentSimulationTime.getTime() - train.arrivalTime.getTime();
+            train.setScheduleTimes(
+               train.arrivalTime,
+               new Date(train.departureTime.getTime() + delay)
+            );
+         }
+         console.log(`Train ${train.number} stopped at station as scheduled, departure time: ${train.departureTime?.toLocaleTimeString()}`);
          train.setMoving(false);
          train.setStopReason(TrainStopReason.STATION);
          this._eventManager.emit("trainStoppedAtStation", train);

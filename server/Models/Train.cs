@@ -9,15 +9,16 @@ namespace TrainDispatcherGame.Server.Models
         public string Number { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;
         public int Speed { get; set; }
+        public int Cars { get; set; }
         public List<string> Path { get; set; } = new();
         public TrainSpawn? Spawn { get; set; }
         public List<TrainEvent> Events { get; set; } = new();
         public int CurrentEventIndex { get; set; } = 0;
         public string? CurrentLocation { get; set; }
-        public string? LastLocation { get; set; }
         public string? HeadingForStation { get; set; }
         public bool controlledByPlayer { get; set; } = false;
         public bool completed { get; set; } = false;
+        public int delay { get; set; } = 0;
 
         public Train(string number)
         {
@@ -45,6 +46,16 @@ namespace TrainDispatcherGame.Server.Models
         public bool HasMoreEvents()
         {
             return CurrentEventIndex < Events.Count;
+        }
+
+        public List<TrainEvent> GetFutureEvents()
+        {
+            if (CurrentEventIndex >= Events.Count)
+            {
+                return new List<TrainEvent>();
+            }
+            
+            return Events.Skip(CurrentEventIndex).ToList();
         }
 
         /// <summary>

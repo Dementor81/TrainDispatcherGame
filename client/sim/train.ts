@@ -13,8 +13,8 @@ export enum TrainStopReason {
 class Train {
     private _number: string;
     private _spawnTime: Date;
-    private _track: Track|null;
-    private _km: number;
+    private _track: Track|null = null;
+    private _km: number = 0;
     private _cars: number;
     private _speed: number; // km per simulation step
     private _direction: number; // 1 for forward, -1 for backward
@@ -25,12 +25,10 @@ class Train {
     private _departureTime: Date | null = null; // Scheduled departure time at current station
     private _stopReason: TrainStopReason = TrainStopReason.NONE; // Current reason why the train is stopped
 
-    constructor(number: string, track: Track|null, km: number) {
+    constructor(number: string, cars: number) {
         this._number = number;
         this._spawnTime = new Date();
-        this._track = track;
-        this._km = km;
-        this._cars = 1;
+        this._cars = cars;
         this._speed = 150; // Default speed: 50 km/h
         this._direction = 1; // Default direction: forward
         this._isMoving = true; // Default: train is moving
@@ -39,7 +37,7 @@ class Train {
 
     // Static factory method to create a train from server data
     static fromServerData(data: any): Train {
-        const train = new Train(data.trainNumber, null, 0);
+        const train = new Train(data.trainNumber, data.cars);
         
         // Set schedule times if provided
         if (data.departureTime) {

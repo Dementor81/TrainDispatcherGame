@@ -63,8 +63,9 @@ export class Application {
          this._currentStationId = layout;
          this._trackLayoutManager.loadTrackLayout(layout);
          
-         // Show the control panel after successfully joining a station
+         // Show the control panel and train overview panel after successfully joining a station
          this._uiManager.showControlPanel();
+         this._uiManager.showTrainOverviewPanel();
 
          // Retrieve simulation state from the server and handle accordingly
          try {
@@ -225,20 +226,7 @@ export class Application {
       }
    }
 
-   // Method to manually add a test train for demonstration
-   public addTestTrain(trainNumber: string): void {
-      // Get the first available exit point for testing
-      const exits = this._trackLayoutManager.exits;
-      if (exits.length > 0) {
-         const testTrain = new Train(trainNumber, null, 0);
-         const firstExitId = exits[0].id.toString();
-         this._trainManager.addTrainAtExitPoint(testTrain, firstExitId);
-      } else {
-         console.warn("No exit points available for test train");
-      }
-   }
-
-   
+ 
 
 
    get uiManager(): UIManager {

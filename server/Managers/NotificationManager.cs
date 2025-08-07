@@ -48,7 +48,9 @@ namespace TrainDispatcherGame.Server.Managers
                     exitPointId = exitPointId,
                     shouldStopAtStation = shouldStopAtStation,
                     arrivalTime = arrivalTime,
-                    departureTime = departureTime
+                    departureTime = departureTime,
+                    cars = train.Cars,
+                    delay = train.delay
                 });
                 
                 Console.WriteLine($"Sent train {train.Number} to player {player.Id} at station {stationId}, exit point {exitPointId}, should stop: {shouldStopAtStation}, arrival: {arrivalTime}, departure: {departureTime}");

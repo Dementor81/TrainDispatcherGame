@@ -126,6 +126,9 @@ export class TrainRenderer {
             text.y = carPosition.y;
             if(trackAngle > 90 * Math.PI/180) 
                trackAngle = trackAngle - 180*Math.PI/180;
+
+            if(trackAngle < -90 * Math.PI/180)
+               trackAngle = trackAngle + 180*Math.PI/180;
             text.rotation = trackAngle;
             
 

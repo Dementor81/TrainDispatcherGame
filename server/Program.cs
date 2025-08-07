@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Builder;
 
 using TrainDispatcherGame.Server.Simulation;
 using TrainDispatcherGame.Server.Managers;
@@ -23,7 +22,13 @@ builder.Services.AddCors(options =>
 builder.Services.AddSignalR();
 
 // Add simulation as a singleton service
-builder.Services.AddSingleton<Simulation>();
+builder.Services.AddSingleton<Simulation>(serviceProvider =>
+{
+    var notificationManager = serviceProvider.GetRequiredService<INotificationManager>();
+    var trackLayoutService = serviceProvider.GetRequiredService<ITrackLayoutService>();
+    var timeTableService = serviceProvider.GetRequiredService<ITimeTableService>();
+    return new Simulation(notificationManager, trackLayoutService, timeTableService);
+});
 
 // Add player manager as a singleton service
 builder.Services.AddSingleton<PlayerManager>();
@@ -33,6 +38,9 @@ builder.Services.AddSingleton<INotificationManager, NotificationManager>();
 
 // Add track layout service as a singleton service
 builder.Services.AddSingleton<ITrackLayoutService, TrackLayoutService>();
+
+// Add time table service as a singleton service
+builder.Services.AddSingleton<ITimeTableService, TimeTableService>();
 
 var app = builder.Build();
 
@@ -128,7 +136,7 @@ app.MapGet("/api/simulation/status", (Simulation simulation) =>
         state = simulation.State.ToString(),
         errorMessage = simulation.ErrorMessage,
         elapsedSeconds = simulation.ElapsedSeconds,
-        currentTime = simulation.CurrentTime
+        currentTime = simulation.SimulationTime
     });
 });
 
@@ -156,6 +164,13 @@ app.MapGet("/api/simulation/trains/completed", (Simulation simulation) =>
 {
     var completedTrains = simulation.GetCompletedTrains();
     return Results.Ok(completedTrains);
+});
+
+// Endpoint to get upcoming trains for a specific station
+app.MapGet("/api/stations/{stationId}/upcoming-trains", (string stationId, Simulation simulation) =>
+{
+    var stationEvents = simulation.GetStationTimetableEvents(stationId);
+    return Results.Ok(stationEvents);
 });
 
 // Read-only player management endpoints (for admin/debugging)
