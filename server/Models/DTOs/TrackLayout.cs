@@ -7,11 +7,12 @@ namespace TrainDispatcherGame.Server.Models.DTOs
         [JsonPropertyName("id")]
         public string Id { get; set; } = string.Empty;
 
-        [JsonPropertyName("title")]
-        public string Title { get; set; } = string.Empty;
-
         [JsonPropertyName("exits")]
         public List<ExitPoint> Exits { get; set; } = new();
+
+        // Computed when loading the JSON in TrackLayoutService; not part of persisted JSON
+        [JsonIgnore]
+        public double MaxExitDistance { get; set; }
     }
 
     public class ExitPoint

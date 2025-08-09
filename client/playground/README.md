@@ -115,8 +115,8 @@ playground/
 ├── webpack.config.js  # Webpack configuration
 ├── package.json       # Dependencies and scripts
 ├── README.md          # This file
-├── a_stadt.json       # A-Stadt layout file
-├── b_stadt.json       # B-Stadt layout file
+├── A-Stadt.json       # A-Stadt layout file
+├── B-Stadt.json       # B-Stadt layout file
 └── dist/              # Built files (generated)
 ```
 

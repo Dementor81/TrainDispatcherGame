@@ -15,5 +15,11 @@ namespace TrainDispatcherGame.Server.Models.DTOs
 
         [JsonPropertyName("currentDelay")]
         public int CurrentDelay { get; set; } = 0;
+
+        [JsonPropertyName("fromStation")]
+        public string FromStation { get; set; } = string.Empty;
+
+        [JsonPropertyName("nextStation")]
+        public string NextStation { get; set; } = string.Empty;
     }
 }

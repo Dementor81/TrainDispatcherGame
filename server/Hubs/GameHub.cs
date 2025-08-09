@@ -40,9 +40,9 @@ namespace TrainDispatcherGame.Server.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        public async Task JoinStation(string playerId, string stationId)
+        public async Task JoinStation(string playerId, string stationId, string playerName = "")
         {
-            var success = _playerManager.TakeControlOfStation(playerId, stationId, Context.ConnectionId);
+            var success = _playerManager.TakeControlOfStation(playerId, stationId, Context.ConnectionId, playerName);
             
             if (success)
             {
@@ -55,6 +55,7 @@ namespace TrainDispatcherGame.Server.Hubs
                     success = true,
                     playerId = playerId,
                     stationId = stationId,
+                    playerName = playerName,
                     message = $"Successfully joined station {stationId}"
                 });
                 

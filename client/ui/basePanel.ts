@@ -3,19 +3,31 @@ import { Application } from "../core/application";
 export abstract class BasePanel {
   protected container: HTMLDivElement;
   protected isVisible: boolean = false;
-  protected updateInterval: number | null = null;
+  protected updateIntervalMs: number | null = null;
+  protected updateTimerId: number | null = null;
   protected application: Application;
 
-  constructor(application: Application, updateInterval: number | null = null) {
+  constructor(application: Application, updateIntervalMs: number | null = null) {
     this.application = application;
+    this.updateIntervalMs = updateIntervalMs;
     this.container = this.createContainer();
     this.setupContainer();
     document.body.appendChild(this.container);
-    this.updateInterval = updateInterval;
   }
 
-  protected abstract createContainer(): HTMLDivElement;
   protected abstract createContent(): HTMLDivElement;
+
+  protected createContainer(): HTMLDivElement {
+    const container = document.createElement('div');
+    const id = this.getContainerId();
+    if (id) {
+      container.id = id;
+    }
+    container.className = this.getContainerClasses();
+    const styles = this.getContainerStyles();
+    Object.assign(container.style, styles);
+    return container;
+  }
 
   private setupContainer(): void {
     const content = this.createContent();
@@ -35,14 +47,18 @@ export abstract class BasePanel {
     return 'position-absolute m-3 p-3 bg-dark text-light rounded shadow-lg';
   }
 
+  protected getContainerId(): string {
+    return '';
+  }
+
   public show(): void {
     this.container.style.display = 'block';
     this.isVisible = true;
     this.Updates();
-    if (this.updateInterval) {      
-      this.updateInterval = window.setInterval(() => {
+    if (this.updateIntervalMs !== null && this.updateIntervalMs > 0) {
+      this.updateTimerId = window.setInterval(() => {
         this.Updates();
-      }, this.updateInterval);
+      }, this.updateIntervalMs);
     }
   }
 
@@ -65,9 +81,9 @@ export abstract class BasePanel {
   }
 
   protected stopUpdates(): void {
-    if (this.updateInterval) {
-      clearInterval(this.updateInterval);
-      this.updateInterval = null;
+    if (this.updateTimerId) {
+      clearInterval(this.updateTimerId);
+      this.updateTimerId = null;
     }
   }
 

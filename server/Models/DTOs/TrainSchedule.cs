@@ -19,9 +19,6 @@ namespace TrainDispatcherGame.Server.Models.DTOs
         [JsonPropertyName("path")]
         public List<string> Path { get; set; } = new();
 
-        [JsonPropertyName("spawn")]
-        public SpawnInfo Spawn { get; set; } = new();
-
         [JsonPropertyName("timetable")]
         public List<TimetableEntry> Timetable { get; set; } = new();
     }

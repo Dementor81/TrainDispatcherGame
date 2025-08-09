@@ -11,18 +11,14 @@ export class TrainOverviewPanel extends BasePanel {
     super(application, 1000);
   }
 
-  protected createContainer(): HTMLDivElement {
-    const container = document.createElement('div');
-    container.id = 'trainOverviewPanel';
-    container.className = this.getContainerClasses() + ' top-0 end-0';
-    container.style.minWidth = '350px';
-    container.style.maxWidth = '450px';
-    
-    // Apply container styles
-    const styles = this.getContainerStyles();
-    Object.assign(container.style, styles);
-    
-    return container;
+  protected getContainerId(): string { return 'trainOverviewPanel'; }
+  protected getContainerClasses(): string { return super.getContainerClasses() + ' top-0 end-0'; }
+  protected getContainerStyles(): Partial<CSSStyleDeclaration> {
+    return {
+      ...super.getContainerStyles(),
+      minWidth: '350px',
+      maxWidth: '450px'
+    };
   }
 
   protected createContent(): HTMLDivElement {
@@ -86,6 +82,8 @@ export class TrainOverviewPanel extends BasePanel {
           <thead>
             <tr class="border-bottom border-secondary">
               <th>Train</th>
+              <th>From</th>
+              <th>To</th>
               <th>Arrival</th>
               <th>Departure</th>
               <th>Status</th>
@@ -105,6 +103,8 @@ export class TrainOverviewPanel extends BasePanel {
     return `
       <tr class="train-row">
         <td class="fw-bold">${train.trainNumber}</td>
+        <td class="small">${train.fromStation}</td>
+        <td class="small">${train.nextStation}</td>
         <td class="small">${this.formatTime(train.arrival)}</td>
         <td class="small">${this.formatTime(train.departure)}</td>
         <td><span class="badge ${delayInfo.class}">${delayInfo.text}</span></td>

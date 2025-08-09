@@ -68,8 +68,7 @@ app.MapGet("/api/layouts", (ITrackLayoutService trackLayoutService) =>
     var layouts = trackLayoutService.GetAllTrackLayouts();
     var stations = layouts.Select(layout => new
     {
-        id = layout.Id,
-        title = layout.Title
+        id = layout.Id
     }).ToList();
 
     return Results.Json(stations);

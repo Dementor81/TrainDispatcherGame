@@ -45,17 +45,17 @@ export class Application {
          console.error("Failed to connect to SignalR:", error);
       }
 
-      this._uiManager.showStationSelectionScreen(async (layout: string, playerId: string) => {
-         await this.handleStationSelection(layout, playerId);
+       this._uiManager.showStationSelectionScreen(async (layout: string, playerId: string, playerName?: string) => {
+          await this.handleStationSelection(layout, playerId, playerName);
       });
    }
 
-   private async handleStationSelection(layout: string, playerId: string): Promise<void> {
-      console.log("Selected layout:", layout, "Player ID:", playerId);
+   private async handleStationSelection(layout: string, playerId: string, playerName?: string): Promise<void> {
+      console.log("Selected layout:", layout, "Player ID:", playerId, "Player Name:", playerName);
       
       try {
          // Join the station via SignalR for real-time updates
-         await this._signalRManager.joinStation(playerId, layout);
+         await this._signalRManager.joinStation(playerId, layout, playerName);
          console.log('Successfully joined station via SignalR');
          
          // Store the player ID and station ID, then load the layout
@@ -80,8 +80,8 @@ export class Application {
          alert(`Fehler beim Übernehmen der Station: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`);
          
          // Show the station selector again if there was an error
-         this._uiManager.showStationSelectionScreen(async (layout: string, playerId: string) => {
-            this.handleStationSelection(layout, playerId);
+          this._uiManager.showStationSelectionScreen(async (layout: string, playerId: string, playerName?: string) => {
+             this.handleStationSelection(layout, playerId, playerName);
          });
       }
    }

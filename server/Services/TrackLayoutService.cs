@@ -10,7 +10,6 @@ namespace TrainDispatcherGame.Server.Services
         ExitPoint? GetExitPoint(string stationId, int exitId);
         ExitPoint? GetExitPointToStation(string fromStationId, string toStationId);
         List<TrackLayout> GetAllTrackLayouts();
-        string GetLayoutTitle(string layoutId);
     }
 
     public class TrackLayoutService : ITrackLayoutService
@@ -44,8 +43,10 @@ namespace TrainDispatcherGame.Server.Services
 
                         if (trackLayout != null)
                         {
+                        // Compute the maximum distance between any two exit points in this layout
+                        trackLayout.MaxExitDistance = ComputeMaxExitDistance(json);
                             _trackLayouts[trackLayout.Id] = trackLayout;
-                            Console.WriteLine($"Loaded track layout: {trackLayout.Title} ({trackLayout.Id}) with {trackLayout.Exits.Count} exits");
+                            Console.WriteLine($"Loaded track layout: {trackLayout.Id} with {trackLayout.Exits.Count} exits; max span: {trackLayout.MaxExitDistance:F2}");
                         }
                     }
                     catch (Exception ex)
@@ -60,6 +61,105 @@ namespace TrainDispatcherGame.Server.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading track layouts: {ex.Message}");
+            }
+        }
+
+        // Computes the maximum pairwise distance between all exit points in the layout
+        private static double ComputeMaxExitDistance(string rawJson)
+        {
+            try
+            {
+                using var document = JsonDocument.Parse(rawJson);
+                if (!document.RootElement.TryGetProperty("tracks", out var tracksElement) || tracksElement.ValueKind != JsonValueKind.Array)
+                {
+                    return 0d;
+                }
+
+                var exitPoints = new Dictionary<int, (double x, double y)>();
+
+                foreach (var track in tracksElement.EnumerateArray())
+                {
+                    // We expect two endpoints per track; switches array items correspond to start/end
+                    if (!track.TryGetProperty("switches", out var switchesEl) || switchesEl.ValueKind != JsonValueKind.Array)
+                    {
+                        continue;
+                    }
+
+                    // Read endpoints
+                    bool hasStart = false;
+                    bool hasEnd = false;
+                    double startX = 0d, startY = 0d, endX = 0d, endY = 0d;
+
+                    if (track.TryGetProperty("start", out var startEl))
+                    {
+                        if (startEl.TryGetProperty("x", out var sxEl) && startEl.TryGetProperty("y", out var syEl))
+                        {
+                            startX = sxEl.GetDouble();
+                            startY = syEl.GetDouble();
+                            hasStart = true;
+                        }
+                    }
+
+                    if (track.TryGetProperty("end", out var endEl))
+                    {
+                        if (endEl.TryGetProperty("x", out var exEl) && endEl.TryGetProperty("y", out var eyEl))
+                        {
+                            endX = exEl.GetDouble();
+                            endY = eyEl.GetDouble();
+                            hasEnd = true;
+                        }
+                    }
+
+                    int idx = 0;
+                    foreach (var sw in switchesEl.EnumerateArray())
+                    {
+                        if (sw.ValueKind == JsonValueKind.Object &&
+                            sw.TryGetProperty("type", out var typeEl) &&
+                            typeEl.GetString() == "Exit" &&
+                            sw.TryGetProperty("id", out var exitIdEl) &&
+                            exitIdEl.ValueKind == JsonValueKind.Number)
+                        {
+                            int exitId = exitIdEl.GetInt32();
+                            // Map the exit to the corresponding endpoint by index
+                            if (idx == 0 && hasStart)
+                            {
+                                exitPoints[exitId] = (startX, startY);
+                            }
+                            else if (idx == 1 && hasEnd)
+                            {
+                                exitPoints[exitId] = (endX, endY);
+                            }
+                        }
+                        idx++;
+                    }
+                }
+
+                if (exitPoints.Count < 2)
+                {
+                    return 0d;
+                }
+
+                var exitList = exitPoints.Values.ToList();
+                double maxDistance = 0d;
+                for (int i = 0; i < exitList.Count; i++)
+                {
+                    for (int j = i + 1; j < exitList.Count; j++)
+                    {
+                        var dx = exitList[i].x - exitList[j].x;
+                        var dy = exitList[i].y - exitList[j].y;
+                        var distance = Math.Sqrt(dx * dx + dy * dy);
+                        if (distance > maxDistance)
+                        {
+                            maxDistance = distance;
+                        }
+                    }
+                }
+
+                return maxDistance;
+            }
+            catch
+            {
+                return 0d;
             }
         }
 
@@ -83,11 +183,6 @@ namespace TrainDispatcherGame.Server.Services
         public List<TrackLayout> GetAllTrackLayouts()
         {
             return _trackLayouts.Values.ToList();
-        }
-
-        public string GetLayoutTitle(string layoutId)
-        {
-            return _trackLayouts.TryGetValue(layoutId, out var layout) ? layout.Title : "NaN";
         }
     }
 }

@@ -10,7 +10,7 @@ namespace TrainDispatcherGame.Server.Managers
         private readonly Dictionary<string, Player> _players = new();
         private readonly Dictionary<string, string> _stationToPlayer = new(); // stationId -> playerId
 
-        public bool TakeControlOfStation(string playerId, string stationId, string connectionId = "")
+        public bool TakeControlOfStation(string playerId, string stationId, string connectionId = "", string playerName = "")
         {
             // Check if station is already controlled by another player
             if (_stationToPlayer.ContainsKey(stationId))
@@ -27,7 +27,7 @@ namespace TrainDispatcherGame.Server.Managers
             RemovePlayerFromStation(playerId);
 
             // Create new player or update existing one
-            var player = new Player(playerId, stationId, connectionId);
+            var player = new Player(playerId, stationId, connectionId, playerName);
             _players[playerId] = player;
             _stationToPlayer[stationId] = playerId;
 

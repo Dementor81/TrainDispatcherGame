@@ -69,19 +69,18 @@ export class TrainManager {
    }
 
    pauseSimulation(): void {
-    this._isSimulationRunning = false;
-    if (this._simulationTimer) {
-       clearInterval(this._simulationTimer);
-       this._simulationTimer = null;
-    }
+      this._isSimulationRunning = false;
+      if (this._simulationTimer) {
+         clearInterval(this._simulationTimer);
+         this._simulationTimer = null;
+      }
    }
 
    resumeSimulation(): void {
-
-    this._isSimulationRunning = true;
-    this._simulationTimer = setInterval(() => {
-       this.updateSimulation();
-    }, SimulationConfig.simulationIntervalSeconds * 1000);
+      this._isSimulationRunning = true;
+      this._simulationTimer = setInterval(() => {
+         this.updateSimulation();
+      }, SimulationConfig.simulationIntervalSeconds * 1000);
    }
 
    // Check if simulation is running
@@ -125,8 +124,6 @@ export class TrainManager {
          return; // No trains to update
       }
 
-      
-
       this.getCurrentSimulationTime().catch((error) => {
          console.warn("Failed to update simulation time:", error);
       });
@@ -155,6 +152,16 @@ export class TrainManager {
 
       // Calculate movement distance based on elapsed time
 
+      // Collision check with other trains on the same track
+      const proposedDistance = train.getMovementDistance();
+
+      const blockingTrain = this.findBlockingTrain(train, proposedDistance);
+      if (blockingTrain) {
+         // Do not advance this tick to avoid collision
+         this._eventManager.emit("trainBlockedByTrain", train, blockingTrain);
+         return false;
+      }
+
       // Check for signals ahead before moving
       const stoppingSignal = this.checkSignalsAhead(train);
       if (stoppingSignal) {
@@ -166,15 +173,13 @@ export class TrainManager {
       }
 
       // Check if train should stop at a station or depart
-      if (this.checkStationStop(train)) {
+      if (this.checkStationStop(train,proposedDistance)) {
          return false;
       }
-
-      const movedDistance = train.getMovementDistance();
-
-      if (movedDistance <= 0.001) {
+      if (Math.abs(proposedDistance) <= 0.001) {
          return false;
       }
+      const movedDistance = proposedDistance;
 
       // Use TrackLayoutManager to calculate new position
       try {
@@ -369,6 +374,79 @@ export class TrainManager {
       }
    }
 
+   // Determine if another train blocks the proposed movement on the same track
+   private findBlockingTrain(train: Train, proposedDistance: number): Train | null {
+      const currentTrack = train.track;
+      if (!currentTrack) return null;
+
+      const headCurrent = train.km;
+      const headNew = headCurrent + proposedDistance;
+      const pathMin = Math.min(headCurrent, headNew);
+      const pathMax = Math.max(headCurrent, headNew);
+
+      for (const other of this._trains) {
+         if (other === train) continue;
+         if (other.track !== currentTrack) continue; // minimal same-track collision check
+
+         // Compute other's body segment on this track
+         const otherHead = other.km;
+         const otherTail = other.direction > 0 ? otherHead - other.getLength() : otherHead + other.getLength();
+         let otherStart = Math.min(otherHead, otherTail);
+         let otherEnd = Math.max(otherHead, otherTail);
+
+         // Clamp to track bounds
+         otherStart = Math.max(0, otherStart);
+         otherEnd = Math.min(currentTrack.length, otherEnd);
+
+         // Expand by safety gap
+         const expandedStart = Math.max(0, otherStart - SimulationConfig.safetyGapDistance);
+         const expandedEnd = Math.min(currentTrack.length, otherEnd + SimulationConfig.safetyGapDistance);
+
+         // Check intersection between our head path and the other's expanded body segment
+         const intersects = !(pathMax < expandedStart || pathMin > expandedEnd);
+         if (intersects) {
+            return other;
+         }
+      }
+
+      // If the move crosses into a different track, check that segment too
+      try {
+         const result = this._trackLayoutManager.followRailNetwork(currentTrack, headCurrent, proposedDistance);
+         if (result.element instanceof Track && result.element !== currentTrack) {
+            const nextTrack: Track = result.element;
+            const segmentStartKm = train.direction > 0 ? 0 : nextTrack.length;
+            const segmentEndKm = result.km;
+            const segMin = Math.min(segmentStartKm, segmentEndKm);
+            const segMax = Math.max(segmentStartKm, segmentEndKm);
+
+            for (const other of this._trains) {
+               if (other === train) continue;
+               if (other.track !== nextTrack) continue;
+
+               const otherHead = other.km;
+               const otherTail = other.direction > 0 ? otherHead - other.getLength() : otherHead + other.getLength();
+               let otherStart = Math.min(otherHead, otherTail);
+               let otherEnd = Math.max(otherHead, otherTail);
+
+               otherStart = Math.max(0, otherStart);
+               otherEnd = Math.min(nextTrack.length, otherEnd);
+
+               const expandedStart = Math.max(0, otherStart - SimulationConfig.safetyGapDistance);
+               const expandedEnd = Math.min(nextTrack.length, otherEnd + SimulationConfig.safetyGapDistance);
+
+               const intersects = !(segMax < expandedStart || segMin > expandedEnd);
+               if (intersects) {
+                  return other;
+               }
+            }
+         }
+      } catch {
+         // ignore followRailNetwork errors here; collision check best-effort
+      }
+
+      return null;
+   }
+
    // ==================== TRAIN MANAGEMENT METHODS ====================
 
    // Add a new train to the manager at a specific exit point
@@ -497,7 +575,7 @@ export class TrainManager {
 
    // Check if train should stop at a station or depart based on schedule
    // returns true if train should stop at a station or is already stopped, false if it should depart or it is not near the station
-   private checkStationStop(train: Train): boolean {
+   private checkStationStop(train: Train, proposedDistance: number): boolean {
       // Early return if no simulation time or no station stop needed
       if (!this._currentSimulationTime || !train.shouldStopAtCurrentStation || !train.track || !train.track.halt) {
          return false;
@@ -510,15 +588,11 @@ export class TrainManager {
             // Check if the next signal allows departure
             const nextSignal = this._trackLayoutManager.getNextSignal(train.track, train.km, train.direction);
             if (nextSignal && !nextSignal.isTrainAllowedToGo()) {
-               console.log(
-                  `Train ${train.number} cannot depart, Next signal at km ${nextSignal.position} is red`
-               );
+               console.log(`Train ${train.number} cannot depart, Next signal at km ${nextSignal.position} is red`);
                return true; // Signal is red, cannot depart
             }
 
-            console.log(
-               `Train ${train.number} departing at scheduled time ${train.departureTime.toLocaleTimeString()}`
-            );
+            console.log(`Train ${train.number} departing at scheduled time ${train.departureTime.toLocaleTimeString()}`);
             train.setMoving(true);
             train.setStopReason(TrainStopReason.NONE);
             train.shouldStopAtCurrentStation = false;
@@ -530,20 +604,20 @@ export class TrainManager {
       }
 
       // Train is not stopped - check if it needs to stop (only calculate distance if needed)
-      const trackCenter = train.track.length / 2 + train.getLength() / 2;
+
+      const trackCenter = train.track.length / 2 + (train.getLength() / 2 * train.direction);
       const distanceFromCenter = Math.abs(train.km - trackCenter);
-      const isNearStation = distanceFromCenter <= train.getMovementDistance() + 0.1;      
+      const isNearStation = distanceFromCenter <= Math.abs(proposedDistance) + 0.1;
 
       if (isNearStation) {
          // Train is arriving and near the station - stop it
          if (train.arrivalTime && train.departureTime && this._currentSimulationTime > train.arrivalTime) {
             const delay = this._currentSimulationTime.getTime() - train.arrivalTime.getTime();
-            train.setScheduleTimes(
-               train.arrivalTime,
-               new Date(train.departureTime.getTime() + delay)
-            );
+            train.setScheduleTimes(train.arrivalTime, new Date(train.departureTime.getTime() + delay));
          }
-         console.log(`Train ${train.number} stopped at station as scheduled, departure time: ${train.departureTime?.toLocaleTimeString()}`);
+         console.log(
+            `Train ${train.number} stopped at station as scheduled, departure time: ${train.departureTime?.toLocaleTimeString()}`
+         );
          train.setMoving(false);
          train.setStopReason(TrainStopReason.STATION);
          this._eventManager.emit("trainStoppedAtStation", train);

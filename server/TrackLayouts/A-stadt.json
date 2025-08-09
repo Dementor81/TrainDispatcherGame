@@ -1,9 +1,8 @@
 {
-  "id": "b_stadt",
-  "title": "B-Stadt",
+  "id": "A-Stadt",
   "exits": [
-    {"destination": "a_stadt",  "id": 0},
-    {"destination": "München", "id": 1}
+    {"destination": "Linksdorf",  "id": 0},
+    {"destination": "B-Stadt", "id": 1}
   ],
   "tracks": [
     {

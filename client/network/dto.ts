@@ -1,6 +1,5 @@
 export interface TrackLayoutDto {
   id: string;
-  title: string;
   exits: ExitDto[];
   tracks: TrackDto[];
   switches: SwitchDto[];
@@ -74,4 +73,6 @@ export interface StationTimetableEventDto {
   arrival: string;
   departure: string;
   currentDelay: number;
+  fromStation: string;
+  nextStation: string;
 }

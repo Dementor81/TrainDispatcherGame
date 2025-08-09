@@ -21,10 +21,10 @@ class LayoutApi {
             // Import the JSON files directly
             let layoutData: any;
             
-            if (layoutId === 'a_stadt') {
-                layoutData = await import('./a_stadt.json');
-            } else if (layoutId === 'b_stadt') {
-                layoutData = await import('./b_stadt.json');
+            if (layoutId === 'A-Stadt') {
+                layoutData = await import('./A-Stadt.json');
+            } else if (layoutId === 'B-Stadt') {
+                layoutData = await import('./B-Stadt.json');
             } else {
                 throw new Error(`Layout ${layoutId} not found`);
             }

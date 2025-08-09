@@ -4,7 +4,6 @@ const API_BASE_URL = "http://localhost:5070/api";
 
 export interface StationInfo {
   id: string;
-  title: string;
 }
 
 export async function fetchAvailableStations(): Promise<StationInfo[]> {

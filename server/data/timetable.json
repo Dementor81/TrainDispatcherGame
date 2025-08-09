@@ -7,19 +7,19 @@
          "type": "Passenger",
          "speed": 100,
          "cars": 4,
-         "path": ["Berlin", "München"],
+         "path": ["Linksdorf", "Rechtsheim"],
          "spawn": {
             "type": "exit",
             "time": "00:00:05"
          },
          "timetable": [
             {
-               "station": "a_stadt",
+               "station": "A-Stadt",
                "arrival": "00:00:50",
                "departure": "00:01:00"
             },
             {
-               "station": "b_stadt",
+               "station": "B-Stadt",
                "arrival": "00:04",
                "departure": "00:05"
             }

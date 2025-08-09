@@ -33,7 +33,7 @@ namespace TrainDispatcherGame.Server.Services
         {
             try
             {
-                var filePath = Path.Combine("data", "timetable.json");
+                var filePath = Path.Combine("data", "timetable2.json");
                 if (File.Exists(filePath))
                 {
                     var json = File.ReadAllText(filePath);
@@ -107,17 +107,23 @@ namespace TrainDispatcherGame.Server.Services
                     }
                 }
 
-                // Convert spawn info to TrainSpawn struct
-                if (TimeSpan.TryParse(trainSchedule.Spawn.Time, out var spawnTime))
-                {
-                    var spawnDateTime = _simulationStartTime.Add(spawnTime);
-                    var firstStation = train.Events.First().Station;
+                
 
-                    // Find the exit point that leads to the first station
+                // Compute spawn time based on station span and train speed
+                var firstEvent = train.Events.FirstOrDefault();
+                if (firstEvent != null)
+                {
+                    var firstStation = firstEvent.Station;
+                    var layout = trackLayoutService.GetTrackLayout(firstStation);
+                    double halfSpan = (layout?.MaxExitDistance ?? 0d) / 2d;
+                    double speedUnitsPerSecond = Math.Max(1d, trainSchedule.Speed);
+                    double travelSeconds = halfSpan / speedUnitsPerSecond;
+                    var spawnDateTime = firstEvent.ArrivalTime - TimeSpan.FromSeconds(travelSeconds);
+
+                    // Find the exit point that leads toward the origin direction for this train's first approach
                     var exitPoint = trackLayoutService.GetExitPointToStation(firstStation, train.Path.First());
 
                     train.Spawn = new TrainSpawn(
-                        trainSchedule.Spawn.Type,
                         spawnDateTime,
                         firstStation,
                         exitPoint?.Id ?? -1
@@ -127,7 +133,7 @@ namespace TrainDispatcherGame.Server.Services
                 trains.Add(train);
             }
 
-            Console.WriteLine($"Loaded {trains.Count} trains from timetable starting at {_simulationStartTime:HH:mm:ss}");
+            Console.WriteLine($"Loaded {trains.Count} trains from timetable starting at {_simulationStartTime:HH:mm:ss}");            
             return trains;
         }
 

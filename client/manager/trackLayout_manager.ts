@@ -21,7 +21,7 @@ export class TrackLayoutManager {
    private _switches: Switch[] = [];
    private _exits: Exit[] = [];
    private _signals: Signal[] = [];
-   private _layoutTitle: string = "";
+   private _layoutId: string = "";
    private _renderer: Renderer | null = null;
    private _onLayoutLoaded: (() => void) | null = null;
    private _application: Application;
@@ -73,8 +73,8 @@ export class TrackLayoutManager {
       return this._signals;
    }
 
-   get layoutTitle(): string {
-      return this._layoutTitle;
+   get layoutId(): string {
+      return this._layoutId;
    }
 
    // Find the track and kilometer position for an exit point
@@ -144,7 +144,7 @@ export class TrackLayoutManager {
          this._switches = trackLayout.switches;
          this._exits = trackLayout.exits;
          this._signals = trackLayout.signals;
-         this._layoutTitle = trackLayoutDto.title;
+         this._layoutId = trackLayoutDto.id;
          console.log(
             "Track layout loaded:",
             this._tracks.length,

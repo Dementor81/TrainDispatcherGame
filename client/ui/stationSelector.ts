@@ -1,11 +1,12 @@
 import { fetchAvailableStations, StationInfo } from "../network/api";
+import { Tools } from "../core/utils";
 
 export class StationSelector {
   private modal: HTMLElement | null = null;
   private dropdown: HTMLSelectElement | null = null;
   private playerNameInput: HTMLInputElement | null = null;
   private startButton: HTMLButtonElement | null = null;
-  private onStationSelected: ((layout: string, playerId: string) => void) | null = null;
+  private onStationSelected: ((layout: string, playerId: string, playerName?: string) => void) | null = null;
 
   constructor() {
     this.initializeElements();
@@ -47,7 +48,7 @@ export class StationSelector {
       stations.forEach(station => {
         const option = document.createElement('option');
         option.value = station.id;
-        option.textContent = station.title;
+        option.textContent = station.id;
         this.dropdown!.appendChild(option);
       });
 
@@ -65,26 +66,22 @@ export class StationSelector {
     if (!this.dropdown || !this.playerNameInput || !this.onStationSelected) return;
 
     const selectedStation = this.dropdown.value;
-    let playerName = this.playerNameInput.value.trim();
+    const playerName = this.playerNameInput.value.trim();
 
     if (!selectedStation) {
       alert('Bitte wählen Sie einen Bahnhof aus.');
       return;
     }
 
-    // If no player name was entered, set it to "player one"
-    if (!playerName) {
-      playerName = "player one";
-    }
-
-    // Call the callback with the selected station and player ID
-    this.onStationSelected(selectedStation, playerName);
+    // Call the callback with the selected station and player GUID, passing playerName optionally
+    const playerId = this.getOrCreateClientId();
+    this.onStationSelected(selectedStation, playerId, playerName || undefined);
     
     // Hide the modal
     this.hideModal();
   }
 
-  public showModal(onStationSelected: (layout: string, playerId: string) => void): void {
+  public showModal(onStationSelected: (layout: string, playerId: string, playerName?: string) => void): void {
     this.onStationSelected = onStationSelected;
     
     // Clear the player name input
@@ -97,6 +94,14 @@ export class StationSelector {
       const bootstrapModal = new (window as any).bootstrap.Modal(this.modal);
       bootstrapModal.show();
     }
+  }
+
+  private getOrCreateClientId(): string {
+    // Generate a fresh GUID per app instance (no persistence)
+    if ((crypto as any).randomUUID) {
+      return (crypto as any).randomUUID();
+    }
+    return Tools.generateGuid();
   }
 
   public hideModal(): void {

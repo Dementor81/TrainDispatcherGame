@@ -26,17 +26,8 @@ export class ControlPanel extends BasePanel {
     this.container.appendChild(this.controlsContainer);
   }
 
-  protected createContainer(): HTMLDivElement {
-    const container = document.createElement('div');
-    container.id = 'controlPanel';
-    container.className = this.getContainerClasses() + ' top-0 start-0';
-    
-    // Apply container styles
-    const styles = this.getContainerStyles();
-    Object.assign(container.style, styles);
-    
-    return container;
-  }
+  protected getContainerId(): string { return 'controlPanel'; }
+  protected getContainerClasses(): string { return super.getContainerClasses() + ' top-0 start-0'; }
 
   protected createContent(): HTMLDivElement {
     // This is not used in ControlPanel as we manually add status and controls containers
@@ -59,17 +50,8 @@ export class ControlPanel extends BasePanel {
     const timeCol = document.createElement('div');
     timeCol.className = 'col-6';
     timeCol.innerHTML = `
-      <div class="small text-muted">Current Time</div>
       <div id="simulationTime" class="fw-bold">--:--</div>
-    `;
-    
-    // Active trains
-    const trainsCol = document.createElement('div');
-    trainsCol.className = 'col-6';
-    trainsCol.innerHTML = `
-      <div class="small text-muted">Trains (Server/Client)</div>
-      <div id="activeTrainsCount" class="fw-bold">0/0</div>
-    `;
+    `;   
     
     // Simulation status
     const statusCol = document.createElement('div');
@@ -80,7 +62,6 @@ export class ControlPanel extends BasePanel {
     `;
     
     statusGrid.appendChild(timeCol);
-    statusGrid.appendChild(trainsCol);
     statusGrid.appendChild(statusCol);
     
     statusContainer.appendChild(title);
@@ -135,9 +116,8 @@ export class ControlPanel extends BasePanel {
 
   private async updateStatus(): Promise<void> {
     try {
-      const [status, activeTrains] = await Promise.all([
-        getSimulationStatus(),
-        getActiveTrains()
+      const [status] = await Promise.all([
+        getSimulationStatus()
       ]);
 
       // Update simulation time
@@ -145,15 +125,7 @@ export class ControlPanel extends BasePanel {
       if (timeElement) {
         const currentTime = new Date(status.currentTime);
         timeElement.textContent = currentTime.toLocaleTimeString();
-      }
-
-      // Update active trains count
-      const trainsElement = document.getElementById('activeTrainsCount');
-      if (trainsElement) {
-        const clientTrains = this.trainManager?.getTrainCount() || 0;
-        const serverTrains = activeTrains.length;
-        trainsElement.textContent = `${serverTrains}/${clientTrains}`;
-      }
+      }    
 
       // Update simulation status
       const statusElement = document.getElementById('simulationStatus');

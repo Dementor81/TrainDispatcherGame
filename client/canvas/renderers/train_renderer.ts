@@ -79,8 +79,9 @@ export class TrainRenderer {
          let carPosition = PositionCalculator.getPointFromPosition(carTrack, carKm);
          let trackAngle = carTrack.rad;
          if (curveTrack && curveTrack.slope != carTrack.slope) {
-            carPosition = PositionCalculator.getPointFromPositionAdvanced(carTrack, carKm, curveTrack);
-            trackAngle = PositionCalculator.getRotationFromPosition(carTrack, carKm, curveTrack);
+            const pose = PositionCalculator.getAdvancedPose(carTrack, carKm, curveTrack);
+            carPosition = pose.point;
+            trackAngle = pose.rotation;
          }
 
          // Create rounded rectangle for car body

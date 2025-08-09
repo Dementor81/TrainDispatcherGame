@@ -1,9 +1,8 @@
 {
-  "id": "b_stadt",
-  "title": "B-Stadt",
+  "id": "B-Stadt",
   "exits": [
     {
-      "destination": "a_stadt",
+      "destination": "A-Stadt",
       "id": 0
     },
     {

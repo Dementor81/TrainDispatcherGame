@@ -1,0 +1,158 @@
+{
+    "title": "Fahrplan",
+    "start_time": "00:00",
+    "trains": [
+       {
+          "number": "1001",
+          "type": "Passenger",
+          "speed": 100,
+          "cars": 4,
+          "path": ["Linksdorf", "Rechtsheim"],          
+          "timetable": [
+             {
+                "station": "A-Stadt",
+                "arrival": "00:00:50",
+                "departure": "00:01:00"
+             },
+             {
+                "station": "B-Stadt",
+                "arrival": "00:03:00",
+                "departure": "00:04:00"
+             }
+          ]
+       },
+       {
+          "number": "1002",
+          "type": "Passenger",
+          "speed": 100,
+          "cars": 6,
+          "path": ["Rechtsheim", "Linksdorf"],          
+          "timetable": [
+             {
+                "station": "B-Stadt",
+                "arrival": "00:01:00",
+                "departure": "00:03:00"
+             },
+             {
+                "station": "A-Stadt",
+                "arrival": "00:07:00",
+                "departure": "00:08:00"
+             }
+          ]
+       },
+       {
+          "number": "1003",
+          "type": "Passenger",
+          "speed": 100,
+          "cars": 4,
+          "path": ["Linksdorf", "Rechtsheim"],          
+          "timetable": [
+             {
+                "station": "A-Stadt",
+                "arrival": "00:06:00",
+                "departure": "00:08:00"
+             },
+             {
+                "station": "B-Stadt",
+                "arrival": "00:10:00",
+                "departure": "00:12:00"
+             }
+          ]
+       },
+       {
+          "number": "1004",
+          "type": "Passenger",
+          "speed": 100,
+          "cars": 4,
+          "path": ["Rechtsheim", "Linksdorf"],         
+          "timetable": [
+             {
+                "station": "B-Stadt",
+                "arrival": "00:11:00",
+                "departure": "00:12:00"
+             },
+             {
+                "station": "A-Stadt",
+                "arrival": "00:14:00",
+                "departure": "00:15:00"
+             }
+          ]
+       },
+       {
+          "number": "1005",
+          "type": "Passenger",
+          "speed": 100,
+          "cars": 4,
+          "path": ["Linksdorf", "Rechtsheim"],          
+          "timetable": [
+             {
+                "station": "A-Stadt",
+                "arrival": "00:16:00",
+                "departure": "00:17:00"
+             },
+             {
+                "station": "B-Stadt",
+                "arrival": "00:19:00",
+                "departure": "00:20:00"
+             }
+          ]
+       },
+       {
+          "number": "1006",
+          "type": "Passenger",
+          "speed": 100,
+          "cars": 4,
+          "path": ["Rechtsheim", "Linksdorf"],          
+          "timetable": [
+             {
+                "station": "B-Stadt",
+                "arrival": "00:21:00",
+                "departure": "00:22:00"
+             },
+             {
+                "station": "A-Stadt",
+                "arrival": "00:24:00",
+                "departure": "00:25:00"
+             }
+          ]
+       },
+       {
+          "number": "1007",
+          "type": "Passenger",
+          "speed": 100,
+          "cars": 4,
+          "path": ["Linksdorf", "Rechtsheim"],          
+          "timetable": [
+             {
+                "station": "A-Stadt",
+                "arrival": "00:26:00",
+                "departure": "00:27:00"
+             },
+             {
+                "station": "B-Stadt",
+                "arrival": "00:29:00",
+                "departure": "00:30:00"
+             }
+          ]
+       },
+       {
+          "number": "1008",
+          "type": "Passenger",
+          "speed": 100,
+          "cars": 4,
+          "path": ["Rechtsheim", "Linksdorf"],          
+          "timetable": [
+             {
+                "station": "B-Stadt",
+                "arrival": "00:31:00",
+                "departure": "00:32:00"
+             },
+             {
+                "station": "A-Stadt",
+                "arrival": "00:34:00",
+                "departure": "00:35:00"
+             }
+          ]
+       }
+    ]
+ }

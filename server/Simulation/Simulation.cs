@@ -197,7 +197,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 train.CurrentLocation = station;
                 train.HeadingForStation = null;
 
-                Console.WriteLine($"Train {train.Number} spawned at spawn point {train.Spawn.Type} {locationId} heading for {station}");
+                Console.WriteLine($"Train {train.Number} spawned at spawn point {locationId} heading for {station}");
                 train.Spawn = null;
             }
             catch (Exception ex)
@@ -238,16 +238,55 @@ namespace TrainDispatcherGame.Server.Simulation
                 if (currentEvent == null) continue;
 
                 // Check if this train has any future events at the requested station
-                var futureEvents = train.GetFutureEvents().Where(e => e.Station.Equals(stationId, StringComparison.OrdinalIgnoreCase));
+                var futureEvents = train
+                    .GetFutureEvents()
+                    .Where(e => e.Station.Equals(stationId, StringComparison.OrdinalIgnoreCase));
                 
                 foreach (var futureEvent in futureEvents)
                 {
+                    // Determine the origin station by looking back for the previous event
+                    string fromStation = string.Empty;
+                    var allEvents = train.Events;
+                    var eventIndex = allEvents.IndexOf(futureEvent);
+                    if (eventIndex > 0)
+                    {
+                        // Walk backwards to find the previous event
+                        for (int i = eventIndex - 1; i >= 0; i--)
+                        {
+                            var prev = allEvents[i];
+                            if (prev != null)
+                            {
+                                fromStation = prev.Station;
+                                break;
+                            }
+                        }
+                    }
+                    // Fallback: if there was no previous event, use the first entry of the path
+                    if (string.IsNullOrWhiteSpace(fromStation))
+                    {
+                        fromStation = (train.Path != null && train.Path.Count > 0) ? train.Path[0] : string.Empty;
+                    }
+
+                    // Determine the next station after stopping at the current (futureEvent) station
+                    string nextStation = string.Empty;
+                    if (eventIndex >= 0 && eventIndex + 1 < allEvents.Count)
+                    {
+                        nextStation = allEvents[eventIndex + 1].Station;
+                    }
+                    else
+                    {
+                        // If this is the last station, use the second station from the path as fallback
+                        nextStation = (train.Path != null && train.Path.Count >= 2) ? train.Path[1] : string.Empty;
+                    }
+
                     stationEvents.Add(new StationTimetableEvent
                     {
                         TrainNumber = train.Number,
                         Arrival = futureEvent.ArrivalTime.ToString("HH:mm:ss"),
                         Departure = futureEvent.DepartureTime.ToString("HH:mm:ss"),
-                        CurrentDelay = train.delay
+                        CurrentDelay = train.delay,
+                        FromStation = fromStation,
+                        NextStation = nextStation
                     });
                 }
             }
@@ -293,14 +332,17 @@ namespace TrainDispatcherGame.Server.Simulation
                 {
                     if (nextEvent.Station != train.HeadingForStation)
                     {
-                        Console.WriteLine($"Train {train.Number} was missrouted to {_trackLayoutService.GetLayoutTitle(train.HeadingForStation)} instead of {_trackLayoutService.GetLayoutTitle(nextEvent.Station)}");
+                        Console.WriteLine($"Train {train.Number} was missrouted to {train.HeadingForStation} instead of {nextEvent.Station}");
                         // TODO: handle missrouted train
                     }
                     
+                    if (string.IsNullOrEmpty(lastLocation))
+                    {
+                        throw new Exception($"No last known location for train {train.Number}");
+                    }
                     var exitPoint = _trackLayoutService.GetExitPointToStation(nextEvent.Station, lastLocation);
                     if (exitPoint == null) throw new Exception($"No exit point found for train {train.Number} from {nextEvent.Station} to {lastLocation}");
                     train.Spawn = new TrainSpawn(
-                        "exit",
                         SimulationTime.AddMinutes(1),
                         nextEvent.Station,
                         exitPoint.Id

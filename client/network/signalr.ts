@@ -122,13 +122,13 @@ export class SignalRManager {
         }
     }
 
-    public async joinStation(playerId: string, stationId: string): Promise<void> {
+    public async joinStation(playerId: string, stationId: string, playerName?: string): Promise<void> {
         if (!this.connection || !this.isConnected) {
             throw new Error('SignalR connection not established');
         }
 
         try {
-            await this.connection.invoke('JoinStation', playerId, stationId);
+            await this.connection.invoke('JoinStation', playerId, stationId, playerName ?? '');
             
             // Store the player and station IDs for reconnection
             this.lastPlayerId = playerId;

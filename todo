@@ -1,9 +1,18 @@
-☐ save delay on incoming trains
-✘ create new train schedule event when the trains was missrouted @cancelled(25-08-03 12:05)
-✔ add the abiltiy for the train to stop at a station @done(25-08-04 17:45)
-☐ check for collisions on client side
-☐ check collisions on server side
-☐ show player upcoming trains 
+Features:
+    ✔ save delay on incoming trains @done(25-08-07 19:35)
+    ✘ create new train schedule event when the trains was missrouted @cancelled(25-08-03 12:05)
+    ✔ add the abiltiy for the train to stop at a station @done(25-08-04 17:45)
+    ☐ check for collisions on client side
+    ☐ check collisions on server side
+    ✔ show player upcoming trains @done(25-08-07 19:35)
+
+Big Features:
+    ☐ uncontrolled stations should be handled by the server
+    ☐ trains can end at a station and return as new trains
+    ☐ 2-way tracks
+
+Bugs:
+    ✔ prevent players with the same name from joining the game (currently breaks the game) @done(25-08-09 15:31)
 
 
 

@@ -14,7 +14,7 @@ export class StationRenderer {
    }
 
    renderStationName(): void {
-      const stationName = this._trackLayoutManager.layoutTitle;
+      const stationName = this._trackLayoutManager.layoutId;
       if (!stationName) return;
 
       // Calculate the center position of the layout
