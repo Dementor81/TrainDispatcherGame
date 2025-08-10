@@ -53,6 +53,20 @@ export class TrackRenderer {
       const position = (inverted ? track.start : track.end).add(unit.multiply(5));
       const end = position.add(unit.multiply(15));
       drawArrow(exitContainer, position, end, { color: RendererConfig.trackColor, width: 2 });
+      // Add destination label above the arrow tip
+      const text = new PIXI.Text({
+         text: exit.destination,
+         style: {
+            fontSize: RendererConfig.exitTextSize,
+            fill: RendererConfig.exitTextColor,
+            align: "center",
+            fontFamily: RendererConfig.exitTextFont,
+         },
+      });
+      text.anchor.set(0.5, 1);
+      text.x = end.x;
+      text.y = end.y - RendererConfig.exitTextOffset;
+      exitContainer.addChild(text);
       this._exitContainer.addChild(exitContainer);
    }
 
