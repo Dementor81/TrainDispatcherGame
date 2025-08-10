@@ -116,8 +116,7 @@ namespace TrainDispatcherGame.Server.Services
                     var firstStation = firstEvent.Station;
                     var layout = trackLayoutService.GetTrackLayout(firstStation);
                     double halfSpan = (layout?.MaxExitDistance ?? 0d) / 2d;
-                    double speedUnitsPerSecond = Math.Max(1d, trainSchedule.Speed);
-                    double travelSeconds = halfSpan / speedUnitsPerSecond;
+                    double travelSeconds = halfSpan / trainSchedule.Speed;
                     var spawnDateTime = firstEvent.ArrivalTime - TimeSpan.FromSeconds(travelSeconds);
 
                     // Find the exit point that leads toward the origin direction for this train's first approach
@@ -133,7 +132,8 @@ namespace TrainDispatcherGame.Server.Services
                 trains.Add(train);
             }
 
-            Console.WriteLine($"Loaded {trains.Count} trains from timetable starting at {_simulationStartTime:HH:mm:ss}");            
+            Console.WriteLine($"Loaded {trains.Count} trains from timetable starting at {_simulationStartTime:HH:mm:ss}");
+
             return trains;
         }
 

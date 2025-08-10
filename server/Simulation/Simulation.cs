@@ -7,17 +7,20 @@ using TrainDispatcherGame.Server.Services;
 using System.Collections.Generic;
 using System.Linq;
 using TrainDispatcherGame.Server.Models.DTOs;
+using Microsoft.VisualBasic;
 
 namespace TrainDispatcherGame.Server.Simulation
 {
     public class Simulation
     {
+        public const double TimerInterval = 1000;
+
         private Timer? _timer;
-        private DateTime _realStartTime; // When we actually started the simulation
         private SimulationState _state = SimulationState.Stopped;
         private string? _errorMessage;
         private List<Train> _trains = new();
         private readonly INotificationManager _notificationManager;
+        private readonly PlayerManager _playerManager;
         private readonly ITrackLayoutService _trackLayoutService;
         private readonly ITimeTableService _timeTableService;
         private readonly object _simulationLock = new object(); // Thread synchronization object
@@ -29,20 +32,21 @@ namespace TrainDispatcherGame.Server.Simulation
         public Timetable? Timetable => _timeTableService.Timetable;
         public List<Train> Trains => _trains;
 
-        public Simulation(INotificationManager notificationManager, ITrackLayoutService trackLayoutService, ITimeTableService timeTableService)
+        public Simulation(INotificationManager notificationManager, ITrackLayoutService trackLayoutService, ITimeTableService timeTableService, PlayerManager playerManager)
         {
             _notificationManager = notificationManager;
             _trackLayoutService = trackLayoutService;
             _timeTableService = timeTableService;
-            LoadTrainsFromTimetable();
+            _playerManager = playerManager;
+            this.Reset();
         }
 
-        private void LoadTrainsFromTimetable()
+        private void Reset()
         {
             _trains.Clear();
             _trains = _timeTableService.LoadTrainsFromTimetable(_trackLayoutService);
         }
-
+        #region Start, Stop, Pause, Resume
         public async void Start()
         {
             if (_state == SimulationState.Running)
@@ -59,16 +63,14 @@ namespace TrainDispatcherGame.Server.Simulation
 
             try
             {
-                // Start fresh
-                _realStartTime = DateTime.Now;
+                this.ElapsedSeconds = 0;
                 _state = SimulationState.Running;
                 _errorMessage = null;
 
-                // Start timer that updates every 100ms (10 times per second)
-                _timer = new Timer(UpdateSimulation, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
+                _timer = new Timer(UpdateSimulation, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(TimerInterval));
 
                 Console.WriteLine($"Simulation started at {_timeTableService.SimulationStartTime:HH:mm:ss}");
-                
+
                 // Notify all clients about the state change
                 await _notificationManager.SendSimulationStateChange(_state);
             }
@@ -94,10 +96,10 @@ namespace TrainDispatcherGame.Server.Simulation
             _errorMessage = null;
 
             _trains.Clear();
-            LoadTrainsFromTimetable();
+            Reset();
 
             Console.WriteLine("Simulation stopped");
-            
+
             // Notify all clients about the state change
             await _notificationManager.SendSimulationStateChange(_state);
         }
@@ -114,7 +116,7 @@ namespace TrainDispatcherGame.Server.Simulation
             _state = SimulationState.Paused;
 
             Console.WriteLine($"Simulation paused at {SimulationTime:HH:mm:ss}");
-            
+
             // Notify all clients about the state change
             await _notificationManager.SendSimulationStateChange(_state);
         }
@@ -128,13 +130,12 @@ namespace TrainDispatcherGame.Server.Simulation
 
             try
             {
-                _realStartTime = DateTime.Now.AddSeconds(-ElapsedSeconds); // Adjust for elapsed time
                 _state = SimulationState.Running;
                 _errorMessage = null;
-                _timer = new Timer(UpdateSimulation, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
+                _timer = new Timer(UpdateSimulation, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(TimerInterval));
 
                 Console.WriteLine($"Simulation resumed at {SimulationTime:HH:mm:ss}");
-                
+
                 // Notify all clients about the state change
                 await _notificationManager.SendSimulationStateChange(_state);
             }
@@ -145,6 +146,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 Console.WriteLine($"Error resuming simulation: {ex.Message}");
             }
         }
+        #endregion
 
         private void UpdateSimulation(object? state)
         {
@@ -154,7 +156,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 {
                     try
                     {
-                        this.ElapsedSeconds = (DateTime.Now - _realStartTime).TotalSeconds;
+                        this.ElapsedSeconds += TimerInterval / 1000;
                         CheckTrainEvents();
                     }
                     catch (Exception ex)
@@ -168,7 +170,7 @@ namespace TrainDispatcherGame.Server.Simulation
         }
 
         private void CheckTrainEvents()
-        {            
+        {
             foreach (var train in _trains)
             {
                 if (train.completed || train.controlledByPlayer) continue;
@@ -192,18 +194,54 @@ namespace TrainDispatcherGame.Server.Simulation
                 // Use exit point ID if available, otherwise use spawn type
                 var locationId = exitPointId.ToString();
 
-                await _notificationManager.SendTrain(station, train, locationId);
-                train.controlledByPlayer = true;
-                train.CurrentLocation = station;
-                train.HeadingForStation = null;
+                // If the station is controlled by a player, hand over to the player as usual
+                if (_playerManager.IsStationControlled(station))
+                {
+                    await _notificationManager.SendTrain(station, train, locationId);
+                    train.controlledByPlayer = true;
+                    train.CurrentLocation = station;
+                    train.HeadingForStation = null;
 
-                Console.WriteLine($"Train {train.Number} spawned at spawn point {locationId} heading for {station}");
-                train.Spawn = null;
+                    Console.WriteLine($"Train {train.Number} spawned at spawn point {locationId} of {station}");
+                    train.Spawn = null;
+                }
+                else
+                {
+                    train.HeadingForStation = null;
+                    train.Spawn = null;
+
+                    var currentEvent = train.GetCurrentEvent();
+                    var nextEvent = train.AdvanceToNextEvent();
+                    if (nextEvent == null)
+                    {
+                        Console.WriteLine($"Train {train.Number} has completed all events");
+                        train.completed = true;
+                        return;
+                    }
+                    var layout = _trackLayoutService.GetTrackLayout(currentEvent.Station);
+                    var seconds = (int)Math.Ceiling(layout.MaxExitDistance / train.Speed);
+                    var scheduledTime = SimulationTime.AddSeconds(seconds);
+                    CreateSpawnFromCurrentStation(train, currentEvent, nextEvent, scheduledTime);
+                    Console.WriteLine($"Train {train.Number} auto-advanced at uncontrolled station {station}; spawning at {nextEvent.Station} at ({scheduledTime:HH:mm:ss})");
+                }
+
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error spawning train: {ex.Message}");
             }
+        }        
+
+        private void CreateSpawnFromCurrentStation(Train train, TrainEvent currentEvent, TrainEvent nextEvent, DateTime scheduledTime)
+        {
+            var exitPoint = _trackLayoutService.GetExitPointToStation(nextEvent.Station,currentEvent.Station );
+            if (exitPoint == null) throw new Exception($"No exit point found for train {train.Number} from {nextEvent.Station} to {currentEvent.Station}");
+            train.Spawn = new TrainSpawn(
+                scheduledTime,
+                nextEvent.Station,
+                exitPoint.Id
+            );
+            
         }
 
         public void ClearError()
@@ -241,7 +279,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 var futureEvents = train
                     .GetFutureEvents()
                     .Where(e => e.Station.Equals(stationId, StringComparison.OrdinalIgnoreCase));
-                
+
                 foreach (var futureEvent in futureEvents)
                 {
                     // Determine the origin station by looking back for the previous event
@@ -292,9 +330,9 @@ namespace TrainDispatcherGame.Server.Simulation
             }
 
             // Sort by arrival time
-            stationEvents.Sort((a, b) => 
+            stationEvents.Sort((a, b) =>
             {
-                if (DateTime.TryParse(a.Arrival, out var arrivalA) && 
+                if (DateTime.TryParse(a.Arrival, out var arrivalA) &&
                     DateTime.TryParse(b.Arrival, out var arrivalB))
                 {
                     return arrivalA.CompareTo(arrivalB);
@@ -335,19 +373,13 @@ namespace TrainDispatcherGame.Server.Simulation
                         Console.WriteLine($"Train {train.Number} was missrouted to {train.HeadingForStation} instead of {nextEvent.Station}");
                         // TODO: handle missrouted train
                     }
-                    
+
                     if (string.IsNullOrEmpty(lastLocation))
                     {
                         throw new Exception($"No last known location for train {train.Number}");
                     }
-                    var exitPoint = _trackLayoutService.GetExitPointToStation(nextEvent.Station, lastLocation);
-                    if (exitPoint == null) throw new Exception($"No exit point found for train {train.Number} from {nextEvent.Station} to {lastLocation}");
-                    train.Spawn = new TrainSpawn(
-                        SimulationTime.AddMinutes(1),
-                        nextEvent.Station,
-                        exitPoint.Id
-                    );
-                    Console.WriteLine($"Train {train.Number} advanced to next event: {nextEvent.Station} at {train.Spawn.ScheduledTime:HH:mm:ss}");
+                    // Use the same spawn-creation logic as uncontrolled station flow, but keep old minute-based delay for now
+                    CreateSpawnFromCurrentStation(train, currentEvent, nextEvent, SimulationTime.AddMinutes(1));
                 }
             }
             catch (Exception ex)
@@ -417,9 +449,9 @@ namespace TrainDispatcherGame.Server.Simulation
                     return false;
                 }
 
-                
+
                 train.delay = (int)(SimulationTime - currentEvent.DepartureTime).TotalSeconds;
-                
+
                 Console.WriteLine($"Train {train.Number} successfully departed from station {stationId} with delay {train.delay} seconds");
                 return true;
             }

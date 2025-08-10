@@ -27,7 +27,8 @@ builder.Services.AddSingleton<Simulation>(serviceProvider =>
     var notificationManager = serviceProvider.GetRequiredService<INotificationManager>();
     var trackLayoutService = serviceProvider.GetRequiredService<ITrackLayoutService>();
     var timeTableService = serviceProvider.GetRequiredService<ITimeTableService>();
-    return new Simulation(notificationManager, trackLayoutService, timeTableService);
+    var playerManager = serviceProvider.GetRequiredService<PlayerManager>();
+    return new Simulation(notificationManager, trackLayoutService, timeTableService, playerManager);
 });
 
 // Add player manager as a singleton service

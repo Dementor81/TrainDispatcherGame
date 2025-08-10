@@ -2,17 +2,22 @@ Features:
     ✔ save delay on incoming trains @done(25-08-07 19:35)
     ✘ create new train schedule event when the trains was missrouted @cancelled(25-08-03 12:05)
     ✔ add the abiltiy for the train to stop at a station @done(25-08-04 17:45)
-    ☐ check for collisions on client side
+    ✔ check for collisions on client side @done(25-08-10 13:27)
     ☐ check collisions on server side
     ✔ show player upcoming trains @done(25-08-07 19:35)
+    ☐ player feedback for train collisions
+    ☐ trains from outside needs to be accepted by the player
 
 Big Features:
-    ☐ uncontrolled stations should be handled by the server
+    ✔ uncontrolled stations should be handled by the server @done(25-08-10 13:27)
     ☐ trains can end at a station and return as new trains
     ☐ 2-way tracks
+    ☐ acceleration and deceleration
 
 Bugs:
     ✔ prevent players with the same name from joining the game (currently breaks the game) @done(25-08-09 15:31)
+    ☐ switching a switch while the switch is blocked by a train breaks the game
+    
 
 
 
