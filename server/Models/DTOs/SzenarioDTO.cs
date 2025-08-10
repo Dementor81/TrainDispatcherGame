@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace TrainDispatcherGame.Server.Models.DTOs
 {
-    public class Timetable
+    public class SzenarioDTO
     {
         [JsonPropertyName("title")]
         public string Title { get; set; } = string.Empty;
@@ -11,6 +11,6 @@ namespace TrainDispatcherGame.Server.Models.DTOs
         public string StartTime { get; set; } = string.Empty;
 
         [JsonPropertyName("trains")]
-        public List<TrainSchedule> Trains { get; set; } = new();
+        public List<TrainDTO> Trains { get; set; } = new();
     }
 } 

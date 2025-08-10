@@ -29,7 +29,7 @@ namespace TrainDispatcherGame.Server.Simulation
         public double ElapsedSeconds { get; private set; } = 0;
         public SimulationState State => _state;
         public string? ErrorMessage => _errorMessage;
-        public Timetable? Timetable => _timeTableService.Timetable;
+        public SzenarioDTO? Timetable => _timeTableService.Timetable;
         public List<Train> Trains => _trains;
 
         public Simulation(INotificationManager notificationManager, ITrackLayoutService trackLayoutService, ITimeTableService timeTableService, PlayerManager playerManager)

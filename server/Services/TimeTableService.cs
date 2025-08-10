@@ -10,7 +10,7 @@ namespace TrainDispatcherGame.Server.Services
 {
     public interface ITimeTableService
     {
-        Timetable? Timetable { get; }
+        SzenarioDTO? Timetable { get; }
         DateTime SimulationStartTime { get; }
         List<Train> LoadTrainsFromTimetable(ITrackLayoutService trackLayoutService);
         void ReloadTimetable();
@@ -18,10 +18,10 @@ namespace TrainDispatcherGame.Server.Services
 
     public class TimeTableService : ITimeTableService
     {
-        private Timetable? _timetable;
+        private SzenarioDTO? _timetable;
         private DateTime _simulationStartTime;
 
-        public Timetable? Timetable => _timetable;
+        public SzenarioDTO? Timetable => _timetable;
         public DateTime SimulationStartTime => _simulationStartTime;
 
         public TimeTableService()
@@ -37,7 +37,7 @@ namespace TrainDispatcherGame.Server.Services
                 if (File.Exists(filePath))
                 {
                     var json = File.ReadAllText(filePath);
-                    _timetable = JsonSerializer.Deserialize<Timetable>(json);
+                    _timetable = JsonSerializer.Deserialize<SzenarioDTO>(json);
 
                     if (_timetable != null)
                     {

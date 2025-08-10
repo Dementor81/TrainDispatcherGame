@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace TrainDispatcherGame.Server.Models.DTOs
 {
-    public class TrainSchedule
+    public class TrainDTO
     {
         [JsonPropertyName("number")]
         public string Number { get; set; } = string.Empty;
