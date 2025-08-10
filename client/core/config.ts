@@ -44,6 +44,12 @@ export class RendererConfig {
     static readonly stationTextSize = 24;
     static readonly stationTextFont = "Arial";
     static readonly stationTextOffset = 30; // Distance above the layout
+
+     // Exit rendering configuration
+     static readonly exitTextColor = 0xffffff;
+     static readonly exitTextSize = 12;
+     static readonly exitTextFont = "Arial";
+     static readonly exitTextOffset = 12; // Vertical distance above the exit arrow
 }
 
 export class SimulationConfig {

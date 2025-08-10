@@ -27,7 +27,7 @@ export class ControlPanel extends BasePanel {
   }
 
   protected getContainerId(): string { return 'controlPanel'; }
-  protected getContainerClasses(): string { return super.getContainerClasses() + ' top-0 start-0'; }
+  protected getContainerClasses(): string { return super.getContainerClasses() + ' bottom-0 start-0'; }
 
   protected createContent(): HTMLDivElement {
     // This is not used in ControlPanel as we manually add status and controls containers

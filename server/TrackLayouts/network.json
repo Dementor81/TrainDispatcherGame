@@ -1,0 +1,13 @@
+{
+    "connections": [
+    {
+        "from": "A-Stadt",
+        "fromId": "1",
+        "to": "B-Stadt",
+        "toId": "0",
+        "distance": 5000,
+        "blocks":1,
+        "mode": "Regular"
+    }
+    
+]}

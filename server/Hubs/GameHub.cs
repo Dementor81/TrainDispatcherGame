@@ -8,6 +8,7 @@ namespace TrainDispatcherGame.Server.Hubs
 {
     public class GameHub : Hub
     {
+        private static int _activeConnections = 0;
         private readonly PlayerManager _playerManager;
         private readonly TrainDispatcherGame.Server.Simulation.Simulation _simulation;
 
@@ -20,6 +21,8 @@ namespace TrainDispatcherGame.Server.Hubs
         public override async Task OnConnectedAsync()
         {
             Console.WriteLine($"Client connected: {Context.ConnectionId}");
+            // Track active connections (used to pause when last disconnects)
+            System.Threading.Interlocked.Increment(ref _activeConnections);
             await base.OnConnectedAsync();
         }
 
@@ -35,8 +38,16 @@ namespace TrainDispatcherGame.Server.Hubs
             {
                 _playerManager.DisconnectPlayer(player.Id);
                 Console.WriteLine($"Player {player.Id} disconnected from station {player.StationId}");
+
+                // Player disconnected is handled; simulation pause is controlled by connection count below
             }
             
+            // Pause the simulation when the last client disconnects
+            if (System.Threading.Interlocked.Decrement(ref _activeConnections) == 0)
+            {
+                _simulation.Pause();
+            }
+
             await base.OnDisconnectedAsync(exception);
         }
 
@@ -60,6 +71,12 @@ namespace TrainDispatcherGame.Server.Hubs
                 });
                 
                 Console.WriteLine($"Player {playerId} joined station {stationId} via SignalR");
+
+                // Start the simulation only when the first station becomes controlled
+                if (_playerManager.GetControlledStations().Count == 1)
+                {
+                    _simulation.Start();
+                }
             }
             else
             {
@@ -118,7 +135,7 @@ namespace TrainDispatcherGame.Server.Hubs
             await Clients.Caller.SendAsync("Pong", DateTime.UtcNow);
         }
 
-        public async Task ReceiveTrain(string playerId, string trainNumber, string destinationStationId)
+        public async Task ReceiveTrain(string playerId, string trainNumber, string exitId)
         {
             try
             {      
@@ -130,7 +147,7 @@ namespace TrainDispatcherGame.Server.Hubs
                     return;
                 }
 
-                _simulation.TrainReturnedFromClient(train,destinationStationId);
+                _simulation.TrainReturnedFromClient(train,exitId);
             }
             catch (Exception ex)
             {

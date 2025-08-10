@@ -14,6 +14,7 @@ namespace TrainDispatcherGame.Server.Simulation
     public class Simulation
     {
         public const double TimerInterval = 1000;
+        public const int SimulationScale = 10;
 
         private Timer? _timer;
         private SimulationState _state = SimulationState.Stopped;
@@ -31,6 +32,8 @@ namespace TrainDispatcherGame.Server.Simulation
         public string? ErrorMessage => _errorMessage;
         public SzenarioDTO? Timetable => _timeTableService.Timetable;
         public List<Train> Trains => _trains;
+
+        public int Speed { get; set; } = 1;
 
         public Simulation(INotificationManager notificationManager, ITrackLayoutService trackLayoutService, ITimeTableService timeTableService, PlayerManager playerManager)
         {
@@ -218,8 +221,13 @@ namespace TrainDispatcherGame.Server.Simulation
                         train.completed = true;
                         return;
                     }
-                    var layout = _trackLayoutService.GetTrackLayout(currentEvent.Station);
-                    var seconds = (int)Math.Ceiling(layout.MaxExitDistance / train.Speed);
+                    var layout = _trackLayoutService.GetTrackLayout(station);
+                    var distance = layout.MaxExitDistance;
+                    var connection = _trackLayoutService.GetRegularConnectionToStation(station, nextEvent.Station);
+                    if (connection == null) throw new Exception($"No regular connection found for train {train.Number} from {station} to {nextEvent.Station}");
+                    distance += connection.Distance;
+                    var seconds = train.GetTravelTime(distance);
+
                     var scheduledTime = SimulationTime.AddSeconds(seconds);
                     CreateSpawnFromCurrentStation(train, currentEvent, nextEvent, scheduledTime);
                     Console.WriteLine($"Train {train.Number} auto-advanced at uncontrolled station {station}; spawning at {nextEvent.Station} at ({scheduledTime:HH:mm:ss})");
@@ -230,18 +238,18 @@ namespace TrainDispatcherGame.Server.Simulation
             {
                 Console.WriteLine($"Error spawning train: {ex.Message}");
             }
-        }        
+        }
 
         private void CreateSpawnFromCurrentStation(Train train, TrainEvent currentEvent, TrainEvent nextEvent, DateTime scheduledTime)
         {
-            var exitPoint = _trackLayoutService.GetExitPointToStation(nextEvent.Station,currentEvent.Station );
+            var exitPoint = _trackLayoutService.GetExitPointToStation(nextEvent.Station, currentEvent.Station);
             if (exitPoint == null) throw new Exception($"No exit point found for train {train.Number} from {nextEvent.Station} to {currentEvent.Station}");
             train.Spawn = new TrainSpawn(
                 scheduledTime,
                 nextEvent.Station,
                 exitPoint.Id
             );
-            
+
         }
 
         public void ClearError()
@@ -343,15 +351,22 @@ namespace TrainDispatcherGame.Server.Simulation
             return stationEvents;
         }
 
-        public void TrainReturnedFromClient(Train train, string destinationStationId)
+        public void TrainReturnedFromClient(Train train, string exitId)
         {
             try
             {
-                Console.WriteLine($"Train {train.Number} returned from client at {train.CurrentLocation} heading for {destinationStationId}");
+                Console.WriteLine($"Train {train.Number} returned from client at {train.CurrentLocation} at Exit {exitId}");
+                if (!int.TryParse(exitId, out var exitPointId)) throw new Exception($"Invalid exit ID: {exitId}");
+                if (train.CurrentLocation == null) throw new Exception($"Train {train.Number} has no current location");
+
+                var connection = _trackLayoutService.GetConnection(train.CurrentLocation, exitPointId);
+                if (connection == null) throw new Exception($"No exit point found for train {train.Number} at {train.CurrentLocation} at Exit {exitId}");
+                var destinationStation = connection.ToStation;
+
                 train.controlledByPlayer = false;
                 var lastLocation = train.CurrentLocation;
                 train.CurrentLocation = null;
-                train.HeadingForStation = destinationStationId;
+                train.HeadingForStation = destinationStation;
 
                 var currentEvent = train.GetCurrentEvent();
                 if (currentEvent == null) throw new Exception($"Train {train.Number} has no current event");
@@ -379,7 +394,7 @@ namespace TrainDispatcherGame.Server.Simulation
                         throw new Exception($"No last known location for train {train.Number}");
                     }
                     // Use the same spawn-creation logic as uncontrolled station flow, but keep old minute-based delay for now
-                    CreateSpawnFromCurrentStation(train, currentEvent, nextEvent, SimulationTime.AddMinutes(1));
+                    CreateSpawnFromCurrentStation(train, currentEvent, nextEvent, SimulationTime.AddSeconds(train.GetTravelTime(connection.Distance)));
                 }
             }
             catch (Exception ex)

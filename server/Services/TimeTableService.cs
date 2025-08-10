@@ -82,7 +82,7 @@ namespace TrainDispatcherGame.Server.Services
                 var train = new Train(trainSchedule.Number)
                 {
                     Type = trainSchedule.Type,
-                    Speed = trainSchedule.Speed,
+                    Speed = trainSchedule.Speed / 3.6d,
                     Path = trainSchedule.Path,
                     Cars = trainSchedule.Cars
                 };
@@ -115,8 +115,8 @@ namespace TrainDispatcherGame.Server.Services
                 {
                     var firstStation = firstEvent.Station;
                     var layout = trackLayoutService.GetTrackLayout(firstStation);
-                    double halfSpan = (layout?.MaxExitDistance ?? 0d) / 2d;
-                    double travelSeconds = halfSpan / trainSchedule.Speed;
+                    int halfSpan = (layout?.MaxExitDistance ?? 0) / 2;
+                    int travelSeconds = train.GetTravelTime(halfSpan);
                     var spawnDateTime = firstEvent.ArrivalTime - TimeSpan.FromSeconds(travelSeconds);
 
                     // Find the exit point that leads toward the origin direction for this train's first approach

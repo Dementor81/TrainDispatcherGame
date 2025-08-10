@@ -1,13 +1,10 @@
-import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import Train from '../sim/train';
 import { EventManager } from '../manager/event_manager';
+import { SimulationState } from './dto';
 
 export class SignalRManager {
     private connection: HubConnection | null = null;
-    private isConnected = false;
-    private reconnectAttempts = 0;
-    private maxReconnectAttempts = 5;
-    private reconnectDelay = 2000; // 2 seconds
     private eventManager: EventManager;
     private lastPlayerId: string | null = null;
     private lastStationId: string | null = null;
@@ -33,15 +30,12 @@ export class SignalRManager {
         // Connection events
         this.connection.onreconnecting((error) => {
             console.log('SignalR: Attempting to reconnect...', error);
-            this.isConnected = false;
-            this.notifyConnectionStatusChange(false, true);
+            this.notifyConnectionStatusChange();
         });
 
         this.connection.onreconnected((connectionId) => {
             console.log('SignalR: Reconnected with connection ID:', connectionId);
-            this.isConnected = true;
-            this.reconnectAttempts = 0;
-            this.notifyConnectionStatusChange(true, false);
+            this.notifyConnectionStatusChange();
             
             // Try to rejoin the station if we were previously connected
             this.tryRejoinStation();
@@ -49,8 +43,7 @@ export class SignalRManager {
 
         this.connection.onclose((error) => {
             console.log('SignalR: Connection closed', error);
-            this.isConnected = false;
-            this.notifyConnectionStatusChange(false, false);
+            this.notifyConnectionStatusChange();
         });
 
         // Game-specific events
@@ -103,13 +96,11 @@ export class SignalRManager {
 
         try {
             await this.connection?.start();
-            this.isConnected = true;
             console.log('SignalR: Connected successfully');
-            this.notifyConnectionStatusChange(true, false);
+            this.notifyConnectionStatusChange();
         } catch (error) {
             console.error('SignalR: Failed to connect', error);
-            this.isConnected = false;
-            this.notifyConnectionStatusChange(false, false);
+            this.notifyConnectionStatusChange();
             throw error;
         }
     }
@@ -117,13 +108,12 @@ export class SignalRManager {
     public async disconnect(): Promise<void> {
         if (this.connection) {
             await this.connection.stop();
-            this.isConnected = false;
             console.log('SignalR: Disconnected');
         }
     }
 
     public async joinStation(playerId: string, stationId: string, playerName?: string): Promise<void> {
-        if (!this.connection || !this.isConnected) {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
             throw new Error('SignalR connection not established');
         }
 
@@ -140,7 +130,7 @@ export class SignalRManager {
     }
 
     public async leaveStation(playerId: string): Promise<void> {
-        if (!this.connection || !this.isConnected) {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
             throw new Error('SignalR connection not established');
         }
 
@@ -157,7 +147,7 @@ export class SignalRManager {
     }
 
     public async getStationStatus(stationId: string): Promise<void> {
-        if (!this.connection || !this.isConnected) {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
             throw new Error('SignalR connection not established');
         }
 
@@ -170,7 +160,7 @@ export class SignalRManager {
     }
 
     public async ping(): Promise<void> {
-        if (!this.connection || !this.isConnected) {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
             throw new Error('SignalR connection not established');
         }
 
@@ -183,7 +173,7 @@ export class SignalRManager {
     }
 
     public async sendTrain(playerId: string, trainNumber: string, destinationStationId: string): Promise<void> {
-        if (!this.connection || !this.isConnected) {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
             throw new Error('SignalR connection not established');
         }
 
@@ -196,7 +186,7 @@ export class SignalRManager {
     }
 
     public async reportTrainStopped(playerId: string, trainNumber: string, stationId: string): Promise<void> {
-        if (!this.connection || !this.isConnected) {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
             throw new Error('SignalR connection not established');
         }
 
@@ -211,7 +201,7 @@ export class SignalRManager {
 
     public async reportTrainDeparted(playerId: string, trainNumber: string, stationId: string): Promise<void> {
 
-        if (!this.connection || !this.isConnected) {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
             throw new Error('SignalR connection not established');
         }
 
@@ -280,20 +270,24 @@ export class SignalRManager {
     private handleSimulationStateChanged(data: any): void {
         // Handle simulation state change event from server
         console.log(`Simulation state changed to: ${data.state} at ${data.timestamp}`);
-        
+        // Convert data.state to SimulationState type
+        const state: SimulationState = data.state as SimulationState;
         // Emit the simulation state change event through the EventManager
-        this.eventManager.emit('simulationStateChanged', data.state, data.timestamp);
+        this.eventManager.emit('simulationStateChanged', state);
         console.log(`Emitted simulationStateChanged event for state: ${data.state}`);
     }
 
 
 
     public get connectionState(): string {
-        return this.connection?.state || 'Disconnected';
+        if (!this.connection) {
+            return 'Disconnected';
+        }
+        return HubConnectionState[this.connection.state];
     }
 
     public get connected(): boolean {
-        return this.isConnected;
+        return this.connection?.state === HubConnectionState.Connected;
     }
 
     public get lastStationInfo(): { playerId: string | null, stationId: string | null } {
@@ -303,9 +297,10 @@ export class SignalRManager {
         };
     }
 
-    private notifyConnectionStatusChange(isConnected: boolean, isReconnecting: boolean): void {
-        // Emit an event that the Application can listen to
-        this.eventManager.emit('connectionStatusChanged', isConnected, isReconnecting);
+    private notifyConnectionStatusChange(): void {
+        // Emit an event with the current HubConnection state as a string
+        const state = this.connectionState;
+        this.eventManager.emit('connectionStatusChanged', state);
     }
 
 

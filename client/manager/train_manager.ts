@@ -19,6 +19,10 @@ export class TrainManager {
    private _currentSimulationTime: Date | null = null; // Current simulation time from server
    private _lastSimulationTimeUpdate: number = 0; // When we last updated simulation time
 
+   public get currentSimulationTime(): Date | null {
+      return this._currentSimulationTime;
+   }
+
    constructor(eventManager: EventManager, trackLayoutManager: TrackLayoutManager) {
       this._eventManager = eventManager;
       this._trackLayoutManager = trackLayoutManager;
@@ -120,13 +124,14 @@ export class TrainManager {
 
    // Main simulation update loop
    private updateSimulation(): void {
+      this.getCurrentSimulationTime().catch((error) => {
+         console.warn("Failed to update simulation time:", error);
+      });
+
       if (this._trains.length === 0) {
          return; // No trains to update
       }
 
-      this.getCurrentSimulationTime().catch((error) => {
-         console.warn("Failed to update simulation time:", error);
-      });
 
       let trainsUpdated = false;
 
@@ -565,7 +570,7 @@ export class TrainManager {
          this.removeTrain(train.number);
 
          // Emit event for application to handle server communication
-         this._eventManager.emit("sendTrainToServer", train.number, exit.destination);
+         this._eventManager.emit("sendTrainToServer", train.number, exit.id);
       } else {
          console.error(`TrainManager: Exit ${exit.id} has no destination`);
          // Still remove the train even if we can't send it

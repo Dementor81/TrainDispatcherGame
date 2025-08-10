@@ -1,5 +1,6 @@
 using System.Text.Json;
 using TrainDispatcherGame.Server.Models.DTOs;
+using TrainDispatcherGame.Server.Models;
 
 namespace TrainDispatcherGame.Server.Services
 {
@@ -10,17 +11,23 @@ namespace TrainDispatcherGame.Server.Services
         ExitPoint? GetExitPoint(string stationId, int exitId);
         ExitPoint? GetExitPointToStation(string fromStationId, string toStationId);
         List<TrackLayout> GetAllTrackLayouts();
+        IReadOnlyDictionary<(string stationId, int exitId), NetworkConnection> GetDirectedConnections();
+        NetworkConnection? GetConnection(string fromStationId, int fromExitId);
+        NetworkConnection? GetRegularConnection(string fromStationId, int fromExitId);
+        NetworkConnection? GetRegularConnectionToStation(string fromStationId, string toStationId);
     }
 
     public class TrackLayoutService : ITrackLayoutService
     {
         private readonly Dictionary<string, TrackLayout> _trackLayouts = new();
+        private readonly Dictionary<(string stationId, int exitId), NetworkConnection> _directedConnections = new();
 
         public Dictionary<string, TrackLayout> TrackLayouts => _trackLayouts;
 
         public TrackLayoutService()
         {
             LoadTrackLayouts();
+            LoadNetwork();
         }
 
         private void LoadTrackLayouts()
@@ -36,6 +43,12 @@ namespace TrainDispatcherGame.Server.Services
 
                 foreach (var file in Directory.GetFiles(directoryPath, "*.json"))
                 {
+                    var fileNameOnly = Path.GetFileName(file);
+                    if (string.Equals(fileNameOnly, "network.json", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Skip network.json here; handled separately
+                        continue;
+                    }
                     try
                     {
                         var json = File.ReadAllText(file);
@@ -64,15 +77,84 @@ namespace TrainDispatcherGame.Server.Services
             }
         }
 
+        private void LoadNetwork()
+        {
+            try
+            {
+                var networkPath = Path.Combine("TrackLayouts", "network.json");
+                if (!File.Exists(networkPath))
+                {
+                    Console.WriteLine("network.json not found; skipping network load.");
+                    return;
+                }
+
+                var json = File.ReadAllText(networkPath);
+                var network = JsonSerializer.Deserialize<NetworkDto>(json);
+                if (network == null || network.Connections == null)
+                {
+                    Console.WriteLine("network.json is empty or invalid.");
+                    return;
+                }
+
+                int created = 0;
+                foreach (var c in network.Connections)
+                {
+                    if (string.IsNullOrWhiteSpace(c.FromStation) || string.IsNullOrWhiteSpace(c.ToStation))
+                    {
+                        continue;
+                    }
+
+                    if (!int.TryParse(c.FromExitId, out var fromExit)) continue;
+                    if (!int.TryParse(c.ToExitId, out var toExit)) continue;
+
+                    TrackMode mode = TrackMode.Regular;
+
+                    // Create forward connection
+                    var forward = new NetworkConnection
+                    {
+                        FromStation = c.FromStation,
+                        FromExitId = fromExit,
+                        ToStation = c.ToStation,
+                        ToExitId = toExit,
+                        Distance = c.Distance,
+                        Blocks = c.Blocks,
+                        Mode =  Enum.TryParse(c.Mode, out mode) ? mode : TrackMode.Regular,
+                    };
+                    _directedConnections[(forward.FromStation, forward.FromExitId)] = forward;
+                    created++;
+
+                    // Create reverse connection
+                    var reverse = new NetworkConnection
+                    {
+                        FromStation = c.ToStation,
+                        FromExitId = toExit,
+                        ToStation = c.FromStation,
+                        ToExitId = fromExit,
+                        Distance = c.Distance,
+                        Blocks = c.Blocks,
+                        Mode =  Enum.TryParse(c.Mode, out mode) ? mode : TrackMode.Regular,
+                    };
+                    _directedConnections[(reverse.FromStation, reverse.FromExitId)] = reverse;
+                    created++;
+                }
+
+                Console.WriteLine($"Loaded {created} directed network connections");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading network.json: {ex.Message}");
+            }
+        }
+
         // Computes the maximum pairwise distance between all exit points in the layout
-        private static double ComputeMaxExitDistance(string rawJson)
+        private static int ComputeMaxExitDistance(string rawJson)
         {
             try
             {
                 using var document = JsonDocument.Parse(rawJson);
                 if (!document.RootElement.TryGetProperty("tracks", out var tracksElement) || tracksElement.ValueKind != JsonValueKind.Array)
                 {
-                    return 0d;
+                    return 0;
                 }
 
                 var exitPoints = new Dictionary<int, (double x, double y)>();
@@ -136,7 +218,7 @@ namespace TrainDispatcherGame.Server.Services
 
                 if (exitPoints.Count < 2)
                 {
-                    return 0d;
+                    return 0;
                 }
 
                 var exitList = exitPoints.Values.ToList();
@@ -155,11 +237,11 @@ namespace TrainDispatcherGame.Server.Services
                     }
                 }
 
-                return maxDistance;
+                return (int)maxDistance;
             }
             catch
             {
-                return 0d;
+                return 0;
             }
         }
 
@@ -183,6 +265,37 @@ namespace TrainDispatcherGame.Server.Services
         public List<TrackLayout> GetAllTrackLayouts()
         {
             return _trackLayouts.Values.ToList();
+        }
+
+        public IReadOnlyDictionary<(string stationId, int exitId), NetworkConnection> GetDirectedConnections()
+        {
+            return _directedConnections;
+        }
+
+        public NetworkConnection? GetConnection(string fromStationId, int fromExitId)
+        {
+            return _directedConnections.TryGetValue((fromStationId, fromExitId), out var conn) ? conn : null;
+        }
+
+        public NetworkConnection? GetRegularConnection(string fromStationId, int fromExitId)
+        {
+            if (_directedConnections.TryGetValue((fromStationId, fromExitId), out var conn))
+            {
+                if (conn.Mode == TrackMode.Regular) return conn;
+            }
+            return null;
+        }
+
+        public NetworkConnection? GetRegularConnectionToStation(string fromStationId, string toStationId)
+        {
+            foreach (var conn in _directedConnections.Values)
+            {
+                if (conn.FromStation == fromStationId && conn.ToStation == toStationId && conn.Mode == TrackMode.Regular)
+                {
+                    return conn;
+                }
+            }
+            return null;
         }
     }
 }

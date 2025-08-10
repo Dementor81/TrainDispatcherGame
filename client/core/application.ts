@@ -7,6 +7,7 @@ import Switch from "../sim/switch";
 import SignalRManager from "../network/signalr";
 import Train from "../sim/train";
 import { getSimulationStatus } from "../network/api";
+import { SimulationState } from "../network/dto";
 
 export class Application {
    private _uiManager: UIManager;
@@ -17,6 +18,7 @@ export class Application {
    private _currentPlayerId: string | null = null;
    private _currentStationId: string | null = null;
    private _signalRManager: SignalRManager;
+   private _simulationState: SimulationState = 'Stopped';
 
    constructor() {
       this._uiManager = new UIManager(this);
@@ -64,13 +66,14 @@ export class Application {
          this._trackLayoutManager.loadTrackLayout(layout);
          
          // Show the control panel and train overview panel after successfully joining a station
-         this._uiManager.showControlPanel();
+         
          this._uiManager.showTrainOverviewPanel();
 
          // Retrieve simulation state from the server and handle accordingly
          try {
             const status = await getSimulationStatus();
-            this.handleSimulationStateChanged(status.state, status.currentTime);            
+            this._simulationState = status.state;
+            this._eventManager.emit('simulationStateChanged', this._simulationState);            
          } catch (error) {
             console.error("Failed to retrieve simulation state:", error);
          }
@@ -118,8 +121,8 @@ export class Application {
       });
 
       // Train sending events
-      this._eventManager.on('sendTrainToServer', async (trainNumber: string, destinationStationId: string) => {
-         await this.handleSendTrainToServer(trainNumber, destinationStationId);
+      this._eventManager.on('sendTrainToServer', async (trainNumber: string, exitId: string) => {
+         await this.handleSendTrainToServer(trainNumber, exitId);
       });
 
       // Train stop events
@@ -133,16 +136,13 @@ export class Application {
       });
 
       // Connection status events
-      this._eventManager.on('connectionStatusChanged', (isConnected: boolean, isReconnecting: boolean) => {
-         this._uiManager.updateConnectionStatus(isConnected, isReconnecting);
-         if (isConnected) {
-            this._uiManager.showHUD();
-         }
+      this._eventManager.on('connectionStatusChanged', (state: string) => {
+         // No direct app-level reaction for now; state available if needed
       });
 
       // Simulation state change events
-      this._eventManager.on('simulationStateChanged', (state: string, timestamp: string) => {
-         this.handleSimulationStateChanged(state, timestamp);
+      this._eventManager.on('simulationStateChanged', (state: SimulationState) => {
+         this.handleSimulationStateChanged(state);
       });
       
       console.log("Event listeners setup complete");
@@ -162,16 +162,14 @@ export class Application {
       }
    }
 
-   private async handleSendTrainToServer(trainNumber: string, destinationStationId: string): Promise<void> {
+   private async handleSendTrainToServer(trainNumber: string, exitId: string): Promise<void> {
       if (!this._currentPlayerId) {
          console.error('Cannot send train: No current player ID');
          return;
       }
-
-      try {
-         console.log(`Application: Sending train ${trainNumber} to server for destination ${destinationStationId}`);
-         await this._signalRManager.sendTrain(this._currentPlayerId, trainNumber, destinationStationId);
-         console.log(`Application: Successfully initiated sending train ${trainNumber} to ${destinationStationId}`);
+      try {         
+         await this._signalRManager.sendTrain(this._currentPlayerId, trainNumber, exitId);
+         console.log(`Application: Successfully initiated sending train ${trainNumber} to ${exitId}`);
       } catch (error) {
          console.error(`Application: Failed to send train ${trainNumber}:`, error);
       }
@@ -205,7 +203,8 @@ export class Application {
       }
    }
 
-   private handleSimulationStateChanged(state: string, timestamp: string): void {     
+   private handleSimulationStateChanged(state: SimulationState): void {     
+      this._simulationState = state;
       
       // Update the train manager simulation state based on server state
       switch (state.toLowerCase()) {
@@ -225,6 +224,7 @@ export class Application {
             console.log(`Application: Unknown simulation state: ${state}`);
       }
    }
+
 
  
 
@@ -259,6 +259,10 @@ export class Application {
 
    get trackLayoutManager(): TrackLayoutManager {
       return this._trackLayoutManager;
+   }
+
+   get simulationState(): SimulationState {
+      return this._simulationState;
    }
 
    public async handleReconnection(): Promise<void> {

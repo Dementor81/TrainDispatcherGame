@@ -8,7 +8,7 @@ namespace TrainDispatcherGame.Server.Models
     {
         public string Number { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;
-        public int Speed { get; set; }
+        public double Speed { get; set; }//m/s
         public int Cars { get; set; }
         public List<string> Path { get; set; } = new();
         public TrainSpawn? Spawn { get; set; }
@@ -74,6 +74,11 @@ namespace TrainDispatcherGame.Server.Models
                 completed = true;
                 return null;
             }
+        }
+
+        public int GetTravelTime(int distance)
+        {
+            return (int)(distance / Speed);
         }
 
         public void Reset()

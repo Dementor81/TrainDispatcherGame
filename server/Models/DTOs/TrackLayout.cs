@@ -12,7 +12,7 @@ namespace TrainDispatcherGame.Server.Models.DTOs
 
         // Computed when loading the JSON in TrackLayoutService; not part of persisted JSON
         [JsonIgnore]
-        public double MaxExitDistance { get; set; }
+        public int MaxExitDistance { get; set; }
     }
 
     public class ExitPoint
