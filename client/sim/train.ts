@@ -29,9 +29,9 @@ class Train {
         this._number = number;
         this._spawnTime = new Date();
         this._cars = cars;
-        this._speed = 150; // Default speed: 50 km/h
-        this._direction = 1; // Default direction: forward
-        this._isMoving = true; // Default: train is moving
+        this._speed = 150; 
+        this._direction = 1; 
+        this._isMoving = true; 
         this._stoppedBySignal = null; // Initially not stopped by any signal
     }
 
@@ -184,7 +184,7 @@ class Train {
 
     // Update train position based on current speed and direction
     // Returns the distance the train should move based on elapsed time
-    // speed is in km/h, timeElapsedSeconds is in seconds
+    // speed is in km/h
     getMovementDistance(): number {
 
         const timeElapsedSeconds = SimulationConfig.simulationIntervalSeconds * SimulationConfig.simulationSpeed;
@@ -192,9 +192,9 @@ class Train {
             return 0;
         }
         
-        // Convert speed from km/h to km/s, then multiply by time and direction
-        const speedKmPerSecond = this._speed / 3600; // Convert km/h to km/s
-        return speedKmPerSecond * timeElapsedSeconds * this._direction*SimulationConfig.simulationScale;
+        // Convert speed from km/h to m/s, then multiply by time and direction
+        const speed_m_per_s = this._speed / 3.6; // Convert km/h to m/s
+        return speed_m_per_s * timeElapsedSeconds * this._direction;
     }
 
     // Method to get train info for debugging/logging
