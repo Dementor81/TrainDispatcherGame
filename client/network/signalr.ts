@@ -86,6 +86,8 @@ export class SignalRManager {
             this.handleSimulationStateChanged(data);
         });
 
+        // No server broadcast handling for collisions; client handles own removal/UI
+
 
     }
 
@@ -172,13 +174,14 @@ export class SignalRManager {
         }
     }
 
-    public async sendTrain(playerId: string, trainNumber: string, destinationStationId: string): Promise<void> {
+    //send train to server
+    public async sendTrain(playerId: string, trainNumber: string, exitId: string): Promise<void> {
         if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
             throw new Error('SignalR connection not established');
         }
 
         try {
-            await this.connection.invoke('ReceiveTrain', playerId, trainNumber, destinationStationId);
+            await this.connection.invoke('ReceiveTrain', playerId, trainNumber, exitId.toString());
         } catch (error) {
             console.error('Failed to send train:', error);
             throw error;
@@ -210,6 +213,20 @@ export class SignalRManager {
             console.log(`Reported train ${trainNumber} departed from station ${stationId}`);
         } catch (error) {
             console.error('Failed to report train departed:', error);
+            throw error;
+        }
+    }
+
+    public async reportTrainCollision(playerId: string, trainNumberA: string, trainNumberB: string, stationId: string): Promise<void> {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+            throw new Error('SignalR connection not established');
+        }
+
+        try {
+            await this.connection.invoke('ReportTrainCollision', playerId, trainNumberA, trainNumberB, stationId);
+            console.log(`Reported collision between trains ${trainNumberA} and ${trainNumberB} at station ${stationId}`);
+        } catch (error) {
+            console.error('Failed to report train collision:', error);
             throw error;
         }
     }
@@ -276,6 +293,8 @@ export class SignalRManager {
         this.eventManager.emit('simulationStateChanged', state);
         console.log(`Emitted simulationStateChanged event for state: ${data.state}`);
     }
+
+    // No server collision handler needed
 
 
 

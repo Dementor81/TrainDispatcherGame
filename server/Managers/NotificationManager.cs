@@ -8,6 +8,7 @@ namespace TrainDispatcherGame.Server.Managers
     {
         Task SendTrain(string stationId, Train train, string? exitPointId = null);
         Task SendSimulationStateChange(SimulationState newState);
+        // No collision broadcast needed; clients handle locally
     }
 
     public class NotificationManager : INotificationManager
@@ -27,7 +28,7 @@ namespace TrainDispatcherGame.Server.Managers
             if (player != null)
             {
                 // Get the current event for this train
-                var currentEvent = train.GetCurrentEvent();
+                var currentEvent = train.GetWayPoint();
                 bool shouldStopAtStation = currentEvent?.Stops == true && 
                                          currentEvent.Station == stationId;
                 
@@ -50,7 +51,8 @@ namespace TrainDispatcherGame.Server.Managers
                     arrivalTime = arrivalTime,
                     departureTime = departureTime,
                     cars = train.Cars,
-                    delay = train.delay
+                    delay = train.delay,
+                    speed = train.Speed
                 });
                 
                 Console.WriteLine($"Sent train {train.Number} to player {player.Id} at station {stationId}, exit point {exitPointId}, should stop: {shouldStopAtStation}, arrival: {arrivalTime}, departure: {departureTime}");
@@ -71,5 +73,7 @@ namespace TrainDispatcherGame.Server.Managers
             
             Console.WriteLine($"Sent simulation state change to all clients: {newState}");
         }
+
+        // No collision broadcast needed; clients handle locally
     }
 } 

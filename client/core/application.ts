@@ -135,6 +135,13 @@ export class Application {
          await this.handleTrainDepartedFromStation(train);
       });
 
+      // Local collision detection from client sim
+      this._eventManager.on('trainCollision', async (trainA: Train, trainB: Train) => {
+         await this.handleLocalTrainCollision(trainA, trainB);
+      });
+
+      // No server broadcast for collisions; client handles it directly
+
       // Connection status events
       this._eventManager.on('connectionStatusChanged', (state: string) => {
          // No direct app-level reaction for now; state available if needed
@@ -224,6 +231,22 @@ export class Application {
             console.log(`Application: Unknown simulation state: ${state}`);
       }
    }
+
+   private async handleLocalTrainCollision(trainA: Train, trainB: Train): Promise<void> {
+      if (this._currentPlayerId && this._currentStationId) {
+         try {
+            await this._signalRManager.reportTrainCollision(this._currentPlayerId, trainA.number, trainB.number, this._currentStationId);
+         } catch (error) {
+            console.error('Failed to report train collision to server:', error);
+         }
+      }
+
+      this._uiManager.notifyCollision(trainA.number, trainB.number);
+      this._trainManager.removeTrain(trainA.number);
+      this._trainManager.removeTrain(trainB.number);
+   }
+
+   // No server collision handler needed
 
 
  

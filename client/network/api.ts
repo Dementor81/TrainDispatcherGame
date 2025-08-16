@@ -131,3 +131,17 @@ export default {
   getActiveTrains,
   getUpcomingTrains,
 };
+
+// Advance simulation time by one minute
+export async function advanceSimulationOneMinute(): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/simulation/advance-minute`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to advance simulation by one minute: ${response.statusText}`);
+  }
+  return response.json();
+}

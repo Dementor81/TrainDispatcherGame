@@ -11,7 +11,6 @@ export interface ExitDto {
 }
 
 export interface TrackDto {
-  _class: string;
   id: number;
   start: PointDto;
   end: PointDto;
@@ -25,12 +24,9 @@ export interface TrackSwitchDto {
 }
 
 export interface SwitchDto {
-  _class: string;
   id: number;
   location: PointDto;
   tracks: (number | null)[];
-  branch: number;
-  from: number;
 }
 
 export interface SignalDto {

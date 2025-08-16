@@ -4,7 +4,8 @@ import {
   pauseSimulation, 
   resumeSimulation, 
   getSimulationStatus, 
-  getActiveTrains 
+  getActiveTrains, 
+  advanceSimulationOneMinute 
 } from '../network/api';
 import { SimulationStatusDto } from '../network/dto';
 import { TrainManager } from '../manager/train_manager';
@@ -99,10 +100,18 @@ export class ControlPanel extends BasePanel {
     pauseBtn.className = 'btn btn-warning btn-sm';
     pauseBtn.innerHTML = '<i class="bi bi-pause-fill"></i> Pause';
     pauseBtn.onclick = () => this.handlePause();
+
+    // Advance time by one minute
+    const advanceBtn = document.createElement('button');
+    advanceBtn.id = 'advanceBtn';
+    advanceBtn.className = 'btn btn-secondary btn-sm';
+    advanceBtn.innerHTML = '<i class="bi bi-fast-forward-fill"></i> +1 min';
+    advanceBtn.onclick = () => this.handleAdvanceMinute();
     
     buttonGroup.appendChild(startResumeBtn);
     buttonGroup.appendChild(stopBtn);
     buttonGroup.appendChild(pauseBtn);
+    buttonGroup.appendChild(advanceBtn);
     
     controlsContainer.appendChild(title);
     controlsContainer.appendChild(buttonGroup);
@@ -176,6 +185,7 @@ export class ControlPanel extends BasePanel {
   private updateButtonStates(status: SimulationStatusDto): void {
     const startResumeBtn = document.getElementById('startResumeBtn') as HTMLButtonElement;
     const pauseBtn = document.getElementById('pauseBtn') as HTMLButtonElement;
+    const advanceBtn = document.getElementById('advanceBtn') as HTMLButtonElement;
     
     if (startResumeBtn) {
       switch (status.state) {
@@ -201,6 +211,8 @@ export class ControlPanel extends BasePanel {
     if (pauseBtn) {
       pauseBtn.disabled = status.state !== 'Running';
     }
+
+    
   }
 
   private async handleStart(): Promise<void> {
@@ -268,6 +280,16 @@ export class ControlPanel extends BasePanel {
     } catch (error) {
       console.error('Failed to resume simulation:', error);
       alert('Failed to resume simulation');
+    }
+  }
+
+  private async handleAdvanceMinute(): Promise<void> {
+    try {
+      await advanceSimulationOneMinute();
+      await this.updateStatus();
+    } catch (error) {
+      console.error('Failed to advance simulation:', error);
+      alert('Failed to advance simulation time');
     }
   }
 

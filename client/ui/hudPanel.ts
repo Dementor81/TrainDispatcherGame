@@ -162,6 +162,8 @@ export class HUDPanel {
         this.stopTimer();
     }
 
+    // Notifications moved to Bootstrap modal (NotificationModal).
+
     
 
    

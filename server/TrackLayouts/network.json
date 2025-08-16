@@ -1,13 +1,47 @@
 {
+    "stations": [
+        "A-Stadt",
+        "Neustadt",
+        "B-Stadt"
+    ],
     "connections": [
     {
+        "from": "Linksdorf",
+        "fromId": "1",
+        "to": "A-Stadt",
+        "toId": "0",
+        "distance": 5000,
+        "blocks":1
+    },{
         "from": "A-Stadt",
         "fromId": "1",
+        "to": "Neustadt",
+        "toId": "0",
+        "distance": 5000,
+        "blocks":1
+    },{
+        "from": "Neustadt",
+        "fromId": "1",
+        "to": "A-Stadt",
+        "toId": "2",
+        "distance": 5000,
+        "blocks":1
+    },    
+    {
+        "from": "Neustadt",
+        "fromId": "2",
         "to": "B-Stadt",
         "toId": "0",
         "distance": 5000,
-        "blocks":1,
-        "mode": "Regular"
+        "blocks":1
+    },
+    {
+        "from": "B-Stadt",
+        "fromId": "1",
+        "to": "Rechtsheim",
+        "toId": "0",
+        "distance": 5000,
+        "blocks":1
     }
     
 ]}

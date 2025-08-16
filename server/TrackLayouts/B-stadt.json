@@ -1,9 +1,6 @@
 {
   "id": "B-Stadt",
-  "exits": [
-    {"destination": "A-Stadt",  "id": 0},
-    {"destination": "Rechtsheim", "id": 1}
-  ],
+  
   "tracks": [
     {
       "id": 12,
@@ -58,20 +55,14 @@
   ],
   "switches": [
     {
-      "_class": "Switch",
       "id": 0,
       "location": {"x": 500, "y": 600},
-      "tracks": [19, 17, 12, null],
-      "branch": 17,
-      "from": 19
+      "tracks": [19, 17, 12, null]
     },
     {
-      "_class": "Switch",
       "id": 1,
       "location": {"x": 1200, "y": 600},
-      "tracks": [18, 17, 16, null],
-      "branch": 17,
-      "from": 18
+      "tracks": [18, 17, 16, null]
     }
   ]
 }

@@ -71,8 +71,8 @@ class Storage {
                 }
                 return null;
             });
-            sw.branch = sw.tracks.find((t: Track) => t.id === sw_loaded.branch) || null;
-            sw.from = sw.tracks.find((t: Track) => t.id === sw_loaded.from) || null;
+            sw.branch = sw.tracks.find((t: Track) => t.id === sw_loaded.tracks[1]) || null;
+            sw.from = sw.tracks.find((t: Track) => t.id === sw_loaded.tracks[0]) || null;
         });
 
         // Collect all signals from tracks

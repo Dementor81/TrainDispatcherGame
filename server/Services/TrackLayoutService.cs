@@ -15,6 +15,7 @@ namespace TrainDispatcherGame.Server.Services
         NetworkConnection? GetConnection(string fromStationId, int fromExitId);
         NetworkConnection? GetRegularConnection(string fromStationId, int fromExitId);
         NetworkConnection? GetRegularConnectionToStation(string fromStationId, string toStationId);
+        TrainDispatcherGame.Server.Models.DTOs.ClientServerCom.ClientTrackLayoutDto? BuildClientTrackLayout(string stationId);
     }
 
     public class TrackLayoutService : ITrackLayoutService
@@ -26,12 +27,18 @@ namespace TrainDispatcherGame.Server.Services
 
         public TrackLayoutService()
         {
-            LoadTrackLayouts();
-            LoadNetwork();
+            var requiredStations = LoadNetwork();
+            LoadTrackLayouts(requiredStations);
         }
 
-        private void LoadTrackLayouts()
+        private void LoadTrackLayouts(string[] requiredStations)
         {
+            if (requiredStations.Length == 0)
+            {
+                Console.WriteLine("No required stations found; skipping track layout loading.");
+                return;
+            }
+
             try
             {
                 var directoryPath = Path.Combine("TrackLayouts");
@@ -41,59 +48,132 @@ namespace TrainDispatcherGame.Server.Services
                     return;
                 }
 
-                foreach (var file in Directory.GetFiles(directoryPath, "*.json"))
+                int loadedCount = 0;
+                var missingLayouts = new List<string>();
+
+                foreach (var stationId in requiredStations)
                 {
-                    var fileNameOnly = Path.GetFileName(file);
-                    if (string.Equals(fileNameOnly, "network.json", StringComparison.OrdinalIgnoreCase))
+                    var layoutFile = Path.Combine(directoryPath, $"{stationId}.json");
+                    
+                    if (!File.Exists(layoutFile))
                     {
-                        // Skip network.json here; handled separately
+                        missingLayouts.Add(stationId);
+                        Console.WriteLine($"Warning: Track layout file not found for station '{stationId}' at {layoutFile}");
                         continue;
                     }
+
                     try
                     {
-                        var json = File.ReadAllText(file);
-                        var trackLayout = JsonSerializer.Deserialize<TrackLayout>(json);
+                        var json = File.ReadAllText(layoutFile);
+                        var dto = JsonSerializer.Deserialize<TrackLayoutDto>(json);
 
-                        if (trackLayout != null)
+                        if (dto != null)
                         {
-                        // Compute the maximum distance between any two exit points in this layout
-                        trackLayout.MaxExitDistance = ComputeMaxExitDistance(json);
-                            _trackLayouts[trackLayout.Id] = trackLayout;
-                            Console.WriteLine($"Loaded track layout: {trackLayout.Id} with {trackLayout.Exits.Count} exits; max span: {trackLayout.MaxExitDistance:F2}");
+                            // Build domain model from DTO
+                            var model = new TrackLayout
+                            {
+                                Id = dto.Id,
+                                Tracks = dto.Tracks ?? new List<TrackDto>(),
+                                Switches = dto.Switches ?? new List<SwitchDto>()
+                            };
+                            // Compute the maximum distance between any two exit points using in-memory tracks
+                            model.MaxExitDistance = ComputeMaxExitDistance(model.Tracks);
+
+                            // Discover exit points from tracks' switches entries
+                            var discoveredExitIds = new HashSet<int>();
+                            if (dto.Tracks != null)
+                            {
+                                foreach (var track in dto.Tracks)
+                                {
+                                    if (track.Switches == null) continue;
+                                    int idx = 0;
+                                    foreach (var sw in track.Switches)
+                                    {
+                                        if (sw != null && string.Equals(sw.Type, "Exit", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            var exitId = sw.Id;
+                                            if (!discoveredExitIds.Contains(exitId))
+                                            {
+                                                var exit = new ExitPoint { Id = exitId };
+                                                if (_directedConnections.TryGetValue((dto.Id, exitId), out var connection))
+                                                {
+                                                    exit.Connection = connection;
+                                                    exit.Destination = connection.ToStation;
+                                                }
+                                                model.Exits.Add(exit);
+                                                discoveredExitIds.Add(exitId);
+                                            }
+                                        }
+                                        idx++;
+                                    }
+                                }
+                            }
+
+                            _trackLayouts[model.Id] = model;
+                            loadedCount++;
+                            Console.WriteLine($"Loaded track layout: {model.Id} with {model.Exits.Count} exits; max span: {model.MaxExitDistance:F2}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Warning: Failed to deserialize track layout for station '{stationId}'");
                         }
                     }
                     catch (Exception ex)
                     {
-                        var fileName = Path.GetFileName(file);
-                        Console.WriteLine($"Error loading track layout {fileName}: {ex.Message}");
+                        Console.WriteLine($"Error loading track layout for station '{stationId}': {ex.Message}");
                     }
                 }
 
-                Console.WriteLine($"Successfully loaded {_trackLayouts.Count} track layouts");
+                Console.WriteLine($"Successfully loaded {loadedCount} of {requiredStations.Length} required track layouts");
+                
+                if (missingLayouts.Count > 0)
+                {
+                    Console.WriteLine($"Missing track layouts: {string.Join(", ", missingLayouts)}");
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading track layouts: {ex.Message}");
+                Console.WriteLine($"Error loading required track layouts: {ex.Message}");
             }
         }
 
-        private void LoadNetwork()
+        private string[] LoadNetwork()
         {
+            var requiredStations = new List<string>();
+            
             try
             {
                 var networkPath = Path.Combine("TrackLayouts", "network.json");
                 if (!File.Exists(networkPath))
                 {
                     Console.WriteLine("network.json not found; skipping network load.");
-                    return;
+                    return new string[0];
                 }
 
                 var json = File.ReadAllText(networkPath);
                 var network = JsonSerializer.Deserialize<NetworkDto>(json);
-                if (network == null || network.Connections == null)
+                if (network == null)
                 {
                     Console.WriteLine("network.json is empty or invalid.");
-                    return;
+                    return new string[0];
+                }
+
+                // Collect required stations from explicit stations list
+                if (network.Stations != null)
+                {
+                    foreach (var station in network.Stations)
+                    {
+                        if (!string.IsNullOrWhiteSpace(station))
+                        {
+                            requiredStations.Add(station);
+                        }
+                    }
+                }
+
+                if (network.Connections == null)
+                {
+                    Console.WriteLine("No connections found in network.json.");
+                    return new string[0];
                 }
 
                 int created = 0;
@@ -102,12 +182,15 @@ namespace TrainDispatcherGame.Server.Services
                     if (string.IsNullOrWhiteSpace(c.FromStation) || string.IsNullOrWhiteSpace(c.ToStation))
                     {
                         continue;
-                    }
+                    }                    
 
                     if (!int.TryParse(c.FromExitId, out var fromExit)) continue;
                     if (!int.TryParse(c.ToExitId, out var toExit)) continue;
 
-                    TrackMode mode = TrackMode.Regular;
+                    int sameConnectionCount = network.Connections.Count(conn =>
+                        (conn.FromStation == c.FromStation || conn.FromStation == c.ToStation) && (conn.ToStation == c.ToStation || conn.ToStation == c.FromStation));
+
+                    
 
                     // Create forward connection
                     var forward = new NetworkConnection
@@ -118,7 +201,7 @@ namespace TrainDispatcherGame.Server.Services
                         ToExitId = toExit,
                         Distance = c.Distance,
                         Blocks = c.Blocks,
-                        Mode =  Enum.TryParse(c.Mode, out mode) ? mode : TrackMode.Regular,
+                        Mode =  NetworkConnection.TrackMode.Regular,
                     };
                     _directedConnections[(forward.FromStation, forward.FromExitId)] = forward;
                     created++;
@@ -132,117 +215,96 @@ namespace TrainDispatcherGame.Server.Services
                         ToExitId = fromExit,
                         Distance = c.Distance,
                         Blocks = c.Blocks,
-                        Mode =  Enum.TryParse(c.Mode, out mode) ? mode : TrackMode.Regular,
+                        Mode =  sameConnectionCount > 1 ? NetworkConnection.TrackMode.WrongDirection : NetworkConnection.TrackMode.Regular,
                     };
                     _directedConnections[(reverse.FromStation, reverse.FromExitId)] = reverse;
                     created++;
                 }
 
+
+
                 Console.WriteLine($"Loaded {created} directed network connections");
+                Console.WriteLine($"Required track layouts: {string.Join(", ", requiredStations)}");
+
+            foreach (var kvp in _directedConnections)
+            {
+                var conn = kvp.Value;
+                Console.WriteLine($"[Debug] Connection: {conn.FromStation} (Exit {conn.FromExitId}) -> {conn.ToStation} (Exit {conn.ToExitId}), Distance: {conn.Distance}, Blocks: {conn.Blocks}, Mode: {conn.Mode}");
+            }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading network.json: {ex.Message}");
             }
+            
+            return requiredStations.ToArray(); 
         }
 
-        // Computes the maximum pairwise distance between all exit points in the layout
-        private static int ComputeMaxExitDistance(string rawJson)
+        // Computes the maximum pairwise distance between all exit points in the layout, based on track endpoints
+        private static int ComputeMaxExitDistance(List<TrackDto> tracks)
         {
-            try
-            {
-                using var document = JsonDocument.Parse(rawJson);
-                if (!document.RootElement.TryGetProperty("tracks", out var tracksElement) || tracksElement.ValueKind != JsonValueKind.Array)
-                {
-                    return 0;
-                }
-
-                var exitPoints = new Dictionary<int, (double x, double y)>();
-
-                foreach (var track in tracksElement.EnumerateArray())
-                {
-                    // We expect two endpoints per track; switches array items correspond to start/end
-                    if (!track.TryGetProperty("switches", out var switchesEl) || switchesEl.ValueKind != JsonValueKind.Array)
-                    {
-                        continue;
-                    }
-
-                    // Read endpoints
-                    bool hasStart = false;
-                    bool hasEnd = false;
-                    double startX = 0d, startY = 0d, endX = 0d, endY = 0d;
-
-                    if (track.TryGetProperty("start", out var startEl))
-                    {
-                        if (startEl.TryGetProperty("x", out var sxEl) && startEl.TryGetProperty("y", out var syEl))
-                        {
-                            startX = sxEl.GetDouble();
-                            startY = syEl.GetDouble();
-                            hasStart = true;
-                        }
-                    }
-
-                    if (track.TryGetProperty("end", out var endEl))
-                    {
-                        if (endEl.TryGetProperty("x", out var exEl) && endEl.TryGetProperty("y", out var eyEl))
-                        {
-                            endX = exEl.GetDouble();
-                            endY = eyEl.GetDouble();
-                            hasEnd = true;
-                        }
-                    }
-
-                    int idx = 0;
-                    foreach (var sw in switchesEl.EnumerateArray())
-                    {
-                        if (sw.ValueKind == JsonValueKind.Object &&
-                            sw.TryGetProperty("type", out var typeEl) &&
-                            typeEl.GetString() == "Exit" &&
-                            sw.TryGetProperty("id", out var exitIdEl) &&
-                            exitIdEl.ValueKind == JsonValueKind.Number)
-                        {
-                            int exitId = exitIdEl.GetInt32();
-                            // Map the exit to the corresponding endpoint by index
-                            if (idx == 0 && hasStart)
-                            {
-                                exitPoints[exitId] = (startX, startY);
-                            }
-                            else if (idx == 1 && hasEnd)
-                            {
-                                exitPoints[exitId] = (endX, endY);
-                            }
-                        }
-                        idx++;
-                    }
-                }
-
-                if (exitPoints.Count < 2)
-                {
-                    return 0;
-                }
-
-                var exitList = exitPoints.Values.ToList();
-                double maxDistance = 0d;
-                for (int i = 0; i < exitList.Count; i++)
-                {
-                    for (int j = i + 1; j < exitList.Count; j++)
-                    {
-                        var dx = exitList[i].x - exitList[j].x;
-                        var dy = exitList[i].y - exitList[j].y;
-                        var distance = Math.Sqrt(dx * dx + dy * dy);
-                        if (distance > maxDistance)
-                        {
-                            maxDistance = distance;
-                        }
-                    }
-                }
-
-                return (int)maxDistance;
-            }
-            catch
+            if (tracks == null || tracks.Count == 0)
             {
                 return 0;
             }
+
+            var exitPoints = new Dictionary<int, (double x, double y)>();
+
+            foreach (var track in tracks)
+            {
+                if (track.Switches == null || track.Switches.Count == 0)
+                {
+                    continue;
+                }
+
+                bool hasStart = track.Start != null;
+                bool hasEnd = track.End != null;
+                double startX = track.Start?.X ?? 0d;
+                double startY = track.Start?.Y ?? 0d;
+                double endX = track.End?.X ?? 0d;
+                double endY = track.End?.Y ?? 0d;
+
+                int idx = 0;
+                foreach (var sw in track.Switches)
+                {
+                    if (sw != null && string.Equals(sw.Type, "Exit", StringComparison.OrdinalIgnoreCase))
+                    {
+                        int exitId = sw.Id;
+                        if (idx == 0 && hasStart)
+                        {
+                            exitPoints[exitId] = (startX, startY);
+                        }
+                        else if (idx == 1 && hasEnd)
+                        {
+                            exitPoints[exitId] = (endX, endY);
+                        }
+                    }
+                    idx++;
+                }
+            }
+
+            if (exitPoints.Count < 2)
+            {
+                return 0;
+            }
+
+            var exitList = exitPoints.Values.ToList();
+            double maxDistance = 0d;
+            for (int i = 0; i < exitList.Count; i++)
+            {
+                for (int j = i + 1; j < exitList.Count; j++)
+                {
+                    var dx = exitList[i].x - exitList[j].x;
+                    var dy = exitList[i].y - exitList[j].y;
+                    var distance = Math.Sqrt(dx * dx + dy * dy);
+                    if (distance > maxDistance)
+                    {
+                        maxDistance = distance;
+                    }
+                }
+            }
+
+            return (int)maxDistance;
         }
 
         public TrackLayout? GetTrackLayout(string stationId)
@@ -258,8 +320,16 @@ namespace TrainDispatcherGame.Server.Services
 
         public ExitPoint? GetExitPointToStation(string fromStationId, string toStationId)
         {
-            var layout = GetTrackLayout(fromStationId);
-            return layout?.Exits.FirstOrDefault(e => e.Destination == toStationId);
+            foreach (var conn in _directedConnections.Values)
+            {
+                if (conn.FromStation == fromStationId && conn.ToStation == toStationId && conn.Mode == NetworkConnection.TrackMode.Regular)
+                {
+                    var layout = GetTrackLayout(toStationId);
+                    if (layout != null)
+                        return layout.Exits.FirstOrDefault(e => e.Id == conn.ToExitId);
+                }
+            }
+            return null;
         }
 
         public List<TrackLayout> GetAllTrackLayouts()
@@ -281,7 +351,7 @@ namespace TrainDispatcherGame.Server.Services
         {
             if (_directedConnections.TryGetValue((fromStationId, fromExitId), out var conn))
             {
-                if (conn.Mode == TrackMode.Regular) return conn;
+                if (conn.Mode == NetworkConnection.TrackMode.Regular) return conn;
             }
             return null;
         }
@@ -290,12 +360,36 @@ namespace TrainDispatcherGame.Server.Services
         {
             foreach (var conn in _directedConnections.Values)
             {
-                if (conn.FromStation == fromStationId && conn.ToStation == toStationId && conn.Mode == TrackMode.Regular)
+                if (conn.FromStation == fromStationId && conn.ToStation == toStationId && conn.Mode == NetworkConnection.TrackMode.Regular)
                 {
                     return conn;
                 }
             }
             return null;
+        }
+
+        public TrainDispatcherGame.Server.Models.DTOs.ClientServerCom.ClientTrackLayoutDto? BuildClientTrackLayout(string stationId)
+        {
+            var layout = GetTrackLayout(stationId);
+            if (layout == null) return null;
+
+            var client = new TrainDispatcherGame.Server.Models.DTOs.ClientServerCom.ClientTrackLayoutDto
+            {
+                Id = layout.Id,
+                Tracks = layout.Tracks,
+                Switches = layout.Switches
+            };
+
+            foreach (var exit in layout.Exits)
+            {
+                client.Exits.Add(new TrainDispatcherGame.Server.Models.DTOs.ClientServerCom.ClientExitDto
+                {
+                    Id = exit.Id,
+                    Destination = exit.Destination
+                });
+            }
+
+            return client;
         }
     }
 }

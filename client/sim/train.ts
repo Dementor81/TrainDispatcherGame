@@ -25,11 +25,11 @@ class Train {
     private _departureTime: Date | null = null; // Scheduled departure time at current station
     private _stopReason: TrainStopReason = TrainStopReason.NONE; // Current reason why the train is stopped
 
-    constructor(number: string, cars: number) {
+    constructor(number: string, cars: number, speed: number) {
         this._number = number;
         this._spawnTime = new Date();
         this._cars = cars;
-        this._speed = 150; 
+        this._speed = speed; 
         this._direction = 1; 
         this._isMoving = true; 
         this._stoppedBySignal = null; // Initially not stopped by any signal
@@ -37,7 +37,7 @@ class Train {
 
     // Static factory method to create a train from server data
     static fromServerData(data: any): Train {
-        const train = new Train(data.trainNumber, data.cars);
+        const train = new Train(data.trainNumber, data.cars, data.speed);
         
         // Set schedule times if provided
         if (data.departureTime) {
@@ -161,6 +161,7 @@ class Train {
             // If signal is cleared and no other stop reason, clear stop reason
             if (this._stopReason === TrainStopReason.SIGNAL) {
                 this._stopReason = TrainStopReason.NONE;
+                this._isMoving = true;
             }
         }
     }

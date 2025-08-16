@@ -30,19 +30,18 @@ export class SwitchRenderer {
       // Draw switch point
       graphics.circle(sw.location.x, sw.location.y, 8).fill(RendererConfig.switchColor);
 
-      // Draw switch outline
-      graphics.circle(sw.location.x, sw.location.y, 12).stroke(RendererConfig.switchColor);
-      graphics.eventMode = "static";
-      graphics.on("click", (event) => {
+      
+      switchContainer.eventMode = "static";
+      switchContainer.on("click", (event) => {
          console.log("Switch clicked at:", event.global.x, event.global.y);
          // Emit switch click event
          this._eventManager.emit("switchClicked", sw);
          this.redrawSwitch(sw);
       });
-      graphics.on("pointerover", (event) => {
+      switchContainer.on("pointerover", (event) => {
          this._canvas.style.cursor = "pointer";
       });
-      graphics.on("pointerout", (event) => {
+      switchContainer.on("pointerout", (event) => {
          this._canvas.style.cursor = "default";
       });
 

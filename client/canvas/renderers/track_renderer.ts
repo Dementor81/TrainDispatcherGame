@@ -9,6 +9,10 @@ interface ExitContainer extends PIXI.Container {
    exitId?: number;
 }
 
+interface TrackGraphics extends PIXI.Graphics {
+   trackId?: number;
+}
+
 export class TrackRenderer {
    private _container: PIXI.Container;
    private _exitContainer: PIXI.Container;
@@ -24,7 +28,9 @@ export class TrackRenderer {
    }
 
    renderTrack(track: Track): void {
-      const graphics = new PIXI.Graphics();
+      const graphics = new PIXI.Graphics() as TrackGraphics;
+      graphics.trackId = track.id;
+      graphics.eventMode = "static";
       graphics
          .moveTo(track.start.x, track.start.y)
          .lineTo(track.end.x, track.end.y)

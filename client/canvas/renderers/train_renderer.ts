@@ -134,6 +134,31 @@ export class TrainRenderer {
             
 
             trainContainer.addChild(text);
+
+            // Indicator: show red exclamation mark above the locomotive when stopped by a signal
+            if (train.stoppedBySignal) {
+               const indicator = new PIXI.Text({
+                  text: "!",
+                  style: {
+                     fontSize: RendererConfig.trainTextSize + 2,
+                     fill: 0xff0000,
+                     align: "center",
+                  },
+               });
+               indicator.anchor.set(0.5);
+
+               // Position above the locomotive relative to its rotation
+               const angle = carGraphics.rotation;
+               const offset = RendererConfig.trainHeight / 2 + 8;
+               const offsetX = carPosition.x + Math.cos(angle - Math.PI / 2) * offset;
+               const offsetY = carPosition.y + Math.sin(angle - Math.PI / 2) * offset;
+               indicator.x = offsetX;
+               indicator.y = offsetY;
+               // Keep the exclamation upright (no rotation)
+               indicator.rotation = 0;
+
+               trainContainer.addChild(indicator);
+            }
          }
       }
 

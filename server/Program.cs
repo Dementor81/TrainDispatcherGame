@@ -54,14 +54,12 @@ app.MapHub<GameHub>("/gamehub").RequireCors("AllowDevClient");
 // Endpoint to serve a specific track layout JSON file
 app.MapGet("/api/layouts/{stationName}", (string stationName, ITrackLayoutService trackLayoutService) =>
 {
-    var layout = trackLayoutService.GetTrackLayout(stationName);
-    if (layout == null)
+    var client = trackLayoutService.BuildClientTrackLayout(stationName);
+    if (client == null)
     {
         return Results.NotFound($"No layout found for station: {stationName}");
     }
-
-    var json = File.ReadAllText(Path.Combine("TrackLayouts", $"{stationName}.json"));
-    return Results.Content(json, "application/json");
+    return Results.Json(client);
 });
 
 app.MapGet("/api/layouts", (ITrackLayoutService trackLayoutService) =>
@@ -128,6 +126,13 @@ app.MapPost("/api/simulation/clear-error", (Simulation simulation) =>
 {
     simulation.ClearError();
     return Results.Ok(new { message = "Error cleared", state = simulation.State.ToString() });
+});
+
+// Endpoint to advance simulation time by one minute
+app.MapPost("/api/simulation/advance-minute", (Simulation simulation) =>
+{
+    simulation.AdvanceSeconds(60);
+    return Results.Ok(new { message = "Simulation advanced by 60 seconds", state = simulation.State.ToString(), elapsedSeconds = simulation.ElapsedSeconds, currentTime = simulation.SimulationTime });
 });
 
 app.MapGet("/api/simulation/status", (Simulation simulation) =>

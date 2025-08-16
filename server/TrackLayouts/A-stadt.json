@@ -1,9 +1,6 @@
 {
   "id": "A-Stadt",
-  "exits": [
-    {"destination": "Linksdorf",  "id": 0},
-    {"destination": "B-Stadt", "id": 1}
-  ],
+ 
   "tracks": [
     {
       "id": 12,
@@ -20,7 +17,7 @@
         {"type": "main", "position":  51, "direction": -1},
         {"type": "main", "position": 530, "direction":  1}
       ],
-      "switches": [ {"type": "Track", "id": 12}, {"type": "Track", "id": 16} ],
+      "switches": [ {"type": "Track", "id": 12}, {"type": "Switch", "id": 2} ],
       "halt": true
     },
     {
@@ -28,7 +25,7 @@
       "start": {"x": 1150, "y": 550},
       "end": {"x": 1200, "y": 600},
       "signals": [],
-      "switches": [ {"type": "Track", "id": 15}, {"type": "Switch", "id": 1} ]
+      "switches": [ {"type": "Switch", "id": 2}, {"type": "Switch", "id": 1} ]
     },
     {
       "id": 17,
@@ -54,24 +51,30 @@
       "end": {"x": 500, "y": 600},
       "signals": [ {"type": "main", "position": 320, "direction": 1} ],
       "switches": [ {"type": "Exit", "id": 0}, {"type": "Switch", "id": 0} ]
+    },
+    {
+      "id": 20,
+      "start": {"x": 1150, "y": 550},
+      "end": {"x": 1850, "y": 550},
+      "signals": [ {"type": "main", "position": 320, "direction": -1} ],
+      "switches": [ {"type": "Switch", "id": 2},{"type": "Exit", "id": 2}  ]
     }
   ],
   "switches": [
     {
-      "_class": "Switch",
       "id": 0,
       "location": {"x": 500, "y": 600},
-      "tracks": [19, 17, 12, null],
-      "branch": 17,
-      "from": 19
+      "tracks": [19, 17, 12, null]
     },
     {
-      "_class": "Switch",
       "id": 1,
       "location": {"x": 1200, "y": 600},
-      "tracks": [18, 17, 16, null],
-      "branch": 17,
-      "from": 18
+      "tracks": [18, 17, 16, null]
+    },
+    {
+      "id": 2,
+      "location": {"x": 1150, "y": 550},
+      "tracks": [15, 20, 16, null]
     }
   ]
 }

@@ -5,15 +5,17 @@ Features:
     ✔ check for collisions on client side @done(25-08-10 13:27)
     ☐ check collisions on server side
     ✔ show player upcoming trains @done(25-08-07 19:35)
-    ☐ player feedback for train collisions
+    ✔ player feedback for train collisions @done(25-08-16 19:51)
     ☐ trains from outside needs to be accepted by the player
     ☐ visualize if a train wants to depart but connot due to signaling
     ☐ visualize the time a train is stoping at a station
+    ☐ flip the arrow on exitpoints when the regular track is coming from the next track
+    ☐ show platfrom
 
 Big Features:
     ✔ uncontrolled stations should be handled by the server @done(25-08-10 13:27)
     ☐ trains can end at a station and return as new trains
-    ☐ 2-way tracks
+    ✔ 2-way tracks @done(25-08-16 19:22)
     ☐ acceleration and deceleration
     ☐ select a train to see different information
     ☐ shunting

@@ -82,7 +82,7 @@ namespace TrainDispatcherGame.Server.Services
                 var train = new Train(trainSchedule.Number)
                 {
                     Type = trainSchedule.Type,
-                    Speed = trainSchedule.Speed / 3.6d,
+                    Speed = trainSchedule.Speed / 3.6d, //the time table json is in km/h, we need to convert to m/s
                     Path = trainSchedule.Path,
                     Cars = trainSchedule.Cars
                 };
@@ -90,44 +90,37 @@ namespace TrainDispatcherGame.Server.Services
                 // Add station events from timetable only
                 foreach (var timetableEntry in trainSchedule.Timetable)
                 {
-                    if (DateTime.TryParse(timetableEntry.Arrival, out var arrivalTime) && 
-                        DateTime.TryParse(timetableEntry.Departure, out var departureTime))
+                    DateTime arrivalTime = DateTime.MinValue;
+                    DateTime departureTime = DateTime.MinValue;
+
+                    if (!string.IsNullOrEmpty(timetableEntry.Arrival))
                     {
-                        train.Events.Add(new TrainEvent
+                        if (!DateTime.TryParse(timetableEntry.Arrival, out arrivalTime))
                         {
-                            Station = timetableEntry.Station,
-                            LocationId = timetableEntry.Station,
-                            ArrivalTime = arrivalTime,
-                            DepartureTime = departureTime,
-                        });
+                            throw new Exception($"Error parsing arrival time for train {trainSchedule.Number} at {timetableEntry.Station}: {timetableEntry.Arrival}");
+                        }
                     }
-                    else
+
+                    if (!string.IsNullOrEmpty(timetableEntry.Departure))
                     {
-                        Console.WriteLine($"Error parsing arrival time for train {trainSchedule.Number} at {timetableEntry.Station}: {timetableEntry.Arrival}");
+                        if (!DateTime.TryParse(timetableEntry.Departure, out departureTime))
+                        {
+                            throw new Exception($"Error parsing departure time for train {trainSchedule.Number} at {timetableEntry.Station}: {timetableEntry.Departure}");
+                        }
                     }
+
+                    train.Route.Add(new TrainWayPoint
+                    {
+                        Station = timetableEntry.Station,
+                        LocationId = timetableEntry.Station,
+                        ArrivalTime = arrivalTime,
+                        DepartureTime = departureTime,
+                    });
                 }
 
                 
 
-                // Compute spawn time based on station span and train speed
-                var firstEvent = train.Events.FirstOrDefault();
-                if (firstEvent != null)
-                {
-                    var firstStation = firstEvent.Station;
-                    var layout = trackLayoutService.GetTrackLayout(firstStation);
-                    int halfSpan = (layout?.MaxExitDistance ?? 0) / 2;
-                    int travelSeconds = train.GetTravelTime(halfSpan);
-                    var spawnDateTime = firstEvent.ArrivalTime - TimeSpan.FromSeconds(travelSeconds);
-
-                    // Find the exit point that leads toward the origin direction for this train's first approach
-                    var exitPoint = trackLayoutService.GetExitPointToStation(firstStation, train.Path.First());
-
-                    train.Spawn = new TrainSpawn(
-                        spawnDateTime,
-                        firstStation,
-                        exitPoint?.Id ?? -1
-                    );
-                }
+                
 
                 trains.Add(train);
             }

@@ -132,7 +132,6 @@ export class TrainManager {
          return; // No trains to update
       }
 
-
       let trainsUpdated = false;
 
       // Update each train
@@ -163,22 +162,31 @@ export class TrainManager {
       const blockingTrain = this.findBlockingTrain(train, proposedDistance);
       if (blockingTrain) {
          // Do not advance this tick to avoid collision
-         this._eventManager.emit("trainBlockedByTrain", train, blockingTrain);
+         this._eventManager.emit("trainCollision", train, blockingTrain);
          return false;
+      }
+
+      if (train.stoppedBySignal !== null) {
+         if (train.stoppedBySignal.isTrainAllowedToGo()) {
+            train.setStoppedBySignal(null);
+         } else {
+            return false;
+         }
+      } else {
+         const stoppingSignal = this.checkSignalsAhead(train);
+         if (stoppingSignal) {
+            // Signal is red - stop the train and store the signal reference
+            train.setStoppedBySignal(stoppingSignal);
+            console.log(`Train ${train.number} stopped by signal at km ${stoppingSignal.position} on track ${train.track.id}`);
+            this._eventManager.emit("trainStoppedBySignal", train, stoppingSignal);
+            return false;
+         }
       }
 
       // Check for signals ahead before moving
-      const stoppingSignal = this.checkSignalsAhead(train);
-      if (stoppingSignal) {
-         // Signal is red - stop the train and store the signal reference
-         train.setStoppedBySignal(stoppingSignal);
-         console.log(`Train ${train.number} stopped by signal at km ${stoppingSignal.position} on track ${train.track.id}`);
-         this._eventManager.emit("trainStoppedBySignal", train, stoppingSignal);
-         return false;
-      }
 
       // Check if train should stop at a station or depart
-      if (this.checkStationStop(train,proposedDistance)) {
+      if (this.checkStationStop(train, proposedDistance)) {
          return false;
       }
       if (Math.abs(proposedDistance) <= 0.001) {
@@ -610,7 +618,7 @@ export class TrainManager {
 
       // Train is not stopped - check if it needs to stop (only calculate distance if needed)
 
-      const trackCenter = train.track.length / 2 + (train.getLength() / 2 * train.direction);
+      const trackCenter = train.track.length / 2 + (train.getLength() / 2) * train.direction;
       const distanceFromCenter = Math.abs(train.km - trackCenter);
       const isNearStation = distanceFromCenter <= Math.abs(proposedDistance) + 0.1;
 

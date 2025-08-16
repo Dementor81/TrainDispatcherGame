@@ -2,7 +2,7 @@ using System;
 
 namespace TrainDispatcherGame.Server.Models
 {
-    public class TrainEvent
+    public class TrainWayPoint
     {
         public string LocationId { get; set; } = string.Empty;
         public string Station { get; set; } = string.Empty;
@@ -10,10 +10,19 @@ namespace TrainDispatcherGame.Server.Models
         public DateTime DepartureTime { get; set; }
         public bool Processed { get; set; } = false;
 
-        public bool Stops{
-            get{
+        public bool Stops
+        {
+            get
+            {
                 return ArrivalTime != DepartureTime;
             }
-        }     
+        }
+
+        public bool IsFake{
+            get
+            {
+                return ArrivalTime == DateTime.MinValue && DepartureTime == DateTime.MinValue;
+            }
+        }
     }
-} 
+}

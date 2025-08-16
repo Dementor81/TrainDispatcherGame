@@ -45,6 +45,31 @@ export class Renderer {
       this._camera = new Camera(this._pixiApp.stage, canvas);
       this._inputHandler = new InputHandler(canvas, this._camera, eventManager);
 
+      // Debug: log display object under cursor on click
+      this._pixiApp.stage.eventMode = "static";
+      this._pixiApp.stage.on("click", (event) => {
+         const target = (event as any).target as any;
+         const info: Record<string, unknown> = {};
+         let current: any = target;
+         let hops = 0;
+         while (current && hops < 6) {
+            if (current.switchId !== undefined) info.switchId = current.switchId;
+            if (current.signalTrackId !== undefined) info.signalTrackId = current.signalTrackId;
+            if (current.signalPosition !== undefined) info.signalPosition = current.signalPosition;
+            if (current.trainNumber !== undefined) info.trainNumber = current.trainNumber;
+            if (current.exitId !== undefined) info.exitId = current.exitId;
+            if (current.trackId !== undefined) info.trackId = current.trackId;
+            current = current.parent;
+            hops++;
+         }
+         // Always log the raw target; add tags when available
+         if (Object.keys(info).length > 0) {
+            console.log("[Debug Click] Target:", target, "Tags:", info);
+         } else {
+            console.log("[Debug Click] Target:", target);
+         }
+      });
+
       // Initialize renderers
       this._trackRenderer = new TrackRenderer(this._pixiApp.stage, trackLayoutManager);
       this._switchRenderer = new SwitchRenderer(this._pixiApp.stage, eventManager, canvas);

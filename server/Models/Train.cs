@@ -11,8 +11,8 @@ namespace TrainDispatcherGame.Server.Models
         public double Speed { get; set; }//m/s
         public int Cars { get; set; }
         public List<string> Path { get; set; } = new();
-        public TrainSpawn? Spawn { get; set; }
-        public List<TrainEvent> Events { get; set; } = new();
+        public TrainSpawnPoint? Spawn { get; set; }
+        public List<TrainWayPoint> Route { get; set; } = new();
         public int CurrentEventIndex { get; set; } = 0;
         public string? CurrentLocation { get; set; }
         public string? HeadingForStation { get; set; }
@@ -25,49 +25,49 @@ namespace TrainDispatcherGame.Server.Models
             Number = number;
         }
 
-        public TrainEvent? GetCurrentEvent()
+        public TrainWayPoint? GetWayPoint()
         {
-            if (CurrentEventIndex < Events.Count)
+            if (CurrentEventIndex < Route.Count)
             {
-                return Events[CurrentEventIndex];
+                return Route[CurrentEventIndex];
             }
             return null;
         }
 
-        public TrainEvent? GetNextEvent()
+        public TrainWayPoint? GetNextWayPoint()
         {
-            if (CurrentEventIndex + 1 < Events.Count)
+            if (CurrentEventIndex + 1 < Route.Count)
             {
-                return Events[CurrentEventIndex + 1];
+                return Route[CurrentEventIndex + 1];
             }
             return null;
         }
 
-        public bool HasMoreEvents()
+        public bool HasMoreWayPoints()
         {
-            return CurrentEventIndex < Events.Count;
+            return CurrentEventIndex < Route.Count;
         }
 
-        public List<TrainEvent> GetFutureEvents()
+        public List<TrainWayPoint> GetFutureWayPoints()
         {
-            if (CurrentEventIndex >= Events.Count)
+            if (CurrentEventIndex >= Route.Count)
             {
-                return new List<TrainEvent>();
+                return new List<TrainWayPoint>();
             }
             
-            return Events.Skip(CurrentEventIndex).ToList();
+            return Route.Skip(CurrentEventIndex).ToList();
         }
 
         /// <summary>
         /// sets the counter to the next event and marks the current event as processed
         /// </summary>
         /// <param name="currentEvent">the current event to be processed</param>
-        public TrainEvent? AdvanceToNextEvent()
+        public TrainWayPoint? AdvanceToNextWayPoint()
         {
-            if (HasMoreEvents())
+            if (HasMoreWayPoints())
             {
                 CurrentEventIndex++; 
-                return GetCurrentEvent();                
+                return GetWayPoint();                
             }
             else
             {

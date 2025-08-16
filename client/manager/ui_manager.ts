@@ -2,6 +2,7 @@ import { StationSelector } from "../ui/stationSelector";
 import { ControlPanel } from "../ui/controlPanel";
 import { TrainOverviewPanel } from "../ui/trainOverviewPanel";
 import { HUDPanel } from "../ui/hudPanel";
+import NotificationModal from "../ui/notificationModal";
 import { Application } from "../core/application";
 
 export class UIManager {
@@ -9,6 +10,7 @@ export class UIManager {
     private _controlPanel: ControlPanel | null = null;
     private _trainOverviewPanel: TrainOverviewPanel | null = null;
     private _hud: HUDPanel | null = null;
+    private _notificationModal: NotificationModal | null = null;
 
     constructor(application: Application) {
         this._application = application;
@@ -18,6 +20,8 @@ export class UIManager {
         this._controlPanel = new ControlPanel(this._application);
         this._hud = new HUDPanel(this._application);
         this._hud.show();
+        this._controlPanel.show();
+        this._notificationModal = new NotificationModal();
     }    
 
     start() {
@@ -48,6 +52,11 @@ export class UIManager {
             this._trainOverviewPanel = new TrainOverviewPanel(this._application);
         }
         this._trainOverviewPanel.show();
+    }
+
+    notifyCollision(trainNumberA: string, trainNumberB: string): void {
+        const message = `Kollision zwischen Zug ${trainNumberA} und Zug ${trainNumberB}. Beide entfernt.`;
+        this._notificationModal?.show(message, 'Kollision');
     }
 
     hideTrainOverviewPanel(): void {

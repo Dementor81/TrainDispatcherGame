@@ -153,6 +153,8 @@ namespace TrainDispatcherGame.Server.Hubs
             {
                 Console.WriteLine($"Error receiving train {trainNumber}: {ex.Message}");
             }
+
+            await Task.CompletedTask;
         }
 
         public async Task ReportTrainStopped(string playerId, string trainNumber, string stationId)
@@ -167,17 +169,15 @@ namespace TrainDispatcherGame.Server.Hubs
                     return;
                 }
 
-                var success = _simulation.ReportTrainStopped(train, stationId);
+                _simulation.ReportTrainStopped(train, stationId);
                 
-                if (success)
-                {
-                    Console.WriteLine($"Train {trainNumber} reported stopped at station {stationId}");
-                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error reporting train stopped {trainNumber}: {ex.Message}");
             }
+
+            await Task.CompletedTask;
         }
 
         public async Task ReportTrainDeparted(string playerId, string trainNumber, string stationId)
@@ -192,17 +192,36 @@ namespace TrainDispatcherGame.Server.Hubs
                     return;
                 }
 
-                var success = _simulation.ReportTrainDeparted(train, stationId);
-                
-                if (success)
-                {
-                    Console.WriteLine($"Train {trainNumber} reported departed from station {stationId}");
-                }
+                _simulation.ReportTrainDeparted(train, stationId); 
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error reporting train departed {trainNumber}: {ex.Message}");
             }
+
+            await Task.CompletedTask;
+        }
+
+        public async Task ReportTrainCollision(string playerId, string trainNumberA, string trainNumberB, string stationId)
+        {
+            try
+            {
+                var trainA = _simulation.Trains.FirstOrDefault(t => t.Number == trainNumberA);
+                var trainB = _simulation.Trains.FirstOrDefault(t => t.Number == trainNumberB);
+                if (trainA == null || trainB == null)
+                {
+                    Console.WriteLine($"Failed to report collision: One or both trains not found ({trainNumberA}, {trainNumberB})");
+                    return;
+                }
+
+                _simulation.HandleCollision(trainA, trainB);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reporting train collision {trainNumberA} vs {trainNumberB}: {ex.Message}");
+            }
+
+            await Task.CompletedTask;
         }
     }
 } 
