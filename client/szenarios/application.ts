@@ -16,6 +16,7 @@ export default class SzenariosApplication {
   private handleField: 'arrival' | 'departure' | null = null;
   private handleStartPointerY: number = 0;
   private handleStartMinutes: number = 0;
+  private handleSnapshot?: { arrivals: (number | null)[]; departures: (number | null)[] };
   private scenario?: ScenarioDto;
   private network?: NetworkDto;
   private stationOrder: string[] = [];
@@ -31,6 +32,7 @@ export default class SzenariosApplication {
   private isPanning: boolean = false;
   private lastPointerY: number = 0;
   private selectedTrainIdx: number | null = null;
+  private modalSubmit?: (ev: Event) => void;
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -218,8 +220,7 @@ export default class SzenariosApplication {
             this.lines.moveTo(x, yA).lineTo(x, yD);
           }
         }
-        // handles for arrival/departure if they were explicitly provided (not inferred-only)
-        this.drawTimeHandle(train, idx, i, 'arrival', e.arrival, x, yForTime);
+        // handle only for departure (arrival adjustment is not needed)
         this.drawTimeHandle(train, idx, i, 'departure', e.departure, x, yForTime);
       }
       this.lines.stroke({ width: 2, color, alpha: 1, cap: "round" });
@@ -250,27 +251,55 @@ export default class SzenariosApplication {
       if (!isText) this.setSelectedTrain(null);
     };
     const onPointerMove = (ev: PointerEvent) => {
-      const padding = this.padding;
-      const height = this.app.renderer.height - padding * 2;
-      const minutesPerPixel = this.viewDurationMinutes / Math.max(1, height);
+      const minutesPerPixel = this.getMinutesPerPixel();
       if (this.isDraggingHandle && this.handleTrainIdx !== null && this.handleEntryIdx !== null && this.handleField) {
         const dy = ev.clientY - this.handleStartPointerY;
         const deltaMinutes = dy * minutesPerPixel; // down -> later
         const newMinutes = Math.max(0, this.handleStartMinutes + deltaMinutes);
-        const t = this.scenario!.trains[this.handleTrainIdx].timetable[this.handleEntryIdx] as any;
-        const str = minutesToString(newMinutes);
-        if (this.handleField === 'arrival') {
-          t.arrival = str;
-        } else {
-          t.departure = str;
+        const train = this.scenario!.trains[this.handleTrainIdx];
+        const entries = train.timetable as any[];
+        // Build snapshot if missing (safety)
+        if (!this.handleSnapshot) {
+          const arrivals: (number | null)[] = [];
+          const departures: (number | null)[] = [];
+          for (const e of entries) {
+            arrivals.push(e.arrival ? toMinutes(e.arrival) : null);
+            departures.push(e.departure ? toMinutes(e.departure) : null);
+          }
+          this.handleSnapshot = { arrivals, departures };
         }
-        // enforce departure >= arrival when both exist
-        if (t.arrival && t.departure) {
-          const aMin = toMinutes(t.arrival);
-          const dMin = toMinutes(t.departure);
-          if (dMin < aMin) {
-            // snap departure to arrival
-            t.departure = minutesToString(aMin);
+        const snap = this.handleSnapshot!;
+        const baseIdx = this.handleEntryIdx;
+        const baseMinutes = this.handleStartMinutes;
+        const totalDelta = newMinutes - baseMinutes;
+
+        if (this.handleField === 'departure') {
+          // Update only current departure, then shift all subsequent stops by totalDelta
+          const cur = entries[baseIdx];
+          cur.departure = minutesToString(newMinutes);
+          if (cur.arrival) {
+            const aMin = toMinutes(cur.arrival);
+            if (toMinutes(cur.departure) < aMin) cur.departure = minutesToString(aMin);
+          }
+          for (let j = baseIdx + 1; j < entries.length; j++) {
+            const e = entries[j];
+            const a0 = snap.arrivals[j];
+            const d0 = snap.departures[j];
+            if (a0 != null) e.arrival = minutesToString(Math.max(0, a0 + totalDelta));
+            if (d0 != null) e.departure = minutesToString(Math.max(0, d0 + totalDelta));
+            if (e.arrival && e.departure) {
+              const aMin = toMinutes(e.arrival);
+              const dMin = toMinutes(e.departure);
+              if (dMin < aMin) e.departure = minutesToString(aMin);
+            }
+          }
+        } else {
+          // Arrival edit: only change arrival at current stop; do not cascade
+          const cur = entries[baseIdx];
+          cur.arrival = minutesToString(newMinutes);
+          if (cur.departure) {
+            const dMin = toMinutes(cur.departure);
+            if (toMinutes(cur.arrival) > dMin) cur.arrival = minutesToString(dMin);
           }
         }
         this.drawScene();
@@ -301,6 +330,7 @@ export default class SzenariosApplication {
 
   private drawTimeHandle(train: any, trainIdx: number, entryIdx: number, field: 'arrival' | 'departure', timeStr: string | undefined, x: number, yForTime: (t: string) => number) {
     if (!timeStr || !this.timeHandles) return;
+    if (field === 'arrival') return; // no arrival handles
     const y = yForTime(timeStr);
     const g = new PIXI.Graphics();
     g.circle(x, y, 3).fill({ color: 0xffffff, alpha: 1 }).stroke({ color: 0x000000, width: 1, alpha: 0.6 });
@@ -313,6 +343,15 @@ export default class SzenariosApplication {
       this.handleField = field;
       this.handleStartPointerY = ev.clientY;
       this.handleStartMinutes = toMinutes(timeStr);
+      // snapshot all original times for cascading delta
+      const tr = this.scenario!.trains[trainIdx];
+      const arrivals: (number | null)[] = [];
+      const departures: (number | null)[] = [];
+      for (const te of tr.timetable as any[]) {
+        arrivals.push(te.arrival ? toMinutes(te.arrival) : null);
+        departures.push(te.departure ? toMinutes(te.departure) : null);
+      }
+      this.handleSnapshot = { arrivals, departures };
     });
     g.on('pointerup', () => this.endHandleDrag());
     g.on('pointerupoutside', () => this.endHandleDrag());
@@ -325,6 +364,7 @@ export default class SzenariosApplication {
     this.handleTrainIdx = null;
     this.handleEntryIdx = null;
     this.handleField = null;
+    this.handleSnapshot = undefined;
   }
 
   private beginTrainDrag(trainIdx: number, clientY: number) {
@@ -411,6 +451,12 @@ export default class SzenariosApplication {
 
   private clearStage() {
     this.app.stage.removeChildren();
+  }
+
+  private getMinutesPerPixel(): number {
+    const padding = this.padding;
+    const height = this.app.renderer.height - padding * 2;
+    return this.viewDurationMinutes / Math.max(1, height);
   }
 
   private setSelectedTrain(idx: number | null) {
@@ -502,8 +548,7 @@ export default class SzenariosApplication {
     const num = (document.getElementById('train-number') as HTMLInputElement)?.value?.trim() || train.number;
     const speed = parseInt((document.getElementById('train-speed') as HTMLInputElement)?.value || String(train.speed), 10) || train.speed;
     const cars = parseInt((document.getElementById('train-cars') as HTMLInputElement)?.value || String(train.cars), 10) || train.cars;
-    const start = (document.getElementById('train-start') as HTMLSelectElement)?.value;
-    const end = (document.getElementById('train-end') as HTMLSelectElement)?.value;
+    
     // update simple fields
     train.number = num;
     train.speed = speed;
