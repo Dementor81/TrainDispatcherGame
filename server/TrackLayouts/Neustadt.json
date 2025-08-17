@@ -28,7 +28,8 @@
         "start": {"x": 400, "y": 700},
         "end": {"x": 1100, "y": 700},
         "signals": [ {"type": "main", "position": 108, "direction": -1} ],
-        "switches": [ {"type": "Switch", "id": 0}, {"type": "Switch", "id": 1} ]
+        "switches": [ {"type": "Switch", "id": 0}, {"type": "Switch", "id": 1} ],
+        "halt": true
       },
       {
         "id": 9,
@@ -57,7 +58,8 @@
         "start": {"x": 400, "y": 750},
         "end": {"x": 1100, "y": 750},
         "signals": [ {"type": "main", "position": 614, "direction": 1} ],
-        "switches": [ {"type": "Switch", "id": 2}, {"type": "Switch", "id": 3} ]
+        "switches": [ {"type": "Switch", "id": 2}, {"type": "Switch", "id": 3} ],
+        "halt": true
       },
       {
         "id": 21,

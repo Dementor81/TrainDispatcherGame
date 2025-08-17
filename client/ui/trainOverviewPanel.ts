@@ -99,10 +99,11 @@ export class TrainOverviewPanel extends BasePanel {
 
   private createTrainTableRow(train: StationTimetableEventDto): string {
     const delayInfo = this.formatDelay(train.currentDelay);
+    const isStoppedBySignal = this.application.trains.some(t => t.number === train.trainNumber && t.stoppedBySignal);
     
     return `
       <tr class="train-row">
-        <td class="fw-bold">${train.trainNumber}</td>
+        <td class="fw-bold ${isStoppedBySignal ? 'text-danger' : ''}">${train.trainNumber}</td>
         <td class="small">${train.fromStation}</td>
         <td class="small">${train.nextStation}</td>
         <td class="small">${this.formatTime(train.arrival)}</td>

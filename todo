@@ -7,10 +7,11 @@ Features:
     ✔ show player upcoming trains @done(25-08-07 19:35)
     ✔ player feedback for train collisions @done(25-08-16 19:51)
     ☐ trains from outside needs to be accepted by the player
-    ☐ visualize if a train wants to depart but connot due to signaling
+    ✔ visualize if a train wants to depart but connot due to signaling @done(25-08-17 19:34)
     ☐ visualize the time a train is stoping at a station
     ☐ flip the arrow on exitpoints when the regular track is coming from the next track
     ☐ show platfrom
+    ☐ report passing through a station to the server
 
 Big Features:
     ✔ uncontrolled stations should be handled by the server @done(25-08-10 13:27)
@@ -20,7 +21,7 @@ Big Features:
     ☐ select a train to see different information
     ☐ shunting
     ☐ admin page with server controls and statistics
-    ☐ szenario editor that helps creating timetables
+    ✔ szenario editor that helps creating timetables @done(25-08-17 16:32)
     ☐ UI with an overview of the whole network
 
 Bugs:

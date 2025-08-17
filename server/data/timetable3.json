@@ -1,0 +1,236 @@
+{
+   "title": "Fahrplan",
+   "start_time": "00:00",
+   "trains": [
+      {
+         "number": "1001",
+         "type": "Passenger",
+         "speed": 100,
+         "cars": 4,
+         "path": [],
+         "timetable": [
+            {
+               "station": "Linksdorf"
+            },
+            {
+               "station": "A-Stadt",
+               "arrival": "00:00:50",
+               "departure": "00:02:00"
+            },
+            {
+               "station": "Neustadt",
+               "arrival": "00:04:00",
+               "departure": "00:05:00"
+            },
+            {
+               "station": "B-Stadt",
+               "arrival": "00:07:00",
+               "departure": "00:09:20"
+            },
+            {
+               "station": "Rechtsheim"
+            }
+         ]
+      },
+      {
+         "number": "1002",
+         "type": "Passenger",
+         "speed": 100,
+         "cars": 6,
+         "path": [],
+         "timetable": [
+            {
+               "station": "Neustadt"
+            },
+            {
+               "station": "A-Stadt",
+               "arrival": "00:01:00",
+               "departure": "00:05:13"
+            },
+            {
+               "station": "Linksdorf"
+            }
+         ]
+      },
+      {
+         "number": "1003",
+         "type": "Passenger",
+         "speed": 100,
+         "cars": 5,
+         "path": [],
+         "timetable": [
+            {
+               "station": "Linksdorf"
+            },
+            {
+               "station": "A-Stadt",
+               "arrival": "00:04:00",
+               "departure": "00:05:00"
+            },
+            {
+               "station": "Neustadt",
+               "arrival": "00:07:00",
+               "departure": "00:12:11"
+            },
+            {
+               "station": "B-Stadt",
+               "arrival": "00:14:11",
+               "departure": "00:15:11"
+            },
+            {
+               "station": "Rechtsheim"
+            }
+         ]
+      },
+      {
+         "number": "1004",
+         "type": "Passenger",
+         "speed": 100,
+         "cars": 4,
+         "path": [],
+         "timetable": [
+            {
+               "station": "Rechtsheim"
+            },
+            {
+               "station": "B-Stadt",
+               "arrival": "00:06:00",
+               "departure": "00:07:30"
+            },
+            {
+               "station": "Neustadt",
+               "arrival": "00:09:30",
+               "departure": "00:17:00"
+            },
+            {
+               "station": "A-Stadt",
+               "arrival": "00:19:00",
+               "departure": "00:20:00"
+            },
+            {
+               "station": "Linksdorf"
+            }
+         ]
+      },
+      {
+         "number": "606",
+         "type": "Passenger",
+         "speed": 100,
+         "cars": 4,
+         "path": [],
+         "timetable": [
+            {
+               "station": "Rechtsheim"
+            },
+            {
+               "station": "B-Stadt",
+               "arrival": "00:07:55",
+               "departure": "00:09:41"
+            },
+            {
+               "station": "Neustadt",
+               "arrival": "00:11:41",
+               "departure": "00:12:41"
+            },
+            {
+               "station": "A-Stadt",
+               "arrival": "00:14:41",
+               "departure": "00:16:27"
+            },
+            {
+               "station": "Linksdorf"
+            }
+         ]
+      },
+      {
+         "number": "1007",
+         "type": "Passenger",
+         "speed": 100,
+         "cars": 4,
+         "path": [],
+         "timetable": [
+            {
+               "station": "Linksdorf"
+            },
+            {
+               "station": "A-Stadt",
+               "arrival": "00:15:03",
+               "departure": "00:17:15"
+            },
+            {
+               "station": "Neustadt",
+               "arrival": "00:19:15",
+               "departure": "00:21:20"
+            },
+            {
+               "station": "B-Stadt",
+               "arrival": "00:23:20",
+               "departure": "00:24:20"
+            },
+            {
+               "station": "Rechtsheim"
+            }
+         ]
+      },
+      {
+         "number": "1008",
+         "type": "Passenger",
+         "speed": 100,
+         "cars": 4,
+         "path": [],
+         "timetable": [
+            {
+               "station": "Rechtsheim"
+            },
+            {
+               "station": "B-Stadt",
+               "arrival": "00:21:19",
+               "departure": "00:25:08"
+            },
+            {
+               "station": "Neustadt",
+               "arrival": "00:27:08",
+               "departure": "00:28:08"
+            },
+            {
+               "station": "A-Stadt",
+               "arrival": "00:29:38",
+               "departure": "00:30:38"
+            },
+            {
+               "station": "Linksdorf"
+            }
+         ]
+      },
+      {
+         "number": "1005",
+         "type": "Passenger",
+         "speed": 120,
+         "cars": 6,
+         "path": ["Linksdorf", "A-Stadt", "Neustadt", "B-Stadt", "Rechtsheim"],
+         "timetable": [
+            {
+               "station": "Linksdorf"
+            },
+            {
+               "station": "A-Stadt",
+               "arrival": "00:09:02",
+               "departure": "00:14:20"
+            },
+            {
+               "station": "Neustadt",
+               "arrival": "00:17:50",
+               "departure": "00:18:50"
+            },
+            {
+               "station": "B-Stadt",
+               "arrival": "00:20:50",
+               "departure": "00:21:50"
+            },
+            {
+               "station": "Rechtsheim"
+            }
+         ]
+      }
+   ]
+}

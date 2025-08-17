@@ -178,16 +178,7 @@ export class TrackLayoutManager {
       // Redraw the signal to reflect new state
       if (this._renderer) {
          this._renderer.redrawSignal(signal, track);
-      }
-
-      // If signal changed to green, check if any trains can resume
-      if (signal.state) {
-         // Get TrainManager from Application to resume trains
-         const trainManager = this._application.trainManager;
-         if (trainManager) {
-            trainManager.resumeTrainsStoppedBySignals();
-         }
-      }
+      }      
    }
 
    private handleTrainPassedSignal(train: Train, signal: Signal, track: Track): void {

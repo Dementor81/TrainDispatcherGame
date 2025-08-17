@@ -33,7 +33,7 @@ namespace TrainDispatcherGame.Server.Services
         {
             try
             {
-                var filePath = Path.Combine("data", "timetable2.json");
+                var filePath = Path.Combine("data", "timetable3.json");
                 if (File.Exists(filePath))
                 {
                     var json = File.ReadAllText(filePath);

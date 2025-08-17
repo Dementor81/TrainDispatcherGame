@@ -18,7 +18,6 @@ class Train {
     private _cars: number;
     private _speed: number; // km per simulation step
     private _direction: number; // 1 for forward, -1 for backward
-    private _isMoving: boolean;
     private _stoppedBySignal: Signal | null; // Signal that currently stops this train
     private _shouldStopAtCurrentStation: boolean = false; // Station ID where train should stop, or null if no stop needed
     private _arrivalTime: Date | null = null; // Scheduled arrival time at current station
@@ -31,7 +30,6 @@ class Train {
         this._cars = cars;
         this._speed = speed; 
         this._direction = 1; 
-        this._isMoving = true; 
         this._stoppedBySignal = null; // Initially not stopped by any signal
     }
 
@@ -77,9 +75,6 @@ class Train {
         return this._direction;
     }
 
-    get isMoving(): boolean {
-        return this._isMoving;
-    }
 
     get stoppedBySignal(): Signal | null {
         return this._stoppedBySignal;
@@ -140,28 +135,17 @@ class Train {
         this._direction = direction === 1 ? 1 : -1; // Normalize to 1 or -1
     }
 
-    // Start/stop the train
-    setMoving(isMoving: boolean): void {
-        this._isMoving = isMoving;
-        // Clear stopped signal when train starts moving
-        if (isMoving) {
-            this._stoppedBySignal = null;
-            this._stopReason = TrainStopReason.NONE;
-        }
-    }
 
     // Set the signal that is currently stopping this train
     setStoppedBySignal(signal: Signal | null): void {
         this._stoppedBySignal = signal;
         // If stopped by a signal, ensure train is not moving
         if (signal) {
-            this._isMoving = false;
             this._stopReason = TrainStopReason.SIGNAL;
         } else {
             // If signal is cleared and no other stop reason, clear stop reason
             if (this._stopReason === TrainStopReason.SIGNAL) {
                 this._stopReason = TrainStopReason.NONE;
-                this._isMoving = true;
             }
         }
     }
@@ -177,10 +161,6 @@ class Train {
     // Set the stop reason
     setStopReason(reason: TrainStopReason): void {
         this._stopReason = reason;
-        // If setting a stop reason, ensure train is not moving
-        if (reason !== TrainStopReason.NONE) {
-            this._isMoving = false;
-        }
     }
 
     // Update train position based on current speed and direction
@@ -188,10 +168,7 @@ class Train {
     // speed is in km/h
     getMovementDistance(): number {
 
-        const timeElapsedSeconds = SimulationConfig.simulationIntervalSeconds * SimulationConfig.simulationSpeed;
-        if (!this._isMoving) {
-            return 0;
-        }
+        const timeElapsedSeconds = SimulationConfig.simulationIntervalSeconds * SimulationConfig.simulationSpeed;     
         
         // Convert speed from km/h to m/s, then multiply by time and direction
         const speed_m_per_s = this._speed / 3.6; // Convert km/h to m/s
