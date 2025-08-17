@@ -72,3 +72,45 @@ export interface StationTimetableEventDto {
   fromStation: string;
   nextStation: string;
 }
+
+// Scenario (planning) types from REST /api/scenarios
+export interface ScenarioSummaryDto {
+  id: string;
+  title: string;
+}
+
+export interface ScenarioDto {
+  title: string;
+  start_time: string; // e.g., "08:00:00"
+  trains: ScenarioTrainDto[];
+}
+
+export interface ScenarioTrainDto {
+  number: string;
+  type: string;
+  speed: number; // km/h in source
+  cars: number;
+  path: string[];
+  timetable: ScenarioTimetableEntryDto[];
+}
+
+export interface ScenarioTimetableEntryDto {
+  station: string;
+  arrival: string;   // may be HH:mm:ss or ISO
+  departure: string; // may be HH:mm:ss or ISO
+}
+
+export interface NetworkDto {
+  stations: string[];
+  connections: NetworkConnectionDto[];
+}
+
+export interface NetworkConnectionDto {
+  from: string;
+  fromId: string;
+  to: string;
+  toId: string;
+  distance: number;
+  blocks: number;
+  mode?: string;
+}

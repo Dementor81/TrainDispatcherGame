@@ -43,6 +43,9 @@ builder.Services.AddSingleton<ITrackLayoutService, TrackLayoutService>();
 // Add time table service as a singleton service
 builder.Services.AddSingleton<ITimeTableService, TimeTableService>();
 
+// Add scenario service for REST access to scenarios
+builder.Services.AddSingleton<IScenarioService, ScenarioService>();
+
 var app = builder.Build();
 
 // Configure CORS for both API and SignalR
@@ -217,6 +220,42 @@ app.MapGet("/api/stations/controlled", (PlayerManager playerManager) =>
 {
     var controlledStations = playerManager.GetControlledStations();
     return Results.Ok(controlledStations);
+});
+
+// Scenario APIs
+app.MapGet("/api/scenarios", (IScenarioService scenarioService) =>
+{
+    var list = scenarioService.ListScenarios();
+    return Results.Ok(list);
+});
+
+app.MapGet("/api/scenarios/{id}", (string id, IScenarioService scenarioService) =>
+{
+    var scenario = scenarioService.GetScenarioById(id);
+    if (scenario == null)
+    {
+        return Results.NotFound(new { message = $"Scenario '{id}' not found" });
+    }
+    return Results.Ok(scenario);
+});
+
+// Rail network API (serves TrackLayouts/network.json)
+app.MapGet("/api/network", () =>
+{
+    try
+    {
+        var networkPath = Path.Combine("TrackLayouts", "network.json");
+        if (!File.Exists(networkPath))
+        {
+            return Results.NotFound(new { message = "network.json not found" });
+        }
+        var json = File.ReadAllText(networkPath);
+        return Results.Text(json, "application/json");
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
 });
 
 app.Run();

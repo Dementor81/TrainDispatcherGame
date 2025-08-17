@@ -10,21 +10,21 @@
         "fromId": "1",
         "to": "A-Stadt",
         "toId": "0",
-        "distance": 5000,
+        "distance": 3000,
         "blocks":1
     },{
         "from": "A-Stadt",
         "fromId": "1",
         "to": "Neustadt",
         "toId": "0",
-        "distance": 5000,
+        "distance": 7000,
         "blocks":1
     },{
         "from": "Neustadt",
         "fromId": "1",
         "to": "A-Stadt",
         "toId": "2",
-        "distance": 5000,
+        "distance": 7000,
         "blocks":1
     },    
     {
@@ -32,7 +32,7 @@
         "fromId": "2",
         "to": "B-Stadt",
         "toId": "0",
-        "distance": 5000,
+        "distance": 4000,
         "blocks":1
     },
     {

@@ -5,9 +5,12 @@ module.exports = (env, argv) => {
    const isProduction = argv.mode === "production";
 
    return {
-      entry: "./main.ts", // relative to project root
+      entry: {
+         main: "./main.ts",
+         szenarios: "./szenarios/main.ts",
+      },
       output: {
-         filename: isProduction ? "bundle.[contenthash].js" : "bundle.js",
+         filename: isProduction ? "[name].[contenthash].js" : "[name].js",
          path: path.resolve(__dirname, "dist"),
          publicPath: "/",
          clean: true, // clean dist folder on build
@@ -48,6 +51,14 @@ module.exports = (env, argv) => {
             filename: "main.html",
             inject: "head",
             scriptLoading: "blocking",
+            chunks: ["main"],
+         }),
+         new HtmlWebpackPlugin({
+            template: "szenarios/main.html",
+            filename: "Szenarios.html",
+            inject: "head",
+            scriptLoading: "blocking",
+            chunks: ["szenarios"],
          }),
       ],
       devServer: {
@@ -58,6 +69,21 @@ module.exports = (env, argv) => {
          
          hot: true,
          compress: true,
+      },
+      optimization: isProduction ? {} : {
+         minimize: false,
+         splitChunks: false,
+         runtimeChunk: false,
+         removeAvailableModules: false,
+         removeEmptyChunks: false,
+         mergeDuplicateChunks: false,
+         flagIncludedChunks: false,
+         usedExports: false,
+         concatenateModules: false,
+         innerGraph: false,
+         mangleExports: false,
+         moduleIds: 'named',
+         chunkIds: 'named',
       },
       mode: isProduction ? "production" : "development",
       devtool: isProduction ? "source-map" : "eval-source-map",

@@ -1,4 +1,4 @@
-import { TrackLayoutDto, StationTimetableEventDto } from "./dto";
+import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto } from "./dto";
 
 const API_BASE_URL = "http://localhost:5070/api";
 
@@ -122,6 +122,8 @@ export default {
   fetchAvailableLayouts,
   fetchAvailableStations,
   fetchLayout,
+  fetchScenarios,
+  fetchScenario,
   startSimulation,
   stopSimulation,
   pauseSimulation,
@@ -130,6 +132,7 @@ export default {
   getSimulationStatus,
   getActiveTrains,
   getUpcomingTrains,
+  fetchNetwork,
 };
 
 // Advance simulation time by one minute
@@ -142,6 +145,31 @@ export async function advanceSimulationOneMinute(): Promise<any> {
   });
   if (!response.ok) {
     throw new Error(`Failed to advance simulation by one minute: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+// Scenario REST
+export async function fetchScenarios(): Promise<ScenarioSummaryDto[]> {
+  const response = await fetch(`${API_BASE_URL}/scenarios`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch scenarios: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+export async function fetchScenario(id: string): Promise<ScenarioDto> {
+  const response = await fetch(`${API_BASE_URL}/scenarios/${encodeURIComponent(id)}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch scenario '${id}': ${response.statusText}`);
+  }
+  return response.json();
+}
+
+export async function fetchNetwork(): Promise<NetworkDto> {
+  const response = await fetch(`${API_BASE_URL}/network`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch network: ${response.statusText}`);
   }
   return response.json();
 }
