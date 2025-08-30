@@ -89,6 +89,11 @@ export class SignalRManager {
         // No server broadcast handling for collisions; client handles own removal/UI
 
 
+        this.connection.on('ApprovalRequested', (data) => {
+            console.log('Approval requested:', data);
+            this.eventManager.emit('approvalRequested', data);
+        });
+
     }
 
     public async connect(): Promise<void> {
@@ -227,6 +232,19 @@ export class SignalRManager {
             console.log(`Reported collision between trains ${trainNumberA} and ${trainNumberB} at station ${stationId}`);
         } catch (error) {
             console.error('Failed to report train collision:', error);
+            throw error;
+        }
+    }
+
+    public async respondApproval(playerId: string, trainNumber: string, fromStationId: string, approved: boolean): Promise<void> {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+            throw new Error('SignalR connection not established');
+        }
+
+        try {
+            await this.connection.invoke('RespondApproval', playerId, trainNumber, fromStationId, approved);
+        } catch (error) {
+            console.error('Failed to respond to approval:', error);
             throw error;
         }
     }

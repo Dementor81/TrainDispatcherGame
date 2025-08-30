@@ -13,17 +13,13 @@ import { BasePanel } from './basePanel';
 import { Application } from '../core/application';
 
 export class ControlPanel extends BasePanel {
-  private statusContainer: HTMLDivElement;
   private controlsContainer: HTMLDivElement;
   private trainManager: TrainManager | null = null;
 
   constructor(application: Application) {
     super(application, 500);
     this.trainManager = application.trainManager;
-    this.statusContainer = this.createStatusContainer();
     this.controlsContainer = this.createControlsContainer();
-    
-    this.container.appendChild(this.statusContainer);
     this.container.appendChild(this.controlsContainer);
   }
 
@@ -34,42 +30,7 @@ export class ControlPanel extends BasePanel {
     // This is not used in ControlPanel as we manually add status and controls containers
     const content = document.createElement('div');
     return content;
-  }
-
-  private createStatusContainer(): HTMLDivElement {
-    const statusContainer = document.createElement('div');
-    statusContainer.className = 'mb-3';
-    
-    const title = document.createElement('h6');
-    title.className = 'mb-2 text-primary';
-    title.textContent = 'Simulation Status';
-    
-    const statusGrid = document.createElement('div');
-    statusGrid.className = 'row g-2';
-    
-    // Simulation time
-    const timeCol = document.createElement('div');
-    timeCol.className = 'col-6';
-    timeCol.innerHTML = `
-      <div id="simulationTime" class="fw-bold">--:--</div>
-    `;   
-    
-    // Simulation status
-    const statusCol = document.createElement('div');
-    statusCol.className = 'col-12';
-    statusCol.innerHTML = `
-      <div class="small text-muted">Status</div>
-      <div id="simulationStatus" class="fw-bold">Stopped</div>
-    `;
-    
-    statusGrid.appendChild(timeCol);
-    statusGrid.appendChild(statusCol);
-    
-    statusContainer.appendChild(title);
-    statusContainer.appendChild(statusGrid);
-    
-    return statusContainer;
-  }
+  }  
 
   private createControlsContainer(): HTMLDivElement {
     const controlsContainer = document.createElement('div');
@@ -127,53 +88,7 @@ export class ControlPanel extends BasePanel {
     try {
       const [status] = await Promise.all([
         getSimulationStatus()
-      ]);
-
-      // Update simulation time
-      const timeElement = document.getElementById('simulationTime');
-      if (timeElement) {
-        const currentTime = new Date(status.currentTime);
-        timeElement.textContent = currentTime.toLocaleTimeString();
-      }    
-
-      // Update simulation status
-      const statusElement = document.getElementById('simulationStatus');
-      if (statusElement) {
-        let statusText: string;
-        let statusClass: string;
-        
-        // Check client simulation status
-        const clientRunning = this.trainManager?.isSimulationRunning() || false;
-        
-        switch (status.state) {
-          case 'Error':
-            statusText = 'Error';
-            statusClass = 'text-danger';
-            break;
-          case 'Paused':
-            statusText = clientRunning ? 'Server Paused, Client Running' : 'Paused';
-            statusClass = 'text-warning';
-            break;
-          case 'Running':
-            statusText = clientRunning ? 'Running' : 'Server Running, Client Stopped';
-            statusClass = clientRunning ? 'text-success' : 'text-warning';
-            break;
-          case 'Stopped':
-          default:
-            statusText = clientRunning ? 'Server Stopped, Client Running' : 'Stopped';
-            statusClass = clientRunning ? 'text-warning' : 'text-secondary';
-            break;
-        }
-        
-        statusElement.textContent = statusText;
-        statusElement.className = `fw-bold ${statusClass}`;
-      }
-
-      // Show error message if there is one
-      if (status.errorMessage) {
-        console.error('Simulation error:', status.errorMessage);
-        // You could also display this in the UI if desired
-      }
+      ]); 
 
       // Update button states
       this.updateButtonStates(status);

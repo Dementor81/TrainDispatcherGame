@@ -71,12 +71,7 @@ namespace TrainDispatcherGame.Server.Hubs
                 });
                 
                 Console.WriteLine($"Player {playerId} joined station {stationId} via SignalR");
-
-                // Start the simulation only when the first station becomes controlled
-                if (_playerManager.GetControlledStations().Count == 1)
-                {
-                    _simulation.Start();
-                }
+                
             }
             else
             {
@@ -147,7 +142,7 @@ namespace TrainDispatcherGame.Server.Hubs
                     return;
                 }
 
-                _simulation.TrainReturnedFromClient(train,exitId);
+                await _simulation.TrainReturnedFromClient(train,exitId);
             }
             catch (Exception ex)
             {
@@ -221,6 +216,19 @@ namespace TrainDispatcherGame.Server.Hubs
                 Console.WriteLine($"Error reporting train collision {trainNumberA} vs {trainNumberB}: {ex.Message}");
             }
 
+            await Task.CompletedTask;
+        }
+
+        public async Task RespondApproval(string playerId, string trainNumber, string fromStationId, bool approved)
+        {
+            try
+            {
+                _simulation.ReceiveApproval(trainNumber, fromStationId, approved);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error processing approval response for train {trainNumber}: {ex.Message}");
+            }
             await Task.CompletedTask;
         }
     }

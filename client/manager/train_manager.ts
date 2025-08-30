@@ -14,6 +14,7 @@ export class TrainManager {
    private _trackLayoutManager: TrackLayoutManager;
    // Simulation properties
    private _simulationTimer: NodeJS.Timeout | null = null;
+   private _timerWorker: Worker | null = null;
    private _isSimulationRunning: boolean = false;
    private _simulationSpeed: number = SimulationConfig.simulationSpeed; // Speed multiplier (1.0 = normal speed)
    private _currentSimulationTime: Date | null = null; // Current simulation time from server
@@ -78,13 +79,39 @@ export class TrainManager {
          clearInterval(this._simulationTimer);
          this._simulationTimer = null;
       }
+      if (this._timerWorker) {
+         try {
+            this._timerWorker.postMessage({ type: 'stop' });
+            this._timerWorker.terminate();
+         } catch {}
+         this._timerWorker = null;
+      }
    }
 
    resumeSimulation(): void {
+      if (this._isSimulationRunning) {
+         console.log("Simulation is already running");
+         return;
+      }
       this._isSimulationRunning = true;
-      this._simulationTimer = setInterval(() => {
-         this.updateSimulation();
-      }, SimulationConfig.simulationIntervalSeconds * 1000);
+
+      const intervalMs = SimulationConfig.simulationIntervalSeconds * 1000;
+      // Prefer Web Worker-based timer; fall back to setInterval if creation fails
+      try {
+         // new URL with import.meta.url lets Webpack bundle the worker
+         this._timerWorker = new Worker(new URL('../core/simulationTimer.worker.ts', import.meta.url), { type: 'module' } as any);
+         this._timerWorker.onmessage = (evt: MessageEvent<any>) => {
+            if (!this._isSimulationRunning) return;
+            // Could compute delta time here using evt.data.now if we later switch to dt-based movement
+            this.updateSimulation();
+         };
+         this._timerWorker.postMessage({ type: 'start', intervalMs });
+      } catch (err) {
+         console.warn('Worker timer unavailable, falling back to setInterval', err);
+         this._simulationTimer = setInterval(() => {
+            this.updateSimulation();
+         }, intervalMs);
+      }
    }
 
    // Check if simulation is running
@@ -478,13 +505,7 @@ export class TrainManager {
 
       this._trains.push(train);
       console.log(`Train added: ${train.getInfo()}`);
-      console.log(`Total trains: ${this._trains.length}`);
-
-      // Auto-start simulation if this is the first train and simulation is not running
-      if (this._trains.length === 1 && !this._isSimulationRunning) {
-         this.startSimulation();
-         console.log("Auto-started simulation for first train");
-      }
+      console.log(`Total trains: ${this._trains.length}`);      
 
       // Emit train added event for other components
       this._eventManager.emit("trainAdded", train);

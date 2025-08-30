@@ -16,6 +16,7 @@ namespace TrainDispatcherGame.Server.Services
         NetworkConnection? GetRegularConnection(string fromStationId, int fromExitId);
         NetworkConnection? GetRegularConnectionToStation(string fromStationId, string toStationId);
         TrainDispatcherGame.Server.Models.DTOs.ClientServerCom.ClientTrackLayoutDto? BuildClientTrackLayout(string stationId);
+        bool IsSingleTrackConnection(string stationA, string stationB);
     }
 
     public class TrackLayoutService : ITrackLayoutService
@@ -201,7 +202,7 @@ namespace TrainDispatcherGame.Server.Services
                         ToExitId = toExit,
                         Distance = c.Distance,
                         Blocks = c.Blocks,
-                        Mode =  NetworkConnection.TrackMode.Regular,
+                        Mode =  sameConnectionCount == 1 ? NetworkConnection.TrackMode.SingleTrack : NetworkConnection.TrackMode.Regular,
                     };
                     _directedConnections[(forward.FromStation, forward.FromExitId)] = forward;
                     created++;
@@ -215,7 +216,7 @@ namespace TrainDispatcherGame.Server.Services
                         ToExitId = fromExit,
                         Distance = c.Distance,
                         Blocks = c.Blocks,
-                        Mode =  sameConnectionCount > 1 ? NetworkConnection.TrackMode.WrongDirection : NetworkConnection.TrackMode.Regular,
+                        Mode =  sameConnectionCount == 1 ? NetworkConnection.TrackMode.SingleTrack : NetworkConnection.TrackMode.WrongDirection,
                     };
                     _directedConnections[(reverse.FromStation, reverse.FromExitId)] = reverse;
                     created++;
@@ -322,7 +323,7 @@ namespace TrainDispatcherGame.Server.Services
         {
             foreach (var conn in _directedConnections.Values)
             {
-                if (conn.FromStation == fromStationId && conn.ToStation == toStationId && conn.Mode == NetworkConnection.TrackMode.Regular)
+                if (conn.FromStation == fromStationId && conn.ToStation == toStationId && (conn.Mode == NetworkConnection.TrackMode.Regular || conn.Mode == NetworkConnection.TrackMode.SingleTrack))
                 {
                     var layout = GetTrackLayout(toStationId);
                     if (layout != null)
@@ -351,7 +352,7 @@ namespace TrainDispatcherGame.Server.Services
         {
             if (_directedConnections.TryGetValue((fromStationId, fromExitId), out var conn))
             {
-                if (conn.Mode == NetworkConnection.TrackMode.Regular) return conn;
+                if (conn.Mode == NetworkConnection.TrackMode.Regular || conn.Mode == NetworkConnection.TrackMode.SingleTrack) return conn;
             }
             return null;
         }
@@ -360,7 +361,7 @@ namespace TrainDispatcherGame.Server.Services
         {
             foreach (var conn in _directedConnections.Values)
             {
-                if (conn.FromStation == fromStationId && conn.ToStation == toStationId && conn.Mode == NetworkConnection.TrackMode.Regular)
+                if (conn.FromStation == fromStationId && conn.ToStation == toStationId && (conn.Mode == NetworkConnection.TrackMode.Regular || conn.Mode == NetworkConnection.TrackMode.SingleTrack))
                 {
                     return conn;
                 }
@@ -390,6 +391,27 @@ namespace TrainDispatcherGame.Server.Services
             }
 
             return client;
+        }
+
+        public bool IsSingleTrackConnection(string stationA, string stationB)
+        {
+            if (string.IsNullOrWhiteSpace(stationA) || string.IsNullOrWhiteSpace(stationB))
+            {
+                return false;
+            }
+
+            foreach (var conn in _directedConnections.Values)
+            {
+                if (conn.Mode == NetworkConnection.TrackMode.SingleTrack)
+                {
+                    if ((conn.FromStation == stationA && conn.ToStation == stationB) ||
+                        (conn.FromStation == stationB && conn.ToStation == stationA))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 }

@@ -110,6 +110,15 @@ export async function getActiveTrains(): Promise<any[]> {
   return response.json();
 }
 
+// All trains (active + completed)
+export async function getAllTrains(): Promise<any[]> {
+  const response = await fetch(`${API_BASE_URL}/simulation/trains`);
+  if (!response.ok) {
+    throw new Error(`Failed to get trains: ${response.statusText}`);
+  }
+  return response.json();
+}
+
 export async function getUpcomingTrains(stationId: string): Promise<StationTimetableEventDto[]> {
   const response = await fetch(`${API_BASE_URL}/stations/${encodeURIComponent(stationId)}/upcoming-trains`);
   if (!response.ok) {
@@ -131,6 +140,7 @@ export default {
   resetSimulation,
   getSimulationStatus,
   getActiveTrains,
+  getAllTrains,
   getUpcomingTrains,
   fetchNetwork,
 };

@@ -8,6 +8,7 @@ module.exports = (env, argv) => {
       entry: {
          main: "./main.ts",
          szenarios: "./szenarios/main.ts",
+         admin: "./admin/main.ts",
       },
       output: {
          filename: isProduction ? "[name].[contenthash].js" : "[name].js",
@@ -59,6 +60,13 @@ module.exports = (env, argv) => {
             inject: "head",
             scriptLoading: "blocking",
             chunks: ["szenarios"],
+         }),
+         new HtmlWebpackPlugin({
+            template: "admin/main.html",
+            filename: "admin.html",
+            inject: "head",
+            scriptLoading: "blocking",
+            chunks: ["admin"],
          }),
       ],
       devServer: {

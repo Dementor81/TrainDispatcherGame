@@ -8,6 +8,7 @@ import SignalRManager from "../network/signalr";
 import Train from "../sim/train";
 import { getSimulationStatus } from "../network/api";
 import { SimulationState } from "../network/dto";
+import ApprovalToast from "../ui/approvalToast";
 
 export class Application {
    private _uiManager: UIManager;
@@ -151,6 +152,11 @@ export class Application {
       this._eventManager.on('simulationStateChanged', (state: SimulationState) => {
          this.handleSimulationStateChanged(state);
       });
+
+      // Approval requests from server
+      this._eventManager.on('approvalRequested', (data: { stationId: string, fromStationId: string, trainNumber: string }) => {
+         this._uiManager.showApprovalToast(data);
+      });
       
       console.log("Event listeners setup complete");
    }
@@ -226,6 +232,8 @@ export class Application {
          case 'stopped':
             this._trainManager.stopSimulation();
             console.log('Application: Stopped client simulation');
+            // Clear any outstanding approval toasts when the simulation stops
+            ApprovalToast.clearAll();
             break;
          default:
             console.log(`Application: Unknown simulation state: ${state}`);

@@ -94,5 +94,7 @@ export abstract class BasePanel {
     }
   }
 
-  
+  public getElement(): HTMLDivElement {
+    return this.container;
+  }
 }

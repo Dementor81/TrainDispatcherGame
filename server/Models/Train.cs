@@ -10,12 +10,10 @@ namespace TrainDispatcherGame.Server.Models
         public string Type { get; set; } = string.Empty;
         public double Speed { get; set; }//m/s
         public int Cars { get; set; }
-        public List<string> Path { get; set; } = new();
-        public TrainSpawnPoint? Spawn { get; set; }
+        public TrainEventBase? NextServerEvent { get; set; }
         public List<TrainWayPoint> Route { get; set; } = new();
-        public int CurrentEventIndex { get; set; } = 0;
+        public int CurrentWaypointIndex { get; set; } = 0;
         public string? CurrentLocation { get; set; }
-        public string? HeadingForStation { get; set; }
         public bool controlledByPlayer { get; set; } = false;
         public bool completed { get; set; } = false;
         public int delay { get; set; } = 0;
@@ -27,35 +25,35 @@ namespace TrainDispatcherGame.Server.Models
 
         public TrainWayPoint? GetWayPoint()
         {
-            if (CurrentEventIndex < Route.Count)
+            if (CurrentWaypointIndex < Route.Count)
             {
-                return Route[CurrentEventIndex];
+                return Route[CurrentWaypointIndex];
             }
             return null;
         }
 
         public TrainWayPoint? GetNextWayPoint()
         {
-            if (CurrentEventIndex + 1 < Route.Count)
+            if (CurrentWaypointIndex + 1 < Route.Count)
             {
-                return Route[CurrentEventIndex + 1];
+                return Route[CurrentWaypointIndex + 1];
             }
             return null;
         }
 
         public bool HasMoreWayPoints()
         {
-            return CurrentEventIndex < Route.Count;
+            return CurrentWaypointIndex < Route.Count;
         }
 
         public List<TrainWayPoint> GetFutureWayPoints()
         {
-            if (CurrentEventIndex >= Route.Count)
+            if (CurrentWaypointIndex >= Route.Count)
             {
                 return new List<TrainWayPoint>();
             }
             
-            return Route.Skip(CurrentEventIndex).ToList();
+            return Route.Skip(CurrentWaypointIndex).ToList();
         }
 
         /// <summary>
@@ -66,7 +64,7 @@ namespace TrainDispatcherGame.Server.Models
         {
             if (HasMoreWayPoints())
             {
-                CurrentEventIndex++; 
+                CurrentWaypointIndex++; 
                 return GetWayPoint();                
             }
             else

@@ -8,6 +8,7 @@ namespace TrainDispatcherGame.Server.Managers
     {
         Task SendTrain(string stationId, Train train, string? exitPointId = null);
         Task SendSimulationStateChange(SimulationState newState);
+        Task SendApprovalRequest(string stationId, string fromStationId, string trainNumber);
         // No collision broadcast needed; clients handle locally
     }
 
@@ -72,6 +73,25 @@ namespace TrainDispatcherGame.Server.Managers
             });
             
             Console.WriteLine($"Sent simulation state change to all clients: {newState}");
+        }
+
+        public async Task SendApprovalRequest(string stationId, string fromStationId, string trainNumber)
+        {
+            var player = _playerManager.GetPlayerByStation(stationId);
+            if (player != null)
+            {
+                await _hubContext.Clients.Group($"station_{stationId}").SendAsync("ApprovalRequested", new
+                {
+                    stationId = stationId,
+                    fromStationId = fromStationId,
+                    trainNumber = trainNumber
+                });
+                Console.WriteLine($"Approval requested from station {stationId} for train {trainNumber} coming from {fromStationId}");
+            }
+            else
+            {
+                Console.WriteLine($"Approval request skipped: no player at station {stationId}");
+            }
         }
 
         // No collision broadcast needed; clients handle locally

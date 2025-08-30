@@ -3,6 +3,7 @@ using TrainDispatcherGame.Server.Simulation;
 using TrainDispatcherGame.Server.Managers;
 using TrainDispatcherGame.Server.Hubs;
 using TrainDispatcherGame.Server.Services;
+using TrainDispatcherGame.Server.Models;
 
 
 
@@ -157,12 +158,37 @@ app.MapGet("/api/simulation/timetable", (Simulation simulation) =>
 
 app.MapGet("/api/simulation/trains", (Simulation simulation) =>
 {
-    return Results.Ok(simulation.Trains);
+    var list = simulation.Trains.Select(t => new
+    {
+        number = t.Number,
+        completed = t.completed,
+        currentLocation = t.CurrentLocation,
+        headingForStation = t.NextServerEvent is TrainSpawnEvent sp1 ? sp1.Station : null,
+        delay = t.delay,
+        nextEventTime = t.NextServerEvent?.ScheduledTime,
+        nextEventType = t.NextServerEvent is TrainSpawnEvent ? "Spawn"
+            : t.NextServerEvent is SendApprovalEvent ? "Approval"
+            : null,
+        spawnStation = (t.NextServerEvent as TrainSpawnEvent)?.Station
+    }).ToList();
+    return Results.Ok(list);
 });
 
 app.MapGet("/api/simulation/trains/active", (Simulation simulation) =>
 {
-    var activeTrains = simulation.GetActiveTrains();
+    var activeTrains = simulation.GetActiveTrains().Select(t => new
+    {
+        number = t.Number,
+        completed = t.completed,
+        currentLocation = t.CurrentLocation,
+        headingForStation = t.NextServerEvent is TrainSpawnEvent sp2 ? sp2.Station : null,
+        delay = t.delay,
+        nextEventTime = t.NextServerEvent?.ScheduledTime,
+        nextEventType = t.NextServerEvent is TrainSpawnEvent ? "Spawn"
+            : t.NextServerEvent is SendApprovalEvent ? "Approval"
+            : null,
+        spawnStation = (t.NextServerEvent as TrainSpawnEvent)?.Station
+    }).ToList();
     return Results.Ok(activeTrains);
 });
 
@@ -170,7 +196,19 @@ app.MapGet("/api/simulation/trains/active", (Simulation simulation) =>
 
 app.MapGet("/api/simulation/trains/completed", (Simulation simulation) =>
 {
-    var completedTrains = simulation.GetCompletedTrains();
+    var completedTrains = simulation.GetCompletedTrains().Select(t => new
+    {
+        number = t.Number,
+        completed = t.completed,
+        currentLocation = t.CurrentLocation,
+        headingForStation = t.NextServerEvent is TrainSpawnEvent sp3 ? sp3.Station : null,
+        delay = t.delay,
+        nextEventTime = t.NextServerEvent?.ScheduledTime,
+        nextEventType = t.NextServerEvent is TrainSpawnEvent ? "Spawn"
+            : t.NextServerEvent is SendApprovalEvent ? "Approval"
+            : null,
+        spawnStation = (t.NextServerEvent as TrainSpawnEvent)?.Station
+    }).ToList();
     return Results.Ok(completedTrains);
 });
 

@@ -3,6 +3,7 @@ import { ControlPanel } from "../ui/controlPanel";
 import { TrainOverviewPanel } from "../ui/trainOverviewPanel";
 import { HUDPanel } from "../ui/hudPanel";
 import NotificationModal from "../ui/notificationModal";
+import ApprovalToast from "../ui/approvalToast";
 import { Application } from "../core/application";
 
 export class UIManager {
@@ -57,6 +58,15 @@ export class UIManager {
     notifyCollision(trainNumberA: string, trainNumberB: string): void {
         const message = `Kollision zwischen Zug ${trainNumberA} und Zug ${trainNumberB}. Beide entfernt.`;
         this._notificationModal?.show(message, 'Kollision');
+    }
+
+    showApprovalToast(data: { stationId: string, fromStationId: string, trainNumber: string }): void {
+        const approvalToast = new ApprovalToast(this._application);
+        approvalToast.showApproval({
+            stationId: data.stationId,
+            fromStationId: data.fromStationId,
+            trainNumber: data.trainNumber
+        });
     }
 
     hideTrainOverviewPanel(): void {

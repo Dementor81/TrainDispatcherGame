@@ -4,7 +4,6 @@ namespace TrainDispatcherGame.Server.Models
 {
     public class TrainWayPoint
     {
-        public string LocationId { get; set; } = string.Empty;
         public string Station { get; set; } = string.Empty;
         public DateTime ArrivalTime { get; set; }
         public DateTime DepartureTime { get; set; }

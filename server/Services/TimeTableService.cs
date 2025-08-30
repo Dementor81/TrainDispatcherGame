@@ -83,7 +83,6 @@ namespace TrainDispatcherGame.Server.Services
                 {
                     Type = trainSchedule.Type,
                     Speed = trainSchedule.Speed / 3.6d, //the time table json is in km/h, we need to convert to m/s
-                    Path = trainSchedule.Path,
                     Cars = trainSchedule.Cars
                 };
 
@@ -112,7 +111,6 @@ namespace TrainDispatcherGame.Server.Services
                     train.Route.Add(new TrainWayPoint
                     {
                         Station = timetableEntry.Station,
-                        LocationId = timetableEntry.Station,
                         ArrivalTime = arrivalTime,
                         DepartureTime = departureTime,
                     });
