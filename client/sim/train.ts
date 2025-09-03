@@ -23,6 +23,8 @@ class Train {
     private _arrivalTime: Date | null = null; // Scheduled arrival time at current station
     private _departureTime: Date | null = null; // Scheduled departure time at current station
     private _stopReason: TrainStopReason = TrainStopReason.NONE; // Current reason why the train is stopped
+    private _stationStopStartTime: Date | null = null; // When the train actually started waiting at station
+    private _waitingProgress: number = 0; // 0..1 progress while waiting at station
 
     constructor(number: string, cars: number, speed: number) {
         this._number = number;
@@ -98,6 +100,24 @@ class Train {
 
     get stopReason(): TrainStopReason {
         return this._stopReason;
+    }
+
+    get stationStopStartTime(): Date | null {
+        return this._stationStopStartTime;
+    }
+
+    setStationStopStartTime(time: Date | null): void {
+        this._stationStopStartTime = time;
+    }
+
+    get waitingProgress(): number {
+        return this._waitingProgress;
+    }
+
+    setWaitingProgress(progress: number): void {
+        // Clamp to [0,1]
+        const clamped = Math.max(0, Math.min(1, progress));
+        this._waitingProgress = clamped;
     }
 
     // Calculate the actual length of the train based on configured car width and spacing

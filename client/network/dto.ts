@@ -3,6 +3,7 @@ export interface TrackLayoutDto {
   exits: ExitDto[];
   tracks: TrackDto[];
   switches: SwitchDto[];
+  maxExitDistance?: number;
 }
 
 export interface ExitDto {
@@ -55,6 +56,7 @@ export interface SimulationStatusDto {
   errorMessage?: string;
   elapsedSeconds: number;
   currentTime: string;
+  speed?: number;
 }
 
 export interface TrainDto {

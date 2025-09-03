@@ -1,11 +1,8 @@
-
 using TrainDispatcherGame.Server.Simulation;
 using TrainDispatcherGame.Server.Managers;
 using TrainDispatcherGame.Server.Hubs;
 using TrainDispatcherGame.Server.Services;
 using TrainDispatcherGame.Server.Models;
-
-
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
@@ -27,9 +24,9 @@ builder.Services.AddSingleton<Simulation>(serviceProvider =>
 {
     var notificationManager = serviceProvider.GetRequiredService<INotificationManager>();
     var trackLayoutService = serviceProvider.GetRequiredService<ITrackLayoutService>();
-    var timeTableService = serviceProvider.GetRequiredService<ITimeTableService>();
     var playerManager = serviceProvider.GetRequiredService<PlayerManager>();
-    return new Simulation(notificationManager, trackLayoutService, timeTableService, playerManager);
+    var scenarioId = ScenarioService.ListScenarios().Last().Id;
+    return new Simulation(notificationManager, trackLayoutService, playerManager, scenarioId);
 });
 
 // Add player manager as a singleton service
@@ -40,12 +37,6 @@ builder.Services.AddSingleton<INotificationManager, NotificationManager>();
 
 // Add track layout service as a singleton service
 builder.Services.AddSingleton<ITrackLayoutService, TrackLayoutService>();
-
-// Add time table service as a singleton service
-builder.Services.AddSingleton<ITimeTableService, TimeTableService>();
-
-// Add scenario service for REST access to scenarios
-builder.Services.AddSingleton<IScenarioService, ScenarioService>();
 
 var app = builder.Build();
 
@@ -126,10 +117,11 @@ app.MapPost("/api/simulation/resume", async (Simulation simulation) =>
     return Results.Ok(new { message = "Simulation resumed", state = simulation.State.ToString() });
 });
 
-app.MapPost("/api/simulation/clear-error", (Simulation simulation) =>
+// Reset simulation (stop and reload current scenario)
+app.MapPost("/api/simulation/reset", (Simulation simulation) =>
 {
-    simulation.ClearError();
-    return Results.Ok(new { message = "Error cleared", state = simulation.State.ToString() });
+    simulation.Stop();
+    return Results.Ok(new { message = "Simulation reset", state = simulation.State.ToString() });
 });
 
 // Endpoint to advance simulation time by one minute
@@ -139,22 +131,72 @@ app.MapPost("/api/simulation/advance-minute", (Simulation simulation) =>
     return Results.Ok(new { message = "Simulation advanced by 60 seconds", state = simulation.State.ToString(), elapsedSeconds = simulation.ElapsedSeconds, currentTime = simulation.SimulationTime });
 });
 
+// Set simulation speed
+app.MapPost("/api/simulation/speed", async (HttpRequest req, Simulation simulation) =>
+{
+    try
+    {
+        using var reader = new StreamReader(req.Body);
+        var body = await reader.ReadToEndAsync();
+        var json = System.Text.Json.JsonDocument.Parse(body);
+        if (!json.RootElement.TryGetProperty("speed", out var speedEl) || speedEl.ValueKind != System.Text.Json.JsonValueKind.Number)
+        {
+            return Results.BadRequest(new { message = "Missing or invalid 'speed'" });
+        }
+        var speed = speedEl.GetInt32();
+        simulation.SetSpeed(speed);
+        return Results.Ok(new { message = "Speed updated", speed = speed });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
+});
+
 app.MapGet("/api/simulation/status", (Simulation simulation) =>
 {
-    return Results.Ok(new { 
+    return Results.Ok(new
+    {
         state = simulation.State.ToString(),
         errorMessage = simulation.ErrorMessage,
         elapsedSeconds = simulation.ElapsedSeconds,
-        currentTime = simulation.SimulationTime
+        currentTime = simulation.SimulationTime,
+        speed = simulation.Speed
     });
 });
 
-app.MapGet("/api/simulation/timetable", (Simulation simulation) =>
+// Scenario selection endpoints for the running simulation
+app.MapGet("/api/simulation/scenario", (Simulation simulation) =>
 {
-    return Results.Ok(simulation.Timetable);
+    return Results.Ok(new { id = simulation.ScenarioId });
 });
 
+app.MapPost("/api/simulation/scenario", async (HttpRequest req, Simulation simulation) =>
+{
+    try
+    {
+        using var reader = new StreamReader(req.Body);
+        var body = await reader.ReadToEndAsync();
+        var json = System.Text.Json.JsonDocument.Parse(body);
+        if (!json.RootElement.TryGetProperty("id", out var idEl) || idEl.ValueKind != System.Text.Json.JsonValueKind.String)
+        {
+            return Results.BadRequest(new { message = "Missing or invalid 'id'" });
+        }
+        var id = idEl.GetString() ?? string.Empty;
+        Console.WriteLine($"[DEBUG] Setting scenario to {id}");
+        if (string.Equals(id, simulation.ScenarioId, StringComparison.OrdinalIgnoreCase))
+        {
+            return Results.Ok(new { message = "Scenario unchanged", id });
+        }
 
+        await simulation.SetScenario(id);
+        return Results.Ok(new { message = "Scenario changed", id });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
+});
 
 app.MapGet("/api/simulation/trains", (Simulation simulation) =>
 {
@@ -163,54 +205,18 @@ app.MapGet("/api/simulation/trains", (Simulation simulation) =>
         number = t.Number,
         completed = t.completed,
         currentLocation = t.CurrentLocation,
-        headingForStation = t.NextServerEvent is TrainSpawnEvent sp1 ? sp1.Station : null,
+        headingForStation = t.NextServerEvent is TrainSpawnEvent sp1 ? sp1.HeadingStation : null,
         delay = t.delay,
         nextEventTime = t.NextServerEvent?.ScheduledTime,
         nextEventType = t.NextServerEvent is TrainSpawnEvent ? "Spawn"
             : t.NextServerEvent is SendApprovalEvent ? "Approval"
+            : t.NextServerEvent is TrainStartEvent ? "Start"
             : null,
-        spawnStation = (t.NextServerEvent as TrainSpawnEvent)?.Station
+        spawnStation = (t.NextServerEvent as TrainSpawnEvent)?.Connection.ToStation
     }).ToList();
     return Results.Ok(list);
 });
 
-app.MapGet("/api/simulation/trains/active", (Simulation simulation) =>
-{
-    var activeTrains = simulation.GetActiveTrains().Select(t => new
-    {
-        number = t.Number,
-        completed = t.completed,
-        currentLocation = t.CurrentLocation,
-        headingForStation = t.NextServerEvent is TrainSpawnEvent sp2 ? sp2.Station : null,
-        delay = t.delay,
-        nextEventTime = t.NextServerEvent?.ScheduledTime,
-        nextEventType = t.NextServerEvent is TrainSpawnEvent ? "Spawn"
-            : t.NextServerEvent is SendApprovalEvent ? "Approval"
-            : null,
-        spawnStation = (t.NextServerEvent as TrainSpawnEvent)?.Station
-    }).ToList();
-    return Results.Ok(activeTrains);
-});
-
-
-
-app.MapGet("/api/simulation/trains/completed", (Simulation simulation) =>
-{
-    var completedTrains = simulation.GetCompletedTrains().Select(t => new
-    {
-        number = t.Number,
-        completed = t.completed,
-        currentLocation = t.CurrentLocation,
-        headingForStation = t.NextServerEvent is TrainSpawnEvent sp3 ? sp3.Station : null,
-        delay = t.delay,
-        nextEventTime = t.NextServerEvent?.ScheduledTime,
-        nextEventType = t.NextServerEvent is TrainSpawnEvent ? "Spawn"
-            : t.NextServerEvent is SendApprovalEvent ? "Approval"
-            : null,
-        spawnStation = (t.NextServerEvent as TrainSpawnEvent)?.Station
-    }).ToList();
-    return Results.Ok(completedTrains);
-});
 
 // Endpoint to get upcoming trains for a specific station
 app.MapGet("/api/stations/{stationId}/upcoming-trains", (string stationId, Simulation simulation) =>
@@ -230,19 +236,19 @@ app.MapGet("/api/players", (PlayerManager playerManager) =>
         ConnectedAt = p.ConnectedAt,
         IsActive = p.IsActive
     }).ToList();
-    
+
     return Results.Ok(playerResponses);
 });
 
 app.MapGet("/api/players/{playerId}", (string playerId, PlayerManager playerManager) =>
 {
     var player = playerManager.GetPlayer(playerId);
-    
+
     if (player == null)
     {
         return Results.NotFound(new { message = $"Player {playerId} not found" });
     }
-    
+
     var response = new
     {
         Id = player.Id,
@@ -250,7 +256,7 @@ app.MapGet("/api/players/{playerId}", (string playerId, PlayerManager playerMana
         ConnectedAt = player.ConnectedAt,
         IsActive = player.IsActive
     };
-    
+
     return Results.Ok(response);
 });
 
@@ -261,15 +267,15 @@ app.MapGet("/api/stations/controlled", (PlayerManager playerManager) =>
 });
 
 // Scenario APIs
-app.MapGet("/api/scenarios", (IScenarioService scenarioService) =>
+app.MapGet("/api/scenarios", () =>
 {
-    var list = scenarioService.ListScenarios();
+    var list = ScenarioService.ListScenarios();
     return Results.Ok(list);
 });
 
-app.MapGet("/api/scenarios/{id}", (string id, IScenarioService scenarioService) =>
+app.MapGet("/api/scenarios/{id}", (string id) =>
 {
-    var scenario = scenarioService.GetScenarioById(id);
+    var scenario = ScenarioService.GetScenarioById(id);
     if (scenario == null)
     {
         return Results.NotFound(new { message = $"Scenario '{id}' not found" });

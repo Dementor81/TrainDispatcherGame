@@ -16,7 +16,6 @@ export class TrainManager {
    private _simulationTimer: NodeJS.Timeout | null = null;
    private _timerWorker: Worker | null = null;
    private _isSimulationRunning: boolean = false;
-   private _simulationSpeed: number = SimulationConfig.simulationSpeed; // Speed multiplier (1.0 = normal speed)
    private _currentSimulationTime: Date | null = null; // Current simulation time from server
    private _lastSimulationTimeUpdate: number = 0; // When we last updated simulation time
 
@@ -119,16 +118,7 @@ export class TrainManager {
       return this._isSimulationRunning;
    }
 
-   // Set simulation speed multiplier
-   setSimulationSpeed(speed: number): void {
-      this._simulationSpeed = Math.max(0.1, Math.min(5.0, speed)); // Clamp between 0.1x and 5.0x
-      console.log(`Simulation speed set to ${this._simulationSpeed}x`);
-   }
-
-   // Get current simulation speed
-   getSimulationSpeed(): number {
-      return this._simulationSpeed;
-   }
+   // Client uses SimulationConfig.simulationSpeed globally; no internal copy
 
    // Get current simulation time from server (with caching)
    private async getCurrentSimulationTime(): Promise<Date> {
@@ -619,8 +609,22 @@ export class TrainManager {
             train.setStopReason(TrainStopReason.NONE);
             train.shouldStopAtCurrentStation = false;
             train.setScheduleTimes(null, null); // Clear schedule times
+            train.setStationStopStartTime(null);
+            train.setWaitingProgress(0);
             this._eventManager.emit("trainDepartedFromStation", train);
             return false;
+         }
+         // While waiting, update progress relative to departure time
+         if (!train.stationStopStartTime) {
+            train.setStationStopStartTime(new Date(this._currentSimulationTime!));
+         }
+         if (train.departureTime && train.stationStopStartTime) {
+            const totalMs = train.departureTime.getTime() - train.stationStopStartTime.getTime();
+            const elapsedMs = this._currentSimulationTime!.getTime() - train.stationStopStartTime.getTime();
+            const progress = totalMs > 0 ? elapsedMs / totalMs : 1;
+            train.setWaitingProgress(progress);
+         } else {
+            train.setWaitingProgress(0);
          }
          return true; // Train is stopped but not time to depart yet
       }
@@ -645,6 +649,18 @@ export class TrainManager {
          );
          
          train.setStopReason(TrainStopReason.STATION);
+         // Mark the start of the station stop if not already set, and reset progress
+         if (!train.stationStopStartTime) {
+            train.setStationStopStartTime(new Date(this._currentSimulationTime!));
+            train.setWaitingProgress(0);
+         }
+         // Update progress based on current time vs departure
+         if (train.departureTime && train.stationStopStartTime) {
+            const totalMs = train.departureTime.getTime() - train.stationStopStartTime.getTime();
+            const elapsedMs = this._currentSimulationTime!.getTime() - train.stationStopStartTime.getTime();
+            const progress = totalMs > 0 ? elapsedMs / totalMs : 1;
+            train.setWaitingProgress(progress);
+         }
          this._eventManager.emit("trainStoppedAtStation", train);
          return true;
       }

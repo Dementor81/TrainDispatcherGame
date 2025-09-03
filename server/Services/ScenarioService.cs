@@ -1,24 +1,19 @@
 using System.Text.Json;
+using TrainDispatcherGame.Server.Models;
 using TrainDispatcherGame.Server.Models.DTOs;
 
 namespace TrainDispatcherGame.Server.Services
 {
-    public interface IScenarioService
-    {
-        List<ScenarioSummary> ListScenarios();
-        SzenarioDTO? GetScenarioById(string id);
-    }
 
-    public class ScenarioService : IScenarioService
+    public static class ScenarioService
     {
-        private readonly string _dataDirectory;
+        private const string _dataDirectory = "data";
 
-        public ScenarioService()
+        static ScenarioService()
         {
-            _dataDirectory = Path.Combine("data");
         }
 
-        public List<ScenarioSummary> ListScenarios()
+        public static List<ScenarioSummary> ListScenarios()
         {
             var summaries = new List<ScenarioSummary>();
             try
@@ -59,7 +54,7 @@ namespace TrainDispatcherGame.Server.Services
             return summaries;
         }
 
-        public SzenarioDTO? GetScenarioById(string id)
+        public static SzenarioDTO? GetScenarioById(string id)
         {
             if (string.IsNullOrWhiteSpace(id)) return null;
             var filePath = Path.Combine(_dataDirectory, id + ".json");
@@ -77,6 +72,80 @@ namespace TrainDispatcherGame.Server.Services
             {
                 return null;
             }
+        }
+
+        private static SzenarioDTO LoadScenarioFile(string filePath)
+        {
+            try
+            {
+                var json = File.ReadAllText(filePath);
+                if(json == null) throw new Exception($"Scenario file {filePath} is empty");
+                var scenario = JsonSerializer.Deserialize<SzenarioDTO>(json);
+                if(scenario == null) throw new Exception($"Scenario file {filePath} is invalid");
+                return scenario;
+                
+            }
+            catch(Exception ex)
+            {
+                throw new Exception($"Error loading scenario file {filePath}: {ex.Message}");
+            }
+        }       
+
+        public static Scenario LoadTrainsFromScenario(string scenarioId)
+        {
+            if (string.IsNullOrWhiteSpace(scenarioId)) throw new Exception("Scenario ID must not be empty");
+            var filePath = Path.Combine(_dataDirectory, scenarioId + ".json");
+            if (!File.Exists(filePath)) throw new Exception($"Scenario file not found: {filePath}");
+            var scenarioDTO = LoadScenarioFile(filePath);
+
+            var trains = new List<Train>();
+
+            foreach (var trainSchedule in scenarioDTO.Trains)
+            {
+                var train = new Train(trainSchedule.Number)
+                {
+                    Type = trainSchedule.Type,
+                    Speed = trainSchedule.Speed / 3.6d,
+                    Cars = trainSchedule.Cars
+                };
+
+                foreach (var timetableEntry in trainSchedule.Timetable)
+                {
+                    DateTime arrivalTime = DateTime.MinValue;
+                    DateTime departureTime = DateTime.MinValue;
+
+                    if (!string.IsNullOrEmpty(timetableEntry.Arrival))
+                    {
+                        if (!DateTime.TryParse(timetableEntry.Arrival, out arrivalTime))
+                        {
+                            throw new Exception($"Error parsing arrival time for train {trainSchedule.Number} at {timetableEntry.Station}: {timetableEntry.Arrival}");
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(timetableEntry.Departure))
+                    {
+                        if (!DateTime.TryParse(timetableEntry.Departure, out departureTime))
+                        {
+                            throw new Exception($"Error parsing departure time for train {trainSchedule.Number} at {timetableEntry.Station}: {timetableEntry.Departure}");
+                        }
+                    }
+
+                    train.Route.Add(new TrainWayPoint(timetableEntry.Station, arrivalTime, departureTime));
+                }
+
+                train.Route.Last().IsLast = true;
+                trains.Add(train);
+            }
+
+            
+            if (!DateTime.TryParse(scenarioDTO.StartTime, out var startTime))
+            {
+                throw new Exception($"Error parsing start time for scenario {scenarioId}: {scenarioDTO.StartTime}");
+            }
+
+            var scenario = new Scenario(scenarioDTO.Title, startTime, trains);
+
+            return scenario;
         }
     }
 }

@@ -9,6 +9,7 @@ import Train from "../sim/train";
 import { getSimulationStatus } from "../network/api";
 import { SimulationState } from "../network/dto";
 import ApprovalToast from "../ui/approvalToast";
+import { SimulationConfig } from "../core/config";
 
 export class Application {
    private _uiManager: UIManager;
@@ -75,6 +76,9 @@ export class Application {
             const status = await getSimulationStatus();
             this._simulationState = status.state;
             this._eventManager.emit('simulationStateChanged', this._simulationState);            
+            if (typeof status.speed === 'number') {
+               SimulationConfig.simulationSpeed = Math.max(0.1, Math.min(100, status.speed));
+            }
          } catch (error) {
             console.error("Failed to retrieve simulation state:", error);
          }
@@ -151,6 +155,13 @@ export class Application {
       // Simulation state change events
       this._eventManager.on('simulationStateChanged', (state: SimulationState) => {
          this.handleSimulationStateChanged(state);
+      });
+
+      // Simulation speed change events (from server)
+      this._eventManager.on('simulationSpeedChanged', (speed: number) => {
+         if (typeof speed === 'number' && !isNaN(speed)) {
+            SimulationConfig.simulationSpeed = Math.max(0.1, Math.min(100, speed));
+         }
       });
 
       // Approval requests from server

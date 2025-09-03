@@ -13,10 +13,10 @@ namespace TrainDispatcherGame.Server.Services
         List<TrackLayout> GetAllTrackLayouts();
         IReadOnlyDictionary<(string stationId, int exitId), NetworkConnection> GetDirectedConnections();
         NetworkConnection? GetConnection(string fromStationId, int fromExitId);
-        NetworkConnection? GetRegularConnection(string fromStationId, int fromExitId);
-        NetworkConnection? GetRegularConnectionToStation(string fromStationId, string toStationId);
+        NetworkConnection? GetRegularConnectionToStation(string fromStationId, string toStationId, out bool isReversed);
         TrainDispatcherGame.Server.Models.DTOs.ClientServerCom.ClientTrackLayoutDto? BuildClientTrackLayout(string stationId);
         bool IsSingleTrackConnection(string stationA, string stationB);
+        List<NetworkConnection> GetAllConnections();
     }
 
     public class TrackLayoutService : ITrackLayoutService
@@ -206,20 +206,6 @@ namespace TrainDispatcherGame.Server.Services
                     };
                     _directedConnections[(forward.FromStation, forward.FromExitId)] = forward;
                     created++;
-
-                    // Create reverse connection
-                    var reverse = new NetworkConnection
-                    {
-                        FromStation = c.ToStation,
-                        FromExitId = toExit,
-                        ToStation = c.FromStation,
-                        ToExitId = fromExit,
-                        Distance = c.Distance,
-                        Blocks = c.Blocks,
-                        Mode =  sameConnectionCount == 1 ? NetworkConnection.TrackMode.SingleTrack : NetworkConnection.TrackMode.WrongDirection,
-                    };
-                    _directedConnections[(reverse.FromStation, reverse.FromExitId)] = reverse;
-                    created++;
                 }
 
 
@@ -348,17 +334,11 @@ namespace TrainDispatcherGame.Server.Services
             return _directedConnections.TryGetValue((fromStationId, fromExitId), out var conn) ? conn : null;
         }
 
-        public NetworkConnection? GetRegularConnection(string fromStationId, int fromExitId)
-        {
-            if (_directedConnections.TryGetValue((fromStationId, fromExitId), out var conn))
-            {
-                if (conn.Mode == NetworkConnection.TrackMode.Regular || conn.Mode == NetworkConnection.TrackMode.SingleTrack) return conn;
-            }
-            return null;
-        }
+        
 
-        public NetworkConnection? GetRegularConnectionToStation(string fromStationId, string toStationId)
+        public NetworkConnection? GetRegularConnectionToStation(string fromStationId, string toStationId, out bool isReversed)
         {
+            isReversed = false;
             foreach (var conn in _directedConnections.Values)
             {
                 if (conn.FromStation == fromStationId && conn.ToStation == toStationId && (conn.Mode == NetworkConnection.TrackMode.Regular || conn.Mode == NetworkConnection.TrackMode.SingleTrack))
@@ -366,7 +346,23 @@ namespace TrainDispatcherGame.Server.Services
                     return conn;
                 }
             }
+            // If no forward connection found, allow single-track reverse usage by matching either direction and setting reversed accordingly
+            foreach (var conn in _directedConnections.Values)
+            {
+                if (conn.Mode == NetworkConnection.TrackMode.SingleTrack &&
+                    ((conn.FromStation == fromStationId && conn.ToStation == toStationId) ||
+                     (conn.FromStation == toStationId && conn.ToStation == fromStationId)))
+                {
+                    isReversed = conn.FromStation == toStationId;
+                    return conn;
+                }
+            }
             return null;
+        }
+
+        public List<NetworkConnection> GetAllConnections()
+        {
+            return _directedConnections.Values.ToList();
         }
 
         public TrainDispatcherGame.Server.Models.DTOs.ClientServerCom.ClientTrackLayoutDto? BuildClientTrackLayout(string stationId)
@@ -378,7 +374,8 @@ namespace TrainDispatcherGame.Server.Services
             {
                 Id = layout.Id,
                 Tracks = layout.Tracks,
-                Switches = layout.Switches
+                Switches = layout.Switches,
+                MaxExitDistance = layout.MaxExitDistance
             };
 
             foreach (var exit in layout.Exits)

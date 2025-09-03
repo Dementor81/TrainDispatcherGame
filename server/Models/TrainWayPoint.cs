@@ -8,19 +8,20 @@ namespace TrainDispatcherGame.Server.Models
         public DateTime ArrivalTime { get; set; }
         public DateTime DepartureTime { get; set; }
         public bool Processed { get; set; } = false;
+        public bool IsLast { get; set; } = false;
+
+        public TrainWayPoint(string station, DateTime arrivalTime, DateTime departureTime)
+        {
+            Station = station;
+            ArrivalTime = arrivalTime;
+            DepartureTime = departureTime;
+        }
 
         public bool Stops
         {
             get
             {
                 return ArrivalTime != DepartureTime;
-            }
-        }
-
-        public bool IsFake{
-            get
-            {
-                return ArrivalTime == DateTime.MinValue && DepartureTime == DateTime.MinValue;
             }
         }
     }

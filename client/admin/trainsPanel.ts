@@ -62,7 +62,7 @@ export class TrainsPanel extends (window as any).WinBox {
 
       for (const t of normalized) {
         // Derived values
-        const statusText = t.completed ? 'Completed' : 'En route';
+        const statusText = t.completed ? 'Completed' : t.nextEventType === 'Start' ? 'not started' : 'En route';
         let locationText = t.currentLocation ? `At ${t.currentLocation}` : (t.headingForStation ? `To ${t.headingForStation}` : '-');
         const nextEventDate = t.nextEventTime ?? undefined;
         const nextEventText = nextEventDate ? new Date(nextEventDate).toLocaleTimeString() : '-';

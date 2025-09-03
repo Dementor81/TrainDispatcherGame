@@ -102,14 +102,6 @@ export async function getSimulationStatus(): Promise<any> {
   return response.json();
 }
 
-export async function getActiveTrains(): Promise<any[]> {
-  const response = await fetch(`${API_BASE_URL}/simulation/trains/active`);
-  if (!response.ok) {
-    throw new Error(`Failed to get active trains: ${response.statusText}`);
-  }
-  return response.json();
-}
-
 // All trains (active + completed)
 export async function getAllTrains(): Promise<any[]> {
   const response = await fetch(`${API_BASE_URL}/simulation/trains`);
@@ -139,7 +131,7 @@ export default {
   resumeSimulation,
   resetSimulation,
   getSimulationStatus,
-  getActiveTrains,
+  setSimulationSpeed,
   getAllTrains,
   getUpcomingTrains,
   fetchNetwork,
@@ -155,6 +147,18 @@ export async function advanceSimulationOneMinute(): Promise<any> {
   });
   if (!response.ok) {
     throw new Error(`Failed to advance simulation by one minute: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+export async function setSimulationSpeed(speed: number): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/simulation/speed`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ speed })
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to set simulation speed: ${response.statusText}`);
   }
   return response.json();
 }
@@ -180,6 +184,27 @@ export async function fetchNetwork(): Promise<NetworkDto> {
   const response = await fetch(`${API_BASE_URL}/network`);
   if (!response.ok) {
     throw new Error(`Failed to fetch network: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+// Scenario selection on running simulation
+export async function getCurrentScenario(): Promise<{ id: string }> {
+  const response = await fetch(`${API_BASE_URL}/simulation/scenario`);
+  if (!response.ok) {
+    throw new Error(`Failed to get current scenario: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+export async function setScenario(id: string): Promise<{ message: string; id: string }> {
+  const response = await fetch(`${API_BASE_URL}/simulation/scenario`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id })
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to set scenario: ${response.statusText}`);
   }
   return response.json();
 }

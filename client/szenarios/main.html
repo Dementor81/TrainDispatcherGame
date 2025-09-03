@@ -84,6 +84,25 @@
           </div>
         </div>
       </div>
+
+      <!-- Export JSON Modal -->
+      <div class="modal fade" id="export-json-modal" tabindex="-1" aria-labelledby="exportJsonModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exportJsonModalLabel">Export Scenario JSON</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <textarea id="export-json-text" class="form-control" rows="18" spellcheck="false" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;"></textarea>
+            </div>
+            <div class="modal-footer">
+              <button id="export-copy-btn" type="button" class="btn btn-primary">Copy to Clipboard</button>
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
   </body>

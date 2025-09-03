@@ -1,6 +1,6 @@
 import * as PIXI from "pixi.js";
-import { fetchScenarios, fetchScenario, fetchNetwork } from "../network/api";
-import type { ScenarioDto, NetworkDto } from "../network/dto";
+import { fetchScenarios, fetchScenario, fetchNetwork, fetchLayout } from "../network/api";
+import type { ScenarioDto, NetworkDto, TrackLayoutDto } from "../network/dto";
 
 export default class SzenariosApplication {
    private readonly container: HTMLElement;
@@ -132,6 +132,8 @@ export default class SzenariosApplication {
       this.app.stage.addChild(this.hoverRightLabel);
       this.hideHover();
 
+      // Precompute station exit spans from server-provided MaxExitDistance
+      await precomputeExitSpans(network);
       this.drawScene();
       this.setupInteractions();
    }
@@ -803,15 +805,41 @@ export default class SzenariosApplication {
             }),
          })),
       };
-      const blob = new Blob([JSON.stringify(exported, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${this.currentScenarioId}-edited.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const json = JSON.stringify(exported, null, 2);
+      const textarea = document.getElementById("export-json-text") as HTMLTextAreaElement | null;
+      if (textarea) {
+         textarea.value = json;
+         textarea.selectionStart = 0;
+         textarea.selectionEnd = 0;
+      }
+
+      // wire copy button
+      const copyBtn = document.getElementById("export-copy-btn");
+      if (copyBtn) {
+         copyBtn.onclick = async () => {
+            try {
+               await navigator.clipboard.writeText(json);
+               // brief visual feedback
+               const original = copyBtn.textContent || "Copy to Clipboard";
+               copyBtn.textContent = "Copied!";
+               setTimeout(() => (copyBtn.textContent = original), 1200);
+            } catch {
+               // fallback: select text so user can copy manually
+               if (textarea) {
+                  textarea.focus();
+                  textarea.select();
+               }
+            }
+         };
+      }
+
+      // show modal
+      const modalEl = document.getElementById("export-json-modal") as any;
+      const Modal = (window as any).bootstrap?.Modal;
+      if (modalEl && Modal) {
+         const modal = new Modal(modalEl);
+         modal.show();
+      }
    }
 
    private openAddTrainModal() {
@@ -1001,9 +1029,45 @@ function findConnection(network: NetworkDto, a: string, b: string) {
    return network.connections.find((c) => c.from === a && c.to === b);
 }
 
+// Cache of per-station exit span (meters)
+const stationExitSpanMeters: Map<string, number> = new Map();
+
+async function precomputeExitSpans(network: NetworkDto): Promise<void> {
+   const stationSet = new Set<string>();
+   for (const s of network.stations || []) stationSet.add(s);
+   for (const c of network.connections || []) {
+      if (c.from) stationSet.add(c.from);
+      if (c.to) stationSet.add(c.to);
+   }
+   const tasks: Promise<void>[] = [];
+   stationSet.forEach((station) => {
+      tasks.push(
+         (async () => {
+            try {
+               const layout: TrackLayoutDto = await fetchLayout(station);
+               const span = typeof layout.maxExitDistance === "number" ? layout.maxExitDistance : 0;
+               stationExitSpanMeters.set(station, span);
+            } catch {
+               // Ignore missing layouts
+               stationExitSpanMeters.set(station, 0);
+            }
+         })()
+      );
+   });
+   await Promise.all(tasks);
+}
+
+// computeExitSpanMeters removed; rely on server-provided maxExitDistance
+
+function getStationExitSpan(station: string): number {
+   return stationExitSpanMeters.get(station) || 0;
+}
+
 function getDistanceMeters(network: NetworkDto, a: string, b: string): number {
    const conn = findConnection(network, a, b) || findConnection(network, b, a);
-   return conn ? conn.distance : 0;
+   const base = conn ? conn.distance : 0;
+   const extra = getStationExitSpan(a) * 0.5 + getStationExitSpan(b) * 0.5;
+   return base + extra;
 }
 
 function deriveOrderedStations(network: NetworkDto): string[] {

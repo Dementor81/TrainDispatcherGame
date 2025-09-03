@@ -309,6 +309,9 @@ export class SignalRManager {
         const state: SimulationState = data.state as SimulationState;
         // Emit the simulation state change event through the EventManager
         this.eventManager.emit('simulationStateChanged', state);
+        if (typeof data.speed === 'number') {
+            this.eventManager.emit('simulationSpeedChanged', data.speed);
+        }
         console.log(`Emitted simulationStateChanged event for state: ${data.state}`);
     }
 

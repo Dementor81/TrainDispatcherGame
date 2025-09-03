@@ -3,14 +3,20 @@ using System;
 namespace TrainDispatcherGame.Server.Models
 {
     public class TrainSpawnEvent : TrainEventBase
-    {
-        public string Station { get; set; }
-        public int ExitPointId { get; set; }
+    {        
+        public NetworkConnection Connection { get; set; } = new();
+        public bool IsReversed { get; set; } = false;
 
-        public TrainSpawnEvent(DateTime scheduledTime, string station, int exitPointId = -1) : base(scheduledTime)
+        public string HeadingStation => IsReversed ? Connection.FromStation : Connection.ToStation;
+        public int HeadingExitId => IsReversed ? Connection.FromExitId : Connection.ToExitId;
+
+        public TrainSpawnEvent(DateTime scheduledTime, NetworkConnection? connection = null, bool isReversed = false) : base(scheduledTime)
         {
-            Station = station;
-            ExitPointId = exitPointId;
+                if (connection != null)
+                {
+                    Connection = connection;
+                }
+                IsReversed = isReversed;
         }
     }
 }

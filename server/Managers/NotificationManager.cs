@@ -7,7 +7,7 @@ namespace TrainDispatcherGame.Server.Managers
     public interface INotificationManager
     {
         Task SendTrain(string stationId, Train train, string? exitPointId = null);
-        Task SendSimulationStateChange(SimulationState newState);
+        Task SendSimulationStateChange(SimulationState newState, int speed);
         Task SendApprovalRequest(string stationId, string fromStationId, string trainNumber);
         // No collision broadcast needed; clients handle locally
     }
@@ -64,12 +64,13 @@ namespace TrainDispatcherGame.Server.Managers
             }
         }
 
-        public async Task SendSimulationStateChange(SimulationState newState)
+        public async Task SendSimulationStateChange(SimulationState newState, int speed)
         {
             await _hubContext.Clients.All.SendAsync("SimulationStateChanged", new
             {
                 state = newState.ToString(),
-                timestamp = DateTime.UtcNow
+                timestamp = DateTime.UtcNow,
+                speed = speed
             });
             
             Console.WriteLine($"Sent simulation state change to all clients: {newState}");

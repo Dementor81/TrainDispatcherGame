@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import Train from "../../sim/train";
+import Train, { TrainStopReason } from "../../sim/train";
 import Track from "../../sim/track";
 import { RendererConfig } from "../../core/config";
 import TrackLayoutManager from "../../manager/trackLayout_manager";
@@ -134,6 +134,29 @@ export class TrainRenderer {
             
 
             trainContainer.addChild(text);
+
+            // Station wait pie chart overlay (no text)
+            if ((train as any).stopReason === TrainStopReason.STATION) {
+               const angle = carGraphics.rotation;
+               const offset = RendererConfig.trainHeight / 2 + 8;
+               const cx = carPosition.x + Math.cos(angle - Math.PI / 2) * offset;
+               const cy = carPosition.y + Math.sin(angle - Math.PI / 2) * offset;
+               const r = 5;
+               const p = Math.max(0, Math.min(1, (train as any).waitingProgress ?? 0));
+
+               const pie = new PIXI.Graphics();
+               // background
+               pie.circle(cx, cy, r).fill({ color: 0x000000, alpha: 0.35 });
+               // progress sector starting at top
+               if (p > 0) {
+                  const start = -Math.PI / 2;
+                  const end = start + p * Math.PI * 2;
+                  pie.moveTo(cx, cy).arc(cx, cy, r, start, end).lineTo(cx, cy).fill({ color: 0xffffff, alpha: 0.9 });
+               }
+               // outline
+               
+               trainContainer.addChild(pie);
+            }
 
             // Indicator: show red exclamation mark above the locomotive when stopped by a signal
             if (train.stoppedBySignal) {

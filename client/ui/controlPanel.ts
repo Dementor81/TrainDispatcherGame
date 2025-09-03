@@ -3,8 +3,7 @@ import {
   stopSimulation, 
   pauseSimulation, 
   resumeSimulation, 
-  getSimulationStatus, 
-  getActiveTrains, 
+  getSimulationStatus,
   advanceSimulationOneMinute 
 } from '../network/api';
 import { SimulationStatusDto } from '../network/dto';
