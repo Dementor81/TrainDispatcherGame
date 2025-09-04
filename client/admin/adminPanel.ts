@@ -16,6 +16,7 @@ import "winbox/dist/winbox.bundle.min.js";
 
 export class AdminPanel extends (window as any).WinBox {
    private container: HTMLDivElement;
+   private updateTimer: number | null = null;
 
    constructor(options?: Partial<{ title: string; x: any; y: any; width: number; height: number }>) {
       const container = document.createElement("div");
@@ -50,6 +51,17 @@ export class AdminPanel extends (window as any).WinBox {
       if (advanceBtn) advanceBtn.addEventListener("click", () => this.handleAdvanceMinute());
       if (resetBtn) resetBtn.addEventListener("click", () => this.handleReset());
       if (speedApplyBtn && speedInput) speedApplyBtn.addEventListener('click', () => this.handleApplySpeed(speedInput));
+
+      // Start periodic self-update and cleanup on close
+      void this.update();
+      this.updateTimer = window.setInterval(() => this.update(), 2000);
+      // Use WinBox onclose callback for cleanup
+      (this as any).onclose = () => {
+         if (this.updateTimer !== null) {
+            clearInterval(this.updateTimer);
+            this.updateTimer = null;
+         }
+      };
    }
 
    public getElement(): HTMLDivElement {
@@ -59,25 +71,32 @@ export class AdminPanel extends (window as any).WinBox {
    public async update(): Promise<void> {
       try {
          const status = (await getSimulationStatus()) as SimulationStatusDto;       
-
-         // button states
-         const startBtn = this.container.querySelector("#adminStartResumeBtn") as HTMLButtonElement;
-         const pauseBtn = this.container.querySelector("#adminPauseBtn") as HTMLButtonElement;
-         const resumeBtn = this.container.querySelector("#adminResumeBtn") as HTMLButtonElement;
-         if (startBtn && pauseBtn && resumeBtn) {
-            startBtn.disabled = status.state === "Running";
-            pauseBtn.disabled = status.state !== "Running";
-            resumeBtn.disabled = status.state !== "Paused";
-         }
-
-         const speedInput = this.container.querySelector('#adminSpeedInput') as HTMLInputElement | null;
-         if (speedInput && typeof status.speed === 'number') {
-            speedInput.value = String(status.speed);
-         }
-
+         this.updateButtonStates(status);
+         this.updateSpeedInput(status);
          // do not refresh scenario selector periodically
       } catch (err) {
          console.error("AdminPanel: failed to update status", err);
+      }
+   }
+
+   private updateButtonStates(status: SimulationStatusDto): void {
+      const startBtn = this.container.querySelector("#adminStartResumeBtn") as HTMLButtonElement;
+      const pauseBtn = this.container.querySelector("#adminPauseBtn") as HTMLButtonElement;
+      const resumeBtn = this.container.querySelector("#adminResumeBtn") as HTMLButtonElement;
+      if (startBtn && pauseBtn && resumeBtn) {
+         startBtn.disabled = status.state === "Running";
+         pauseBtn.disabled = status.state !== "Running";
+         resumeBtn.disabled = status.state !== "Paused";
+      }
+   }
+
+   private updateSpeedInput(status: SimulationStatusDto): void {
+      const speedInput = this.container.querySelector('#adminSpeedInput') as HTMLInputElement | null;
+      if (!speedInput || typeof status.speed !== 'number') return;
+      const newValue = String(status.speed);
+      const isFocused = document.activeElement === speedInput;
+      if (!isFocused && speedInput.value !== newValue) {
+         speedInput.value = newValue;
       }
    }
 

@@ -4,6 +4,7 @@ import "winbox/dist/winbox.bundle.min.js";
 
 export class TrainsPanel extends (window as any).WinBox {
   private container: HTMLDivElement;
+  private updateTimer: number | null = null;
 
   constructor(options?: Partial<{ title: string, x: any, y: any, width: number, height: number }>) {
     const container = document.createElement('div');
@@ -19,6 +20,16 @@ export class TrainsPanel extends (window as any).WinBox {
       mount: container,
     });
     this.container = container;
+    // Start periodic self-update and cleanup on close
+    void this.update();
+    this.updateTimer = window.setInterval(() => this.update(), 2000);
+    // Use WinBox onclose callback for cleanup
+    (this as any).onclose = () => {
+      if (this.updateTimer !== null) {
+        clearInterval(this.updateTimer);
+        this.updateTimer = null;
+      }
+    };
   }
 
   public getElement(): HTMLDivElement {

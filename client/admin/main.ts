@@ -10,10 +10,6 @@ import TrainsPanel from "./trainsPanel";
 
 window.addEventListener("load", async () => {
   const panel = new AdminPanel();
-  await panel.update();
-  setInterval(() => panel.update(), 2000);
   const trains = new TrainsPanel({ x: 0, y: 280 });
-  await trains.update();
-  setInterval(() => trains.update(), 2000);
   (window as any).admin = { panel, trains };
 });
