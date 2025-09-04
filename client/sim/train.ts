@@ -16,7 +16,7 @@ class Train {
     private _track: Track|null = null;
     private _km: number = 0;
     private _cars: number;
-    private _speed: number; // km per simulation step
+    private _speed: number; // m/s
     private _direction: number; // 1 for forward, -1 for backward
     private _stoppedBySignal: Signal | null; // Signal that currently stops this train
     private _shouldStopAtCurrentStation: boolean = false; // Station ID where train should stop, or null if no stop needed
@@ -30,7 +30,7 @@ class Train {
         this._number = number;
         this._spawnTime = new Date();
         this._cars = cars;
-        this._speed = speed; 
+        this._speed = speed 
         this._direction = 1; 
         this._stoppedBySignal = null; // Initially not stopped by any signal
     }
@@ -143,12 +143,7 @@ class Train {
     setPosition(track: Track, km: number): void {
         this._track = track;
         this._km = km;
-    }
-
-    // Set the train's speed
-    setSpeed(speed: number): void {
-        this._speed = Math.max(0, speed); // Ensure speed is not negative
-    }
+    }   
 
     // Set the train's direction
     setDirection(direction: number): void {
@@ -184,15 +179,12 @@ class Train {
     }
 
     // Update train position based on current speed and direction
-    // Returns the distance the train should move based on elapsed time
-    // speed is in km/h
+    // Returns the distance in meters the train should move based on elapsed time
+    // speed is in m/s
     getMovementDistance(): number {
 
-        const timeElapsedSeconds = SimulationConfig.simulationIntervalSeconds * SimulationConfig.simulationSpeed;     
-        
-        // Convert speed from km/h to m/s, then multiply by time and direction
-        const speed_m_per_s = this._speed / 3.6; // Convert km/h to m/s
-        return speed_m_per_s * timeElapsedSeconds * this._direction;
+        const timeElapsedSeconds = SimulationConfig.simulationIntervalSeconds * SimulationConfig.simulationSpeed;
+        return this._speed * timeElapsedSeconds * this._direction;
     }
 
     // Method to get train info for debugging/logging
