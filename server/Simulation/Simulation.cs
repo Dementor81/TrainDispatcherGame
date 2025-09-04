@@ -7,14 +7,14 @@ using TrainDispatcherGame.Server.Services;
 using System.Collections.Generic;
 using System.Linq;
 using TrainDispatcherGame.Server.Models.DTOs;
-using Microsoft.VisualBasic;
+ 
 
 namespace TrainDispatcherGame.Server.Simulation
 {
     public class Simulation
     {
         public const double TimerInterval = 1000;
-        public const int SimulationScale = 10;
+        
 
         private Timer? _timer;
         private SimulationState _state = SimulationState.Stopped;
@@ -23,7 +23,9 @@ namespace TrainDispatcherGame.Server.Simulation
         private readonly INotificationManager _notificationManager;
         private readonly PlayerManager _playerManager;
         private readonly ITrackLayoutService _trackLayoutService;
-        private Dictionary<NetworkConnection, OpenLineTrack> _openLineTracks = new();
+        private readonly OpenLineTrackRegistry _trackRegistry;
+        private readonly TrainEventProcessor _eventProcessor;
+        private readonly StationTimetableService _timetableService;
         private readonly object _simulationLock = new object(); // Thread synchronization object
         private DateTime _simulationStartTime;
         private string _scenarioId;
@@ -43,6 +45,9 @@ namespace TrainDispatcherGame.Server.Simulation
             _trackLayoutService = trackLayoutService;
             _playerManager = playerManager;
             _scenarioId = scenarioId;
+            _trackRegistry = new OpenLineTrackRegistry(_trackLayoutService);
+            _eventProcessor = new TrainEventProcessor(_notificationManager, _playerManager, _trackLayoutService, _trackRegistry);
+            _timetableService = new StationTimetableService();
             this.Reset();
         }
 
@@ -52,7 +57,7 @@ namespace TrainDispatcherGame.Server.Simulation
             _trains = scenario.Trains;
             _simulationStartTime = scenario.StartTime;
 
-            this.CreateOpenLineTracks();
+            _trackRegistry.Initialize();
             this.CreateInitialSpawnEvents();
 
 
@@ -106,19 +111,7 @@ namespace TrainDispatcherGame.Server.Simulation
             Console.WriteLine($"[DEBUG] Scenario set to {scenarioId}");
         }
 
-        private void CreateOpenLineTracks()
-        {
-            _openLineTracks = new Dictionary<NetworkConnection, OpenLineTrack>();
-            var connections = _trackLayoutService.GetAllConnections();
-            foreach (var connection in connections)
-            {
-                if (connection.Mode == NetworkConnection.TrackMode.Regular || connection.Mode == NetworkConnection.TrackMode.SingleTrack)
-                {
-                    _openLineTracks.Add(connection, new OpenLineTrack(connection));
-                }
-            }
-
-        }
+        
 
         private void CreateInitialSpawnEvents()
         {
@@ -130,7 +123,8 @@ namespace TrainDispatcherGame.Server.Simulation
                     var firstWayPoint = train.Route.FirstOrDefault();
                     if (firstWayPoint != null)
                     {
-                        train.NextServerEvent = new TrainStartEvent(firstWayPoint.DepartureTime, firstWayPoint.Station);
+                        // subtract 60 seconds to the departure time to give the player time to except the train
+                        train.NextServerEvent = new TrainStartEvent(firstWayPoint.DepartureTime.AddSeconds(-60), firstWayPoint.Station);
                     }
                     else
                     {
@@ -256,6 +250,7 @@ namespace TrainDispatcherGame.Server.Simulation
                         try
                         {
                             this.ElapsedSeconds += (TimerInterval / 1000) * this.Speed;
+                            _eventProcessor.SimulationTime = this.SimulationTime;
                             CheckTrainEvents();
                         }
                         catch (Exception ex)
@@ -280,234 +275,25 @@ namespace TrainDispatcherGame.Server.Simulation
 
                 if (train.NextServerEvent is TrainSpawnEvent)
                 {
-                    await HandleTrainSpawn(train);
+                    await _eventProcessor.HandleTrainSpawn(train);
                 }
                 else if (train.NextServerEvent is SendApprovalEvent)
                 {
-                    await HandleSendApproval(train, train.NextServerEvent as SendApprovalEvent);
+                    await _eventProcessor.HandleSendApproval(train, (SendApprovalEvent)train.NextServerEvent);
                 }
                 else if (train.NextServerEvent is TrainStartEvent)
                 {
-                    await HandleTrainStart(train);
+                    await _eventProcessor.HandleTrainStart(train);
                 }
             }
         }
-        private async Task HandleTrainStart(Train train)
-        {
-            try
-            {
-                await DispatchTrainByServer(train);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error handling train start: {ex.Message}");
-            }
-        }
-
-        private async Task HandleTrainSpawn(Train train)
-        {
-            try
-            {
-                if (train.NextServerEvent == null) throw new Exception($"Train {train.Number} has no spawn point");
-                var spawn = train.NextServerEvent as TrainSpawnEvent;
-                if (spawn == null) throw new Exception($"Train {train.Number} next event is not a spawn event");
-                var station = spawn.HeadingStation;
-                var exitPointId = spawn.HeadingExitId.ToString();
-
-                // Remove train from the open line track using the connection in the spawn event
-                if (spawn != null && _openLineTracks.TryGetValue(spawn.Connection, out var openLine))
-                {
-                    openLine.RemoveTrain(train);
-                }
-
-                // If the station is controlled by a player, hand over to the player as usual
-                if (_playerManager.IsStationControlled(station))
-                {
-                    if (exitPointId == "-1") throw new Exception($"Train {train.Number} has exit point id -1, this shouldnt be possible for player controlled stations");
-                    await _notificationManager.SendTrain(station, train, exitPointId);
-                    train.controlledByPlayer = true;
-                    train.CurrentLocation = station;
-
-                    Console.WriteLine($"Train {train.Number} spawned at spawn point {exitPointId} of {station}");
-                    train.NextServerEvent = null;
-                }
-                else
-                {
-                    await DispatchTrainByServer(train);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error spawning train: {ex.Message}");
-            }
-        }
-
-        // Create a spawn event from a connection with an additional distance (which can be used to add the distance to the exit point)
-        private TrainSpawnEvent CreateSpawnFromConnection(Train train, NetworkConnection connection, int additionalDistance, DateTime scheduledTime = default)
-        {
-            var distance = connection.Distance + additionalDistance;
-            var seconds = train.GetTravelTime(distance);
-            return new TrainSpawnEvent(
-                scheduledTime == default ? SimulationTime.AddSeconds(seconds) : scheduledTime.AddSeconds(seconds),
-                connection
-            );
-        }
-
-        private async Task DispatchTrainByServer(Train train)
-        {
-            Console.WriteLine($"Dispatching train {train.Number} by server");
-            var currentWaypoint = train.GetWayPoint();
-            var nextWaypoint = train.GetNextWayPoint();
-            if (currentWaypoint == null) throw new Exception($"Train {train.Number} has no current way point");
-            if (nextWaypoint == null) throw new Exception($"Train {train.Number} has no next way point");
-
-            if (nextWaypoint.IsLast)
-            {
-                Console.WriteLine($"Train {train.Number} has completed all events");
-                train.completed = true;
-                return;
-            }
-            
-
-            var requiresApproval = _playerManager.IsStationControlled(nextWaypoint.Station);
-            if (requiresApproval)
-            {
-
-                var approvalTime = currentWaypoint.DepartureTime.AddSeconds(-60 + train.delay);
-                var arrivalWithDelay = currentWaypoint.ArrivalTime.AddSeconds(train.delay);
-                if (approvalTime < arrivalWithDelay)
-                    approvalTime = arrivalWithDelay;
-
-                train.NextServerEvent = new SendApprovalEvent(approvalTime);
-                Console.WriteLine($"Train {train.Number} scheduled approval request for departure {currentWaypoint.Station} -> {nextWaypoint.Station} at {approvalTime:HH:mm:ss}");
-                return;
-            }
-            else
-            {
-                AdvanceTrainToNextStation(train);
-                Console.WriteLine($"Train {train.Number} auto-advanced at uncontrolled station {currentWaypoint.Station}; spawning at {nextWaypoint.Station} at ({train.NextServerEvent.ScheduledTime:HH:mm:ss})");
-            }
-        }
-
-        private void AdvanceTrainToNextStation(Train train)
-        {
-            var currentWaypoint = train.GetWayPoint();
-            var nextWaypoint = train.GetNextWayPoint();
-
-            var departureTime = currentWaypoint.DepartureTime > SimulationTime ? currentWaypoint.DepartureTime : SimulationTime;
-
-            if (departureTime > SimulationTime)
-                train.delay = (int)(departureTime - SimulationTime).TotalSeconds;
-
-            var layout = _trackLayoutService.GetTrackLayout(currentWaypoint.Station);
-            bool isReversed;
-            var connection = _trackLayoutService.GetRegularConnectionToStation(currentWaypoint.Station, nextWaypoint.Station, out isReversed);
-            var distanceToExit = 0;
-            if (connection == null) throw new Exception($"No regular connection found for train {train.Number} from {currentWaypoint.Station} to {nextWaypoint.Station}");
-            //on the edge of the track layout are no track layouts
-            if (layout != null) distanceToExit = layout.MaxExitDistance / 2;
-            // Determine heading and exit point based on direction
-            var spawn = CreateSpawnFromConnection(train, connection, distanceToExit, departureTime);
-            spawn.IsReversed = isReversed;
-            train.NextServerEvent = spawn;
-            train.AdvanceToNextWayPoint();
-            _openLineTracks[connection].AddTrain(train);
-            Console.WriteLine($"Train {train.Number} scheduled spawn event for {nextWaypoint.Station} at {train.NextServerEvent.ScheduledTime:HH:mm:ss}");
-        }
-
-        private async Task HandleSendApproval(Train train, SendApprovalEvent sendApprovalEvent)
-        {
-            try
-            {
-                if (sendApprovalEvent.ApprovalSent) return;
-
-                var currentWaypoint = train.GetWayPoint();
-                var nextWaypoint = train.GetNextWayPoint();
-                if (currentWaypoint == null || nextWaypoint == null) throw new Exception($"Train {train.Number} cannot request approval without valid waypoints");
-
-                await _notificationManager.SendApprovalRequest(nextWaypoint.Station, currentWaypoint.Station, train.Number);
-                Console.WriteLine($"Train {train.Number} sent approval request for {currentWaypoint.Station} -> {nextWaypoint.Station}");
-                sendApprovalEvent.ApprovalSent = true;
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error sending approval: {ex.Message}");
-            }
-        }
+        
 
                 
 
         public List<StationTimetableEvent> GetStationTimetableEvents(string stationId)
         {
-            var stationEvents = new List<StationTimetableEvent>();
-
-            foreach (var train in _trains)
-            {
-                if (train.completed) continue;
-
-                var currentEvent = train.GetWayPoint();
-                if (currentEvent == null) continue;
-
-                // Check if this train has any future events at the requested station
-                var futureEvents = train
-                    .GetFutureWayPoints()
-                    .Where(e => e.Station.Equals(stationId, StringComparison.OrdinalIgnoreCase));
-
-                foreach (var futureEvent in futureEvents)
-                {
-                    // Determine the origin station by looking back for the previous event
-                    string fromStation = string.Empty;
-                    var allEvents = train.Route;
-                    var eventIndex = allEvents.IndexOf(futureEvent);
-                    if (eventIndex > 0)
-                    {
-                        // Walk backwards to find the previous event
-                        for (int i = eventIndex - 1; i >= 0; i--)
-                        {
-                            var prev = allEvents[i];
-                            if (prev != null)
-                            {
-                                fromStation = prev.Station;
-                                break;
-                            }
-                        }
-                    }
-
-
-                    // Determine the next station after stopping at the current (futureEvent) station
-                    string nextStation = string.Empty;
-                    if (eventIndex >= 0 && eventIndex + 1 < allEvents.Count)
-                    {
-                        nextStation = allEvents[eventIndex + 1].Station;
-                    }
-
-
-                    stationEvents.Add(new StationTimetableEvent
-                    {
-                        TrainNumber = train.Number,
-                        Arrival = futureEvent.ArrivalTime.ToString("HH:mm:ss"),
-                        Departure = futureEvent.DepartureTime.ToString("HH:mm:ss"),
-                        CurrentDelay = train.delay,
-                        FromStation = fromStation,
-                        NextStation = nextStation
-                    });
-                }
-            }
-
-
-            stationEvents.Sort((a, b) =>
-            {
-                if (DateTime.TryParse(a.Departure, out var departureA) &&
-                    DateTime.TryParse(b.Departure, out var departureB))
-                {
-                    return departureA.CompareTo(departureB);
-                }
-                return string.Compare(a.Departure, b.Departure, StringComparison.Ordinal);
-            });
-
-            return stationEvents;
+            return _timetableService.BuildStationTimetableEvents(_trains, stationId);
         }
 
         public async Task TrainReturnedFromClient(Train train, string exitId)
@@ -523,7 +309,6 @@ namespace TrainDispatcherGame.Server.Simulation
 
 
                 train.controlledByPlayer = false;
-                var lastLocation = train.CurrentLocation;
                 train.CurrentLocation = null;
 
                 var currentEvent = train.GetWayPoint();
@@ -554,10 +339,10 @@ namespace TrainDispatcherGame.Server.Simulation
                 }
                 else
                 {
-                    var nextSpawn = CreateSpawnFromConnection(train, connection, 0);
+                    var nextSpawn = _eventProcessor.CreateSpawnFromConnection(train, connection, 0);
                     nextSpawn.IsReversed = false;
                     train.NextServerEvent = nextSpawn;
-                    if(!_openLineTracks[connection].AddTrain(train)){
+                    if(!_trackRegistry.AddTrain(connection, train)){
                         Console.WriteLine($"Train {train.Number} collision detected on track from {connection.FromStation} to {connection.ToStation}");
                         train.completed = true;
                     }
@@ -592,7 +377,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 }
 
                 Console.WriteLine($"Approval received for train {train.Number} from {fromStationId}");
-                AdvanceTrainToNextStation(train);
+                _eventProcessor.AdvanceTrainToNextStation(train);
             }
             catch (Exception ex)
             {
