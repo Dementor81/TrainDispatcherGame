@@ -74,8 +74,8 @@ module.exports = (env, argv) => {
             directory: path.join(__dirname, "dist"),
          },
          port: 9000,
-         
-         hot: true,
+         liveReload: false,
+         hot: false,
          compress: true,
       },
       optimization: isProduction ? {} : {
