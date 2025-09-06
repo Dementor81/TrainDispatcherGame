@@ -314,6 +314,34 @@ namespace TrainDispatcherGame.Server.Simulation
             }
         }
 
+        
+
+        /// <summary>
+        /// When a player disconnects from a station, any trains currently at that station
+        /// and controlled by the player should be returned to server control so they don't vanish.
+        /// </summary>
+        /// <param name="stationId">The station the player controlled.</param>
+        public async Task ReturnTrainsAtStation(string stationId)
+        {
+            try
+            {
+                var trainsToReturn = _trains
+                    .Where(t => t.controlledByPlayer && string.Equals(t.CurrentLocation, stationId, StringComparison.Ordinal))
+                    .ToList();
+
+                foreach (var train in trainsToReturn)
+                {
+                    train.controlledByPlayer = false;
+                    train.CurrentLocation = null;
+                    await _eventProcessor.DispatchTrainByServer(train);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error returning trains at station {stationId} on disconnect: {ex.Message}");
+            }
+        }
+
         public void ReceiveApproval(string trainNumber, string fromStationId, bool approved)
         {
             try

@@ -36,6 +36,11 @@ namespace TrainDispatcherGame.Server.Hubs
             var player = players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId);
             if (player != null)
             {
+                // Return any trains currently at this player's station
+                if (!string.IsNullOrWhiteSpace(player.StationId))
+                {
+                    await _simulation.ReturnTrainsAtStation(player.StationId);
+                }
                 _playerManager.DisconnectPlayer(player.Id);
                 Console.WriteLine($"Player {player.Id} disconnected from station {player.StationId}");
 
