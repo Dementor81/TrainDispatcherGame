@@ -152,6 +152,12 @@ export class Application {
          // No direct app-level reaction for now; state available if needed
       });
 
+      // Permanent disconnect from SignalR (after all retries failed)
+      this._eventManager.on('permanentlyDisconnected', async () => {
+         console.warn('Application: Permanently disconnected from server. Resetting to start screen.');
+         await this.resetToStartScreen();
+      });
+
       // Simulation state change events
       this._eventManager.on('simulationStateChanged', (state: SimulationState) => {
          this.handleSimulationStateChanged(state);
@@ -316,6 +322,31 @@ export class Application {
          } catch (error) {
             console.error('Application: Failed to rejoin station after reconnection:', error);
          }
+      }
+   }
+
+   // Reset app UI and state to start screen (used on final disconnect)
+   public async resetToStartScreen(): Promise<void> {
+      try {
+         // Stop any running simulation and clear trains
+         this._trainManager.clearAllTrains();
+
+         // Clear canvas contents
+         if (this._renderer) {
+            this._renderer.clear();
+         }
+
+         // Reset current selections/state
+         this._currentPlayerId = null;
+         this._currentStationId = null;
+         this._simulationState = 'Stopped';
+
+         // Show station selection again
+         this._uiManager.showStationSelectionScreen(async (layout: string, playerId: string, playerName?: string) => {
+            await this.handleStationSelection(layout, playerId, playerName);
+         });
+      } catch (err) {
+         console.error('Application: Error during resetToStartScreen', err);
       }
    }
 }

@@ -44,6 +44,12 @@ export class SignalRManager {
         this.connection.onclose((error) => {
             console.log('SignalR: Connection closed', error);
             this.notifyConnectionStatusChange();
+            // When automatic reconnect gives up, onclose fires. Notify app to reset.
+            try {
+                this.eventManager.emit('permanentlyDisconnected');
+            } catch (e) {
+                console.error('Failed to emit permanentlyDisconnected event', e);
+            }
         });
 
         // Game-specific events
