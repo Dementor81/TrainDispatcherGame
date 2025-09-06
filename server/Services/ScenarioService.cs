@@ -133,7 +133,7 @@ namespace TrainDispatcherGame.Server.Services
                     train.Route.Add(new TrainWayPoint(timetableEntry.Station, arrivalTime, departureTime));
                 }
 
-                train.Route.Last().IsLast = true;
+                train.Route.Last().IsLast = true; //save if the waypoint is the last waypoint, in order to make it easier to detect if the train has completed all waypoints.
                 trains.Add(train);
             }
 

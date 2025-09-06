@@ -29,7 +29,7 @@ namespace TrainDispatcherGame.Server.Managers
             if (player != null)
             {
                 // Get the current event for this train
-                var currentEvent = train.GetWayPoint();
+                var currentEvent = train.GetCurrentWayPoint();
                 bool shouldStopAtStation = currentEvent?.Stops == true && 
                                          currentEvent.Station == stationId;
                 

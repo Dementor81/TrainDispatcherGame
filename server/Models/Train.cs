@@ -10,7 +10,7 @@ namespace TrainDispatcherGame.Server.Models
         public string Type { get; set; } = string.Empty;
         public double Speed { get; set; }//m/s
         public int Cars { get; set; }
-        public TrainEventBase? NextServerEvent { get; set; }
+        public TrainEventBase? TrainEvent { get; set; }
         public List<TrainWayPoint> Route { get; set; } = new();
         public int CurrentWaypointIndex { get; set; } = 0;
         public string? CurrentLocation { get; set; }
@@ -23,7 +23,7 @@ namespace TrainDispatcherGame.Server.Models
             Number = number;
         }
 
-        public TrainWayPoint? GetWayPoint()
+        public TrainWayPoint? GetCurrentWayPoint()
         {
             if (CurrentWaypointIndex < Route.Count)
             {
@@ -65,7 +65,7 @@ namespace TrainDispatcherGame.Server.Models
             if (HasMoreWayPoints())
             {
                 CurrentWaypointIndex++; 
-                return GetWayPoint();                
+                return GetCurrentWayPoint();                
             }
             else
             {

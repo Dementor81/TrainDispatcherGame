@@ -205,14 +205,14 @@ app.MapGet("/api/simulation/trains", (Simulation simulation) =>
         number = t.Number,
         completed = t.completed,
         currentLocation = t.CurrentLocation,
-        headingForStation = t.NextServerEvent is TrainSpawnEvent sp1 ? sp1.HeadingStation : null,
+        headingForStation = t.TrainEvent is TrainSpawnEvent sp1 ? sp1.HeadingStation : null,
         delay = t.delay,
-        nextEventTime = t.NextServerEvent?.ScheduledTime,
-        nextEventType = t.NextServerEvent is TrainSpawnEvent ? "Spawn"
-            : t.NextServerEvent is SendApprovalEvent ? "Approval"
-            : t.NextServerEvent is TrainStartEvent ? "Start"
+        nextEventTime = t.TrainEvent?.ScheduledTime,
+        nextEventType = t.TrainEvent is TrainSpawnEvent ? "Spawn"
+            : t.TrainEvent is SendApprovalEvent ? "Approval"
+            : t.TrainEvent is TrainStartEvent ? "Start"
             : null,
-        spawnStation = (t.NextServerEvent as TrainSpawnEvent)?.Connection.ToStation
+        spawnStation = (t.TrainEvent as TrainSpawnEvent)?.Connection.ToStation
     }).ToList();
     return Results.Ok(list);
 });

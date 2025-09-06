@@ -13,7 +13,6 @@ Features:
     ☐ show platfrom
     ☐ report passing through a station to the server
     ☐ add comments to shedulded strain stops like "overtake"
-    ☐ remove spawing between two stations. Trains should only spawn at a station (at the edge stations or middle stations)
 
 Big Features:
     ✔ uncontrolled stations should be handled by the server @done(25-08-10 13:27)
@@ -23,6 +22,7 @@ Big Features:
     ☐ acceleration and deceleration
     ☐ select a train to see different information
     ☐ shunting
+    ☐ coupling and decoupling
     ✔ admin page with server controls and statistics @done(25-08-30 18:43)
     ✔ szenario editor that helps creating timetables @done(25-08-17 16:32)
     ☐ UI with an overview of the whole network

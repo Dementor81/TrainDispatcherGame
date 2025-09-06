@@ -36,9 +36,24 @@ namespace TrainDispatcherGame.Server.Simulation
             );
         }
 
+        public async Task HandleTrainEvent(Train train)
+        {
+            if (train.TrainEvent == null) throw new Exception($"Train {train.Number} has no train event");
+
+            if (train.TrainEvent.IsDue(this.SimulationTime))
+            {
+                if (train.TrainEvent is TrainSpawnEvent)
+                    await this.HandleTrainSpawn(train);
+                else if (train.TrainEvent is SendApprovalEvent)
+                    await this.HandleSendApproval(train);
+                else if (train.TrainEvent is TrainStartEvent)
+                    await this.HandleTrainStart(train);
+            }
+        }     
+
         public async Task HandleTrainSpawn(Train train)
         {
-            if (train.NextServerEvent is not TrainSpawnEvent spawn)
+            if (train.TrainEvent is not TrainSpawnEvent spawn)
             {
                 throw new Exception($"Train {train.Number} next event is not a spawn event");
             }
@@ -55,18 +70,20 @@ namespace TrainDispatcherGame.Server.Simulation
                 await _notificationManager.SendTrain(station, train, exitPointId);
                 train.controlledByPlayer = true;
                 train.CurrentLocation = station;
-                train.NextServerEvent = null;
+                train.TrainEvent = null;
                 return;
             }
 
             await DispatchTrainByServer(train);
         }
 
-        public async Task HandleSendApproval(Train train, SendApprovalEvent sendApprovalEvent)
+        public async Task HandleSendApproval(Train train)
         {
+            var sendApprovalEvent = train.TrainEvent as SendApprovalEvent;
+            if (sendApprovalEvent == null) throw new Exception($"Train {train.Number} next event is not a send approval event");
             if (sendApprovalEvent.ApprovalSent) return;
 
-            var currentWaypoint = train.GetWayPoint();
+            var currentWaypoint = train.GetCurrentWayPoint();
             var nextWaypoint = train.GetNextWayPoint();
             if (currentWaypoint == null || nextWaypoint == null) throw new Exception($"Train {train.Number} cannot request approval without valid waypoints");
 
@@ -81,7 +98,7 @@ namespace TrainDispatcherGame.Server.Simulation
 
         public void AdvanceTrainToNextStation(Train train)
         {
-            var currentWaypoint = train.GetWayPoint();
+            var currentWaypoint = train.GetCurrentWayPoint();
             var nextWaypoint = train.GetNextWayPoint();
             if (currentWaypoint == null || nextWaypoint == null) throw new Exception($"Train {train.Number} waypoints invalid");
 
@@ -100,14 +117,14 @@ namespace TrainDispatcherGame.Server.Simulation
 
             var spawn = CreateSpawnFromConnection(train, connection, distanceToExit, departureTime);
             spawn.IsReversed = isReversed;
-            train.NextServerEvent = spawn;
+            train.TrainEvent = spawn;
             train.AdvanceToNextWayPoint();
             _trackRegistry.AddTrain(connection, train);
         }
 
         public async Task DispatchTrainByServer(Train train)
         {
-            var currentWaypoint = train.GetWayPoint();
+            var currentWaypoint = train.GetCurrentWayPoint();
             var nextWaypoint = train.GetNextWayPoint();
             if (currentWaypoint == null) throw new Exception($"Train {train.Number} has no current way point");
             if (nextWaypoint == null) throw new Exception($"Train {train.Number} has no next way point");
@@ -126,7 +143,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 if (approvalTime < arrivalWithDelay)
                     approvalTime = arrivalWithDelay;
 
-                train.NextServerEvent = new SendApprovalEvent(approvalTime);
+                train.TrainEvent = new SendApprovalEvent(approvalTime);
                 return;
             }
 

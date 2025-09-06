@@ -13,7 +13,7 @@ namespace TrainDispatcherGame.Server.Simulation
             {
                 if (train.completed) continue;
 
-                var currentEvent = train.GetWayPoint();
+                var currentEvent = train.GetCurrentWayPoint();
                 if (currentEvent == null) continue;
 
                 var futureEvents = train
