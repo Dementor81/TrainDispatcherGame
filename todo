@@ -23,6 +23,7 @@ Big Features:
     ☐ select a train to see different information
     ☐ shunting
     ☐ coupling and decoupling
+    ☐ add game logic to the server to handle multiple game sessions simultaniously
     ✔ admin page with server controls and statistics @done(25-08-30 18:43)
     ✔ szenario editor that helps creating timetables @done(25-08-17 16:32)
     ☐ UI with an overview of the whole network
@@ -31,7 +32,7 @@ Big Features:
 
 Bugs:
     ✔ prevent players with the same name from joining the game (currently breaks the game) @done(25-08-09 15:31)
-    ☐ switching a switch while the switch is blocked by a train breaks the game
+    ✔ switching a switch while the switch is blocked by a train breaks the game @done(25-09-27 17:58)
     ✔ leaving a station while trains are at the station breaks the game @done(25-09-06 13:34)
     ☐ some random delays of trains at the server side
     

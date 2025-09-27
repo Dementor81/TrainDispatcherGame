@@ -171,6 +171,11 @@ export class TrainManager {
          return false; // Train can't move or is stopped
       }
 
+      // Detect derailment caused by switching under the train's body
+      if (this.detectTrainDerailment(train)) {
+         return false;
+      }
+
       // Calculate movement distance based on elapsed time
 
       // Collision check with other trains on the same track
@@ -256,6 +261,39 @@ export class TrainManager {
          this.handleMovementException(train, error);
          return false;
       }
+   }
+
+   // Detect if a train has derailed due to a switch being toggled under its body
+   // Walk backwards along the rail network for the length of the train. If the
+   // traversal is blocked by a switch (i.e., followRailNetwork returns a Switch),
+   // the train's body is interrupted by the current switch state and we consider it derailed.
+   private detectTrainDerailment(train: Train): boolean {
+      const currentTrack = train.track;
+      if (!currentTrack) return false;
+
+      const trainBodyLength = train.getLength();
+      if (trainBodyLength <= 0) return false;
+
+      const distanceOppositeDirection = -train.direction * trainBodyLength;
+
+      try {
+         const result = this._trackLayoutManager.followRailNetwork(
+            currentTrack,
+            train.km,
+            distanceOppositeDirection
+         );
+
+         if (result.element instanceof Switch) {
+            console.warn(`Train ${train.number} derailed at switch ${result.element.id}`);
+            this._eventManager.emit("trainDerailed", train, result.element);
+            this.removeTrain(train.number);
+            return true;
+         }
+      } catch (error) {
+         // If traversal fails unexpectedly, do not mark as derailment here.
+      }
+
+      return false;
    }
 
    // Check for signals ahead of the train that would stop it

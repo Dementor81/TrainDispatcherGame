@@ -77,6 +77,23 @@ module.exports = (env, argv) => {
          liveReload: false,
          hot: false,
          compress: true,
+         proxy: [ 
+            {
+               context: ["/api"],
+               target: "http://localhost:5070",
+               changeOrigin: true,
+               secure: false,
+               logLevel: "debug",
+            },
+            {
+               context: ["/gamehub"],
+               target: "http://localhost:5070",
+               ws: true,
+               changeOrigin: true,
+               secure: false,
+               logLevel: "debug",
+            },
+         ],
       },
       optimization: isProduction ? {} : {
          minimize: false,

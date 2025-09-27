@@ -224,6 +224,27 @@ namespace TrainDispatcherGame.Server.Hubs
             await Task.CompletedTask;
         }
 
+        public async Task ReportTrainDerailed(string playerId, string trainNumber, string stationId, int? switchId)
+        {
+            try
+            {
+                var train = _simulation.Trains.FirstOrDefault(t => t.Number == trainNumber);
+                if (train == null)
+                {
+                    Console.WriteLine($"Failed to report derailment: Train not found ({trainNumber})");
+                    return;
+                }
+
+                _simulation.HandleDerailment(train, stationId, switchId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reporting train derailment {trainNumber}: {ex.Message}");
+            }
+
+            await Task.CompletedTask;
+        }
+
         public async Task RespondApproval(string playerId, string trainNumber, string fromStationId, bool approved)
         {
             try

@@ -145,6 +145,11 @@ export class Application {
          await this.handleLocalTrainCollision(trainA, trainB);
       });
 
+      // Local derailment detection from client sim
+      this._eventManager.on('trainDerailed', async (train: Train, sw?: Switch) => {
+         await this.handleLocalTrainDerailment(train, sw);
+      });
+
       // No server broadcast for collisions; client handles it directly
 
       // Connection status events
@@ -269,6 +274,20 @@ export class Application {
       this._uiManager.notifyCollision(trainA.number, trainB.number);
       this._trainManager.removeTrain(trainA.number);
       this._trainManager.removeTrain(trainB.number);
+   }
+
+   private async handleLocalTrainDerailment(train: Train, sw?: Switch): Promise<void> {
+      if (this._currentPlayerId && this._currentStationId) {
+         try {
+            await this._signalRManager.reportTrainDerailed(this._currentPlayerId, train.number, this._currentStationId, sw?.id);
+         } catch (error) {
+            console.error('Failed to report train derailment to server:', error);
+         }
+      }
+
+      this._uiManager.notifyDerailment(train.number, sw?.id);
+      // Ensure removal in case not already removed by TrainManager
+      this._trainManager.removeTrain(train.number);
    }
 
    // No server collision handler needed

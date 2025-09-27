@@ -1,0 +1,250 @@
+{
+   "id": "Weststadt",
+   "tracks": [
+      {
+         "id": 176,
+         "start": { "x": 450, "y": 550 },
+         "end": { "x": 500, "y": 500 },
+         "signals": [],
+         "switches": [
+            { "type": "Track", "id": 218 },
+            { "type": "Track", "id": 182 }
+         ]
+      },
+      {
+         "id": 180,
+         "start": { "x": 650, "y": 500 },
+         "end": { "x": 700, "y": 550 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 64 },
+            { "type": "Switch", "id": 65 }
+         ]
+      },
+      {
+         "id": 182,
+         "start": { "x": 500, "y": 500 },
+         "end": { "x": 650, "y": 500 },
+         "signals": [],
+         "switches": [
+            { "type": "Track", "id": 176 },
+            { "type": "Switch", "id": 64 }
+         ]
+      },
+      {
+         "id": 183,
+         "start": { "x": 650, "y": 500 },
+         "end": { "x": 1400, "y": 500 },
+         "signals": [
+            { "type": "main", "position": 137 , "direction":  1},
+            { "type": "main", "position": 637 , "direction":  1}
+         ],
+         "switches": [
+            { "type": "Switch", "id": 64 },
+            { "type": "Switch", "id": 67 }
+         ]
+      },
+      {
+         "id": 184,
+         "start": { "x": 600, "y": 600 },
+         "end": { "x": 650, "y": 550 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 66 },
+            { "type": "Track", "id": 185 }
+         ]
+      },
+      {
+         "id": 185,
+         "start": { "x": 650, "y": 550 },
+         "end": { "x": 700, "y": 550 },
+         "signals": [],
+         "switches": [
+            { "type": "Track", "id": 184 },
+            { "type": "Switch", "id": 65 }
+         ]
+      },
+      {
+         "id": 189,
+         "start": { "x": 1350, "y": 550 },
+         "end": { "x": 1400, "y": 500 },
+         "signals": [],
+         "switches": [
+            { "type": "Track", "id": 193 },
+            { "type": "Switch", "id": 67 }
+         ]
+      },
+      {
+         "id": 191,
+         "start": { "x": 1300, "y": 550 },
+         "end": { "x": 1350, "y": 600 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 69 },
+            { "type": "Switch", "id": 68 }
+         ]
+      },
+      {
+         "id": 192,
+         "start": { "x": 700, "y": 550 },
+         "end": { "x": 1300, "y": 550 },
+         "signals": [
+            { "type": "main", "position": 84 , "direction":  1},
+            { "type": "main", "position": 527 , "direction":  1}
+         ],
+         "switches": [
+            { "type": "Switch", "id": 65 },
+            { "type": "Switch", "id": 69 }
+         ]
+      },
+      {
+         "id": 193,
+         "start": { "x": 1300, "y": 550 },
+         "end": { "x": 1350, "y": 550 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 69 },
+            { "type": "Track", "id": 189 }
+         ]
+      },
+      {
+         "id": 194,
+         "start": { "x": 600, "y": 600 },
+         "end": { "x": 1350, "y": 600 },
+         "signals": [
+            { "type": "main", "position": 127 , "direction":  1},
+            { "type": "main", "position": 678 , "direction":  1}
+         ],
+         "switches": [
+            { "type": "Switch", "id": 66 },
+            { "type": "Switch", "id": 68 }
+         ]
+      },
+      {
+         "id": 196,
+         "start": { "x": 1550, "y": 600 },
+         "end": { "x": 1600, "y": 550 },
+         "signals": [],
+         "switches": [
+            { "type": "Track", "id": 198 },
+            { "type": "Switch", "id": 71 }
+         ]
+      },
+      {
+         "id": 198,
+         "start": { "x": 1350, "y": 600 },
+         "end": { "x": 1550, "y": 600 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 68 },
+            { "type": "Track", "id": 196 }
+         ]
+      },
+      {
+         "id": 201,
+         "start": { "x": 1450, "y": 500 },
+         "end": { "x": 1500, "y": 550 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 72 },
+            { "type": "Track", "id": 202 }
+         ]
+      },
+      {
+         "id": 202,
+         "start": { "x": 1500, "y": 550 },
+         "end": { "x": 1600, "y": 550 },
+         "signals": [],
+         "switches": [
+            { "type": "Track", "id": 201 },
+            { "type": "Switch", "id": 71 }
+         ]
+      },
+      {
+         "id": 203,
+         "start": { "x": 1400, "y": 500 },
+         "end": { "x": 1450, "y": 500 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 67 },
+            { "type": "Switch", "id": 72 }
+         ]
+      },
+      {
+         "id": 204,
+         "start": { "x": 1450, "y": 500 },
+         "end": { "x": 2150, "y": 500 },
+         "signals": [{ "type": "main", "position": 355 , "direction":  1}],
+         "switches": [{ "type": "Switch", "id": 72 }, null]
+      },
+      {
+         "id": 205,
+         "start": { "x": 1650, "y": 550 },
+         "end": { "x": 1800, "y": 700 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 73 },
+            { "type": "Track", "id": 206 }
+         ]
+      },
+      {
+         "id": 206,
+         "start": { "x": 1800, "y": 700 },
+         "end": { "x": 2000, "y": 700 },
+         "signals": [{ "type": "main", "position": 179 , "direction":  1}],
+         "switches": [
+            { "type": "Track", "id": 205 },
+            { "type": "Track", "id": 216 }
+         ]
+      },
+      {
+         "id": 207,
+         "start": { "x": 1600, "y": 550 },
+         "end": { "x": 1650, "y": 550 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 71 },
+            { "type": "Switch", "id": 73 }
+         ]
+      },
+      {
+         "id": 208,
+         "start": { "x": 1650, "y": 550 },
+         "end": { "x": 2150, "y": 550 },
+         "signals": [],
+         "switches": [{ "type": "Switch", "id": 73 }, null]
+      },
+      {
+         "id": 216,
+         "start": { "x": 2000, "y": 700 },
+         "end": { "x": 2150, "y": 850 },
+         "signals": [],
+         "switches": [{ "type": "Track", "id": 206 }, null]
+      },
+      {
+         "id": 217,
+         "start": { "x": -100, "y": 600 },
+         "end": { "x": 600, "y": 600 },
+         "signals": [{ "type": "main", "position": 352 , "direction":  1}],
+         "switches": [null, { "type": "Switch", "id": 66 }]
+      },
+      {
+         "id": 218,
+         "start": { "x": -100, "y": 550 },
+         "end": { "x": 450, "y": 550 },
+         "signals": [],
+         "switches": [null, { "type": "Track", "id": 176 }]
+      }
+   ],
+   "switches": [
+      { "id": 64, "location": { "x": 650, "y": 500 }, "tracks": [182, 183, 180, null] },
+      { "id": 65, "location": { "x": 700, "y": 550 }, "tracks": [192, 185, 180, null] },
+      { "id": 66, "location": { "x": 600, "y": 600 }, "tracks": [217, 194, 184, null] },
+      { "id": 67, "location": { "x": 1400, "y": 500 }, "tracks": [203, 183, 189, null] },
+      { "id": 68, "location": { "x": 1350, "y": 600 }, "tracks": [198, 194, 191, null] },
+      { "id": 69, "location": { "x": 1300, "y": 550 }, "tracks": [192, 193, 191, null] },
+      { "id": 71, "location": { "x": 1600, "y": 550 }, "tracks": [207, 202, 196, null] },
+      { "id": 72, "location": { "x": 1450, "y": 500 }, "tracks": [203, 204, 201, null] },
+      { "id": 73, "location": { "x": 1650, "y": 550 }, "tracks": [207, 208, 205, null] }
+   ]
+}

@@ -43,6 +43,10 @@ var app = builder.Build();
 // Configure CORS for both API and SignalR
 app.UseCors("AllowDevClient");
 
+// Serve static files from wwwroot and map default files (e.g., index.html)
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 // Map SignalR hub with CORS
 app.MapHub<GameHub>("/gamehub").RequireCors("AllowDevClient");
 

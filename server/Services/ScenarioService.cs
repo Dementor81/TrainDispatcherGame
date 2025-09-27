@@ -143,7 +143,12 @@ namespace TrainDispatcherGame.Server.Services
                 throw new Exception($"Error parsing start time for scenario {scenarioId}: {scenarioDTO.StartTime}");
             }
 
-            var scenario = new Scenario(scenarioDTO.Title, startTime, trains);
+            if (string.IsNullOrWhiteSpace(scenarioDTO.LayoutId))
+            {
+                throw new Exception($"Scenario '{scenarioId}' is missing required 'layout' field");
+            }
+            var layoutId = scenarioDTO.LayoutId;
+            var scenario = new Scenario(scenarioDTO.Title, layoutId, startTime, trains);
 
             return scenario;
         }

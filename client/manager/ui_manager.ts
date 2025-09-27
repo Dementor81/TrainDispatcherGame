@@ -60,6 +60,12 @@ export class UIManager {
         this._notificationModal?.show(message, 'Kollision');
     }
 
+    notifyDerailment(trainNumber: string, switchId?: number): void {
+        const details = switchId !== undefined ? ` an Weiche ${switchId}` : '';
+        const message = `Entgleisung von Zug ${trainNumber}${details}. Zug entfernt.`;
+        this._notificationModal?.show(message, 'Entgleisung');
+    }
+
     showApprovalToast(data: { stationId: string, fromStationId: string, trainNumber: string }): void {
         const approvalToast = new ApprovalToast(this._application);
         approvalToast.showApproval({

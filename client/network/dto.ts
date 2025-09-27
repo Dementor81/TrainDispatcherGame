@@ -63,7 +63,6 @@ export interface TrainDto {
   number: string;
   state: string;
   currentLocation?: string;
-  spawnTime?: string;
 }
 
 export interface StationTimetableEventDto {

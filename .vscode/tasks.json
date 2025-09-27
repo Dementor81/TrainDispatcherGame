@@ -1,91 +1,80 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "build",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "build",
-                "${workspaceFolder}/server/server.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary;ForceNoAlign"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "publish",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "publish",
-                "${workspaceFolder}/server/server.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary;ForceNoAlign"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "watch",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "watch",
-                "run",
-                "--project",
-                "${workspaceFolder}/server/server.csproj"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "start",
-            "type": "npm",
-            "script": "start",
-            "problemMatcher": [],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "detail": "Runs the webpack development server."
-        },
-        {
-            "label": "start-all",
-            "dependsOrder": "parallel",
-            "dependsOn": [
-                "start-dotnet",
-                "start-webpack"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            },
-            "detail": "Starts both the .NET server and webpack development server concurrently."
-        },
-        {
-            "label": "start-dotnet",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "watch",
-                "run",
-                "--project",
-                "${workspaceFolder}/server/server.csproj"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}/server"
-            },
-            "problemMatcher": "$msCompile",
-            "detail": "Starts the .NET server in watch mode."
-        },
-        {
-            "label": "start-webpack",
-            "type": "npm",
-            "script": "start",
-            "options": {
-                "cwd": "${workspaceFolder}/client"
-            },
-            "problemMatcher": [],
-            "detail": "Starts the webpack development server."
-        }
-    ]
+   // Run with: Cmd/Ctrl+Shift+B
+   "version": "2.0.0",
+   "tasks": [
+      
+      {
+         "label": "build",
+         "command": "dotnet",
+         "type": "process",
+         "args": [
+            "build",
+            "${workspaceFolder}/server/server.csproj",
+            "/property:GenerateFullPaths=true",
+            "/consoleloggerparameters:NoSummary;ForceNoAlign"
+         ],
+         "problemMatcher": "$msCompile"
+      },
+      {
+         "label": "publish",
+         "command": "dotnet",
+         "type": "process",
+         "args": [
+            "publish",
+            "${workspaceFolder}/server/server.csproj",
+            "/property:GenerateFullPaths=true",
+            "/consoleloggerparameters:NoSummary;ForceNoAlign"
+         ],
+         "problemMatcher": "$msCompile"
+      },
+      {
+         "label": "watch",
+         "command": "dotnet",
+         "type": "process",
+         "args": ["watch", "run", "--project", "${workspaceFolder}/server/server.csproj"],
+         "problemMatcher": "$msCompile"
+      },
+      {
+         "label": "start",
+         "type": "npm",
+         "script": "start",
+         "problemMatcher": [],
+         "group": {
+            "kind": "build",
+            "isDefault": true
+         },
+         "detail": "Runs the webpack development server."
+      },
+      {
+         "label": "start-all",
+         "dependsOrder": "parallel",
+         "dependsOn": ["start-dotnet", "start-webpack"],
+         "group": {
+            "kind": "build",
+            "isDefault": false
+         },
+         "detail": "Starts both the .NET server and webpack development server concurrently."
+      },
+      {
+         "label": "start-dotnet",
+         "command": "dotnet",
+         "type": "process",
+         "args": ["watch", "run", "--project", "${workspaceFolder}/server/server.csproj"],
+         "options": {
+            "cwd": "${workspaceFolder}/server"
+         },
+         "problemMatcher": "$msCompile",
+         "detail": "Starts the .NET server in watch mode."
+      },
+      {
+         "label": "start-webpack",
+         "type": "npm",
+         "script": "start",
+         "options": {
+            "cwd": "${workspaceFolder}/client"
+         },
+         "problemMatcher": [],
+         "detail": "Starts the webpack development server."
+      }
+   ]
 }

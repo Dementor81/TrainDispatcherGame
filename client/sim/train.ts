@@ -12,7 +12,6 @@ export enum TrainStopReason {
 
 class Train {
     private _number: string;
-    private _spawnTime: Date;
     private _track: Track|null = null;
     private _km: number = 0;
     private _cars: number;
@@ -28,7 +27,6 @@ class Train {
 
     constructor(number: string, cars: number, speed: number) {
         this._number = number;
-        this._spawnTime = new Date();
         this._cars = cars;
         this._speed = speed 
         this._direction = 1; 
@@ -59,10 +57,6 @@ class Train {
 
     get km(): number {
         return this._km;
-    }
-
-    get spawnTime(): Date {
-        return this._spawnTime;
     }
 
     get cars(): number {

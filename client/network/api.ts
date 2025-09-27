@@ -1,6 +1,6 @@
 import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto } from "./dto";
 
-const API_BASE_URL = "http://localhost:5070/api";
+const API_BASE_URL = "/api";
 
 export interface StationInfo {
   id: string;

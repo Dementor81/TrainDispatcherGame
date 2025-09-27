@@ -54,6 +54,11 @@ namespace TrainDispatcherGame.Server.Simulation
         private void Reset()
         {
             var scenario = ScenarioService.LoadTrainsFromScenario(_scenarioId);
+            // Set active layout before initializing tracks
+            if (!string.IsNullOrWhiteSpace(scenario.LayoutId))
+            {
+                _trackLayoutService.SetActiveLayout(scenario.LayoutId);
+            }
             _trains = scenario.Trains;
             _simulationStartTime = scenario.StartTime;
 
@@ -456,6 +461,21 @@ namespace TrainDispatcherGame.Server.Simulation
             catch (Exception ex)
             {
                 Console.WriteLine($"Error handling collision: {ex.Message}");
+            }
+        }
+
+        // Mark train as completed after a client-reported derailment. No broadcast back to clients.
+        public void HandleDerailment(Train train, string stationId, int? switchId)
+        {
+            try
+            {
+                train.completed = true;
+                var switchInfo = switchId.HasValue ? $" at switch {switchId.Value}" : string.Empty;
+                Console.WriteLine($"Derailment: train {train.Number} removed by client report at station {stationId}{switchInfo}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error handling derailment: {ex.Message}");
             }
         }
 

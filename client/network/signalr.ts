@@ -16,7 +16,7 @@ export class SignalRManager {
 
     private initializeConnection(): void {
         this.connection = new HubConnectionBuilder()
-            .withUrl('http://localhost:5070/gamehub', { withCredentials: false })
+            .withUrl('/gamehub', { withCredentials: false })
             .withAutomaticReconnect([0, 2000, 5000, 10000, 30000]) // Reconnect intervals
             .configureLogging(LogLevel.Information)
             .build();
@@ -238,6 +238,20 @@ export class SignalRManager {
             console.log(`Reported collision between trains ${trainNumberA} and ${trainNumberB} at station ${stationId}`);
         } catch (error) {
             console.error('Failed to report train collision:', error);
+            throw error;
+        }
+    }
+
+    public async reportTrainDerailed(playerId: string, trainNumber: string, stationId: string, switchId?: number): Promise<void> {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+            throw new Error('SignalR connection not established');
+        }
+
+        try {
+            await this.connection.invoke('ReportTrainDerailed', playerId, trainNumber, stationId, switchId ?? null);
+            console.log(`Reported derailment of train ${trainNumber} at station ${stationId}${switchId !== undefined ? ` (switch ${switchId})` : ''}`);
+        } catch (error) {
+            console.error('Failed to report train derailment:', error);
             throw error;
         }
     }

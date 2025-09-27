@@ -14,12 +14,11 @@
   <div class="container-fluid position-relative">
     <canvas id="mainCanvas" class="w-100 h-100"></canvas>
   </div>
-  <div class="modal fade" id="stationSelectModal" tabindex="-1" aria-labelledby="stationSelectModalLabel" aria-hidden="true">
+  <div class="modal fade" id="stationSelectModal" tabindex="-1" aria-labelledby="stationSelectModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Bahnhof auswählen</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <p>Geben Sie Ihren Namen ein und wählen Sie einen Bahnhof aus der Liste aus.</p>
@@ -37,7 +36,6 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
           <button type="button" class="btn btn-primary" id="startButton">Start</button>
         </div>
       </div>

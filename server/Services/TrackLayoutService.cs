@@ -7,6 +7,7 @@ namespace TrainDispatcherGame.Server.Services
     public interface ITrackLayoutService
     {
         Dictionary<string, TrackLayout> TrackLayouts { get; }
+        string ActiveLayoutId { get; }
         TrackLayout? GetTrackLayout(string stationId);
         ExitPoint? GetExitPoint(string stationId, int exitId);
         ExitPoint? GetExitPointToStation(string fromStationId, string toStationId);
@@ -17,19 +18,60 @@ namespace TrainDispatcherGame.Server.Services
         TrainDispatcherGame.Server.Models.DTOs.ClientServerCom.ClientTrackLayoutDto? BuildClientTrackLayout(string stationId);
         bool IsSingleTrackConnection(string stationA, string stationB);
         List<NetworkConnection> GetAllConnections();
+        void SetActiveLayout(string layoutId);
     }
 
     public class TrackLayoutService : ITrackLayoutService
     {
         private readonly Dictionary<string, TrackLayout> _trackLayouts = new();
         private readonly Dictionary<(string stationId, int exitId), NetworkConnection> _directedConnections = new();
+        private readonly object _reloadLock = new();
+        private string _layoutRoot = Path.Combine("TrackLayouts");
+        private string _activeLayoutId = "Network";
 
         public Dictionary<string, TrackLayout> TrackLayouts => _trackLayouts;
 
         public TrackLayoutService()
         {
+            _layoutRoot = ResolveLayoutDirectory(_activeLayoutId);
             var requiredStations = LoadNetwork();
             LoadTrackLayouts(requiredStations);
+        }
+
+        public string ActiveLayoutId => _activeLayoutId;
+
+        private static string ResolveLayoutDirectory(string layoutId)
+        {
+            var baseDir = Path.Combine("TrackLayouts");
+            if (string.IsNullOrWhiteSpace(layoutId)) return baseDir;
+            var candidate = Path.Combine(baseDir, layoutId);
+            if (Directory.Exists(candidate) && File.Exists(Path.Combine(candidate, "network.json")))
+            {
+                return candidate;
+            }
+            return baseDir;
+        }
+
+        public void SetActiveLayout(string layoutId)
+        {
+            lock (_reloadLock)
+            {
+                var newRoot = ResolveLayoutDirectory(layoutId);
+                if (string.Equals(newRoot, _layoutRoot, StringComparison.OrdinalIgnoreCase))
+                {
+                    _activeLayoutId = string.IsNullOrWhiteSpace(layoutId) ? _activeLayoutId : layoutId;
+                    return;
+                }
+
+                _trackLayouts.Clear();
+                _directedConnections.Clear();
+
+                _activeLayoutId = string.IsNullOrWhiteSpace(layoutId) ? _activeLayoutId : layoutId;
+                _layoutRoot = newRoot;
+
+                var requiredStations = LoadNetwork();
+                LoadTrackLayouts(requiredStations);
+            }
         }
 
         private void LoadTrackLayouts(string[] requiredStations)
@@ -42,7 +84,7 @@ namespace TrainDispatcherGame.Server.Services
 
             try
             {
-                var directoryPath = Path.Combine("TrackLayouts");
+                var directoryPath = _layoutRoot;
                 if (!Directory.Exists(directoryPath))
                 {
                     Console.WriteLine("TrackLayouts folder not found.");
@@ -144,10 +186,10 @@ namespace TrainDispatcherGame.Server.Services
             
             try
             {
-                var networkPath = Path.Combine("TrackLayouts", "network.json");
+                var networkPath = Path.Combine(_layoutRoot, "network.json");
                 if (!File.Exists(networkPath))
                 {
-                    Console.WriteLine("network.json not found; skipping network load.");
+                    Console.WriteLine($"network.json not found in '{_layoutRoot}'; skipping network load.");
                     return new string[0];
                 }
 
