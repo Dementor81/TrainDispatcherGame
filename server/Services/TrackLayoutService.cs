@@ -26,29 +26,23 @@ namespace TrainDispatcherGame.Server.Services
         private readonly Dictionary<string, TrackLayout> _trackLayouts = new();
         private readonly Dictionary<(string stationId, int exitId), NetworkConnection> _directedConnections = new();
         private readonly object _reloadLock = new();
-        private string _layoutRoot = Path.Combine("TrackLayouts");
-        private string _activeLayoutId = "Network";
+        private string _layoutRoot = string.Empty;
+        private string _activeLayoutId = string.Empty;
 
         public Dictionary<string, TrackLayout> TrackLayouts => _trackLayouts;
 
         public TrackLayoutService()
         {
+            // Start inert; no active layout until explicitly set by SetActiveLayout
             _layoutRoot = ResolveLayoutDirectory(_activeLayoutId);
-            var requiredStations = LoadNetwork();
-            LoadTrackLayouts(requiredStations);
         }
 
         public string ActiveLayoutId => _activeLayoutId;
 
         private static string ResolveLayoutDirectory(string layoutId)
         {
+            // Always use the root TrackLayouts directory; network file is chosen by ActiveLayoutId
             var baseDir = Path.Combine("TrackLayouts");
-            if (string.IsNullOrWhiteSpace(layoutId)) return baseDir;
-            var candidate = Path.Combine(baseDir, layoutId);
-            if (Directory.Exists(candidate) && File.Exists(Path.Combine(candidate, "network.json")))
-            {
-                return candidate;
-            }
             return baseDir;
         }
 
@@ -56,17 +50,22 @@ namespace TrainDispatcherGame.Server.Services
         {
             lock (_reloadLock)
             {
-                var newRoot = ResolveLayoutDirectory(layoutId);
-                if (string.Equals(newRoot, _layoutRoot, StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrWhiteSpace(layoutId))
                 {
-                    _activeLayoutId = string.IsNullOrWhiteSpace(layoutId) ? _activeLayoutId : layoutId;
+                    // Clear current state and stay inert until a concrete layout id is provided
+                    _trackLayouts.Clear();
+                    _directedConnections.Clear();
+                    _activeLayoutId = string.Empty;
+                    _layoutRoot = ResolveLayoutDirectory(_activeLayoutId);
+                    Console.WriteLine("Active layout cleared; TrackLayoutService is idle until a layout is set.");
                     return;
                 }
 
+                var newRoot = ResolveLayoutDirectory(layoutId);
                 _trackLayouts.Clear();
                 _directedConnections.Clear();
 
-                _activeLayoutId = string.IsNullOrWhiteSpace(layoutId) ? _activeLayoutId : layoutId;
+                _activeLayoutId = layoutId;
                 _layoutRoot = newRoot;
 
                 var requiredStations = LoadNetwork();
@@ -186,10 +185,16 @@ namespace TrainDispatcherGame.Server.Services
             
             try
             {
-                var networkPath = Path.Combine(_layoutRoot, "network.json");
+                if (string.IsNullOrWhiteSpace(_activeLayoutId))
+                {
+                    Console.WriteLine("No active layout id set; skipping network load.");
+                    return new string[0];
+                }
+
+                var networkPath = Path.Combine(_layoutRoot, $"{_activeLayoutId}.json");
                 if (!File.Exists(networkPath))
                 {
-                    Console.WriteLine($"network.json not found in '{_layoutRoot}'; skipping network load.");
+                    Console.WriteLine($"Network file '{_activeLayoutId}.json' not found in '{_layoutRoot}'; skipping network load.");
                     return new string[0];
                 }
 
@@ -197,7 +202,7 @@ namespace TrainDispatcherGame.Server.Services
                 var network = JsonSerializer.Deserialize<NetworkDto>(json);
                 if (network == null)
                 {
-                    Console.WriteLine("network.json is empty or invalid.");
+                    Console.WriteLine($"Network file '{_activeLayoutId}.json' is empty or invalid.");
                     return new string[0];
                 }
 

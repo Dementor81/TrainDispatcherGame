@@ -1,1 +1,264 @@
-{"tracks":[{"_class":"Track","id":90,"start":{"x":600,"y":600},"end":{"x":650,"y":550},"signals":[],"switches":[{"type":"Switch","id":34},{"type":"Track","id":118}],"hasBumper":true},{"_class":"Track","id":109,"start":{"x":1150,"y":700},"end":{"x":1200,"y":650},"signals":[],"switches":[{"type":"Switch","id":48},{"type":"Switch","id":39}],"hasBumper":true},{"_class":"Track","id":115,"start":{"x":1300,"y":550},"end":{"x":1350,"y":600},"signals":[],"switches":[{"type":"Track","id":118},{"type":"Switch","id":42}],"hasBumper":true},{"_class":"Track","id":118,"start":{"x":650,"y":550},"end":{"x":1300,"y":550},"signals":[{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":36.368,"above":true,"flipped":false}},{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":607.708,"above":false,"flipped":false}}],"switches":[{"type":"Track","id":90},{"type":"Track","id":115}],"hasBumper":true},{"_class":"Track","id":119,"start":{"x":550,"y":650},"end":{"x":600,"y":700},"signals":[],"switches":[{"type":"Switch","id":43},{"type":"Switch","id":49}],"hasBumper":true},{"_class":"Track","id":120,"start":{"x":600,"y":700},"end":{"x":1150,"y":700},"signals":[{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":97.055,"above":true,"flipped":false}},{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":463.699,"above":false,"flipped":false}}],"switches":[{"type":"Switch","id":49},{"type":"Switch","id":48}],"hasBumper":true},{"_class":"Track","id":122,"start":{"x":550,"y":650},"end":{"x":1200,"y":650},"signals":[{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":586.041,"above":false,"flipped":false}}],"switches":[{"type":"Switch","id":43},{"type":"Switch","id":39}],"hasBumper":true},{"_class":"Track","id":123,"start":{"x":1400,"y":600},"end":{"x":1450,"y":650},"signals":[],"switches":[{"type":"Switch","id":45},{"type":"Switch","id":44}],"hasBumper":true},{"_class":"Track","id":125,"start":{"x":1450,"y":650},"end":{"x":2150,"y":650},"signals":[],"switches":[{"type":"Switch","id":44},null],"hasBumper":true},{"_class":"Track","id":126,"start":{"x":1350,"y":600},"end":{"x":1400,"y":600},"signals":[],"switches":[{"type":"Switch","id":42},{"type":"Switch","id":45}],"hasBumper":true},{"_class":"Track","id":127,"start":{"x":1400,"y":600},"end":{"x":2150,"y":600},"signals":[{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":349.306,"above":true,"flipped":false}}],"switches":[{"type":"Switch","id":45},null],"hasBumper":true},{"_class":"Track","id":128,"start":{"x":1250,"y":650},"end":{"x":1300,"y":600},"signals":[],"switches":[{"type":"Switch","id":47},{"type":"Switch","id":46}],"hasBumper":true},{"_class":"Track","id":129,"start":{"x":600,"y":600},"end":{"x":1300,"y":600},"signals":[{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":101.165,"above":true,"flipped":false}}],"switches":[{"type":"Switch","id":34},{"type":"Switch","id":46}],"hasBumper":true},{"_class":"Track","id":130,"start":{"x":1300,"y":600},"end":{"x":1350,"y":600},"signals":[],"switches":[{"type":"Switch","id":46},{"type":"Switch","id":42}],"hasBumper":true},{"_class":"Track","id":131,"start":{"x":1200,"y":650},"end":{"x":1250,"y":650},"signals":[],"switches":[{"type":"Switch","id":39},{"type":"Switch","id":47}],"hasBumper":true},{"_class":"Track","id":132,"start":{"x":1250,"y":650},"end":{"x":1450,"y":650},"signals":[],"switches":[{"type":"Switch","id":47},{"type":"Switch","id":44}],"hasBumper":true},{"_class":"Track","id":133,"start":{"x":600,"y":700},"end":{"x":650,"y":750},"signals":[],"switches":[{"type":"Switch","id":49},{"type":"Track","id":134}],"hasBumper":true},{"_class":"Track","id":134,"start":{"x":650,"y":750},"end":{"x":1100,"y":750},"signals":[{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":38.012,"above":true,"flipped":false}},{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":431.784,"above":false,"flipped":false}}],"switches":[{"type":"Track","id":133},{"type":"Track","id":135}],"hasBumper":true},{"_class":"Track","id":135,"start":{"x":1100,"y":750},"end":{"x":1150,"y":700},"signals":[],"switches":[{"type":"Track","id":134},{"type":"Switch","id":48}],"hasBumper":true},{"_class":"Track","id":136,"start":{"x":450,"y":600},"end":{"x":500,"y":650},"signals":[],"switches":[{"type":"Switch","id":51},{"type":"Switch","id":50}],"hasBumper":true},{"_class":"Track","id":138,"start":{"x":450,"y":600},"end":{"x":600,"y":600},"signals":[],"switches":[{"type":"Switch","id":51},{"type":"Switch","id":34}],"hasBumper":true},{"_class":"Track","id":140,"start":{"x":500,"y":650},"end":{"x":550,"y":650},"signals":[],"switches":[{"type":"Switch","id":50},{"type":"Switch","id":43}],"hasBumper":true},{"_class":"Track","id":147,"start":{"x":-150,"y":650},"end":{"x":500,"y":650},"signals":[{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":302.021,"above":false,"flipped":false}}],"switches":[null,{"type":"Switch","id":50}],"hasBumper":true},{"_class":"Track","id":148,"start":{"x":-150,"y":600},"end":{"x":450,"y":600},"signals":[],"switches":[null,{"type":"Switch","id":51}],"hasBumper":true}],"trains":[],"switches":[{"_class":"Switch","id":34,"location":{"x":600,"y":600},"tracks":[138,129,90,null],"branch":129,"from":138},{"_class":"Switch","id":39,"location":{"x":1200,"y":650},"tracks":[131,122,109,null],"branch":122,"from":131},{"_class":"Switch","id":42,"location":{"x":1350,"y":600},"tracks":[126,130,115,null],"branch":115,"from":126},{"_class":"Switch","id":43,"location":{"x":550,"y":650},"tracks":[140,122,119,null],"branch":122,"from":140},{"_class":"Switch","id":44,"location":{"x":1450,"y":650},"tracks":[125,132,123,null],"branch":132,"from":125},{"_class":"Switch","id":45,"location":{"x":1400,"y":600},"tracks":[126,127,123,null],"branch":127,"from":126},{"_class":"Switch","id":46,"location":{"x":1300,"y":600},"tracks":[130,129,128,null],"branch":129,"from":130},{"_class":"Switch","id":47,"location":{"x":1250,"y":650},"tracks":[131,132,128,null],"branch":132,"from":131},{"_class":"Switch","id":48,"location":{"x":1150,"y":700},"tracks":[109,135,120,null],"branch":135,"from":109},{"_class":"Switch","id":49,"location":{"x":600,"y":700},"tracks":[119,133,120,null],"branch":133,"from":119},{"_class":"Switch","id":50,"location":{"x":500,"y":650},"tracks":[140,147,136,null],"branch":147,"from":140},{"_class":"Switch","id":51,"location":{"x":450,"y":600},"tracks":[148,138,136,null],"branch":138,"from":148}],"objects":[],"settings":null}
+{
+   "id": "Neustadt",
+   "tracks": [
+      {
+         "id": 90,
+         "start": { "x": 600, "y": 600 },
+         "end": { "x": 650, "y": 550 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 34 },
+            { "type": "Track", "id": 118 }
+         ]
+      },
+      {
+         "id": 109,
+         "start": { "x": 1150, "y": 700 },
+         "end": { "x": 1200, "y": 650 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 48 },
+            { "type": "Switch", "id": 39 }
+         ]
+      },
+      {
+         "id": 115,
+         "start": { "x": 1300, "y": 550 },
+         "end": { "x": 1350, "y": 600 },
+         "signals": [],
+         "switches": [
+            { "type": "Track", "id": 118 },
+            { "type": "Switch", "id": 42 }
+         ]
+      },
+      {
+         "id": 118,
+         "start": { "x": 650, "y": 550 },
+         "end": { "x": 1300, "y": 550 },
+         "signals": [
+            { "type": "main", "position": 36, "direction": -1 },
+            { "type": "main", "position": 608, "direction": 1 }
+         ],
+         "switches": [
+            { "type": "Track", "id": 90 },
+            { "type": "Track", "id": 115 }
+         ]
+      },
+      {
+         "id": 119,
+         "start": { "x": 550, "y": 650 },
+         "end": { "x": 600, "y": 700 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 43 },
+            { "type": "Switch", "id": 49 }
+         ]
+      },
+      {
+         "id": 120,
+         "start": { "x": 600, "y": 700 },
+         "end": { "x": 1150, "y": 700 },
+         "signals": [
+            { "type": "main", "position": 97, "direction": -1 },
+            { "type": "main", "position": 464, "direction": 1 }
+         ],
+         "switches": [
+            { "type": "Switch", "id": 49 },
+            { "type": "Switch", "id": 48 }
+         ]
+      },
+      {
+         "id": 122,
+         "start": { "x": 550, "y": 650 },
+         "end": { "x": 1200, "y": 650 },
+         "signals": [
+            { "type": "main", "position": 586, "direction": 1 }
+         ],
+         "switches": [
+            { "type": "Switch", "id": 43 },
+            { "type": "Switch", "id": 39 }
+         ]
+      },
+      {
+         "id": 123,
+         "start": { "x": 1400, "y": 600 },
+         "end": { "x": 1450, "y": 650 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 45 },
+            { "type": "Switch", "id": 44 }
+         ]
+      },
+      {
+         "id": 125,
+         "start": { "x": 1450, "y": 650 },
+         "end": { "x": 2150, "y": 650 },
+         "signals": [],
+         "switches": [ { "type": "Switch", "id": 44 }, null ]
+      },
+      {
+         "id": 126,
+         "start": { "x": 1350, "y": 600 },
+         "end": { "x": 1400, "y": 600 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 42 },
+            { "type": "Switch", "id": 45 }
+         ]
+      },
+      {
+         "id": 127,
+         "start": { "x": 1400, "y": 600 },
+         "end": { "x": 2150, "y": 600 },
+         "signals": [
+            { "type": "main", "position": 349, "direction": -1 }
+         ],
+         "switches": [ { "type": "Switch", "id": 45 }, null ]
+      },
+      {
+         "id": 128,
+         "start": { "x": 1250, "y": 650 },
+         "end": { "x": 1300, "y": 600 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 47 },
+            { "type": "Switch", "id": 46 }
+         ]
+      },
+      {
+         "id": 129,
+         "start": { "x": 600, "y": 600 },
+         "end": { "x": 1300, "y": 600 },
+         "signals": [
+            { "type": "main", "position": 101, "direction": -1 }
+         ],
+         "switches": [
+            { "type": "Switch", "id": 34 },
+            { "type": "Switch", "id": 46 }
+         ]
+      },
+      {
+         "id": 130,
+         "start": { "x": 1300, "y": 600 },
+         "end": { "x": 1350, "y": 600 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 46 },
+            { "type": "Switch", "id": 42 }
+         ]
+      },
+      {
+         "id": 131,
+         "start": { "x": 1200, "y": 650 },
+         "end": { "x": 1250, "y": 650 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 39 },
+            { "type": "Switch", "id": 47 }
+         ]
+      },
+      {
+         "id": 132,
+         "start": { "x": 1250, "y": 650 },
+         "end": { "x": 1450, "y": 650 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 47 },
+            { "type": "Switch", "id": 44 }
+         ]
+      },
+      {
+         "id": 133,
+         "start": { "x": 600, "y": 700 },
+         "end": { "x": 650, "y": 750 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 49 },
+            { "type": "Track", "id": 134 }
+         ]
+      },
+      {
+         "id": 134,
+         "start": { "x": 650, "y": 750 },
+         "end": { "x": 1100, "y": 750 },
+         "signals": [
+            { "type": "main", "position": 38, "direction": -1 },
+            { "type": "main", "position": 432, "direction": 1 }
+         ],
+         "switches": [
+            { "type": "Track", "id": 133 },
+            { "type": "Track", "id": 135 }
+         ]
+      },
+      {
+         "id": 135,
+         "start": { "x": 1100, "y": 750 },
+         "end": { "x": 1150, "y": 700 },
+         "signals": [],
+         "switches": [
+            { "type": "Track", "id": 134 },
+            { "type": "Switch", "id": 48 }
+         ]
+      },
+      {
+         "id": 136,
+         "start": { "x": 450, "y": 600 },
+         "end": { "x": 500, "y": 650 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 51 },
+            { "type": "Switch", "id": 50 }
+         ]
+      },
+      {
+         "id": 138,
+         "start": { "x": 450, "y": 600 },
+         "end": { "x": 600, "y": 600 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 51 },
+            { "type": "Switch", "id": 34 }
+         ]
+      },
+      {
+         "id": 140,
+         "start": { "x": 500, "y": 650 },
+         "end": { "x": 550, "y": 650 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 50 },
+            { "type": "Switch", "id": 43 }
+         ]
+      },
+      {
+         "id": 147,
+         "start": { "x": -150, "y": 650 },
+         "end": { "x": 500, "y": 650 },
+         "signals": [
+            { "type": "main", "position": 302, "direction": 1 }
+         ],
+         "switches": [ null, { "type": "Switch", "id": 50 } ]
+      },
+      {
+         "id": 148,
+         "start": { "x": -150, "y": 600 },
+         "end": { "x": 450, "y": 600 },
+         "signals": [],
+         "switches": [ null, { "type": "Switch", "id": 51 } ]
+      }
+   ],
+   "switches": [
+      { "id": 34, "location": { "x": 600, "y": 600 }, "tracks": [138, 129, 90, null] },
+      { "id": 39, "location": { "x": 1200, "y": 650 }, "tracks": [131, 122, 109, null] },
+      { "id": 42, "location": { "x": 1350, "y": 600 }, "tracks": [126, 130, 115, null] },
+      { "id": 43, "location": { "x": 550, "y": 650 }, "tracks": [140, 122, 119, null] },
+      { "id": 44, "location": { "x": 1450, "y": 650 }, "tracks": [125, 132, 123, null] },
+      { "id": 45, "location": { "x": 1400, "y": 600 }, "tracks": [126, 127, 123, null] },
+      { "id": 46, "location": { "x": 1300, "y": 600 }, "tracks": [130, 129, 128, null] },
+      { "id": 47, "location": { "x": 1250, "y": 650 }, "tracks": [131, 132, 128, null] },
+      { "id": 48, "location": { "x": 1150, "y": 700 }, "tracks": [109, 135, 120, null] },
+      { "id": 49, "location": { "x": 600, "y": 700 }, "tracks": [119, 133, 120, null] },
+      { "id": 50, "location": { "x": 500, "y": 650 }, "tracks": [140, 147, 136, null] },
+      { "id": 51, "location": { "x": 450, "y": 600 }, "tracks": [148, 138, 136, null] }
+   ]
+}

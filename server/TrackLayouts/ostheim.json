@@ -1,1 +1,259 @@
-{"tracks":[{"_class":"Track","id":221,"start":{"x":450,"y":650},"end":{"x":500,"y":600},"signals":[],"switches":[{"type":"Switch","id":74},{"type":"Switch","id":82}],"hasBumper":true},{"_class":"Track","id":222,"start":{"x":500,"y":600},"end":{"x":1200,"y":600},"signals":[{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":66,"above":true,"flipped":false}},{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":652,"above":false,"flipped":false}}],"switches":[{"type":"Switch","id":82},{"type":"Track","id":226}],"hasBumper":true},{"_class":"Track","id":226,"start":{"x":1200,"y":600},"end":{"x":1250,"y":650},"signals":[],"switches":[{"type":"Track","id":222},{"type":"Switch","id":75}],"hasBumper":true},{"_class":"Track","id":227,"start":{"x":450,"y":650},"end":{"x":1250,"y":650},"signals":[{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":105,"above":true,"flipped":false}}],"switches":[{"type":"Switch","id":74},{"type":"Switch","id":75}],"hasBumper":true},{"_class":"Track","id":229,"start":{"x":450,"y":700},"end":{"x":500,"y":750},"signals":[],"switches":[{"type":"Switch","id":76},{"type":"Track","id":230}],"hasBumper":true},{"_class":"Track","id":230,"start":{"x":500,"y":750},"end":{"x":1200,"y":750},"signals":[{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":61,"above":true,"flipped":false}},{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":671,"above":false,"flipped":false}}],"switches":[{"type":"Track","id":229},{"type":"Track","id":231}],"hasBumper":true},{"_class":"Track","id":231,"start":{"x":1200,"y":750},"end":{"x":1250,"y":700},"signals":[],"switches":[{"type":"Track","id":230},{"type":"Switch","id":77}],"hasBumper":true},{"_class":"Track","id":234,"start":{"x":450,"y":700},"end":{"x":1250,"y":700},"signals":[{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":680,"above":false,"flipped":false}}],"switches":[{"type":"Switch","id":76},{"type":"Switch","id":77}],"hasBumper":true},{"_class":"Track","id":236,"start":{"x":1350,"y":650},"end":{"x":1400,"y":700},"signals":[],"switches":[{"type":"Switch","id":79},{"type":"Switch","id":78}],"hasBumper":true},{"_class":"Track","id":237,"start":{"x":1250,"y":650},"end":{"x":1350,"y":650},"signals":[],"switches":[{"type":"Switch","id":75},{"type":"Switch","id":79}],"hasBumper":true},{"_class":"Track","id":238,"start":{"x":1350,"y":650},"end":{"x":1950,"y":650},"signals":[{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":356,"above":true,"flipped":false}}],"switches":[{"type":"Switch","id":79},null],"hasBumper":true},{"_class":"Track","id":239,"start":{"x":1250,"y":700},"end":{"x":1400,"y":700},"signals":[],"switches":[{"type":"Switch","id":77},{"type":"Switch","id":78}],"hasBumper":true},{"_class":"Track","id":240,"start":{"x":1400,"y":700},"end":{"x":1950,"y":700},"signals":[],"switches":[{"type":"Switch","id":78},null],"hasBumper":true},{"_class":"Track","id":241,"start":{"x":300,"y":700},"end":{"x":350,"y":650},"signals":[],"switches":[{"type":"Switch","id":81},{"type":"Switch","id":80}],"hasBumper":true},{"_class":"Track","id":243,"start":{"x":350,"y":650},"end":{"x":450,"y":650},"signals":[],"switches":[{"type":"Switch","id":80},{"type":"Switch","id":74}],"hasBumper":true},{"_class":"Track","id":245,"start":{"x":300,"y":700},"end":{"x":450,"y":700},"signals":[],"switches":[{"type":"Switch","id":81},{"type":"Switch","id":76}],"hasBumper":true},{"_class":"Track","id":251,"start":{"x":150,"y":600},"end":{"x":500,"y":600},"signals":[],"switches":[null,{"type":"Switch","id":82}],"hasBumper":true},{"_class":"Track","id":254,"start":{"x":-250,"y":700},"end":{"x":300,"y":700},"signals":[{"_class":"Signal","_template":"hv_hp","_signalStellung":{"hp":0,"vr":0,"HPsig":1,"verw":"asig","mastschild":"wrw"},"_positioning":{"km":194,"above":false,"flipped":false}}],"switches":[null,{"type":"Switch","id":81}],"hasBumper":true},{"_class":"Track","id":255,"start":{"x":-250,"y":650},"end":{"x":350,"y":650},"signals":[],"switches":[null,{"type":"Switch","id":80}],"hasBumper":true}],"trains":[],"switches":[{"_class":"Switch","id":74,"location":{"x":450,"y":650},"tracks":[243,227,221,null],"branch":227,"from":243},{"_class":"Switch","id":75,"location":{"x":1250,"y":650},"tracks":[237,227,226,null],"branch":227,"from":237},{"_class":"Switch","id":76,"location":{"x":450,"y":700},"tracks":[245,234,229,null],"branch":234,"from":245},{"_class":"Switch","id":77,"location":{"x":1250,"y":700},"tracks":[239,234,231,null],"branch":234,"from":239},{"_class":"Switch","id":78,"location":{"x":1400,"y":700},"tracks":[240,239,236,null],"branch":239,"from":240},{"_class":"Switch","id":79,"location":{"x":1350,"y":650},"tracks":[237,238,236,null],"branch":238,"from":237},{"_class":"Switch","id":80,"location":{"x":350,"y":650},"tracks":[243,255,241,null],"branch":255,"from":243},{"_class":"Switch","id":81,"location":{"x":300,"y":700},"tracks":[254,245,241,null],"branch":245,"from":254},{"_class":"Switch","id":82,"location":{"x":500,"y":600},"tracks":[222,251,221,null],"branch":251,"from":222}],"objects":[],"settings":null}
+{
+   "id": "Ostheim",
+   "tracks": [
+      {
+         "id": 221,
+         "start": { "x": 450, "y": 650 },
+         "end": { "x": 500, "y": 600 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 74 },
+            { "type": "Switch", "id": 82 }
+         ]
+      },
+      {
+         "id": 222,
+         "start": { "x": 500, "y": 600 },
+         "end": { "x": 1200, "y": 600 },
+         "signals": [
+            { "type": "main", "position": 66, "direction": -1 },
+            { "type": "main", "position": 652, "direction": 1 }
+         ],
+         "switches": [
+            { "type": "Switch", "id": 82 },
+            { "type": "Track", "id": 226 }
+         ]
+      },
+      {
+         "id": 226,
+         "start": { "x": 1200, "y": 600 },
+         "end": { "x": 1250, "y": 650 },
+         "signals": [],
+         "switches": [
+            { "type": "Track", "id": 222 },
+            { "type": "Switch", "id": 75 }
+         ]
+      },
+      {
+         "id": 227,
+         "start": { "x": 450, "y": 650 },
+         "end": { "x": 1250, "y": 650 },
+         "signals": [
+            { "type": "main", "position": 105, "direction": -1 }
+         ],
+         "switches": [
+            { "type": "Switch", "id": 74 },
+            { "type": "Switch", "id": 75 }
+         ]
+      },
+      {
+         "id": 229,
+         "start": { "x": 450, "y": 700 },
+         "end": { "x": 500, "y": 750 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 76 },
+            { "type": "Track", "id": 230 }
+         ]
+      },
+      {
+         "id": 230,
+         "start": { "x": 500, "y": 750 },
+         "end": { "x": 1200, "y": 750 },
+         "signals": [
+            { "type": "main", "position": 61, "direction": -1 },
+            { "type": "main", "position": 671, "direction": 1 }
+         ],
+         "switches": [
+            { "type": "Track", "id": 229 },
+            { "type": "Track", "id": 231 }
+         ]
+      },
+      {
+         "id": 231,
+         "start": { "x": 1200, "y": 750 },
+         "end": { "x": 1250, "y": 700 },
+         "signals": [],
+         "switches": [
+            { "type": "Track", "id": 230 },
+            { "type": "Switch", "id": 77 }
+         ]
+      },
+      {
+         "id": 234,
+         "start": { "x": 450, "y": 700 },
+         "end": { "x": 1250, "y": 700 },
+         "signals": [
+            { "type": "main", "position": 680, "direction": 1 }
+         ],
+         "switches": [
+            { "type": "Switch", "id": 76 },
+            { "type": "Switch", "id": 77 }
+         ]
+      },
+      {
+         "id": 236,
+         "start": { "x": 1350, "y": 650 },
+         "end": { "x": 1400, "y": 700 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 79 },
+            { "type": "Switch", "id": 78 }
+         ]
+      },
+      {
+         "id": 237,
+         "start": { "x": 1250, "y": 650 },
+         "end": { "x": 1350, "y": 650 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 75 },
+            { "type": "Switch", "id": 79 }
+         ]
+      },
+      {
+         "id": 238,
+         "start": { "x": 1350, "y": 650 },
+         "end": { "x": 1950, "y": 650 },
+         "signals": [
+            { "type": "main", "position": 356, "direction": -1 }
+         ],
+         "switches": [{ "type": "Switch", "id": 79 }, null]
+      },
+      {
+         "id": 239,
+         "start": { "x": 1250, "y": 700 },
+         "end": { "x": 1400, "y": 700 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 77 },
+            { "type": "Switch", "id": 78 }
+         ]
+      },
+      {
+         "id": 240,
+         "start": { "x": 1400, "y": 700 },
+         "end": { "x": 1950, "y": 700 },
+         "signals": [],
+         "switches": [{ "type": "Switch", "id": 78 }, null]
+      },
+      {
+         "id": 241,
+         "start": { "x": 300, "y": 700 },
+         "end": { "x": 350, "y": 650 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 81 },
+            { "type": "Switch", "id": 80 }
+         ]
+      },
+      {
+         "id": 243,
+         "start": { "x": 350, "y": 650 },
+         "end": { "x": 450, "y": 650 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 80 },
+            { "type": "Switch", "id": 74 }
+         ]
+      },
+      {
+         "id": 245,
+         "start": { "x": 300, "y": 700 },
+         "end": { "x": 450, "y": 700 },
+         "signals": [],
+         "switches": [
+            { "type": "Switch", "id": 81 },
+            { "type": "Switch", "id": 76 }
+         ]
+      },
+      {
+         "id": 251,
+         "start": { "x": 150, "y": 600 },
+         "end": { "x": 500, "y": 600 },
+         "signals": [],
+         "switches": [null, { "type": "Switch", "id": 82 }]
+      },
+      {
+         "id": 254,
+         "start": { "x": -250, "y": 700 },
+         "end": { "x": 300, "y": 700 },
+         "signals": [
+            { "type": "main", "position": 194, "direction": 1 }
+         ],
+         "switches": [null, { "type": "Switch", "id": 81 }]
+      },
+      {
+         "id": 255,
+         "start": { "x": -250, "y": 650 },
+         "end": { "x": 350, "y": 650 },
+         "signals": [],
+         "switches": [null, { "type": "Switch", "id": 80 }]
+      }
+   ],
+   "switches": [
+      {
+         "id": 74,
+         "location": { "x": 450, "y": 650 },
+         "tracks": [243, 227, 221, null],
+         "branch": 227,
+         "from": 243
+      },
+      {
+         "id": 75,
+         "location": { "x": 1250, "y": 650 },
+         "tracks": [237, 227, 226, null],
+         "branch": 227,
+         "from": 237
+      },
+      {
+         "id": 76,
+         "location": { "x": 450, "y": 700 },
+         "tracks": [245, 234, 229, null],
+         "branch": 234,
+         "from": 245
+      },
+      {
+         "id": 77,
+         "location": { "x": 1250, "y": 700 },
+         "tracks": [239, 234, 231, null],
+         "branch": 234,
+         "from": 239
+      },
+      {
+         "id": 78,
+         "location": { "x": 1400, "y": 700 },
+         "tracks": [240, 239, 236, null],
+         "branch": 239,
+         "from": 240
+      },
+      {
+         "id": 79,
+         "location": { "x": 1350, "y": 650 },
+         "tracks": [237, 238, 236, null],
+         "branch": 238,
+         "from": 237
+      },
+      {
+         "id": 80,
+         "location": { "x": 350, "y": 650 },
+         "tracks": [243, 255, 241, null],
+         "branch": 255,
+         "from": 243
+      },
+      {
+         "id": 81,
+         "location": { "x": 300, "y": 700 },
+         "tracks": [254, 245, 241, null],
+         "branch": 245,
+         "from": 254
+      },
+      {
+         "id": 82,
+         "location": { "x": 500, "y": 600 },
+         "tracks": [222, 251, 221, null],
+         "branch": 251,
+         "from": 222
+      }
+   ]
+}

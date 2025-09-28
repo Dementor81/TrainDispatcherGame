@@ -1,7 +1,7 @@
 {
     "stations": [
         "A-Stadt",
-        "Neustadt",
+        "Neustadt_alt",
         "B-Stadt"
     ],
     "connections": [
