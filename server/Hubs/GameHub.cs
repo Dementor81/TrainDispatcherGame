@@ -58,24 +58,27 @@ namespace TrainDispatcherGame.Server.Hubs
 
         public async Task JoinStation(string playerId, string stationId, string playerName = "")
         {
-            var success = _playerManager.TakeControlOfStation(playerId, stationId, Context.ConnectionId, playerName);
+            // Normalize stationId to lowercase for consistent handling
+            var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+            
+            var success = _playerManager.TakeControlOfStation(playerId, normalizedStationId, Context.ConnectionId, playerName);
             
             if (success)
             {
-                // Add connection to a group for this station
-                await Groups.AddToGroupAsync(Context.ConnectionId, $"station_{stationId}");
+                // Add connection to a group for this station (using normalized ID)
+                await Groups.AddToGroupAsync(Context.ConnectionId, $"station_{normalizedStationId}");
                 
                 // Send confirmation to the client
                 await Clients.Caller.SendAsync("StationJoined", new
                 {
                     success = true,
                     playerId = playerId,
-                    stationId = stationId,
+                    stationId = normalizedStationId,
                     playerName = playerName,
-                    message = $"Successfully joined station {stationId}"
+                    message = $"Successfully joined station {normalizedStationId}"
                 });
                 
-                Console.WriteLine($"Player {playerId} joined station {stationId} via SignalR");
+                Console.WriteLine($"Player {playerId} joined station {normalizedStationId} via SignalR");
                 
             }
             else
@@ -83,7 +86,7 @@ namespace TrainDispatcherGame.Server.Hubs
                 await Clients.Caller.SendAsync("StationJoined", new
                 {
                     success = false,
-                    message = $"Failed to join station {stationId} - already controlled by another player"
+                    message = $"Failed to join station {normalizedStationId} - already controlled by another player"
                 });
             }
         }
@@ -119,12 +122,15 @@ namespace TrainDispatcherGame.Server.Hubs
 
         public async Task GetStationStatus(string stationId)
         {
-            var isControlled = _playerManager.IsStationControlled(stationId);
-            var player = _playerManager.GetPlayerByStation(stationId);
+            // Normalize stationId to lowercase for consistent handling
+            var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+            
+            var isControlled = _playerManager.IsStationControlled(normalizedStationId);
+            var player = _playerManager.GetPlayerByStation(normalizedStationId);
             
             await Clients.Caller.SendAsync("StationStatus", new
             {
-                stationId = stationId,
+                stationId = normalizedStationId,
                 isControlled = isControlled,
                 playerId = player?.Id
             });

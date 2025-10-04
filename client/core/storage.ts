@@ -19,11 +19,10 @@ class Storage {
     constructor() {
     }
 
-    static loadTrackLayoutFromJson(trackLayoutDto: TrackLayoutDto): {tracks: Track[], switches: Switch[], exits: Exit[], signals: Signal[]} | null {
+    static loadTrackLayoutFromJson(trackLayoutDto: TrackLayoutDto): {tracks: Track[], switches: Switch[], signals: Signal[]} | null {
         
         const tracks = trackLayoutDto.tracks.map((trackObj: TrackDto) => Track.fromObject(trackObj));        
         const switches = trackLayoutDto.switches.map((switchObj: SwitchDto) => Switch.fromObject(switchObj));
-        const exits = trackLayoutDto.exits.map((exitObj: ExitDto) => Exit.fromObject(exitObj));
 
         tracks.forEach((track: Track) => {
             const track_loaded = trackLayoutDto.tracks.find((t: TrackDto) => t.id === track.id);
@@ -46,11 +45,7 @@ class Storage {
                     return tr;
                 }
                 else if (sd.type === "Exit") {
-                    const ex = exits.find((e: Exit) => e.id === sd.id);
-                    if (ex === undefined) {
-                        throw new Error(`Exit ${sd.id} not found in loaded layout`);
-                    }
-                    return ex;
+                    return Exit.fromObject(sd);
                 }
                 throw new Error(`Invalid switch type: ${sd.type}`);
             });
@@ -83,7 +78,7 @@ class Storage {
             });
         });
         
-        return { tracks, switches, exits, signals };
+        return { tracks, switches, signals };
     }
 }
 

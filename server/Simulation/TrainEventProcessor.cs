@@ -69,7 +69,8 @@ namespace TrainDispatcherGame.Server.Simulation
                 if (exitPointId == "-1") throw new Exception($"Train {train.Number} has invalid exit point id -1 for player controlled station");
                 await _notificationManager.SendTrain(station, train, exitPointId);
                 train.controlledByPlayer = true;
-                train.CurrentLocation = station;
+                // Normalize station ID to lowercase for consistent handling
+                train.CurrentLocation = station?.ToLowerInvariant() ?? string.Empty;
                 train.TrainEvent = null;
                 return;
             }

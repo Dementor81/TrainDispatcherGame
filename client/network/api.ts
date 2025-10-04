@@ -180,8 +180,11 @@ export async function fetchScenario(id: string): Promise<ScenarioDto> {
   return response.json();
 }
 
-export async function fetchNetwork(): Promise<NetworkDto> {
-  const response = await fetch(`${API_BASE_URL}/network`);
+export async function fetchNetwork(layoutId?: string): Promise<NetworkDto> {
+  const url = layoutId 
+    ? `${API_BASE_URL}/network/${encodeURIComponent(layoutId)}`
+    : `${API_BASE_URL}/network`;
+  const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch network: ${response.statusText}`);
   }

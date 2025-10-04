@@ -19,6 +19,9 @@ namespace TrainDispatcherGame.Server.Models.DTOs.ClientServerCom
 
         [JsonPropertyName("maxExitDistance")]
         public int MaxExitDistance { get; set; }
+
+        [JsonPropertyName("connections")]
+        public List<NetworkConnectionDto> Connections { get; set; } = new();
     }
 }
 

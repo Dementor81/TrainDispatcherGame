@@ -112,9 +112,10 @@ namespace TrainDispatcherGame.Server.Services
                         if (dto != null)
                         {
                             // Build domain model from DTO
+                            // Use stationId (from stations array / file name) as the canonical station ID
                             var model = new TrackLayout
                             {
-                                Id = dto.Id,
+                                Id = stationId,  // Use stationId from network file, not dto.Id
                                 Tracks = dto.Tracks ?? new List<TrackDto>(),
                                 Switches = dto.Switches ?? new List<SwitchDto>()
                             };
@@ -137,7 +138,8 @@ namespace TrainDispatcherGame.Server.Services
                                             if (!discoveredExitIds.Contains(exitId))
                                             {
                                                 var exit = new ExitPoint { Id = exitId };
-                                                if (_directedConnections.TryGetValue((dto.Id, exitId), out var connection))
+                                                // Use stationId for connection lookup, not dto.Id
+                                                if (_directedConnections.TryGetValue((stationId, exitId), out var connection))
                                                 {
                                                     exit.Connection = connection;
                                                     exit.Destination = connection.ToStation;
@@ -151,9 +153,9 @@ namespace TrainDispatcherGame.Server.Services
                                 }
                             }
 
-                            _trackLayouts[model.Id] = model;
+                            _trackLayouts[stationId] = model;  // Use stationId as dictionary key
                             loadedCount++;
-                            Console.WriteLine($"Loaded track layout: {model.Id} with {model.Exits.Count} exits; max span: {model.MaxExitDistance:F2}");
+                            Console.WriteLine($"Loaded track layout: {stationId} with {model.Exits.Count} exits; max span: {model.MaxExitDistance:F2}");
                         }
                         else
                         {
@@ -207,13 +209,14 @@ namespace TrainDispatcherGame.Server.Services
                 }
 
                 // Collect required stations from explicit stations list
+                // Normalize station IDs to lowercase for consistent usage
                 if (network.Stations != null)
                 {
                     foreach (var station in network.Stations)
                     {
                         if (!string.IsNullOrWhiteSpace(station))
                         {
-                            requiredStations.Add(station);
+                            requiredStations.Add(station.ToLowerInvariant());
                         }
                     }
                 }
@@ -235,23 +238,30 @@ namespace TrainDispatcherGame.Server.Services
                     if (!int.TryParse(c.FromExitId, out var fromExit)) continue;
                     if (!int.TryParse(c.ToExitId, out var toExit)) continue;
 
+                    // Normalize station IDs to lowercase for consistent usage
+                    var normalizedFromStation = c.FromStation.ToLowerInvariant();
+                    var normalizedToStation = c.ToStation.ToLowerInvariant();
+
                     int sameConnectionCount = network.Connections.Count(conn =>
-                        (conn.FromStation == c.FromStation || conn.FromStation == c.ToStation) && (conn.ToStation == c.ToStation || conn.ToStation == c.FromStation));
+                        (conn.FromStation.Equals(c.FromStation, StringComparison.OrdinalIgnoreCase) || 
+                         conn.FromStation.Equals(c.ToStation, StringComparison.OrdinalIgnoreCase)) && 
+                        (conn.ToStation.Equals(c.ToStation, StringComparison.OrdinalIgnoreCase) || 
+                         conn.ToStation.Equals(c.FromStation, StringComparison.OrdinalIgnoreCase)));
 
                     
 
-                    // Create forward connection
+                    // Create forward connection with normalized station IDs
                     var forward = new NetworkConnection
                     {
-                        FromStation = c.FromStation,
+                        FromStation = normalizedFromStation,
                         FromExitId = fromExit,
-                        ToStation = c.ToStation,
+                        ToStation = normalizedToStation,
                         ToExitId = toExit,
                         Distance = c.Distance,
                         Blocks = c.Blocks,
                         Mode =  sameConnectionCount == 1 ? NetworkConnection.TrackMode.SingleTrack : NetworkConnection.TrackMode.Regular,
                     };
-                    _directedConnections[(forward.FromStation, forward.FromExitId)] = forward;
+                    _directedConnections[(normalizedFromStation, forward.FromExitId)] = forward;
                     created++;
                 }
 
@@ -425,12 +435,20 @@ namespace TrainDispatcherGame.Server.Services
                 MaxExitDistance = layout.MaxExitDistance
             };
 
-            foreach (var exit in layout.Exits)
+            // Add only network connections relevant to this station
+            var relevantConnections = GetAllConnections()
+                .Where(conn => conn.FromStation == stationId || conn.ToStation == stationId);
+            foreach (var conn in relevantConnections)
             {
-                client.Exits.Add(new TrainDispatcherGame.Server.Models.DTOs.ClientServerCom.ClientExitDto
+                client.Connections.Add(new NetworkConnectionDto
                 {
-                    Id = exit.Id,
-                    Destination = exit.Destination
+                    FromStation = conn.FromStation,
+                    FromExitId = conn.FromExitId.ToString(),
+                    ToStation = conn.ToStation,
+                    ToExitId = conn.ToExitId.ToString(),
+                    Distance = conn.Distance,
+                    Blocks = conn.Blocks,
+                    Mode = conn.Mode.ToString()
                 });
             }
 

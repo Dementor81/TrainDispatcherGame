@@ -22,7 +22,8 @@
          "switches": [
             { "type": "Switch", "id": 82 },
             { "type": "Track", "id": 226 }
-         ]
+         ],
+         "halt": true
       },
       {
          "id": 226,
@@ -44,7 +45,8 @@
          "switches": [
             { "type": "Switch", "id": 74 },
             { "type": "Switch", "id": 75 }
-         ]
+         ],
+         "halt": true
       },
       {
          "id": 229,
@@ -67,7 +69,8 @@
          "switches": [
             { "type": "Track", "id": 229 },
             { "type": "Track", "id": 231 }
-         ]
+         ],
+         "halt": true
       },
       {
          "id": 231,
@@ -89,7 +92,8 @@
          "switches": [
             { "type": "Switch", "id": 76 },
             { "type": "Switch", "id": 77 }
-         ]
+         ],
+         "halt": true
       },
       {
          "id": 236,
@@ -118,7 +122,7 @@
          "signals": [
             { "type": "main", "position": 356, "direction": -1 }
          ],
-         "switches": [{ "type": "Switch", "id": 79 }, null]
+         "switches": [{ "type": "Switch", "id": 79 }, {"type": "Exit", "id": 1}]
       },
       {
          "id": 239,
@@ -135,7 +139,7 @@
          "start": { "x": 1400, "y": 700 },
          "end": { "x": 1950, "y": 700 },
          "signals": [],
-         "switches": [{ "type": "Switch", "id": 78 }, null]
+         "switches": [{ "type": "Switch", "id": 78 }, {"type": "Exit", "id": 4}]
       },
       {
          "id": 241,
@@ -181,14 +185,14 @@
          "signals": [
             { "type": "main", "position": 194, "direction": 1 }
          ],
-         "switches": [null, { "type": "Switch", "id": 81 }]
+         "switches": [{"type": "Exit", "id": 2} , { "type": "Switch", "id": 81 }]
       },
       {
          "id": 255,
          "start": { "x": -250, "y": 650 },
          "end": { "x": 350, "y": 650 },
          "signals": [],
-         "switches": [null, { "type": "Switch", "id": 80 }]
+         "switches": [{"type": "Exit", "id": 0} , { "type": "Switch", "id": 80 }]
       }
    ],
    "switches": [

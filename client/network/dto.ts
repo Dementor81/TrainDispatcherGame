@@ -1,13 +1,12 @@
 export interface TrackLayoutDto {
   id: string;
-  exits: ExitDto[];
   tracks: TrackDto[];
   switches: SwitchDto[];
   maxExitDistance?: number;
+  connections?: NetworkConnectionDto[];
 }
 
 export interface ExitDto {
-  destination: string;
   id: number;
 }
 
@@ -82,6 +81,7 @@ export interface ScenarioSummaryDto {
 
 export interface ScenarioDto {
   title: string;
+  layout: string; // layout ID
   start_time: string; // e.g., "08:00:00"
   trains: ScenarioTrainDto[];
 }

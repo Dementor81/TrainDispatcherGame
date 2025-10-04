@@ -130,7 +130,9 @@ namespace TrainDispatcherGame.Server.Services
                         }
                     }
 
-                    train.Route.Add(new TrainWayPoint(timetableEntry.Station, arrivalTime, departureTime));
+                    // Normalize station ID to lowercase for consistent usage throughout the system
+                    var normalizedStationId = timetableEntry.Station?.ToLowerInvariant() ?? string.Empty;
+                    train.Route.Add(new TrainWayPoint(normalizedStationId, arrivalTime, departureTime));
                 }
 
                 train.Route.Last().IsLast = true; //save if the waypoint is the last waypoint, in order to make it easier to detect if the train has completed all waypoints.

@@ -74,7 +74,7 @@ export class SwitchRenderer {
       });
 
       // Add switch ID text
-      const text = new PIXI.Text({
+      /* const text = new PIXI.Text({
          text: sw.id.toString(),
          style: {
             fontSize: 12,
@@ -86,7 +86,7 @@ export class SwitchRenderer {
       text.x = sw.location.x;
       text.y = sw.location.y - 25;
 
-      switchContainer.addChild(text);
+      switchContainer.addChild(text); */
    }
 
    redrawSwitch(sw: Switch): void {

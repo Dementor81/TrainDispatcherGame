@@ -1,11 +1,16 @@
 import * as PIXI from "pixi.js";
-import { fetchScenarios, fetchScenario, fetchNetwork, fetchLayout } from "../network/api";
-import type { ScenarioDto, NetworkDto, TrackLayoutDto } from "../network/dto";
+import { fetchScenarios, fetchScenario, fetchNetwork } from "../network/api";
+import type { ScenarioDto, NetworkDto } from "../network/dto";
+import { toMinutes, minutesToString } from "./utils/timeUtils";
+import { precomputeExitSpans } from "./utils/exitSpanService";
+import { getDistanceMeters, isSingleTrackSection, deriveOrderedStations } from "./utils/networkUtils";
+import { TRAIN_COLORS } from "./utils/constants";
 
 export default class SzenariosApplication {
    private readonly container: HTMLElement;
    private app!: PIXI.Application;
    private currentScenarioId: string = "timetable";
+   private currentLayoutId: string = "";
    private isDraggingTrain: boolean = false;
    private draggingTrainIdx: number | null = null;
    private dragStartPointerY: number = 0;
@@ -21,6 +26,8 @@ export default class SzenariosApplication {
    private network?: NetworkDto;
    private stationOrder: string[] = [];
    private stationIndex: Map<string, number> = new Map();
+   private availableRoutes: string[][] = [];
+   private selectedRoute: string[] | null = null;
    private singleTrackBg?: PIXI.Graphics;
    private grid?: PIXI.Graphics;
    private lines?: PIXI.Graphics;
@@ -67,11 +74,158 @@ export default class SzenariosApplication {
       console.log("[Graph] Using scenario:", scenarioId);
 
       this.currentScenarioId = scenarioId;
-      const [scenario, network] = await Promise.all([fetchScenario(this.currentScenarioId), fetchNetwork()]);
+      const scenario = await fetchScenario(this.currentScenarioId);
+      this.currentLayoutId = scenario.layout || "";
+      const network = await fetchNetwork(this.currentLayoutId);
       await this.renderScenario(scenario, network);
 
       // populate selector and hook change
       this.setupScenarioSelector(list, this.currentScenarioId);
+   }
+
+   /**
+    * Find all valid routes through the network using DFS.
+    * Rules:
+    * 1. Each station can only be visited once per route
+    * 2. Exit IDs must maintain parity (all odd or all even) to prevent direction changes
+    */
+   private findAllRoutes(network: NetworkDto): string[][] {
+      const routes: string[][] = [];
+      if (!network.connections || network.connections.length === 0) {
+         return routes;
+      }
+
+      // Build adjacency map: station -> array of {to, fromExitId, toExitId}
+      const adjacency = new Map<string, Array<{to: string; fromExitId: string; toExitId: string}>>();
+      for (const conn of network.connections) {
+         if (!adjacency.has(conn.from)) {
+            adjacency.set(conn.from, []);
+         }
+         adjacency.get(conn.from)!.push({
+            to: conn.to,
+            fromExitId: conn.fromId,
+            toExitId: conn.toId
+         });
+      }
+
+      // Helper to check if exit ID is odd or even
+      const isOdd = (exitId: string): boolean => {
+         const num = parseInt(exitId, 10);
+         return !isNaN(num) && num % 2 === 1;
+      };
+
+      // DFS to explore routes
+      const dfs = (
+         currentStation: string,
+         visited: Set<string>,
+         path: string[],
+         expectedParity: boolean | null // null = not set yet, true = odd, false = even
+      ) => {
+         // Add current station to path
+         path.push(currentStation);
+         visited.add(currentStation);
+
+         // Check if we can extend this route
+         let hasExtension = false;
+         const neighbors = adjacency.get(currentStation) || [];
+         
+         for (const neighbor of neighbors) {
+            // Skip if already visited
+            if (visited.has(neighbor.to)) {
+               continue;
+            }
+
+            // Check parity rule: fromExitId must match expected parity
+            const exitIsOdd = isOdd(neighbor.fromExitId);
+            
+            // First connection sets the parity
+            if (expectedParity === null) {
+               dfs(neighbor.to, new Set(visited), [...path], exitIsOdd);
+               hasExtension = true;
+            } else if (exitIsOdd === expectedParity) {
+               // Parity matches, continue on this route
+               dfs(neighbor.to, new Set(visited), [...path], expectedParity);
+               hasExtension = true;
+            }
+            // If parity doesn't match, skip this connection
+         }
+
+         // If this is a valid endpoint (at least 2 stations and no valid extensions), save the route
+         if (path.length >= 2) {
+            routes.push([...path]);
+         }
+      };
+
+      // Try starting from each station
+      const allStations = new Set<string>();
+      for (const conn of network.connections) {
+         allStations.add(conn.from);
+         allStations.add(conn.to);
+      }
+
+      for (const startStation of allStations) {
+         dfs(startStation, new Set(), [], null);
+      }
+
+      // Filter out routes that are completely contained within other routes
+      return this.filterOverlappingRoutes(routes);
+   }
+
+   /**
+    * Remove routes that are completely contained as subsequences within other routes.
+    * For example, if Route A is [S1, S2, S3, S4] and Route B is [S2, S3], 
+    * Route B will be removed as it's completely contained in Route A.
+    */
+   private filterOverlappingRoutes(routes: string[][]): string[][] {
+      const filtered: string[][] = [];
+
+      for (let i = 0; i < routes.length; i++) {
+         const routeA = routes[i];
+         let isContained = false;
+
+         // Check if routeA is a consecutive subsequence of any other route
+         for (let j = 0; j < routes.length; j++) {
+            if (i === j) continue;
+            const routeB = routes[j];
+
+            // Only check if routeB is longer than routeA
+            if (routeB.length > routeA.length) {
+               if (this.isConsecutiveSubsequence(routeA, routeB)) {
+                  isContained = true;
+                  break;
+               }
+            }
+         }
+
+         if (!isContained) {
+            filtered.push(routeA);
+         }
+      }
+
+      return filtered;
+   }
+
+   /**
+    * Check if needle is a consecutive subsequence of haystack.
+    * Example: [2,3] is a consecutive subsequence of [1,2,3,4] but not of [1,2,4,3]
+    */
+   private isConsecutiveSubsequence(needle: string[], haystack: string[]): boolean {
+      if (needle.length > haystack.length) return false;
+      if (needle.length === 0) return true;
+
+      // Try to find needle starting at each position in haystack
+      for (let i = 0; i <= haystack.length - needle.length; i++) {
+         let match = true;
+         for (let j = 0; j < needle.length; j++) {
+            if (haystack[i + j] !== needle[j]) {
+               match = false;
+               break;
+            }
+         }
+         if (match) return true;
+      }
+
+      return false;
    }
 
    private async renderScenario(scenario: ScenarioDto, network: NetworkDto): Promise<void> {
@@ -80,15 +234,31 @@ export default class SzenariosApplication {
       this.viewStartMinutes = toMinutes(scenario.start_time);
       this.viewDurationMinutes = 60;
 
-      // Compute station order and index
-      this.stationOrder = deriveOrderedStations(network);
-      if (this.stationOrder.length === 0) {
-         this.stationOrder = network.stations && network.stations.length > 0 ? network.stations.slice() : [];
+      // Find all valid routes through the network
+      this.availableRoutes = this.findAllRoutes(network);
+      console.log(`[Routes] Found ${this.availableRoutes.length} valid routes:`);
+      this.availableRoutes.forEach((route, idx) => {
+         console.log(`  Route ${idx + 1}: ${route.join(' -> ')}`);
+      });
+
+      // If no route is selected yet and we have routes, select the first one
+      if (!this.selectedRoute && this.availableRoutes.length > 0) {
+         this.selectedRoute = this.availableRoutes[0];
       }
-      if (this.stationOrder.length === 0) {
-         const set = new Set<string>();
-         for (const t of scenario.trains) for (const s of t.timetable || []) set.add(s.station);
-         this.stationOrder = Array.from(set);
+
+      // Compute station order and index (use selected route if available)
+      if (this.selectedRoute && this.selectedRoute.length > 0) {
+         this.stationOrder = this.selectedRoute;
+      } else {
+         this.stationOrder = deriveOrderedStations(network);
+         if (this.stationOrder.length === 0) {
+            this.stationOrder = network.stations && network.stations.length > 0 ? network.stations.slice() : [];
+         }
+         if (this.stationOrder.length === 0) {
+            const set = new Set<string>();
+            for (const t of scenario.trains) for (const s of t.timetable || []) set.add(s.station);
+            this.stationOrder = Array.from(set);
+         }
       }
       this.stationIndex = new Map(this.stationOrder.map((s, i) => [s, i] as [string, number]));
 
@@ -134,8 +304,55 @@ export default class SzenariosApplication {
 
       // Precompute station exit spans from server-provided MaxExitDistance
       await precomputeExitSpans(network);
+      this.setupRouteSelector();
       this.drawScene();
       this.setupInteractions();
+   }
+
+   private setupRouteSelector() {
+      const select = document.getElementById("route-select") as HTMLSelectElement | null;
+      if (!select) return;
+
+      // Clear existing options
+      select.innerHTML = '';
+
+      // Add route options
+      this.availableRoutes.forEach((route, idx) => {
+         const opt = document.createElement("option");
+         opt.value = String(idx);
+         opt.textContent = route.join(' → ');
+         select.appendChild(opt);
+      });
+
+      // Set selected value if we have a selected route, otherwise select first route
+      let selectedIdx = 0;
+      if (this.selectedRoute) {
+         const idx = this.availableRoutes.findIndex(route => 
+            route.length === this.selectedRoute!.length && 
+            route.every((station, i) => station === this.selectedRoute![i])
+         );
+         if (idx >= 0) {
+            selectedIdx = idx;
+         }
+      }
+      
+      // Select the route (first by default)
+      if (this.availableRoutes.length > 0) {
+         select.value = String(selectedIdx);
+         this.selectedRoute = this.availableRoutes[selectedIdx];
+      }
+
+      // Handle route selection changes
+      select.onchange = () => {
+         const value = select.value;
+         const idx = parseInt(value, 10);
+         if (idx >= 0 && idx < this.availableRoutes.length) {
+            this.selectedRoute = this.availableRoutes[idx];
+            this.stationOrder = this.selectedRoute;
+            this.stationIndex = new Map(this.stationOrder.map((s, i) => [s, i] as [string, number]));
+            this.drawScene();
+         }
+      };
    }
 
    private drawScene() {
@@ -259,12 +476,18 @@ export default class SzenariosApplication {
       // Draw trains
       for (let idx = 0; idx < this.scenario.trains.length; idx++) {
          const train = this.scenario.trains[idx];
-         const color = palette[idx % palette.length];
+         const color = TRAIN_COLORS[idx % TRAIN_COLORS.length];
          const entries = train.timetable;
          if (!entries || entries.length === 0) continue;
          for (let i = 0; i < entries.length - 1; i++) {
             const a = entries[i];
             const b = entries[i + 1];
+            
+            // Skip if either station is not in the current route
+            if (!this.stationIndex.has(a.station) || !this.stationIndex.has(b.station)) {
+               continue;
+            }
+            
             const depA = a.departure ? toMinutes(a.departure) : null;
             const arrB = b.arrival ? toMinutes(b.arrival) : null;
             const distMeters = getDistanceMeters(this.network, a.station, b.station);
@@ -350,6 +573,12 @@ export default class SzenariosApplication {
          // dwell
          for (let i = 0; i < entries.length; i++) {
             const e = entries[i];
+            
+            // Skip if station is not in the current route
+            if (!this.stationIndex.has(e.station)) {
+               continue;
+            }
+            
             const x = xForStation(e.station);
             // dwell if both times present
             if (e.arrival && e.departure) {
@@ -405,7 +634,6 @@ export default class SzenariosApplication {
          if (this.isDraggingHandle && this.handleTrainIdx !== null && this.handleEntryIdx !== null && this.handleField) {
             const dy = ev.clientY - this.handleStartPointerY;
             const deltaMinutes = dy * minutesPerPixel; // down -> later
-            const newMinutes = Math.max(0, this.handleStartMinutes + deltaMinutes);
             const train = this.scenario!.trains[this.handleTrainIdx];
             const entries = train.timetable as any[];
             // Build snapshot if missing (safety)
@@ -421,35 +649,26 @@ export default class SzenariosApplication {
             const snap = this.handleSnapshot!;
             const baseIdx = this.handleEntryIdx;
             const baseMinutes = this.handleStartMinutes;
+            
+            // Limit movement to at least the arrival time (from snapshot)
+            const arrivalMin = snap.arrivals[baseIdx];
+            const minAllowedTime = arrivalMin !== null ? arrivalMin : 0;
+            const newMinutes = Math.max(minAllowedTime, this.handleStartMinutes + deltaMinutes);
             const totalDelta = newMinutes - baseMinutes;
 
-            if (this.handleField === "departure") {
-               // Update only current departure, then shift all subsequent stops by totalDelta
-               const cur = entries[baseIdx];
-               cur.departure = minutesToString(newMinutes);
-               if (cur.arrival) {
-                  const aMin = toMinutes(cur.arrival);
-                  if (toMinutes(cur.departure) < aMin) cur.departure = minutesToString(aMin);
-               }
-               for (let j = baseIdx + 1; j < entries.length; j++) {
-                  const e = entries[j];
-                  const a0 = snap.arrivals[j];
-                  const d0 = snap.departures[j];
-                  if (a0 != null) e.arrival = minutesToString(Math.max(0, a0 + totalDelta));
-                  if (d0 != null) e.departure = minutesToString(Math.max(0, d0 + totalDelta));
-                  if (e.arrival && e.departure) {
-                     const aMin = toMinutes(e.arrival);
-                     const dMin = toMinutes(e.departure);
-                     if (dMin < aMin) e.departure = minutesToString(aMin);
-                  }
-               }
-            } else {
-               // Arrival edit: only change arrival at current stop; do not cascade
-               const cur = entries[baseIdx];
-               cur.arrival = minutesToString(newMinutes);
-               if (cur.departure) {
-                  const dMin = toMinutes(cur.departure);
-                  if (toMinutes(cur.arrival) > dMin) cur.arrival = minutesToString(dMin);
+            // Update only current departure, then shift all subsequent stops by totalDelta
+            const cur = entries[baseIdx];
+            cur.departure = minutesToString(newMinutes);
+            for (let j = baseIdx + 1; j < entries.length; j++) {
+               const e = entries[j];
+               const a0 = snap.arrivals[j];
+               const d0 = snap.departures[j];
+               if (a0 != null) e.arrival = minutesToString(Math.max(0, a0 + totalDelta));
+               if (d0 != null) e.departure = minutesToString(Math.max(0, d0 + totalDelta));
+               if (e.arrival && e.departure) {
+                  const aMin = toMinutes(e.arrival);
+                  const dMin = toMinutes(e.departure);
+                  if (dMin < aMin) e.departure = minutesToString(aMin);
                }
             }
             this.drawScene();
@@ -637,7 +856,23 @@ export default class SzenariosApplication {
          const id = select.value;
          this.currentScenarioId = id;
          console.log("[Graph] Switching to scenario:", id);
-         const [scenario, network] = await Promise.all([fetchScenario(id), fetchNetwork()]);
+         
+         const scenario = await fetchScenario(id);
+         const newLayoutId = scenario.layout || "";
+         
+         // Check if layout has changed - if so, reload the network
+         let network: NetworkDto;
+         if (newLayoutId !== this.currentLayoutId) {
+            console.log(`[Graph] Layout changed from '${this.currentLayoutId}' to '${newLayoutId}', reloading network`);
+            this.currentLayoutId = newLayoutId;
+            network = await fetchNetwork(newLayoutId);
+            // Reset route selection when layout changes
+            this.selectedRoute = null;
+         } else {
+            // Same layout, can reuse existing network or refetch
+            network = this.network!;
+         }
+         
          this.clearStage();
          await this.renderScenario(scenario, network);
          const url = new URL(window.location.href);
@@ -788,9 +1023,10 @@ export default class SzenariosApplication {
 
    private exportScenarioJson() {
       if (!this.scenario) return;
-      // Build the SzenarioDTO shape as the server expects (title, start_time, trains with timetable)
+      // Build the SzenarioDTO shape as the server expects (title, layout, start_time, trains with timetable)
       const exported = {
          title: this.scenario.title,
+         layout: this.scenario.layout,
          start_time: this.scenario.start_time,
          trains: this.scenario.trains.map((t) => ({
             number: t.number,
@@ -919,6 +1155,7 @@ export default class SzenariosApplication {
             const prev = path[i - 1];
             const dist = getDistanceMeters(this.network, prev, st);
             const travel = (dist * 60) / (1000 * Math.max(1, speed));
+            console.log(`Travel time between ${prev} and ${st}: ${travel} minutes`);
             cur += travel;
             const arr = cur;
             const dep = arr + 1; // 1-minute dwell
@@ -984,6 +1221,7 @@ export default class SzenariosApplication {
          if (!secondEntry) return;
          const dist = getDistanceMeters(this.network, firstEntry.station, secondEntry.station);
          const travel = (dist * 60) / (1000 * Math.max(1, train.speed));
+         console.log(`Travel time between ${firstEntry.station} and ${secondEntry.station}: ${travel} minutes`);
          t0 = toMinutes(secondEntry.arrival) - travel;
       }
       const timetable = this.buildTimetable(startIdx, endIdx, train.speed, t0);
@@ -994,138 +1232,4 @@ export default class SzenariosApplication {
       // Redraw the scene to show the updated times
       this.drawScene();
    }
-}
-
-const palette = [
-   0x3b82f6, // blue
-   0x22c55e, // green
-   0xef4444, // red
-   0xf59e0b, // amber
-   0xa855f7, // purple
-];
-
-function toMinutes(time: string): number {
-   // supports HH:mm[:ss] or ISO time -> minutes with fractional seconds
-   const d = new Date(time);
-   if (!isNaN(d.getTime())) {
-      return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60;
-   }
-   const parts = time.split(":");
-   const h = parseInt(parts[0] || "0", 10);
-   const m = parseInt(parts[1] || "0", 10);
-   const s = parseInt(parts[2] || "0", 10);
-   return h * 60 + m + s / 60;
-}
-
-function minutesToString(mins: number): string {
-   const totalSeconds = Math.max(0, Math.round(mins * 60));
-   const h = Math.floor(totalSeconds / 3600);
-   const m = Math.floor((totalSeconds % 3600) / 60);
-   const s = totalSeconds % 60;
-   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
-
-function findConnection(network: NetworkDto, a: string, b: string) {
-   return network.connections.find((c) => c.from === a && c.to === b);
-}
-
-// Cache of per-station exit span (meters)
-const stationExitSpanMeters: Map<string, number> = new Map();
-
-async function precomputeExitSpans(network: NetworkDto): Promise<void> {
-   const stationSet = new Set<string>();
-   for (const s of network.stations || []) stationSet.add(s);
-   for (const c of network.connections || []) {
-      if (c.from) stationSet.add(c.from);
-      if (c.to) stationSet.add(c.to);
-   }
-   const tasks: Promise<void>[] = [];
-   stationSet.forEach((station) => {
-      tasks.push(
-         (async () => {
-            try {
-               const layout: TrackLayoutDto = await fetchLayout(station);
-               const span = typeof layout.maxExitDistance === "number" ? layout.maxExitDistance : 0;
-               stationExitSpanMeters.set(station, span);
-            } catch {
-               // Ignore missing layouts
-               stationExitSpanMeters.set(station, 0);
-            }
-         })()
-      );
-   });
-   await Promise.all(tasks);
-}
-
-// computeExitSpanMeters removed; rely on server-provided maxExitDistance
-
-function getStationExitSpan(station: string): number {
-   return stationExitSpanMeters.get(station) || 0;
-}
-
-function getDistanceMeters(network: NetworkDto, a: string, b: string): number {
-   const conn = findConnection(network, a, b) || findConnection(network, b, a);
-   const base = conn ? conn.distance : 0;
-   const extra = getStationExitSpan(a) * 0.5 + getStationExitSpan(b) * 0.5;
-   return base + extra;
-}
-
-function deriveOrderedStations(network: NetworkDto): string[] {
-   // Build adjacency and in-degree counts to find a path-like order across the network.
-   const adj = new Map<string, string[]>();
-   const indeg = new Map<string, number>();
-   const stations = new Set<string>();
-   for (const c of network.connections) {
-      stations.add(c.from);
-      stations.add(c.to);
-      if (!adj.has(c.from)) adj.set(c.from, []);
-      adj.get(c.from)!.push(c.to);
-      indeg.set(c.to, (indeg.get(c.to) || 0) + 1);
-      if (!indeg.has(c.from)) indeg.set(c.from, indeg.get(c.from) || 0);
-   }
-
-   if (stations.size === 0) return [];
-
-   // Prefer endpoints with indegree 0 as start; else pick an arbitrary station
-   let start: string | null = null;
-   for (const s of Array.from(stations)) {
-      if ((indeg.get(s) || 0) === 0) {
-         start = s;
-         break;
-      }
-   }
-   if (!start) start = Array.from(stations)[0] ?? null;
-   if (!start) return [];
-
-   // Walk forward greedily following single outgoing edges to construct an ordered chain
-   const order: string[] = [];
-   const visited = new Set<string>();
-   let current: string | null = start;
-   while (current && !visited.has(current)) {
-      order.push(current);
-      visited.add(current);
-      const outs: string[] = adj.get(current) || [];
-      if (outs.length >= 1) {
-         current = outs[0];
-      } else {
-         current = null;
-      }
-   }
-
-   // Ensure any remaining stations are appended (in case of branches)
-   for (const s of Array.from(stations)) {
-      if (!visited.has(s)) order.push(s);
-   }
-   return order;
-}
-
-function isSingleTrackSection(network: NetworkDto, a: string, b: string): boolean {
-   const pairCount = network.connections.filter(
-      (c) => (c.from === a && c.to === b) || (c.from === b && c.to === a)
-   ).length;
-   if (pairCount === 1) return true;
-   // fallback to mode flag if provided by server
-   return network.connections.some(
-      (c) => ((c.from === a && c.to === b) || (c.from === b && c.to === a)) && (c as any).mode === "SingleTrack"
-   );
 }

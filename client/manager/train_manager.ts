@@ -602,21 +602,12 @@ export class TrainManager {
 
    // Handle train reached exit events
    private handleTrainReachedExit(train: Train, exit: Exit): void {
-      console.log(`TrainManager: Train ${train.number} reached exit ${exit.id}`);
-
-      if (exit.destination) {
-         console.log(`TrainManager: Sending train ${train.number} to destination ${exit.destination}`);
-
+      console.log(`TrainManager: Train ${train.number} reached exit ${exit.id}`);  
          // Remove the train from local simulation
          this.removeTrain(train.number);
-
          // Emit event for application to handle server communication
          this._eventManager.emit("sendTrainToServer", train.number, exit.id);
-      } else {
-         console.error(`TrainManager: Exit ${exit.id} has no destination`);
-         // Still remove the train even if we can't send it
-         this.removeTrain(train.number);
-      }
+      
    }
 
    // Check if train should stop at a station or depart based on schedule

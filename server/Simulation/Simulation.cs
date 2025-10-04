@@ -267,7 +267,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 if (train.CurrentLocation == null) throw new Exception($"Train {train.Number} has no current location");
 
                 var connection = _trackLayoutService.GetConnection(train.CurrentLocation, exitPointId);
-                if (connection == null) throw new Exception($"No exit point found for train {train.Number} at {train.CurrentLocation} at Exit {exitId}");
+                if (connection == null) throw new Exception($"No connection found for train {train.Number} at {train.CurrentLocation} at Exit {exitId}");
 
 
                 train.controlledByPlayer = false;
@@ -330,8 +330,11 @@ namespace TrainDispatcherGame.Server.Simulation
         {
             try
             {
+                // Normalize stationId to lowercase for case-insensitive comparison
+                var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+                
                 var trainsToReturn = _trains
-                    .Where(t => t.controlledByPlayer && string.Equals(t.CurrentLocation, stationId, StringComparison.Ordinal))
+                    .Where(t => t.controlledByPlayer && string.Equals(t.CurrentLocation, normalizedStationId, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
                 foreach (var train in trainsToReturn)

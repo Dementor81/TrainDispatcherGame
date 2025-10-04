@@ -13,12 +13,15 @@ namespace TrainDispatcherGame.Server.Managers
 
         public bool TakeControlOfStation(string playerId, string stationId, string connectionId = "", string playerName = "")
         {
+            // Normalize stationId to lowercase for case-insensitive comparison
+            var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+            
             lock (_syncRoot)
             {
                 // Check if station is already controlled by another player
-                if (_stationToPlayer.ContainsKey(stationId))
+                if (_stationToPlayer.ContainsKey(normalizedStationId))
                 {
-                    var existingPlayerId = _stationToPlayer[stationId];
+                    var existingPlayerId = _stationToPlayer[normalizedStationId];
                     if (existingPlayerId != playerId)
                     {
                         return false; // Station already controlled by another player
@@ -30,12 +33,12 @@ namespace TrainDispatcherGame.Server.Managers
                 RemovePlayerFromStation(playerId);
 
                 // Create new player or update existing one
-                var player = new Player(playerId, stationId, connectionId, playerName);
+                var player = new Player(playerId, normalizedStationId, connectionId, playerName);
                 _players[playerId] = player;
-                _stationToPlayer[stationId] = playerId;
+                _stationToPlayer[normalizedStationId] = playerId;
             }
 
-            Console.WriteLine($"Player {playerId} took control of station {stationId}");
+            Console.WriteLine($"Player {playerId} took control of station {normalizedStationId}");
             return true;
         }
 
@@ -67,9 +70,12 @@ namespace TrainDispatcherGame.Server.Managers
 
         public Player? GetPlayerByStation(string stationId)
         {
+            // Normalize stationId to lowercase for case-insensitive comparison
+            var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+            
             lock (_syncRoot)
             {
-                if (!_stationToPlayer.TryGetValue(stationId, out var playerId))
+                if (!_stationToPlayer.TryGetValue(normalizedStationId, out var playerId))
                 {
                     return null;
                 }
@@ -96,9 +102,12 @@ namespace TrainDispatcherGame.Server.Managers
 
         public bool IsStationControlled(string stationId)
         {
+            // Normalize stationId to lowercase for case-insensitive comparison
+            var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+            
             lock (_syncRoot)
             {
-                return _stationToPlayer.ContainsKey(stationId);
+                return _stationToPlayer.ContainsKey(normalizedStationId);
             }
         }
 

@@ -53,6 +53,7 @@ app.MapHub<GameHub>("/gamehub").RequireCors("AllowDevClient");
 // Endpoint to serve a specific track layout JSON file
 app.MapGet("/api/layouts/{stationName}", (string stationName, ITrackLayoutService trackLayoutService) =>
 {
+    stationName = stationName.ToLower();
     var client = trackLayoutService.BuildClientTrackLayout(stationName);
     if (client == null)
     {
@@ -75,6 +76,7 @@ app.MapGet("/api/layouts", (ITrackLayoutService trackLayoutService) =>
 // Endpoint to get exit points for a station
 app.MapGet("/api/layouts/{stationName}/exits", (string stationName, ITrackLayoutService trackLayoutService) =>
 {
+    stationName = stationName.ToLower();
     var layout = trackLayoutService.GetTrackLayout(stationName);
     if (layout == null)
     {
@@ -87,6 +89,8 @@ app.MapGet("/api/layouts/{stationName}/exits", (string stationName, ITrackLayout
 // Endpoint to get exit point from one station to another
 app.MapGet("/api/layouts/{fromStation}/exit-to/{toStation}", (string fromStation, string toStation, ITrackLayoutService trackLayoutService) =>
 {
+    fromStation = fromStation.ToLower();
+    toStation = toStation.ToLower();
     var exitPoint = trackLayoutService.GetExitPointToStation(fromStation, toStation);
     if (exitPoint == null)
     {
@@ -225,6 +229,7 @@ app.MapGet("/api/simulation/trains", (Simulation simulation) =>
 // Endpoint to get upcoming trains for a specific station
 app.MapGet("/api/stations/{stationId}/upcoming-trains", (string stationId, Simulation simulation) =>
 {
+    stationId = stationId.ToLower();
     var stationEvents = simulation.GetStationTimetableEvents(stationId);
     return Results.Ok(stationEvents);
 });
@@ -287,15 +292,15 @@ app.MapGet("/api/scenarios/{id}", (string id) =>
     return Results.Ok(scenario);
 });
 
-// Rail network API (serves TrackLayouts/network.json)
-app.MapGet("/api/network", () =>
+// Rail network API for specific layout
+app.MapGet("/api/network/{layoutId}", (string layoutId) =>
 {
     try
     {
-        var networkPath = Path.Combine("TrackLayouts", "network.json");
+        var networkPath = Path.Combine("TrackLayouts", $"{layoutId}.json");
         if (!File.Exists(networkPath))
         {
-            return Results.NotFound(new { message = "network.json not found" });
+            return Results.NotFound(new { message = $"Network file for layout '{layoutId}' not found" });
         }
         var json = File.ReadAllText(networkPath);
         return Results.Text(json, "application/json");

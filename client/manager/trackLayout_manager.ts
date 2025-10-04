@@ -7,6 +7,7 @@ import api from "../network/api";
 import Storage from "../core/storage";
 import { Renderer } from "../canvas/renderer";
 import { Application } from "../core/application";
+import { NetworkConnectionDto } from "../network/dto";
 
 // Movement exception for actual errors
 export class MovementException extends Error {
@@ -19,17 +20,16 @@ export class MovementException extends Error {
 export class TrackLayoutManager {
    private _tracks: Track[] = [];
    private _switches: Switch[] = [];
-   private _exits: Exit[] = [];
    private _signals: Signal[] = [];
    private _layoutId: string = "";
    private _renderer: Renderer | null = null;
    private _onLayoutLoaded: (() => void) | null = null;
    private _application: Application;
+   private _connections: NetworkConnectionDto[] = [];
 
    constructor(application: Application) {
       this._tracks = [];
       this._switches = [];
-      this._exits = [];
       this._signals = [];
       this._application = application;
    }
@@ -63,10 +63,6 @@ export class TrackLayoutManager {
 
    get switches(): Switch[] {
       return this._switches;
-   }
-
-   get exits(): Exit[] {
-      return this._exits;
    }
 
    get signals(): Signal[] {
@@ -110,20 +106,14 @@ export class TrackLayoutManager {
    }
 
    getExitPointDirection(exitPointId: string): number {
+      // If exit is at the start of the track (index 0), direction is positive (1)
+      // If exit is at the end of the track (index 1), direction is negative (-1)
       const exitId = parseInt(exitPointId);
-      const exit = this._exits.find((e) => e.id === exitId);
-      // Find the track that has this exit
       for (const track of this._tracks) {
          for (let i = 0; i < track.switches.length; i++) {
             const switchItem = track.switches[i];
             if (switchItem instanceof Exit && switchItem.id === exitId) {
-               // If exit is at the start of the track (index 0), direction is positive (1)
-               // If exit is at the end of the track (index 1), direction is negative (-1)
-               if (i === 0) {
-                  return 1;
-               } else {
-                  return -1;
-               }
+               return i === 0 ? 1 : -1;
             }
          }
       }
@@ -134,35 +124,60 @@ export class TrackLayoutManager {
       console.log("Loading track layout:", layoutID);
       try {
          const trackLayoutDto = await api.fetchLayout(layoutID);
-         const trackLayout: { tracks: Track[]; switches: Switch[]; exits: Exit[]; signals: Signal[] } | null =
+         const trackLayout: { tracks: Track[]; switches: Switch[]; signals: Signal[] } | null =
             Storage.loadTrackLayoutFromJson(trackLayoutDto);
          if (trackLayout === null) {
             console.error("Failed to load track layout");
             return;
          }
-         this._tracks = trackLayout.tracks;
-         this._switches = trackLayout.switches;
-         this._exits = trackLayout.exits;
-         this._signals = trackLayout.signals;
-         this._layoutId = trackLayoutDto.id;
-         console.log(
-            "Track layout loaded:",
-            this._tracks.length,
-            "tracks,",
-            this._switches.length,
-            "switches,",
-            this._exits.length,
-            "exits,",
-            this._signals.length,
-            "signals"
-         );
+      this._tracks = trackLayout.tracks;
+      this._switches = trackLayout.switches;
+      this._signals = trackLayout.signals;
+      this._layoutId = trackLayoutDto.id;
+      this._connections = trackLayoutDto.connections || [];
 
-         // Notify that layout is loaded
-         if (this._onLayoutLoaded) {
-            this._onLayoutLoaded();
-         }
+      // Assign connections to exit points
+      this.assignConnectionsToExits();
+
+      // Notify that layout is loaded
+      if (this._onLayoutLoaded) {
+         this._onLayoutLoaded();
+      }
       } catch (error) {
          console.error("Failed to load track layout:", error);
+      }
+   }
+
+   private assignConnectionsToExits(): void {
+      // Find all exit points in the track layout
+      for (const track of this._tracks) {
+         for (const switchItem of track.switches) {
+            if (switchItem instanceof Exit) {
+               const exitId = switchItem.id;
+               
+               // Search for corresponding connection
+               const connection = this._connections.find(
+                  (conn) => 
+                     (conn.from === this._layoutId && parseInt(conn.fromId) === exitId) ||
+                     (conn.to === this._layoutId && parseInt(conn.toId) === exitId)
+               );
+
+               if (connection) {
+                  switchItem.connection = connection;
+                  
+                  // Determine if exit is inbound or outbound
+                  const isInbound = connection.to === this._layoutId && parseInt(connection.toId) === exitId;
+                  switchItem.isInbound = isInbound;
+                  
+                  console.log(
+                     `Exit ${exitId}: ${isInbound ? 'Inbound from' : 'Outbound to'} ` +
+                     `${isInbound ? connection.from : connection.to}`
+                  );
+               } else {
+                  console.warn(`No connection found for exit ${exitId}`);
+               }
+            }
+         }
       }
    }
 

@@ -55,13 +55,30 @@ export class TrackRenderer {
    renderExit(exit: Exit, track: Track, inverted: boolean): void {
       const exitContainer = new PIXI.Container() as ExitContainer;
       exitContainer.exitId = exit.id;
+      
+      // Position is determined by inverted (which end of track)
       const unit = track.unit.multiply(inverted ? -1 : 1);
-      const position = (inverted ? track.start : track.end).add(unit.multiply(5));
-      const end = position.add(unit.multiply(15));
+      const basePosition = inverted ? track.start : track.end;
+      
+      // Arrow direction: flip for inbound exits, normal for outbound
+      // For inbound, offset by total arrow length (5 + 15 = 20) so it doesn't overlap when flipped
+      const arrowOffset = exit.isInbound ? 20 : 5;
+      const arrowLength = exit.isInbound ? -15 : 15;
+      
+      const position = basePosition.add(unit.multiply(arrowOffset));
+      const end = position.add(unit.multiply(arrowLength));
+      
       drawArrow(exitContainer, position, end, { color: RendererConfig.trackColor, width: 2 });
+      
+      // Get destination from connection
+      // If inbound, show where trains come from; if outbound, show where they go to
+      const destinationText = exit.connection 
+         ? (exit.isInbound ? exit.connection.from : exit.connection.to)
+         : '';
+      
       // Add destination label above the arrow tip
       const text = new PIXI.Text({
-         text: exit.destination,
+         text: destinationText,
          style: {
             fontSize: RendererConfig.exitTextSize,
             fill: RendererConfig.exitTextColor,

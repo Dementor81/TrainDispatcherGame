@@ -1,0 +1,43 @@
+{
+  "title": "Fahrplan zweigleisig Test",
+  "layout": "twoTrackLayout_1",
+  "start_time": "00:00",
+  "trains": [
+    {
+      "number": "59005",
+      "type": "Passenger",
+      "speed": 120,
+      "cars": 4,
+      "timetable": [
+        {
+          "station": "Linksdorf",
+          "departure": "00:00:00"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:02:30",
+          "departure": "00:03:30"
+        },
+        {
+          "station": "neustadt",
+          "arrival": "00:06:00",
+          "departure": "00:07:00"
+        },
+        {
+          "station": "burghausen",
+          "arrival": "00:09:30",
+          "departure": "00:10:30"
+        },
+        {
+          "station": "ostheim",
+          "arrival": "00:13:00",
+          "departure": "00:14:00"
+        },
+        {
+          "station": "rechtsheim",
+          "arrival": "00:16:30"
+        }
+      ]
+    }
+  ]
+}
