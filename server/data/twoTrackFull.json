@@ -6,6 +6,7 @@
     {
       "number": "59005",
       "type": "Passenger",
+      "category": "RB",
       "speed": 120,
       "cars": 4,
       "timetable": [
@@ -42,6 +43,7 @@
     {
       "number": "58002",
       "type": "Passenger",
+      "category": null,
       "speed": 140,
       "cars": 4,
       "timetable": [
@@ -78,6 +80,7 @@
     {
       "number": "33801",
       "type": "Passenger",
+      "category": "RB",
       "speed": 120,
       "cars": 4,
       "timetable": [
@@ -99,6 +102,7 @@
     {
       "number": "33803",
       "type": "Passenger",
+      "category": "RB",
       "speed": 120,
       "cars": 4,
       "timetable": [
@@ -120,6 +124,7 @@
     {
       "number": "59007",
       "type": "Passenger",
+      "category": "RB",
       "speed": 120,
       "cars": 4,
       "timetable": [
@@ -155,7 +160,7 @@
     },
     {
       "number": "40001",
-      "type": "Passenger",
+      "type": "Freight",
       "speed": 80,
       "cars": 12,
       "timetable": [
@@ -192,6 +197,7 @@
     {
       "number": "601",
       "type": "Passenger",
+      "category": "ICE",
       "speed": 160,
       "cars": 9,
       "timetable": [
@@ -228,6 +234,7 @@
     {
       "number": "603",
       "type": "Passenger",
+      "category": "ICE",
       "speed": 160,
       "cars": 9,
       "timetable": [
@@ -264,6 +271,7 @@
     {
       "number": "58001",
       "type": "Passenger",
+      "category": "RE",
       "speed": 140,
       "cars": 5,
       "timetable": [
@@ -300,6 +308,7 @@
     {
       "number": "59009",
       "type": "Passenger",
+      "category": null,
       "speed": 120,
       "cars": 4,
       "timetable": [
@@ -336,6 +345,7 @@
     {
       "number": "58005",
       "type": "Passenger",
+      "category": null,
       "speed": 140,
       "cars": 5,
       "timetable": [
@@ -372,6 +382,7 @@
     {
       "number": "59009",
       "type": "Passenger",
+      "category": "RB",
       "speed": 120,
       "cars": 4,
       "timetable": [
@@ -408,6 +419,7 @@
     {
       "number": "58003",
       "type": "Passenger",
+      "category": null,
       "speed": 140,
       "cars": 5,
       "timetable": [
@@ -444,6 +456,7 @@
     {
       "number": "58004",
       "type": "Passenger",
+      "category": null,
       "speed": 140,
       "cars": 4,
       "timetable": [
@@ -480,6 +493,7 @@
     {
       "number": "59002",
       "type": "Passenger",
+      "category": "RB",
       "speed": 120,
       "cars": 4,
       "timetable": [
@@ -516,6 +530,7 @@
     {
       "number": "59004",
       "type": "Passenger",
+      "category": "RB",
       "speed": 120,
       "cars": 4,
       "timetable": [
@@ -552,6 +567,7 @@
     {
       "number": "513",
       "type": "Passenger",
+      "category": "ICE",
       "speed": 160,
       "cars": 9,
       "timetable": [
@@ -588,6 +604,7 @@
     {
       "number": "33802",
       "type": "Passenger",
+      "category": "RB",
       "speed": 120,
       "cars": 4,
       "timetable": [
@@ -614,6 +631,7 @@
     {
       "number": "33803",
       "type": "Passenger",
+      "category": "RB",
       "speed": 120,
       "cars": 4,
       "timetable": [
@@ -640,6 +658,7 @@
     {
       "number": "33804",
       "type": "Passenger",
+      "category": "RB",
       "speed": 120,
       "cars": 4,
       "timetable": [
@@ -666,6 +685,7 @@
     {
       "number": "33805",
       "type": "Passenger",
+      "category": "RB",
       "speed": 120,
       "cars": 4,
       "timetable": [
@@ -691,7 +711,7 @@
     },
     {
       "number": "40102",
-      "type": "Passenger",
+      "type": "Freight",
       "speed": 100,
       "cars": 12,
       "timetable": [
@@ -727,7 +747,7 @@
     },
     {
       "number": "40602",
-      "type": "Passenger",
+      "type": "Freight",
       "speed": 80,
       "cars": 8,
       "timetable": [

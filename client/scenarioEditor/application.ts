@@ -3,7 +3,7 @@ import { fetchScenarios, fetchScenario, fetchNetwork } from "../network/api";
 import type { ScenarioDto, NetworkDto } from "../network/dto";
 import { toMinutes, minutesToString } from "./utils/timeUtils";
 import { precomputeExitSpans, getDistanceMeters, isSingleTrackSection, deriveOrderedStations } from "./utils/railNetworkUtils";
-import { TRAIN_COLORS } from "./utils/constants";
+import { getCategoryColor } from "./utils/constants";
 import { EditTrainDialog } from "./editTrainDialog";
 
 export default class SzenariosApplication {
@@ -476,7 +476,7 @@ export default class SzenariosApplication {
       // Draw trains
       for (let idx = 0; idx < this.scenario.trains.length; idx++) {
          const train = this.scenario.trains[idx];
-         const color = TRAIN_COLORS[idx % TRAIN_COLORS.length];
+         const color = getCategoryColor((train as any).category, (train as any).type);
          const entries = train.timetable;
          if (!entries || entries.length === 0) continue;
          for (let i = 0; i < entries.length - 1; i++) {
