@@ -105,6 +105,7 @@ namespace TrainDispatcherGame.Server.Services
                 var train = new Train(trainSchedule.Number)
                 {
                     Type = trainSchedule.Type,
+                    Category = trainSchedule.Category,
                     Speed = trainSchedule.Speed / 3.6d,
                     Cars = trainSchedule.Cars
                 };

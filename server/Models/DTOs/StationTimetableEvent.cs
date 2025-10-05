@@ -4,6 +4,9 @@ namespace TrainDispatcherGame.Server.Models.DTOs
 {
     public class StationTimetableEvent
     {
+        [JsonPropertyName("category")]
+        public string Category { get; set; } = string.Empty;
+
         [JsonPropertyName("trainNumber")]
         public string TrainNumber { get; set; } = string.Empty;
 

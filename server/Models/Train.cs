@@ -7,7 +7,8 @@ namespace TrainDispatcherGame.Server.Models
     public class Train
     {
         public string Number { get; set; } = string.Empty;
-        public string Type { get; set; } = string.Empty;
+        public TrainType Type { get; set; } = TrainType.Passenger;
+        public string? Category { get; set; } = null;
         public double Speed { get; set; }//m/s
         public int Cars { get; set; }
         public TrainEventBase? TrainEvent { get; set; }

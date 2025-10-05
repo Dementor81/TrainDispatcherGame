@@ -57,6 +57,17 @@
                 <label class="form-label">Train number</label>
                 <input id="train-number" class="form-control" type="text" required />
               </div>
+              <div class="mb-3">
+                <label class="form-label">Type</label>
+                <select id="train-type" class="form-select" required>
+                  <option value="Passenger" selected>Passenger</option>
+                  <option value="Freight">Freight</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Category</label>
+                <input id="train-category" class="form-control" type="text" placeholder="e.g., ICE, Freight, Regional" />
+              </div>
               <div class="row g-3">
                 <div class="col">
                   <label class="form-label">Speed (km/h)</label>

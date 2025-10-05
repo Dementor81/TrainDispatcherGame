@@ -46,6 +46,20 @@
          "detail": "Runs the webpack development server."
       },
       {
+         "label": "build-client",
+         "type": "npm",
+         "script": "build",
+         "options": {
+            "cwd": "${workspaceFolder}/client"
+         },
+         "problemMatcher": [],
+         "group": {
+            "kind": "build",
+            "isDefault": false
+         },
+         "detail": "Builds the client with production optimizations (output to client/dist/)."
+      },
+      {
          "label": "start-all",
          "dependsOrder": "parallel",
          "dependsOn": ["start-dotnet", "start-webpack"],

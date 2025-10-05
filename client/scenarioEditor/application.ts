@@ -2,9 +2,9 @@ import * as PIXI from "pixi.js";
 import { fetchScenarios, fetchScenario, fetchNetwork } from "../network/api";
 import type { ScenarioDto, NetworkDto } from "../network/dto";
 import { toMinutes, minutesToString } from "./utils/timeUtils";
-import { precomputeExitSpans } from "./utils/exitSpanService";
-import { getDistanceMeters, isSingleTrackSection, deriveOrderedStations } from "./utils/networkUtils";
+import { precomputeExitSpans, getDistanceMeters, isSingleTrackSection, deriveOrderedStations } from "./utils/railNetworkUtils";
 import { TRAIN_COLORS } from "./utils/constants";
+import { EditTrainDialog } from "./editTrainDialog";
 
 export default class SzenariosApplication {
    private readonly container: HTMLElement;
@@ -530,10 +530,15 @@ export default class SzenariosApplication {
                      const nx = -ddy / segLen;
                      const ny = ddx / segLen;
                      const off = 6;
-                     const lx = midx + nx * off;
-                     const ly = midy + ny * off;
+                     // Add a deterministic ±50px along-segment offset to reduce clutter
+                     const sign = ((idx + i) % 2 === 0) ? 1 : -1;
+                     const ux = ddx / segLen;
+                     const uy = ddy / segLen;
+                     const along = 50 * sign;
+                     const lx = midx + nx * off + ux * along;
+                     const ly = midy + ny * off + uy * along;
                      const label = new PIXI.Text({
-                        text: train.number,
+                        text: train.category ? train.category + " " + train.number : train.number,
                         style: {
                            fontSize: 11,
                            fill: color,
@@ -548,8 +553,21 @@ export default class SzenariosApplication {
                      label.x = lx;
                      label.y = ly;
                      this.trainLabels.addChild(label);
-                     label.on("pointertap", () => {
+                     label.on("pointertap", (ev: PIXI.FederatedPointerEvent) => {
                         this.setSelectedTrain(idx);
+                        const anyEv: any = ev as any;
+                        // Prefer native double-click detail when available
+                        if (typeof anyEv?.detail === "number" && anyEv.detail >= 2) {
+                           this.editSelectedTrain();
+                           return;
+                        }
+                        // Fallback: detect double tap by time threshold
+                        const now = (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
+                        const last = (label as any)._lastTapTime || 0;
+                        (label as any)._lastTapTime = now;
+                        if (now - last < 300) {
+                           this.editSelectedTrain();
+                        }
                      });
                      // pointer handlers to drag whole train
                      label.eventMode = "static";
@@ -886,9 +904,7 @@ export default class SzenariosApplication {
       }
 
       const addBtn = document.getElementById("add-train-btn");
-      if (addBtn) {
-         addBtn.addEventListener("click", () => this.openAddTrainModal());
-      }
+      if (addBtn) addBtn.addEventListener("click", () => this.handleCreateTrain());
 
       const copyBtn = document.getElementById("train-copy-btn") as HTMLButtonElement | null;
       const deleteBtn = document.getElementById("train-delete-btn") as HTMLButtonElement | null;
@@ -944,82 +960,21 @@ export default class SzenariosApplication {
       this.drawScene();
    }
 
-   private editSelectedTrain() {
+  private async editSelectedTrain() {
       if (this.selectedTrainIdx === null || !this.scenario) return;
       const train = this.scenario.trains[this.selectedTrainIdx];
-      // open modal pre-filled
-      const numEl = document.getElementById("train-number") as HTMLInputElement | null;
-      const speedEl = document.getElementById("train-speed") as HTMLInputElement | null;
-      const carsEl = document.getElementById("train-cars") as HTMLInputElement | null;
-      const startSel = document.getElementById("train-start") as HTMLSelectElement | null;
-      const endSel = document.getElementById("train-end") as HTMLSelectElement | null;
-      if (!numEl || !speedEl || !carsEl || !startSel || !endSel) {
-         this.openAddTrainModal();
-         return;
-      }
-      // populate start/end options
-      startSel.innerHTML = "";
-      endSel.innerHTML = "";
-      for (const s of this.stationOrder) {
-         const o1 = document.createElement("option");
-         o1.value = s;
-         o1.textContent = s;
-         startSel.appendChild(o1);
-         const o2 = document.createElement("option");
-         o2.value = s;
-         o2.textContent = s;
-         endSel.appendChild(o2);
-      }
-      // set values
-      numEl.value = train.number;
-      speedEl.value = String(train.speed);
-      carsEl.value = String(train.cars);
-      startSel.value = train.timetable?.[0]?.station || this.stationOrder[0];
-      endSel.value = train.timetable?.[train.timetable.length - 1]?.station || this.stationOrder[this.stationOrder.length - 1];
-
-      const modalEl = document.getElementById("add-train-modal") as any;
-      const Modal = (window as any).bootstrap?.Modal;
-      const modal = Modal ? new Modal(modalEl) : null;
-      // configure for edit mode (hide start/end; only basic fields editable)
-      const title = document.getElementById("addTrainModalLabel");
-      if (title) title.textContent = "Edit Train";
-      const startEndRow = document.getElementById("train-start-end-row");
-      if (startEndRow) startEndRow.classList.add("d-none");
-      // ensure selects are not required in edit mode
-      startSel.required = false;
-      endSel.required = false;
-      const submitBtn = document.getElementById("train-submit-btn");
-      if (submitBtn) submitBtn.textContent = "Save";
-      modal?.show();
-
-      const form = document.getElementById("add-train-form") as HTMLFormElement | null;
-      if (!form) return;
-      const onSubmit = (ev: Event) => {
-         ev.preventDefault();
-         // edit mode: update only number, speed, cars
-         this.applyEditToTrain(this.selectedTrainIdx!);
-         modal?.hide();
-         form.removeEventListener("submit", onSubmit);
-      };
-      form.addEventListener("submit", onSubmit);
-   }
-
-   private applyEditToTrain(idx: number) {
-      if (!this.scenario || !this.network) return;
-      const train = this.scenario.trains[idx];
-      const num = (document.getElementById("train-number") as HTMLInputElement)?.value?.trim() || train.number;
-      const speed =
-         parseInt((document.getElementById("train-speed") as HTMLInputElement)?.value || String(train.speed), 10) || train.speed;
-      const cars =
-         parseInt((document.getElementById("train-cars") as HTMLInputElement)?.value || String(train.cars), 10) || train.cars;
-
-      // update simple fields
-      train.number = num;
-      train.speed = speed;
-      train.cars = cars;
-
+      const dialog = new EditTrainDialog();
+      const res = await dialog.showEdit(train as any, this.stationOrder);
+      if (!res) return;
+      train.number = res.number;
+      (train as any).type = res.type;
+      (train as any).category = res.category;
+      train.speed = res.speed;
+      train.cars = res.cars;
       this.drawScene();
    }
+
+  
 
    private exportScenarioJson() {
       if (!this.scenario) return;
@@ -1031,6 +986,7 @@ export default class SzenariosApplication {
          trains: this.scenario.trains.map((t) => ({
             number: t.number,
             type: t.type,
+            category: t.category,
             speed: t.speed,
             cars: t.cars,
             timetable: t.timetable.map((e) => {
@@ -1078,58 +1034,26 @@ export default class SzenariosApplication {
       }
    }
 
-   private openAddTrainModal() {
-      const startSel = document.getElementById("train-start") as HTMLSelectElement | null;
-      const endSel = document.getElementById("train-end") as HTMLSelectElement | null;
-      const numEl = document.getElementById("train-number") as HTMLInputElement | null;
-      const speedEl = document.getElementById("train-speed") as HTMLInputElement | null;
-      const carsEl = document.getElementById("train-cars") as HTMLInputElement | null;
-      if (!this.stationOrder.length || !startSel || !endSel || !numEl || !speedEl || !carsEl) return;
-      numEl.value = "";
-      speedEl.value = "120";
-      carsEl.value = "6";
-      startSel.innerHTML = "";
-      endSel.innerHTML = "";
-      for (const s of this.stationOrder) {
-         const opt1 = document.createElement("option");
-         opt1.value = s;
-         opt1.textContent = s;
-         startSel.appendChild(opt1);
-         const opt2 = document.createElement("option");
-         opt2.value = s;
-         opt2.textContent = s;
-         endSel.appendChild(opt2);
-      }
-      startSel.selectedIndex = 0;
-      endSel.selectedIndex = this.stationOrder.length - 1;
-
-      const modalEl = document.getElementById("add-train-modal") as any;
-      if (!modalEl) return;
-      // Bootstrap modal
-      const Modal = (window as any).bootstrap?.Modal;
-      const modal = Modal ? new Modal(modalEl) : null;
-      // configure for create mode (show start/end)
-      const title = document.getElementById("addTrainModalLabel");
-      if (title) title.textContent = "Add Train";
-      const startEndRow = document.getElementById("train-start-end-row");
-      if (startEndRow) startEndRow.classList.remove("d-none");
-      // ensure selects are required in create mode
-      startSel.required = true;
-      endSel.required = true;
-      const submitBtn = document.getElementById("train-submit-btn");
-      if (submitBtn) submitBtn.textContent = "Create";
-      modal?.show();
-
-      const form = document.getElementById("add-train-form") as HTMLFormElement | null;
-      if (!form) return;
-      const onSubmit = (ev: Event) => {
-         ev.preventDefault();
-         this.createTrainFromForm();
-         modal?.hide();
-         form.removeEventListener("submit", onSubmit);
-      };
-      form.addEventListener("submit", onSubmit);
-   }
+  private async handleCreateTrain() {
+     const dialog = new EditTrainDialog();
+     const res = await dialog.showCreate(this.stationOrder);
+     if (!res || !this.scenario || !this.network) return;
+     const startIdx = this.stationOrder.indexOf(res.startStation);
+     const endIdx = this.stationOrder.indexOf(res.endStation);
+     if (startIdx < 0 || endIdx < 0 || startIdx === endIdx) return;
+     const t0 = toMinutes(this.scenario.start_time);
+     const timetable = this.buildTimetable(startIdx, endIdx, res.speed, t0);
+     const train = {
+        number: res.number,
+        type: res.type,
+        category: res.category,
+        speed: res.speed,
+        cars: res.cars,
+        timetable: timetable as any,
+     };
+     this.scenario.trains.push(train as any);
+     this.drawScene();
+  }
 
    private buildTimetable(
       startIndex: number,
@@ -1174,6 +1098,8 @@ export default class SzenariosApplication {
    private createTrainFromForm() {
       if (!this.scenario || !this.network) return;
       const num = (document.getElementById("train-number") as HTMLInputElement)?.value?.trim() || "NEW";
+      const type = ((document.getElementById("train-type") as HTMLSelectElement)?.value as 'Passenger' | 'Freight') || 'Passenger';
+      const category = (document.getElementById("train-category") as HTMLInputElement)?.value?.trim() || undefined;
       const speed = parseInt((document.getElementById("train-speed") as HTMLInputElement)?.value || "120", 10) || 120;
       const cars = parseInt((document.getElementById("train-cars") as HTMLInputElement)?.value || "6", 10) || 6;
       const start = (document.getElementById("train-start") as HTMLSelectElement)?.value;
@@ -1192,7 +1118,8 @@ export default class SzenariosApplication {
 
       const train = {
          number: num,
-         type: "Passenger",
+         type,
+         category,
          speed,
          cars,
          timetable: timetable as any,

@@ -211,6 +211,8 @@ app.MapGet("/api/simulation/trains", (Simulation simulation) =>
     var list = simulation.Trains.Select(t => new
     {
         number = t.Number,
+        category = t.Category,
+        type = t.Type,
         completed = t.completed,
         currentLocation = t.CurrentLocation,
         headingForStation = t.TrainEvent is TrainSpawnEvent sp1 ? sp1.HeadingStation : null,
@@ -293,10 +295,13 @@ app.MapGet("/api/scenarios/{id}", (string id) =>
 });
 
 // Rail network API for specific layout
-app.MapGet("/api/network/{layoutId}", (string layoutId) =>
+app.MapGet("/api/network/{layoutId}", (string layoutId, ITrackLayoutService trackLayoutService) =>
 {
     try
     {
+        // Ensure the server loads the corresponding layouts and connections
+        trackLayoutService.SetActiveLayout(layoutId);
+
         var networkPath = Path.Combine("TrackLayouts", $"{layoutId}.json");
         if (!File.Exists(networkPath))
         {

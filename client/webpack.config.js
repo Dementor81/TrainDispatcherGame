@@ -7,7 +7,7 @@ module.exports = (env, argv) => {
    return {
       entry: {
          main: "./main.ts",
-         szenarios: "./szenarios/main.ts",
+         scenarioEditor: "./scenarioEditor/main.ts",
          admin: "./admin/main.ts",
       },
       output: {
@@ -55,11 +55,11 @@ module.exports = (env, argv) => {
             chunks: ["main"],
          }),
          new HtmlWebpackPlugin({
-            template: "szenarios/main.html",
-            filename: "Szenarios.html",
+            template: "scenarioEditor/main.html",
+            filename: "scenarioEditor.html",
             inject: "head",
             scriptLoading: "blocking",
-            chunks: ["szenarios"],
+            chunks: ["scenarioEditor"],
          }),
          new HtmlWebpackPlugin({
             template: "admin/main.html",

@@ -8,7 +8,10 @@ namespace TrainDispatcherGame.Server.Models.DTOs
         public string Number { get; set; } = string.Empty;
 
         [JsonPropertyName("type")]
-        public string Type { get; set; } = string.Empty;
+        public TrainDispatcherGame.Server.Models.TrainType Type { get; set; } = TrainDispatcherGame.Server.Models.TrainType.Passenger;
+
+        [JsonPropertyName("category")]
+        public string? Category { get; set; }
 
         [JsonPropertyName("speed")]
         public int Speed { get; set; }

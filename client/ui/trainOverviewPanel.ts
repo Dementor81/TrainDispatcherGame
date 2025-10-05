@@ -16,8 +16,8 @@ export class TrainOverviewPanel extends BasePanel {
   protected getContainerStyles(): Partial<CSSStyleDeclaration> {
     return {
       ...super.getContainerStyles(),
-      minWidth: '350px',
-      maxWidth: '450px'
+      minWidth: '630px',
+      maxWidth: '900px'
     };
   }
 
@@ -26,11 +26,7 @@ export class TrainOverviewPanel extends BasePanel {
   }
 
   private createTrainsContainer(): HTMLDivElement {
-    const trainsContainer = document.createElement('div');
     
-    const title = document.createElement('h6');
-    title.className = 'mb-2 text-primary';
-    title.textContent = `nächsten Züge`;
     
     const trainsList = document.createElement('div');
     trainsList.id = 'trainsList';
@@ -38,10 +34,9 @@ export class TrainOverviewPanel extends BasePanel {
     trainsList.style.maxHeight = '300px';
     trainsList.style.overflowY = 'auto';
     
-    trainsContainer.appendChild(title);
-    trainsContainer.appendChild(trainsList);
     
-    return trainsContainer;
+    
+    return trainsList;
   }
 
   protected async Updates(): Promise<void> {
@@ -103,10 +98,12 @@ export class TrainOverviewPanel extends BasePanel {
     
     return `
       <tr class="train-row">
-        <td class="fw-bold ${isStoppedBySignal ? 'text-danger' : ''}">${train.trainNumber}</td>
+        <td class="fw-bold ${isStoppedBySignal ? 'text-danger' : ''}">${train.category} ${train.trainNumber}</td>
         <td class="small">${train.fromStation}</td>
         <td class="small">${train.nextStation}</td>
-        <td class="small">${this.formatTime(train.arrival)}</td>
+        <td class="small">${
+          train.arrival !== train.departure ? this.formatTime(train.arrival) : '---'
+        }</td>
         <td class="small">${this.formatTime(train.departure)}</td>
         <td><span class="badge ${delayInfo.class}">${delayInfo.text}</span></td>
       </tr>

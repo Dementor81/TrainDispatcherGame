@@ -47,8 +47,9 @@ namespace TrainDispatcherGame.Server.Simulation
                     stationEvents.Add(new StationTimetableEvent
                     {
                         TrainNumber = train.Number,
-                        Arrival = futureEvent.ArrivalTime.ToString("HH:mm:ss"),
-                        Departure = futureEvent.DepartureTime.ToString("HH:mm:ss"),
+                        Category = train.Category ?? string.Empty,
+                        Arrival = futureEvent.ArrivalTime.ToString("HH:mm"),
+                        Departure = futureEvent.DepartureTime.ToString("HH:mm"),
                         CurrentDelay = train.delay,
                         FromStation = fromStation,
                         NextStation = nextStation

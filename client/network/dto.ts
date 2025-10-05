@@ -60,12 +60,15 @@ export interface SimulationStatusDto {
 
 export interface TrainDto {
   number: string;
+  category?: string;
+  type?: 'Passenger' | 'Freight';
   state: string;
   currentLocation?: string;
 }
 
 export interface StationTimetableEventDto {
   trainNumber: string;
+  category?: string;
   arrival: string;
   departure: string;
   currentDelay: number;
@@ -88,7 +91,8 @@ export interface ScenarioDto {
 
 export interface ScenarioTrainDto {
   number: string;
-  type: string;
+  type: 'Passenger' | 'Freight';
+  category?: string;
   speed: number; // km/h in source
   cars: number;
   path: string[];
