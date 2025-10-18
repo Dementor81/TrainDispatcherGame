@@ -9,7 +9,7 @@ Features:
     ✔ trains from outside needs to be accepted by the player @done(25-08-30 14:21)
     ✔ visualize if a train wants to depart but connot due to signaling @done(25-08-17 19:34)
     ✔ visualize the time a train is stoping at a station @done(25-08-31 14:10)
-    ☐ flip the arrow on exitpoints when the regular track is coming from the next track
+    ✔ flip the arrow on exitpoints when the regular track is coming from the next track @done(25-10-18 11:56)
     ☐ show platfrom
     ☐ report passing through a station to the server
     ☐ add comments to shedulded strain stops like "overtake"
@@ -27,6 +27,7 @@ Big Features:
     ✔ admin page with server controls and statistics @done(25-08-30 18:43)
     ✔ szenario editor that helps creating timetables @done(25-08-17 16:32)
     ☐ UI with an overview of the whole network
+    ☐ UI to inspect the open line tracks
     ☐ better UI for station selection with a display which station is already taken by whom
     ☐ Streckenblock (the track between stations knows if it is occupied by a train)
 
@@ -35,6 +36,7 @@ Bugs:
     ✔ switching a switch while the switch is blocked by a train breaks the game @done(25-09-27 17:58)
     ✔ leaving a station while trains are at the station breaks the game @done(25-09-06 13:34)
     ☐ some random delays of trains at the server side
+    ☐ not all server event sets the delay correctly, when the approuval comes to late
     
 
 

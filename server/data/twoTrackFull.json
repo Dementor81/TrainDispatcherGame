@@ -43,7 +43,7 @@
     {
       "number": "58002",
       "type": "Passenger",
-      "category": null,
+      "category": "RE",
       "speed": 140,
       "cars": 4,
       "timetable": [
@@ -64,16 +64,16 @@
         {
           "station": "neustadt",
           "arrival": "00:11:59",
-          "departure": "00:18:56"
+          "departure": "00:18:57"
         },
         {
           "station": "weststadt",
-          "arrival": "00:22:03",
-          "departure": "00:23:03"
+          "arrival": "00:22:04",
+          "departure": "00:22:04"
         },
         {
           "station": "Linksdorf",
-          "arrival": "00:25:41"
+          "arrival": "00:24:42"
         }
       ]
     },
@@ -161,6 +161,7 @@
     {
       "number": "40001",
       "type": "Freight",
+      "category": "GZ",
       "speed": 80,
       "cars": 12,
       "timetable": [
@@ -306,9 +307,9 @@
       ]
     },
     {
-      "number": "59009",
+      "number": "59011",
       "type": "Passenger",
-      "category": null,
+      "category": "RB",
       "speed": 120,
       "cars": 4,
       "timetable": [
@@ -345,7 +346,7 @@
     {
       "number": "58005",
       "type": "Passenger",
-      "category": null,
+      "category": "RE",
       "speed": 140,
       "cars": 5,
       "timetable": [
@@ -419,7 +420,7 @@
     {
       "number": "58003",
       "type": "Passenger",
-      "category": null,
+      "category": "RE",
       "speed": 140,
       "cars": 5,
       "timetable": [
@@ -456,7 +457,7 @@
     {
       "number": "58004",
       "type": "Passenger",
-      "category": null,
+      "category": "RE",
       "speed": 140,
       "cars": 4,
       "timetable": [
@@ -712,6 +713,7 @@
     {
       "number": "40102",
       "type": "Freight",
+      "category": "GZ",
       "speed": 100,
       "cars": 12,
       "timetable": [
@@ -748,6 +750,7 @@
     {
       "number": "40602",
       "type": "Freight",
+      "category": "GZ",
       "speed": 80,
       "cars": 8,
       "timetable": [
