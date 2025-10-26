@@ -3,6 +3,7 @@ using TrainDispatcherGame.Server.Managers;
 using TrainDispatcherGame.Server.Hubs;
 using TrainDispatcherGame.Server.Services;
 using TrainDispatcherGame.Server.Models;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
@@ -39,6 +40,25 @@ builder.Services.AddSingleton<INotificationManager, NotificationManager>();
 builder.Services.AddSingleton<ITrackLayoutService, TrackLayoutService>();
 
 var app = builder.Build();
+
+// Forward proxy headers (X-Forwarded-For/X-Forwarded-Proto) for SSL termination behind a reverse proxy
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+    // Accept forwarded headers from any proxy/network (simplifies container/proxy setups). Adjust for stricter security if needed.
+    RequireHeaderSymmetry = false
+});
+// Allow forwarded headers from any proxy (common for Docker/K8s with ingress). Configure specific proxies in locked-down environments.
+var forwardedHeadersOptions = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<ForwardedHeadersOptions>>().Value;
+forwardedHeadersOptions.KnownNetworks.Clear();
+forwardedHeadersOptions.KnownProxies.Clear();
+
+if (!app.Environment.IsDevelopment())
+{
+    // Enforce HTTPS in production and add HSTS. If TLS is terminated at a proxy, forwarded headers prevent unnecessary redirects.
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
 
 // Configure CORS for both API and SignalR
 app.UseCors("AllowDevClient");
