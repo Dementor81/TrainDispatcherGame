@@ -33,12 +33,10 @@ export class Application {
    }
 
    async init() {
-      console.log("TrainSim Client gestartet");
-      
       this._uiManager.init();
       this._eventManager.init();
 
-      this.initRenderer();
+      await this.initRenderer();
       this.setupEventListeners();
 
       // Connect to SignalR
@@ -94,10 +92,10 @@ export class Application {
       }
    }
 
-   private initRenderer(): void {
+   private async initRenderer(): Promise<void> {
       const canvas = document.getElementById('mainCanvas') as HTMLCanvasElement;
       if (canvas) {
-         this._renderer = new Renderer(canvas, this._trackLayoutManager, this._eventManager);
+         this._renderer = await Renderer.create(canvas, this._trackLayoutManager, this._eventManager);
          this._trackLayoutManager.setRenderer(this._renderer);
          
          // Set up callback to render when layout is loaded
@@ -161,6 +159,13 @@ export class Application {
       this._eventManager.on('permanentlyDisconnected', async () => {
          console.warn('Application: Permanently disconnected from server. Resetting to start screen.');
          await this.resetToStartScreen();
+      });
+
+      // Redraw request from renderer (e.g., after WebGL context restored)
+      this._eventManager.on('requestTrainsRedraw', () => {
+         if (this._renderer) {
+            this._renderer.renderTrains(this._trainManager.getAllTrains());
+         }
       });
 
       // Simulation state change events

@@ -37,7 +37,6 @@ export class TrainManager {
          this.handleTrainReachedExit(train, exit);
       });
 
-      console.log("TrainManager initialized and subscribed to train events");
    }
 
    // ==================== SIMULATION METHODS ====================

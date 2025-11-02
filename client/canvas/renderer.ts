@@ -16,20 +16,25 @@ import { StationRenderer } from "./renderers/station_renderer";
 
 export class Renderer {
    private _pixiApp: PIXI.Application;
-   private _camera: Camera;
-   private _inputHandler: InputHandler;
-   private _trackRenderer: TrackRenderer;
-   private _switchRenderer: SwitchRenderer;
-   private _signalRenderer: SignalRenderer;
-   private _trainRenderer: TrainRenderer;
-   private _stationRenderer: StationRenderer;
+   private _camera!: Camera;
+   private _inputHandler!: InputHandler;
+   private _trackRenderer!: TrackRenderer;
+   private _switchRenderer!: SwitchRenderer;
+   private _signalRenderer!: SignalRenderer;
+   private _trainRenderer!: TrainRenderer;
+   private _stationRenderer!: StationRenderer;
    private _trackLayoutManager: TrackLayoutManager;
    private _eventManager: EventManager;
 
-   constructor(canvas: HTMLCanvasElement, trackLayoutManager: TrackLayoutManager, eventManager: EventManager) {
-      // Create PIXI application
+   private constructor(canvas: HTMLCanvasElement, trackLayoutManager: TrackLayoutManager, eventManager: EventManager) {
       this._pixiApp = new PIXI.Application();
-      this._pixiApp.init({
+      this._trackLayoutManager = trackLayoutManager;
+      this._eventManager = eventManager;
+   }
+
+   static async create(canvas: HTMLCanvasElement, trackLayoutManager: TrackLayoutManager, eventManager: EventManager): Promise<Renderer> {
+      const r = new Renderer(canvas, trackLayoutManager, eventManager);
+      await r._pixiApp.init({
          canvas: canvas,
          resizeTo: window,
          backgroundColor: RendererConfig.backgroundColor,
@@ -38,16 +43,13 @@ export class Renderer {
          autoDensity: true,
       });
 
-      this._trackLayoutManager = trackLayoutManager;
-      this._eventManager = eventManager;
-
       // Initialize camera and input handler
-      this._camera = new Camera(this._pixiApp.stage, canvas);
-      this._inputHandler = new InputHandler(canvas, this._camera, eventManager);
+      r._camera = new Camera(r._pixiApp.stage, canvas);
+      r._inputHandler = new InputHandler(canvas, r._camera, eventManager);
 
       // Debug: log display object under cursor on click
-      this._pixiApp.stage.eventMode = "static";
-      this._pixiApp.stage.on("click", (event) => {
+      r._pixiApp.stage.eventMode = "static";
+      r._pixiApp.stage.on("click", (event) => {
          const target = (event as any).target as any;
          const info: Record<string, unknown> = {};
          let current: any = target;
@@ -70,25 +72,47 @@ export class Renderer {
          }
       });
 
+      // Handle WebGL context loss/restoration
+      const view = r._pixiApp.canvas;
+      view.addEventListener("webglcontextlost", r.handleWebGLContextLost as any, false);
+      view.addEventListener("webglcontextrestored", r.handleWebGLContextRestored as any, false);
+
       // Initialize renderers
-      this._trackRenderer = new TrackRenderer(this._pixiApp.stage, trackLayoutManager);
-      this._switchRenderer = new SwitchRenderer(this._pixiApp.stage, eventManager, canvas);
-      this._signalRenderer = new SignalRenderer(this._pixiApp.stage, eventManager, canvas);
-      this._trainRenderer = new TrainRenderer(this._pixiApp.stage, trackLayoutManager);
-      this._stationRenderer = new StationRenderer(this._pixiApp.stage, trackLayoutManager);
+      r._trackRenderer = new TrackRenderer(r._pixiApp.stage, trackLayoutManager);
+      r._switchRenderer = new SwitchRenderer(r._pixiApp.stage, eventManager, canvas);
+      r._signalRenderer = new SignalRenderer(r._pixiApp.stage, eventManager, canvas);
+      r._trainRenderer = new TrainRenderer(r._pixiApp.stage, trackLayoutManager);
+      r._stationRenderer = new StationRenderer(r._pixiApp.stage, trackLayoutManager);
 
       // Set up event listeners
-      this._eventManager.on('trainRemoved', (trainNumber: string) => {
-         this._trainRenderer.removeTrain(trainNumber);
+      r._eventManager.on('trainRemoved', (trainNumber: string) => {
+         r._trainRenderer.removeTrain(trainNumber);
       });
 
       // Handle window resize
-      window.addEventListener("resize", this.handleResize.bind(this));
+      window.addEventListener("resize", r.handleResize.bind(r));
+
+      return r;
    }
 
    private handleResize(): void {
       //this._pixiApp.renderer.resize(window.innerWidth, window.innerHeight);
    }
+
+   private handleWebGLContextLost = (e: Event): void => {
+      try {
+         (e as any).preventDefault?.();
+      } catch {}
+      console.warn("Renderer: WebGL context lost. Preventing default and awaiting restore.");
+   };
+
+   private handleWebGLContextRestored = (): void => {
+      console.info("Renderer: WebGL context restored. Redrawing all GUI elements.");
+      // Rebuild stage contents
+      this.renderTrackLayout();
+      // Ask application layer to provide current trains for rendering
+      this._eventManager.emit("requestTrainsRedraw");
+   };
 
    public renderTrackLayout(): void {
       // Clear previous content
