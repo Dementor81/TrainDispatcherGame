@@ -182,7 +182,7 @@
          "id": 173,
          "start": { "x": -600, "y": 650 },
          "end": { "x": 200, "y": 650 },
-         "signals": [],
+         "signals": [{ "type": "main", "position": 500, "direction": 1 }],
          "switches": [{"type": "Exit", "id": 2}, { "type": "Switch", "id": 52 }]
       },
       {
