@@ -4,15 +4,7 @@ using TrainDispatcherGame.Server.Hubs;
 
 namespace TrainDispatcherGame.Server.Managers
 {
-    public interface INotificationManager
-    {
-        Task SendTrain(string stationId, Train train, string? exitPointId = null);
-        Task SendSimulationStateChange(SimulationState newState, int speed);
-        Task SendApprovalRequest(string stationId, string fromStationId, string trainNumber);
-        // No collision broadcast needed; clients handle locally
-    }
-
-    public class NotificationManager : INotificationManager
+    public class NotificationManager
     {
         private readonly IHubContext<GameHub> _hubContext;
         private readonly PlayerManager _playerManager;
@@ -23,7 +15,7 @@ namespace TrainDispatcherGame.Server.Managers
             _playerManager = playerManager;
         }
 
-        public async Task SendTrain(string stationId, Train train, string? exitPointId = null)
+        public async Task SendTrain(string stationId, Train train, int? exitPointId = null)
         {
             // Normalize stationId to lowercase for consistent handling
             var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;

@@ -28,7 +28,7 @@ export class TrainManager {
       this._trackLayoutManager = trackLayoutManager;
 
       // Subscribe to train creation events
-      this._eventManager.on("trainCreated", (train: Train, exitPointId: string) => {
+      this._eventManager.on("trainCreated", (train: Train, exitPointId: number) => {
          this.handleTrainCreated(train, exitPointId);
       });
 
@@ -516,7 +516,7 @@ export class TrainManager {
    // ==================== TRAIN MANAGEMENT METHODS ====================
 
    // Add a new train to the manager at a specific exit point
-   spawnTrainAtExitPoint(train: Train, exitPointId: string): void {
+  spawnTrainAtExitPoint(train: Train, exitPointId: number): void {
       // Get the track and kilometer position for this exit point
       const location = this._trackLayoutManager.getExitPointLocation(exitPointId);
       const direction = this._trackLayoutManager.getExitPointDirection(exitPointId);
@@ -595,7 +595,7 @@ export class TrainManager {
    }
 
    // Handle train creation events
-   private handleTrainCreated(train: Train, exitPointId: string): void {
+  private handleTrainCreated(train: Train, exitPointId: number): void {
       console.log(`TrainManager: Received train ${train.getInfo()}`);
       this.spawnTrainAtExitPoint(train, exitPointId);
    }

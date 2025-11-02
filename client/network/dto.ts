@@ -112,10 +112,21 @@ export interface NetworkDto {
 
 export interface NetworkConnectionDto {
   from: string;
-  fromId: string;
+  fromId: number;
   to: string;
-  toId: string;
+  toId: number;
   distance: number;
   blocks: number;
   mode?: string;
+}
+
+export interface OpenLineTrackStatusDto {
+  from: string;
+  fromExitId: number;
+  to: string;
+  toExitId: number;
+  distance: number;
+  blocks: number;
+  mode?: string;
+  trains: string[];
 }

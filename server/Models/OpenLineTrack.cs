@@ -4,17 +4,15 @@ namespace TrainDispatcherGame.Server.Models
     {        
         public NetworkConnection Connection { get; set; } = new();
         public List<Train> Trains { get; set; } = new();
-        public int BlockSection { get; set; }
 
         public OpenLineTrack(NetworkConnection connection)
         {
             Connection = connection;
-            BlockSection = 1;
         }
 
         public bool AddTrain(Train train)
         {
-            if(Trains.Count == BlockSection)
+            if(Connection.Blocks > 0 && Trains.Count == Connection.Blocks)
             {
                 return false;
             }

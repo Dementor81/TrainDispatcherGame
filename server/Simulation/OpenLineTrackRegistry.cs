@@ -6,10 +6,10 @@ namespace TrainDispatcherGame.Server.Simulation
 {
     public class OpenLineTrackRegistry
     {
-        private readonly ITrackLayoutService _trackLayoutService;
+        private readonly TrackLayoutService _trackLayoutService;
         private Dictionary<NetworkConnection, OpenLineTrack> _openLineTracks = new();
 
-        public OpenLineTrackRegistry(ITrackLayoutService trackLayoutService)
+        public OpenLineTrackRegistry(TrackLayoutService trackLayoutService)
         {
             _trackLayoutService = trackLayoutService;
         }
@@ -44,6 +44,11 @@ namespace TrainDispatcherGame.Server.Simulation
             {
                 track.RemoveTrain(train);
             }
+        }
+
+        public IEnumerable<OpenLineTrack> GetAll()
+        {
+            return _openLineTracks.Values;
         }
     }
 }

@@ -4,24 +4,7 @@ using TrainDispatcherGame.Server.Models;
 
 namespace TrainDispatcherGame.Server.Services
 {
-    public interface ITrackLayoutService
-    {
-        Dictionary<string, TrackLayout> TrackLayouts { get; }
-        string ActiveLayoutId { get; }
-        TrackLayout? GetTrackLayout(string stationId);
-        ExitPoint? GetExitPoint(string stationId, int exitId);
-        ExitPoint? GetExitPointToStation(string fromStationId, string toStationId);
-        List<TrackLayout> GetAllTrackLayouts();
-        IReadOnlyDictionary<(string stationId, int exitId), NetworkConnection> GetDirectedConnections();
-        NetworkConnection? GetConnection(string fromStationId, int fromExitId);
-        NetworkConnection? GetRegularConnectionToStation(string fromStationId, string toStationId, out bool isReversed);
-        TrainDispatcherGame.Server.Models.DTOs.ClientServerCom.ClientTrackLayoutDto? BuildClientTrackLayout(string stationId);
-        bool IsSingleTrackConnection(string stationA, string stationB);
-        List<NetworkConnection> GetAllConnections();
-        void SetActiveLayout(string layoutId);
-    }
-
-    public class TrackLayoutService : ITrackLayoutService
+    public class TrackLayoutService
     {
         private readonly Dictionary<string, TrackLayout> _trackLayouts = new();
         private readonly Dictionary<(string stationId, int exitId), NetworkConnection> _directedConnections = new();
@@ -209,7 +192,6 @@ namespace TrainDispatcherGame.Server.Services
                 }
 
                 // Collect required stations from explicit stations list
-                // Normalize station IDs to lowercase for consistent usage
                 if (network.Stations != null)
                 {
                     foreach (var station in network.Stations)
@@ -219,6 +201,11 @@ namespace TrainDispatcherGame.Server.Services
                             requiredStations.Add(station.ToLowerInvariant());
                         }
                     }
+                }
+                else
+                {
+                    Console.WriteLine("No stations found in network.json.");
+                    return new string[0];
                 }
 
                 if (network.Connections == null)
@@ -232,13 +219,13 @@ namespace TrainDispatcherGame.Server.Services
                 {
                     if (string.IsNullOrWhiteSpace(c.FromStation) || string.IsNullOrWhiteSpace(c.ToStation))
                     {
+                        Console.WriteLine($"Warning: Invalid connection from '{c.FromStation}' to '{c.ToStation}' in network.json.");
                         continue;
                     }                    
+                    
+                    var fromExit = c.FromExitId;
+                    var toExit = c.ToExitId;
 
-                    if (!int.TryParse(c.FromExitId, out var fromExit)) continue;
-                    if (!int.TryParse(c.ToExitId, out var toExit)) continue;
-
-                    // Normalize station IDs to lowercase for consistent usage
                     var normalizedFromStation = c.FromStation.ToLowerInvariant();
                     var normalizedToStation = c.ToStation.ToLowerInvariant();
 
@@ -386,13 +373,35 @@ namespace TrainDispatcherGame.Server.Services
             return _directedConnections;
         }
 
-        public NetworkConnection? GetConnection(string fromStationId, int fromExitId)
+        // Search for connection in both directions (fromStationId, fromExitId) and (toStationId, toExitId)
+        public NetworkConnection? GetConnection(string stationId, int exitId, out bool isReversed)
         {
-            return _directedConnections.TryGetValue((fromStationId, fromExitId), out var conn) ? conn : null;
-        }
+            isReversed = false;
+            // Try direct match
+            if (_directedConnections.TryGetValue((stationId, exitId), out var conn))
+                return conn;
 
-        
+            // Try reverse direction (exit is an entry at the other station)
+            foreach (var kvp in _directedConnections)
+            {
+                var c = kvp.Value;
+                if (c.ToStation == stationId && c.ToExitId == exitId)
+                {
+                    isReversed = true;
+                    return c;
+                }
+            }
+            return null;
+        }        
 
+        /// <summary>
+        /// Get a regular connection to a station. It either returns a forward connection of a two-way or single-track or a reverse connection of a single-track.
+        /// Attention: This method should only be used for automatic train routing. For player-controlled stations, use the GetConnection method instead.
+        /// </summary>
+        /// <param name="fromStationId">The station id of the from station</param>
+        /// <param name="toStationId">The station id of the to station</param>
+        /// <param name="isReversed">true if the connection direction is actually from toStationId to fromStationId</param>
+        /// <returns>The connection if found, null otherwise</returns>
         public NetworkConnection? GetRegularConnectionToStation(string fromStationId, string toStationId, out bool isReversed)
         {
             isReversed = false;
@@ -443,9 +452,9 @@ namespace TrainDispatcherGame.Server.Services
                 client.Connections.Add(new NetworkConnectionDto
                 {
                     FromStation = conn.FromStation,
-                    FromExitId = conn.FromExitId.ToString(),
+                    FromExitId = conn.FromExitId,
                     ToStation = conn.ToStation,
-                    ToExitId = conn.ToExitId.ToString(),
+                    ToExitId = conn.ToExitId,
                     Distance = conn.Distance,
                     Blocks = conn.Blocks,
                     Mode = conn.Mode.ToString()

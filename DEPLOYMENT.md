@@ -48,13 +48,6 @@ This runs both the .NET server (watch mode) and webpack dev server concurrently.
 - `start-dotnet`: Start .NET server in watch mode
 - `start-webpack`: Start webpack dev server
 
-## Building the Docker Image
-
-The project uses a multi-stage Docker build:
-1. Stage 1: Builds the frontend (Node.js 24)
-2. Stage 2: Builds the backend (.NET SDK 9.0) and copies frontend dist
-3. Stage 3: Creates runtime image (.NET ASP.NET 9.0)
-
 ### Build Command
 
 To build and push the Docker image for linux/amd64 platform:
@@ -69,22 +62,6 @@ docker buildx build --platform linux/amd64 -t marcus360/train_dispatcher_game:te
 - `--push`: Automatically pushes to Docker Hub after successful build
 - `.`: Build context is the project root directory
 
-### Alternative Build Commands
-
-**Build without pushing:**
-```bash
-docker buildx build --platform linux/amd64 -t marcus360/train_dispatcher_game:test .
-```
-
-**Build for multiple platforms:**
-```bash
-docker buildx build --platform linux/amd64,linux/arm64 -t marcus360/train_dispatcher_game:test --push .
-```
-
-**Build for production (different tag):**
-```bash
-docker buildx build --platform linux/amd64 -t marcus360/train_dispatcher_game:latest --push .
-```
 
 sudo docker login
 sudo docker container run --name train_dispatch_game -d -p5070:5070 marcus360/train_dispatcher_game:test
@@ -105,7 +82,7 @@ The app supports HTTPS when run behind a reverse proxy (nginx, Traefik, Caddy, A
 2. Preserve and forward headers `X-Forwarded-Proto` and `X-Forwarded-For`.
 3. Example nginx snippet:
 
-```nginx
+nginx
 server {
     listen 443 ssl http2;
     server_name your-domain;
@@ -119,7 +96,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
-```
+
 
 Server notes:
 - `Program.cs` enables `ForwardedHeaders` and HTTPS redirection + HSTS in non-Development.

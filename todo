@@ -16,6 +16,7 @@ Features:
 
 Big Features:
     ✔ uncontrolled stations should be handled by the server @done(25-08-10 13:27)
+    ☐ handle missrouted trains on client side. maybe it should stop at the exitppoint and the player must confirm  backing up to the station
     ☐ trains can end at a station and return as new trains
     ☐ track occupied detection
     ✔ 2-way tracks @done(25-08-16 19:22)

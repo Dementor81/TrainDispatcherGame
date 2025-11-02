@@ -96,7 +96,7 @@ export default class SzenariosApplication {
       }
 
       // Build adjacency map: station -> array of {to, fromExitId, toExitId}
-      const adjacency = new Map<string, Array<{to: string; fromExitId: string; toExitId: string}>>();
+      const adjacency = new Map<string, Array<{to: string; fromExitId: number; toExitId: number}>>();
       for (const conn of network.connections) {
          if (!adjacency.has(conn.from)) {
             adjacency.set(conn.from, []);
@@ -109,9 +109,8 @@ export default class SzenariosApplication {
       }
 
       // Helper to check if exit ID is odd or even
-      const isOdd = (exitId: string): boolean => {
-         const num = parseInt(exitId, 10);
-         return !isNaN(num) && num % 2 === 1;
+      const isOdd = (exitId: number): boolean => {
+         return exitId % 2 === 1;
       };
 
       // DFS to explore routes

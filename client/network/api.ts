@@ -1,4 +1,4 @@
-import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto } from "./dto";
+import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto, OpenLineTrackStatusDto } from "./dto";
 
 const API_BASE_URL = "/api";
 
@@ -135,6 +135,7 @@ export default {
   getAllTrains,
   getUpcomingTrains,
   fetchNetwork,
+  fetchOpenLineTracks,
 };
 
 // Advance simulation time by one minute
@@ -208,6 +209,14 @@ export async function setScenario(id: string): Promise<{ message: string; id: st
   });
   if (!response.ok) {
     throw new Error(`Failed to set scenario: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+export async function fetchOpenLineTracks(): Promise<OpenLineTrackStatusDto[]> {
+  const response = await fetch(`${API_BASE_URL}/openline/tracks`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch open line tracks: ${response.statusText}`);
   }
   return response.json();
 }

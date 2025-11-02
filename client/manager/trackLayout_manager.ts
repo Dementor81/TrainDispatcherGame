@@ -74,8 +74,8 @@ export class TrackLayoutManager {
    }
 
    // Find the track and kilometer position for an exit point
-   getExitPointLocation(exitPointId: string): { track: Track | null; km: number } {
-      const exitId = parseInt(exitPointId);
+   getExitPointLocation(exitPointId: number): { track: Track | null; km: number } {
+      const exitId = exitPointId;
 
       // Find the track that has this exit
       for (const track of this._tracks) {
@@ -105,10 +105,10 @@ export class TrackLayoutManager {
       return { track: null, km: 0 };
    }
 
-   getExitPointDirection(exitPointId: string): number {
+   getExitPointDirection(exitPointId: number): number {
       // If exit is at the start of the track (index 0), direction is positive (1)
       // If exit is at the end of the track (index 1), direction is negative (-1)
-      const exitId = parseInt(exitPointId);
+      const exitId = exitPointId;
       for (const track of this._tracks) {
          for (let i = 0; i < track.switches.length; i++) {
             const switchItem = track.switches[i];
@@ -158,15 +158,15 @@ export class TrackLayoutManager {
                // Search for corresponding connection
                const connection = this._connections.find(
                   (conn) => 
-                     (conn.from === this._layoutId && parseInt(conn.fromId) === exitId) ||
-                     (conn.to === this._layoutId && parseInt(conn.toId) === exitId)
+                     (conn.from === this._layoutId && conn.fromId === exitId) ||
+                     (conn.to === this._layoutId && conn.toId === exitId)
                );
 
                if (connection) {
                   switchItem.connection = connection;
                   
                   // Determine if exit is inbound or outbound
-                  const isInbound = connection.to === this._layoutId && parseInt(connection.toId) === exitId;
+                  const isInbound = connection.to === this._layoutId && connection.toId === exitId;
                   switchItem.isInbound = isInbound;
                   
                   console.log(

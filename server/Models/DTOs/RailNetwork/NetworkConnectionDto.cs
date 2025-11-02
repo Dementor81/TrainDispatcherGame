@@ -8,13 +8,13 @@ namespace TrainDispatcherGame.Server.Models.DTOs
         public string FromStation { get; set; } = string.Empty;
 
         [JsonPropertyName("fromId")]
-        public string FromExitId { get; set; } = string.Empty;
+        public int FromExitId { get; set; }
 
         [JsonPropertyName("to")]
         public string ToStation { get; set; } = string.Empty;
 
         [JsonPropertyName("toId")]
-        public string ToExitId { get; set; } = string.Empty;
+        public int ToExitId { get; set; }
 
         [JsonPropertyName("distance")]
         public int Distance { get; set; }

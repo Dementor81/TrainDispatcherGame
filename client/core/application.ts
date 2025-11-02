@@ -126,7 +126,7 @@ export class Application {
       });
 
       // Train sending events
-      this._eventManager.on('sendTrainToServer', async (trainNumber: string, exitId: string) => {
+      this._eventManager.on('sendTrainToServer', async (trainNumber: string, exitId: number) => {
          await this.handleSendTrainToServer(trainNumber, exitId);
       });
 
@@ -197,7 +197,7 @@ export class Application {
       }
    }
 
-   private async handleSendTrainToServer(trainNumber: string, exitId: string): Promise<void> {
+  private async handleSendTrainToServer(trainNumber: string, exitId: number): Promise<void> {
       if (!this._currentPlayerId) {
          console.error('Cannot send train: No current player ID');
          return;

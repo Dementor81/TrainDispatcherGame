@@ -186,13 +186,13 @@ export class SignalRManager {
     }
 
     //send train to server
-    public async sendTrain(playerId: string, trainNumber: string, exitId: string): Promise<void> {
+    public async sendTrain(playerId: string, trainNumber: string, exitId: number): Promise<void> {
         if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
             throw new Error('SignalR connection not established');
         }
 
         try {
-            await this.connection.invoke('ReceiveTrain', playerId, trainNumber, exitId.toString());
+            await this.connection.invoke('ReceiveTrain', playerId, trainNumber, exitId);
         } catch (error) {
             console.error('Failed to send train:', error);
             throw error;

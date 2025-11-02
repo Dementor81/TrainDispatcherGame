@@ -141,7 +141,7 @@ namespace TrainDispatcherGame.Server.Hubs
             await Clients.Caller.SendAsync("Pong", DateTime.UtcNow);
         }
 
-        public async Task ReceiveTrain(string playerId, string trainNumber, string exitId)
+        public async Task ReceiveTrain(string playerId, string trainNumber, int exitId)
         {
             try
             {      
@@ -153,7 +153,7 @@ namespace TrainDispatcherGame.Server.Hubs
                     return;
                 }
 
-                await _simulation.TrainReturnedFromClient(train,exitId);
+                await _simulation.TrainReturnedFromClient(train, exitId);
             }
             catch (Exception ex)
             {

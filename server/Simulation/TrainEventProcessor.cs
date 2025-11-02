@@ -8,14 +8,14 @@ namespace TrainDispatcherGame.Server.Simulation
 {
     public class TrainEventProcessor
     {
-        private readonly INotificationManager _notificationManager;
+        private readonly NotificationManager _notificationManager;
         private readonly PlayerManager _playerManager;
-        private readonly ITrackLayoutService _trackLayoutService;
+        private readonly TrackLayoutService _trackLayoutService;
         private readonly OpenLineTrackRegistry _trackRegistry;
 
-        public TrainEventProcessor(INotificationManager notificationManager,
+        public TrainEventProcessor(NotificationManager notificationManager,
                                    PlayerManager playerManager,
-                                   ITrackLayoutService trackLayoutService,
+                                   TrackLayoutService trackLayoutService,
                                    OpenLineTrackRegistry trackRegistry)
         {
             _notificationManager = notificationManager;
@@ -26,13 +26,14 @@ namespace TrainDispatcherGame.Server.Simulation
 
         public DateTime SimulationTime { get; set; }
 
-        public TrainSpawnEvent CreateSpawnFromConnection(Train train, NetworkConnection connection, int additionalDistance, DateTime scheduledTime = default)
+        public TrainSpawnEvent CreateSpawnFromConnection(Train train, NetworkConnection connection, bool isReversed, int additionalDistance, DateTime scheduledTime = default)
         {
             var distance = connection.Distance + additionalDistance;
             var seconds = train.GetTravelTime(distance);
             return new TrainSpawnEvent(
                 scheduledTime == default ? SimulationTime.AddSeconds(seconds) : scheduledTime.AddSeconds(seconds),
-                connection
+                connection,
+                isReversed
             );
         }
 
@@ -62,11 +63,11 @@ namespace TrainDispatcherGame.Server.Simulation
             _trackRegistry.RemoveTrain(spawn.Connection, train);
 
             var station = spawn.HeadingStation;
-            var exitPointId = spawn.HeadingExitId.ToString();
+            var exitPointId = spawn.HeadingExitId;
 
             if (_playerManager.IsStationControlled(station))
             {
-                if (exitPointId == "-1") throw new Exception($"Train {train.Number} has invalid exit point id -1 for player controlled station");
+                if (exitPointId == -1) throw new Exception($"Train {train.Number} has invalid exit point id -1 for player controlled station");
                 await _notificationManager.SendTrain(station, train, exitPointId);
                 train.controlledByPlayer = true;
                 // Normalize station ID to lowercase for consistent handling
@@ -116,8 +117,7 @@ namespace TrainDispatcherGame.Server.Simulation
             if (connection == null) throw new Exception($"No regular connection found for train {train.Number} from {currentWaypoint.Station} to {nextWaypoint.Station}");
             if (layout != null) distanceToExit = layout.MaxExitDistance / 2;
 
-            var spawn = CreateSpawnFromConnection(train, connection, distanceToExit, departureTime);
-            spawn.IsReversed = isReversed;
+            var spawn = CreateSpawnFromConnection(train, connection, isReversed, distanceToExit, departureTime);
             train.TrainEvent = spawn;
             train.AdvanceToNextWayPoint();
             _trackRegistry.AddTrain(connection, train);

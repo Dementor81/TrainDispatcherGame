@@ -20,9 +20,9 @@ namespace TrainDispatcherGame.Server.Simulation
         private SimulationState _state = SimulationState.Stopped;
         private string? _errorMessage;
         private List<Train> _trains = new();
-        private readonly INotificationManager _notificationManager;
+        private readonly NotificationManager _notificationManager;
         private readonly PlayerManager _playerManager;
-        private readonly ITrackLayoutService _trackLayoutService;
+        private readonly TrackLayoutService _trackLayoutService;
         private readonly OpenLineTrackRegistry _openLineTracks;
         private readonly TrainEventProcessor _eventProcessor;
         private readonly StationTimetableService _timetableService;
@@ -39,7 +39,7 @@ namespace TrainDispatcherGame.Server.Simulation
         public int Speed { get; private set; } = 1;
         public string ScenarioId => _scenarioId;
 
-        public Simulation(INotificationManager notificationManager, ITrackLayoutService trackLayoutService, PlayerManager playerManager, string scenarioId)
+        public Simulation(NotificationManager notificationManager, TrackLayoutService trackLayoutService, PlayerManager playerManager, string scenarioId)
         {
             _notificationManager = notificationManager;
             _trackLayoutService = trackLayoutService;
@@ -258,15 +258,14 @@ namespace TrainDispatcherGame.Server.Simulation
             }
         }           
 
-        public async Task TrainReturnedFromClient(Train train, string exitId)
+        public async Task TrainReturnedFromClient(Train train, int exitId)
         {
             try
             {
                 Console.WriteLine($"Train {train.Number} returned from client at {train.CurrentLocation} at Exit {exitId}");
-                if (!int.TryParse(exitId, out var exitPointId)) throw new Exception($"Invalid exit ID: {exitId}");
                 if (train.CurrentLocation == null) throw new Exception($"Train {train.Number} has no current location");
 
-                var connection = _trackLayoutService.GetConnection(train.CurrentLocation, exitPointId);
+                var connection = _trackLayoutService.GetConnection(train.CurrentLocation, exitId, out bool isReversed);
                 if (connection == null) throw new Exception($"No connection found for train {train.Number} at {train.CurrentLocation} at Exit {exitId}");
 
 
@@ -288,9 +287,9 @@ namespace TrainDispatcherGame.Server.Simulation
                     return;
                 }
 
-                if (nextEvent.Station != connection.ToStation)
+                if (nextEvent.Station != connection.ToStation && !isReversed || nextEvent.Station != connection.FromStation && isReversed)
                 {
-                    Console.WriteLine($"Train {train.Number} was missrouted to {connection.ToStation} instead of {nextEvent.Station}");
+                    Console.WriteLine($"Train {train.Number} was missrouted to {connection.ToStation} instead of {nextEvent.Station} or vice versa");
                     // TODO: handle missrouted train
                 }
 
@@ -301,8 +300,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 }
                 else
                 {
-                    var nextSpawn = _eventProcessor.CreateSpawnFromConnection(train, connection, 0);
-                    nextSpawn.IsReversed = false;
+                    var nextSpawn = _eventProcessor.CreateSpawnFromConnection(train, connection, isReversed, 0);                    
                     train.TrainEvent = nextSpawn;
                     if (!_openLineTracks.AddTrain(connection, train))
                     {
@@ -511,6 +509,25 @@ namespace TrainDispatcherGame.Server.Simulation
             _ = _notificationManager.SendSimulationStateChange(this._state, this.Speed);
         }
 
-
+        public List<TrainDispatcherGame.Server.Models.DTOs.OpenLineTrackStatusDto> GetOpenLineTrackStatuses()
+        {
+            var result = new List<TrainDispatcherGame.Server.Models.DTOs.OpenLineTrackStatusDto>();
+            foreach (var t in _openLineTracks.GetAll())
+            {
+                var dto = new TrainDispatcherGame.Server.Models.DTOs.OpenLineTrackStatusDto
+                {
+                    From = t.Connection.FromStation,
+                    FromExitId = t.Connection.FromExitId,
+                    To = t.Connection.ToStation,
+                    ToExitId = t.Connection.ToExitId,
+                    Distance = t.Connection.Distance,
+                    Blocks = t.Connection.Blocks,
+                    Mode = t.Connection.Mode.ToString(),
+                    Trains = t.Trains.Select(tr => tr.Number).ToList()
+                };
+                result.Add(dto);
+            }
+            return result;
+        }
     }
 }

@@ -7,9 +7,11 @@ import * as bootstrap from "bootstrap";
 
 import AdminPanel from "./adminPanel";
 import TrainsPanel from "./trainsPanel";
+import OpenLinePanel from "./openLinePanel";
 
 window.addEventListener("load", async () => {
   const panel = new AdminPanel();
   const trains = new TrainsPanel({ x: 0, y: 280 });
-  (window as any).admin = { panel, trains };
+  const openline = new OpenLinePanel({ x: 'right', y: 280 });
+  (window as any).admin = { panel, trains, openline };
 });

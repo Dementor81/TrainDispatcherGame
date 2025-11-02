@@ -23,8 +23,8 @@ builder.Services.AddSignalR();
 // Add simulation as a singleton service
 builder.Services.AddSingleton<Simulation>(serviceProvider =>
 {
-    var notificationManager = serviceProvider.GetRequiredService<INotificationManager>();
-    var trackLayoutService = serviceProvider.GetRequiredService<ITrackLayoutService>();
+    var notificationManager = serviceProvider.GetRequiredService<NotificationManager>();
+    var trackLayoutService = serviceProvider.GetRequiredService<TrackLayoutService>();
     var playerManager = serviceProvider.GetRequiredService<PlayerManager>();
     var scenarioId = ScenarioService.ListScenarios().Last().Id;
     return new Simulation(notificationManager, trackLayoutService, playerManager, scenarioId);
@@ -34,10 +34,10 @@ builder.Services.AddSingleton<Simulation>(serviceProvider =>
 builder.Services.AddSingleton<PlayerManager>();
 
 // Add notification manager as a singleton service
-builder.Services.AddSingleton<INotificationManager, NotificationManager>();
+builder.Services.AddSingleton<NotificationManager>();
 
 // Add track layout service as a singleton service
-builder.Services.AddSingleton<ITrackLayoutService, TrackLayoutService>();
+builder.Services.AddSingleton<TrackLayoutService>();
 
 var app = builder.Build();
 
@@ -71,7 +71,7 @@ app.UseStaticFiles();
 app.MapHub<GameHub>("/gamehub").RequireCors("AllowDevClient");
 
 // Endpoint to serve a specific track layout JSON file
-app.MapGet("/api/layouts/{stationName}", (string stationName, ITrackLayoutService trackLayoutService) =>
+app.MapGet("/api/layouts/{stationName}", (string stationName, TrackLayoutService trackLayoutService) =>
 {
     stationName = stationName.ToLower();
     var client = trackLayoutService.BuildClientTrackLayout(stationName);
@@ -82,7 +82,7 @@ app.MapGet("/api/layouts/{stationName}", (string stationName, ITrackLayoutServic
     return Results.Json(client);
 });
 
-app.MapGet("/api/layouts", (ITrackLayoutService trackLayoutService) =>
+app.MapGet("/api/layouts", (TrackLayoutService trackLayoutService) =>
 {
     var layouts = trackLayoutService.GetAllTrackLayouts();
     var stations = layouts.Select(layout => new
@@ -94,7 +94,7 @@ app.MapGet("/api/layouts", (ITrackLayoutService trackLayoutService) =>
 });
 
 // Endpoint to get exit points for a station
-app.MapGet("/api/layouts/{stationName}/exits", (string stationName, ITrackLayoutService trackLayoutService) =>
+app.MapGet("/api/layouts/{stationName}/exits", (string stationName, TrackLayoutService trackLayoutService) =>
 {
     stationName = stationName.ToLower();
     var layout = trackLayoutService.GetTrackLayout(stationName);
@@ -107,7 +107,7 @@ app.MapGet("/api/layouts/{stationName}/exits", (string stationName, ITrackLayout
 });
 
 // Endpoint to get exit point from one station to another
-app.MapGet("/api/layouts/{fromStation}/exit-to/{toStation}", (string fromStation, string toStation, ITrackLayoutService trackLayoutService) =>
+app.MapGet("/api/layouts/{fromStation}/exit-to/{toStation}", (string fromStation, string toStation, TrackLayoutService trackLayoutService) =>
 {
     fromStation = fromStation.ToLower();
     toStation = toStation.ToLower();
@@ -248,6 +248,14 @@ app.MapGet("/api/simulation/trains", (Simulation simulation) =>
 });
 
 
+// Open line tracks status
+app.MapGet("/api/openline/tracks", (Simulation simulation) =>
+{
+    var list = simulation.GetOpenLineTrackStatuses();
+    return Results.Ok(list);
+});
+
+
 // Endpoint to get upcoming trains for a specific station
 app.MapGet("/api/stations/{stationId}/upcoming-trains", (string stationId, Simulation simulation) =>
 {
@@ -315,7 +323,7 @@ app.MapGet("/api/scenarios/{id}", (string id) =>
 });
 
 // Rail network API for specific layout
-app.MapGet("/api/network/{layoutId}", (string layoutId, ITrackLayoutService trackLayoutService) =>
+app.MapGet("/api/network/{layoutId}", (string layoutId, TrackLayoutService trackLayoutService) =>
 {
     try
     {
