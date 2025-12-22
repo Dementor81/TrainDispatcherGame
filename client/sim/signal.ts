@@ -1,9 +1,12 @@
+import type Track from "./track";
+
 class Signal {
-    static fromObject(object: any): Signal {
+    static fromObject(object: any, track?: Track): Signal {
         const signal = new Signal();
         signal._type = object.type;
         signal._position = object.position;
         signal._direction = object.direction || 1; // Default to forward direction
+        signal._track = track || null;
         return signal;
     }
 
@@ -11,12 +14,14 @@ class Signal {
     private _position: number; // km position along the track
     private _state: boolean; // true = go (green), false = stop (red)
     private _direction: number; // 1 = forward (positive track direction), -1 = backward (negative track direction)
+    private _track: Track | null; // owning track
 
     constructor() {
         this._type = '';
         this._position = 0;
         this._state = false; // Default to red/stop state
         this._direction = 1; // Default to forward direction
+        this._track = null;
     }
 
     get type(): string {
@@ -37,6 +42,10 @@ class Signal {
 
     set state(value: boolean) {
         this._state = value;
+    }
+
+    get track(): Track | null {
+        return this._track;
     }
 
     /**

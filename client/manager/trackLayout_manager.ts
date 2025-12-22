@@ -42,14 +42,14 @@ export class TrackLayoutManager {
          this.handleSwitchClick(sw);
       });
 
-      this._application.eventManager.on("signalClicked", (signal: Signal, track: Track) => {
-         console.log(`Signal at km ${signal.position} on track ${track.id} clicked`);
-         this.handleSignalClick(signal, track);
+      this._application.eventManager.on("signalClicked", (signal: Signal) => {
+         console.log(`Signal at km ${signal.position} on track ${signal.track?.id} clicked`);
+         this.handleSignalClick(signal);
       });
 
-      this._application.eventManager.on("trainPassedSignal", (train: Train, signal: Signal, track: Track) => {
-         console.log(`Train ${train.number} passed signal at km ${signal.position} on track ${track.id}`);
-         this.handleTrainPassedSignal(train, signal, track);
+      this._application.eventManager.on("trainPassedSignal", (train: Train, signal: Signal) => {
+         console.log(`Train ${train.number} passed signal at km ${signal.position} on track ${signal.track?.id}`);
+         this.handleTrainPassedSignal(train, signal);
       });
    }
 
@@ -185,26 +185,26 @@ export class TrackLayoutManager {
       sw.toggle();
    }
 
-   private handleSignalClick(signal: Signal, track: Track): void {
+   private handleSignalClick(signal: Signal): void {
       // Toggle signal state
       signal.state = !signal.state;
-      console.log(`Signal at km ${signal.position} on track ${track.id} changed to ${signal.state ? 'green' : 'red'}`);
+      console.log(`Signal at km ${signal.position} on track ${signal.track?.id} changed to ${signal.state ? 'green' : 'red'}`);
       
       // Redraw the signal to reflect new state
       if (this._renderer) {
-         this._renderer.redrawSignal(signal, track);
+         this._renderer.redrawSignal(signal);
       }      
    }
 
-   private handleTrainPassedSignal(train: Train, signal: Signal, track: Track): void {
+   private handleTrainPassedSignal(train: Train, signal: Signal): void {
       // Automatically set signal to red (stop) after train passes
       if (signal.state) {
          signal.state = false; // Set to red
-         console.log(`Signal at km ${signal.position} on track ${track.id} automatically set to red after train ${train.number} passed`);
+         console.log(`Signal at km ${signal.position} on track ${signal.track?.id} automatically set to red after train ${train.number} passed`);
          
          // Redraw the signal to reflect new state
          if (this._renderer) {
-            this._renderer.redrawSignal(signal, track);
+            this._renderer.redrawSignal(signal);
          }
       }
    }
@@ -263,7 +263,20 @@ export class TrackLayoutManager {
     * @param direction - Direction to search (1 = forward, -1 = backward)
     * @returns The next signal in the given direction, or null if no signal found
     */
-   getNextSignal(currentTrack: Track, currentKm: number, direction: number): Signal | null {
+   /**
+    * Finds the next signal on a track in the given direction from a certain point.
+    * @param currentTrack - The current track to search on
+    * @param currentKm - The current kilometer position on the track
+    * @param direction - Direction to search (1 = forward, -1 = backward)
+    * @param onlyCurrentTrack - If true, restrict search to current track only (default: false)
+    * @returns The next signal in the given direction, or null if no signal found
+    */
+   getNextSignal(
+      currentTrack: Track, 
+      currentKm: number, 
+      direction: number,
+      onlyCurrentTrack: boolean = false
+   ): Signal | null {
       if (!currentTrack) return null;
 
       // First, check for signals on the current track
@@ -290,6 +303,11 @@ export class TrackLayoutManager {
                signal.position > closest.position ? signal : closest
             );
          }
+      }
+
+      // If only looking for signals on current track, return null if not found
+      if (onlyCurrentTrack) {
+         return null;
       }
 
       // If no signals on current track, check the next track
@@ -337,7 +355,7 @@ export class TrackLayoutManager {
     * Finds the next element connected to the current track in the given direction
     * @returns Object with element (Track/Switch/Exit) and direction, or throws MovementException for dead ends
     */
-   private findNextTrack(currentTrack: Track, direction: number): { element: Track | Switch | Exit; direction: number } {
+   findNextTrack(currentTrack: Track, direction: number): { element: Track | Switch | Exit; direction: number } {
       const switchIndex = direction === 1 ? 1 : 0; // 1 = end, 0 = start
       const connection = currentTrack.switches[switchIndex];
 

@@ -13,6 +13,8 @@ import { SwitchRenderer } from "./renderers/switch_renderer";
 import { SignalRenderer } from "./renderers/signal_renderer";
 import { TrainRenderer } from "./renderers/train_renderer";
 import { StationRenderer } from "./renderers/station_renderer";
+import { TrainRouteRenderer } from "./renderers/trainRoute_renderer";
+import TrainRoute from "../sim/trainRoute";
 
 export class Renderer {
    private _pixiApp: PIXI.Application;
@@ -23,6 +25,7 @@ export class Renderer {
    private _signalRenderer!: SignalRenderer;
    private _trainRenderer!: TrainRenderer;
    private _stationRenderer!: StationRenderer;
+   private _trainRouteRenderer!: TrainRouteRenderer;
    private _trackLayoutManager: TrackLayoutManager;
    private _eventManager: EventManager;
 
@@ -83,6 +86,7 @@ export class Renderer {
       r._signalRenderer = new SignalRenderer(r._pixiApp.stage, eventManager, canvas);
       r._trainRenderer = new TrainRenderer(r._pixiApp.stage, trackLayoutManager);
       r._stationRenderer = new StationRenderer(r._pixiApp.stage, trackLayoutManager);
+      r._trainRouteRenderer = new TrainRouteRenderer(r._pixiApp.stage);
 
       // Set up event listeners
       r._eventManager.on('trainRemoved', (trainNumber: string) => {
@@ -145,12 +149,16 @@ export class Renderer {
       this._switchRenderer.redrawSwitch(sw);
    }
 
-   public redrawSignal(signal: Signal, track: Track): void {
-      this._signalRenderer.redrawSignal(signal, track);
+   public redrawSignal(signal: Signal): void {
+      this._signalRenderer.redrawSignal(signal);
    }
 
    public redrawTrain(train: Train): void {
       this._trainRenderer.redrawTrain(train);
+   }
+
+   public renderTrainRoutes(routes: TrainRoute[]): void {
+      this._trainRouteRenderer.renderAll(routes);
    }
 
    public clear(): void {
@@ -159,6 +167,7 @@ export class Renderer {
       this._signalRenderer.clear();
       this._trainRenderer.clear();
       this._stationRenderer.clear();
+      this._trainRouteRenderer.clear();
    }
 
    public getCurrentZoom(): number {

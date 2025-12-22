@@ -10,23 +10,28 @@ import { getSimulationStatus } from "../network/api";
 import { SimulationState } from "../network/dto";
 import ApprovalToast from "../ui/approvalToast";
 import { SimulationConfig } from "../core/config";
+import TrainRouteManager from "../manager/trainRoute_manager";
+import Signal from "../sim/signal";
 
 export class Application {
    private _uiManager: UIManager;
    private _eventManager: EventManager;
    private _trackLayoutManager: TrackLayoutManager;
    private _trainManager: TrainManager;
+   private _trainRouteManager: TrainRouteManager;
    private _renderer: Renderer | null = null;
    private _currentPlayerId: string | null = null;
    private _currentStationId: string | null = null;
    private _signalRManager: SignalRManager;
    private _simulationState: SimulationState = 'Stopped';
+   private _trainRouteClearTimer: number | null = null;
 
    constructor() {
       this._uiManager = new UIManager(this);
       this._eventManager = new EventManager(this);
       this._trackLayoutManager = new TrackLayoutManager(this);
       this._trainManager = new TrainManager(this._eventManager, this._trackLayoutManager);
+      this._trainRouteManager = new TrainRouteManager(this._trackLayoutManager);
       this._signalRManager = new SignalRManager(this._eventManager);
 
       (window as any).app = this;
@@ -171,6 +176,36 @@ export class Application {
       // Simulation state change events
       this._eventManager.on('simulationStateChanged', (state: SimulationState) => {
          this.handleSimulationStateChanged(state);
+      });
+
+      // Signal clicked → build/clear routes and render
+      this._eventManager.on('signalClicked', (signal: Signal) => {
+         if (!this._renderer) return;
+         if (signal.track && signal.state) {
+            const route = this._trainRouteManager.createAndStoreRoute(
+               { track: signal.track, km: signal.position },
+               signal.direction
+            );
+            if (!route) {
+               console.warn("TrainRoute creation failed (ended at a switch).");
+            }
+         } else {
+            this._trainRouteManager.clearRoutes();
+         }
+         this._renderer.renderTrainRoutes(this._trainRouteManager.routes);
+
+         // Testing: auto-clear all routes after 20 seconds
+         if (this._trainRouteClearTimer !== null) {
+            clearTimeout(this._trainRouteClearTimer);
+            this._trainRouteClearTimer = null;
+         }
+         this._trainRouteClearTimer = window.setTimeout(() => {
+            this._trainRouteManager.clearRoutes();
+            if (this._renderer) {
+               this._renderer.renderTrainRoutes(this._trainRouteManager.routes);
+            }
+            this._trainRouteClearTimer = null;
+         }, 20000);
       });
 
       // Simulation speed change events (from server)
@@ -331,6 +366,10 @@ export class Application {
 
    get trackLayoutManager(): TrackLayoutManager {
       return this._trackLayoutManager;
+   }
+
+   get trainRouteManager(): TrainRouteManager {
+      return this._trainRouteManager;
    }
 
    get simulationState(): SimulationState {

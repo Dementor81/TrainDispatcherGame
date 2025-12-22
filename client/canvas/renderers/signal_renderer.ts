@@ -22,7 +22,8 @@ export class SignalRenderer {
       stage.addChild(this._container);
    }
 
-   renderSignal(signal: Signal, track: Track): void {
+   renderSignal(signal: Signal): void {
+      const track = signal.track as Track;
       // Create a container for this signal
       const signalContainer = new PIXI.Container() as SignalContainer;
       signalContainer.signalTrackId = track.id;
@@ -74,8 +75,8 @@ export class SignalRenderer {
       signalContainer.eventMode = "static";
       signalContainer.on("click", (event) => {
          console.log("Signal clicked at:", event.global.x, event.global.y);
-         // Emit signal click event with both signal and track
-         this._eventManager.emit("signalClicked", signal, track);
+         // Emit signal click event with the signal (track is accessible via signal.track)
+         this._eventManager.emit("signalClicked", signal);
       });
       signalContainer.on("pointerover", (event) => {
          this._canvas.style.cursor = "pointer";
@@ -92,19 +93,19 @@ export class SignalRenderer {
       this._container.addChild(signalContainer);
    }
 
-   redrawSignal(signal: Signal, track: Track): void {
+   redrawSignal(signal: Signal): void {
       // Find the container for this signal by searching through children
       let signalContainer: SignalContainer | null = null;
       for (let i = 0; i < this._container.children.length; i++) {
          const child = this._container.children[i] as SignalContainer;
-         if (child.signalTrackId === track.id && child.signalPosition === signal.position) {
+         if (child.signalTrackId === signal.track?.id && child.signalPosition === signal.position) {
             signalContainer = child;
             break;
          }
       }
 
       if (!signalContainer) {
-         console.warn(`Signal container not found for signal at position ${signal.position} on track ${track.id}`);
+         console.warn(`Signal container not found for signal at position ${signal.position} on track ${signal.track?.id}`);
          return;
       }
 
@@ -112,14 +113,14 @@ export class SignalRenderer {
       this._container.removeChild(signalContainer);
 
       // Redraw the signal
-      this.renderSignal(signal, track);
+      this.renderSignal(signal);
    }
 
    renderAll(tracks: Track[]): void {
       this.clear();
       tracks.forEach((track) => {
          track.signals.forEach((signal) => {
-            this.renderSignal(signal, track);
+            this.renderSignal(signal);
          });
       });
    }

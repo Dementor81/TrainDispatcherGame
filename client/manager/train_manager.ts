@@ -423,7 +423,7 @@ export class TrainManager {
          if (signalPassed) {
             console.log(`Train ${train.number} passed signal at km ${signal.position} on track ${track.id}`);
             // Emit event for signal passed
-            this._eventManager.emit("trainPassedSignal", train, signal, track);
+            this._eventManager.emit("trainPassedSignal", train, signal);
          }
       }
    }

@@ -11,7 +11,7 @@ class Track extends BaseSimModule {
       track._start = new Point(object.start.x, object.start.y);
       track._end = new Point(object.end.x, object.end.y);
       track._id = object.id;
-      track._signals = object.signals ? object.signals.map((signalObj: any) => Signal.fromObject(signalObj)) : [];
+      track._signals = object.signals ? object.signals.map((signalObj: any) => Signal.fromObject(signalObj, track)) : [];
       track._switches = [null, null];
       track._halt = object.halt;
       return track;
