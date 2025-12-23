@@ -5,6 +5,7 @@ import Train from "../sim/train";
 import Signal from "../sim/signal";
 import TrackLayoutManager from "../manager/trackLayout_manager";
 import { EventManager } from "../manager/event_manager";
+import { TrainManager } from "../manager/train_manager";
 import { RendererConfig } from "../core/config";
 import { Camera } from "./camera";
 import { InputHandler } from "./input_handler";
@@ -28,15 +29,17 @@ export class Renderer {
    private _trainRouteRenderer!: TrainRouteRenderer;
    private _trackLayoutManager: TrackLayoutManager;
    private _eventManager: EventManager;
+   private _trainManager: TrainManager;
 
-   private constructor(canvas: HTMLCanvasElement, trackLayoutManager: TrackLayoutManager, eventManager: EventManager) {
+   private constructor(canvas: HTMLCanvasElement, trackLayoutManager: TrackLayoutManager, eventManager: EventManager, trainManager: TrainManager) {
       this._pixiApp = new PIXI.Application();
       this._trackLayoutManager = trackLayoutManager;
       this._eventManager = eventManager;
+      this._trainManager = trainManager;
    }
 
-   static async create(canvas: HTMLCanvasElement, trackLayoutManager: TrackLayoutManager, eventManager: EventManager): Promise<Renderer> {
-      const r = new Renderer(canvas, trackLayoutManager, eventManager);
+   static async create(canvas: HTMLCanvasElement, trackLayoutManager: TrackLayoutManager, eventManager: EventManager, trainManager: TrainManager): Promise<Renderer> {
+      const r = new Renderer(canvas, trackLayoutManager, eventManager, trainManager);
       await r._pixiApp.init({
          canvas: canvas,
          resizeTo: window,
@@ -93,6 +96,22 @@ export class Renderer {
          r._trainRenderer.removeTrain(trainNumber);
       });
 
+      // Listen for train events and update renderer
+      r._eventManager.on('trainAdded', (train: Train) => {
+         console.log(`Renderer: Train ${train.number} added, updating renderer`);
+         r.renderTrains(r._trainManager.getAllTrains());
+      });
+
+      // Listen for simulation updates and update renderer
+      r._eventManager.on('trainsUpdated', (trains: Train[]) => {
+         r.renderTrains(trains);
+      });
+
+      // Redraw request from renderer (e.g., after WebGL context restored)
+      r._eventManager.on('requestTrainsRedraw', () => {
+         r.renderTrains(r._trainManager.getAllTrains());
+      });
+
       // Handle window resize
       window.addEventListener("resize", r.handleResize.bind(r));
 
@@ -114,7 +133,7 @@ export class Renderer {
       console.info("Renderer: WebGL context restored. Redrawing all GUI elements.");
       // Rebuild stage contents
       this.renderTrackLayout();
-      // Ask application layer to provide current trains for rendering
+      // Request trains redraw (handled by own subscription)
       this._eventManager.emit("requestTrainsRedraw");
    };
 

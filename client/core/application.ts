@@ -27,8 +27,8 @@ export class Application {
    private _trainRouteClearTimer: number | null = null;
 
    constructor() {
-      this._uiManager = new UIManager(this);
       this._eventManager = new EventManager(this);
+      this._uiManager = new UIManager(this, this._eventManager);
       this._trackLayoutManager = new TrackLayoutManager(this);
       this._trainManager = new TrainManager(this._eventManager, this._trackLayoutManager);
       this._trainRouteManager = new TrainRouteManager(this._trackLayoutManager);
@@ -100,7 +100,7 @@ export class Application {
    private async initRenderer(): Promise<void> {
       const canvas = document.getElementById('mainCanvas') as HTMLCanvasElement;
       if (canvas) {
-         this._renderer = await Renderer.create(canvas, this._trackLayoutManager, this._eventManager);
+         this._renderer = await Renderer.create(canvas, this._trackLayoutManager, this._eventManager, this._trainManager);
          this._trackLayoutManager.setRenderer(this._renderer);
          
          // Set up callback to render when layout is loaded
@@ -117,17 +117,6 @@ export class Application {
    }
 
    private setupEventListeners(): void {
-      
-      // Listen for train events and update renderer
-      this._eventManager.on('trainAdded', (train: Train) => {
-         this.handleTrainAdded(train);
-      });
-
-      // Listen for simulation updates and update renderer
-      this._eventManager.on('trainsUpdated', (trains: Train[]) => {
-         this.handleTrainUpdated(trains);
-      });
-
       // Train sending events
       this._eventManager.on('sendTrainToServer', async (trainNumber: string, exitId: number) => {
          await this.handleSendTrainToServer(trainNumber, exitId);
@@ -164,13 +153,6 @@ export class Application {
       this._eventManager.on('permanentlyDisconnected', async () => {
          console.warn('Application: Permanently disconnected from server. Resetting to start screen.');
          await this.resetToStartScreen();
-      });
-
-      // Redraw request from renderer (e.g., after WebGL context restored)
-      this._eventManager.on('requestTrainsRedraw', () => {
-         if (this._renderer) {
-            this._renderer.renderTrains(this._trainManager.getAllTrains());
-         }
       });
 
       // Simulation state change events
@@ -215,26 +197,7 @@ export class Application {
          }
       });
 
-      // Approval requests from server
-      this._eventManager.on('approvalRequested', (data: { stationId: string, fromStationId: string, trainNumber: string }) => {
-         this._uiManager.showApprovalToast(data);
-      });
-      
       console.log("Event listeners setup complete");
-   }
-
-   private handleTrainAdded(train: Train): void {
-      console.log(`Application: Train ${train.number} added, updating renderer`);
-      if (this._renderer) {
-         // Re-render all trains
-         this._renderer.renderTrains(this._trainManager.getAllTrains());
-      }
-   }
-
-   private handleTrainUpdated(trains: Train[]): void {
-      if (this._renderer) {
-         this._renderer.renderTrains(trains);
-      }
    }
 
   private async handleSendTrainToServer(trainNumber: string, exitId: number): Promise<void> {

@@ -7,6 +7,12 @@ interface SwitchContainer extends PIXI.Container {
    switchId?: number;
 }
 
+export interface SwitchRenderOptions {
+   circleColor: number;
+   trackColor: number;
+   trackWidth: number;
+}
+
 export class SwitchRenderer {
    private _container: PIXI.Container;
    private _eventManager: EventManager;
@@ -19,6 +25,28 @@ export class SwitchRenderer {
       stage.addChild(this._container);
    }
 
+   static drawSwitch(graphics: PIXI.Graphics, sw: Switch, options: SwitchRenderOptions): void {
+      // Draw switch circle
+      graphics.circle(sw.location.x, sw.location.y, RendererConfig.switchCircleRadius).fill(options.circleColor);
+
+      // Draw track lines for active tracks (branch and from)
+      sw.tracks.forEach((track) => {
+         if (track && (track === sw.branch || track === sw.from)) {
+            // Determine if switch is at start or end of track
+            const isAtStart = track.start.equals(sw.location);
+            const unitVector = isAtStart ? track.unit : track.unit.multiply(-1);
+
+            // Draw short line from switch to inner circle
+            const end = sw.location.add(unitVector.multiply(RendererConfig.switchCircleRadius));
+
+            graphics
+               .moveTo(sw.location.x, sw.location.y)
+               .lineTo(end.x, end.y)
+               .stroke({ width: options.trackWidth, color: options.trackColor, alpha: 1, cap: "round" });
+         }
+      });
+   }
+
    renderSwitch(sw: Switch): void {
       // Create a separate container for this switch
       const switchContainer = new PIXI.Container() as SwitchContainer;
@@ -27,10 +55,14 @@ export class SwitchRenderer {
 
       const graphics = new PIXI.Graphics();
 
-      // Draw switch point
-      graphics.circle(sw.location.x, sw.location.y, 8).fill(RendererConfig.switchColor);
+      // Use default colors for normal switch rendering
+      const options: SwitchRenderOptions = {
+         circleColor: RendererConfig.switchColor,
+         trackColor: RendererConfig.trackColor,
+         trackWidth: RendererConfig.trackWidth,
+      };
+      SwitchRenderer.drawSwitch(graphics, sw, options);
 
-      
       switchContainer.eventMode = "static";
       switchContainer.on("click", (event) => {
          console.log("Switch clicked at:", event.global.x, event.global.y);
@@ -46,32 +78,6 @@ export class SwitchRenderer {
       });
 
       switchContainer.addChild(graphics);
-
-      // Draw track lines for each connected track
-      sw.tracks.forEach((track, index) => {
-         if (track) {
-            const activeTrack = track === sw.branch || track === sw.from;
-            const color = activeTrack ? RendererConfig.trackColor : RendererConfig.inactiveTrackColor;
-
-            // Determine if switch is at start or end of track
-            const isAtStart = track.start.equals(sw.location);
-            const unitVector = isAtStart ? track.unit : track.unit.multiply(-1);
-
-            // Draw short line from switch to inner circle
-            const end = sw.location.add(unitVector.multiply(RendererConfig.switchCircleRadius));
-
-            const lineGraphics = new PIXI.Graphics();
-            lineGraphics
-               .moveTo(sw.location.x, sw.location.y)
-               .lineTo(end.x, end.y)
-               .stroke({ width: RendererConfig.trackWidth, color: color, alpha: 1, cap: "round" });
-            if (activeTrack) {
-               switchContainer.addChild(lineGraphics);
-            } else {
-               //switchContainer.addChildAt(lineGraphics, 0);
-            }
-         }
-      });
 
       // Add switch ID text
       /* const text = new PIXI.Text({

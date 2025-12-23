@@ -11,6 +11,8 @@ namespace TrainDispatcherGame.Server.Services
         private readonly object _reloadLock = new();
         private string _layoutRoot = string.Empty;
         private string _activeLayoutId = string.Empty;
+        private const string _dataDirectory = "data";
+        private const string _trackLayoutsSubdirectory = "TrackLayouts";
 
         public Dictionary<string, TrackLayout> TrackLayouts => _trackLayouts;
 
@@ -22,11 +24,16 @@ namespace TrainDispatcherGame.Server.Services
 
         public string ActiveLayoutId => _activeLayoutId;
 
-        private static string ResolveLayoutDirectory(string layoutId)
+        private string ResolveLayoutDirectory(string layoutId)
         {
-            // Always use the root TrackLayouts directory; network file is chosen by ActiveLayoutId
-            var baseDir = Path.Combine("TrackLayouts");
-            return baseDir;
+            // Base directory is data/TrackLayouts
+            var baseDir = Path.Combine(_dataDirectory, _trackLayoutsSubdirectory);
+            if (string.IsNullOrWhiteSpace(layoutId))
+            {
+                return baseDir;
+            }
+            // Return the specific network folder path
+            return Path.Combine(baseDir, layoutId);
         }
 
         public void SetActiveLayout(string layoutId)
@@ -66,10 +73,10 @@ namespace TrainDispatcherGame.Server.Services
 
             try
             {
-                var directoryPath = _layoutRoot;
-                if (!Directory.Exists(directoryPath))
+                var stationsDirectory = Path.Combine(_layoutRoot, "stations");
+                if (!Directory.Exists(stationsDirectory))
                 {
-                    Console.WriteLine("TrackLayouts folder not found.");
+                    Console.WriteLine($"Stations folder not found at {stationsDirectory}.");
                     return;
                 }
 
@@ -78,7 +85,7 @@ namespace TrainDispatcherGame.Server.Services
 
                 foreach (var stationId in requiredStations)
                 {
-                    var layoutFile = Path.Combine(directoryPath, $"{stationId}.json");
+                    var layoutFile = Path.Combine(stationsDirectory, $"{stationId}.json");
                     
                     if (!File.Exists(layoutFile))
                     {
@@ -176,10 +183,10 @@ namespace TrainDispatcherGame.Server.Services
                     return new string[0];
                 }
 
-                var networkPath = Path.Combine(_layoutRoot, $"{_activeLayoutId}.json");
+                var networkPath = Path.Combine(_layoutRoot, "network.json");
                 if (!File.Exists(networkPath))
                 {
-                    Console.WriteLine($"Network file '{_activeLayoutId}.json' not found in '{_layoutRoot}'; skipping network load.");
+                    Console.WriteLine($"Network file 'network.json' not found in '{_layoutRoot}'; skipping network load.");
                     return new string[0];
                 }
 

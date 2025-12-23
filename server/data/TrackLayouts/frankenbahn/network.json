@@ -1,4 +1,6 @@
 {
+   "name": "Frankenbahn",
+   "description": "Die Frankenbahn ist eine zweigleisige Bahnstrecke. Sie hat zwei angeschlossenen eingleisigen Strecken.",
    "stations": ["weststadt", "neustadt", "burghausen", "ostheim"],
    "connections": [
       {

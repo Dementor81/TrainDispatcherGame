@@ -1,4 +1,6 @@
 {
+    "name": "Testtrack",
+    "description": "Ein einfacher Testtrack.",
     "stations": [
         "A-Stadt",
         "Neustadt_alt",

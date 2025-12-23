@@ -5,16 +5,19 @@ import { HUDPanel } from "../ui/hudPanel";
 import NotificationModal from "../ui/notificationModal";
 import ApprovalToast from "../ui/approvalToast";
 import { Application } from "../core/application";
+import { EventManager } from "./event_manager";
 
 export class UIManager {
     private _application: Application;
+    private _eventManager: EventManager;
     private _controlPanel: ControlPanel | null = null;
     private _trainOverviewPanel: TrainOverviewPanel | null = null;
     private _hud: HUDPanel | null = null;
     private _notificationModal: NotificationModal | null = null;
 
-    constructor(application: Application) {
+    constructor(application: Application, eventManager: EventManager) {
         this._application = application;
+        this._eventManager = eventManager;
     }
 
     init() {
@@ -23,6 +26,11 @@ export class UIManager {
         this._hud.show();
         this._controlPanel.show();
         this._notificationModal = new NotificationModal();
+
+        // Approval requests from server
+        this._eventManager.on('approvalRequested', (data: { stationId: string, fromStationId: string, trainNumber: string }) => {
+            this.showApprovalToast(data);
+        });
     }    
 
     start() {

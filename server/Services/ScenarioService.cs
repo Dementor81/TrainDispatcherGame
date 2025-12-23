@@ -8,6 +8,7 @@ namespace TrainDispatcherGame.Server.Services
     public static class ScenarioService
     {
         private const string _dataDirectory = "data";
+        private const string _trackLayoutsSubdirectory = "TrackLayouts";
 
         static ScenarioService()
         {
@@ -18,31 +19,46 @@ namespace TrainDispatcherGame.Server.Services
             var summaries = new List<ScenarioSummary>();
             try
             {
-                if (!Directory.Exists(_dataDirectory))
+                var trackLayoutsPath = Path.Combine(_dataDirectory, _trackLayoutsSubdirectory);
+                if (!Directory.Exists(trackLayoutsPath))
                 {
                     return summaries;
                 }
 
-                var files = Directory.EnumerateFiles(_dataDirectory, "*.json", SearchOption.TopDirectoryOnly)
-                    .OrderBy(f => f, StringComparer.OrdinalIgnoreCase);
-
-                foreach (var file in files)
+                // Iterate through each network folder
+                foreach (var networkDir in Directory.EnumerateDirectories(trackLayoutsPath))
                 {
-                    try
+                    var networkId = Path.GetFileName(networkDir);
+                    var scenariosDir = Path.Combine(networkDir, "scenarios");
+                    
+                    if (!Directory.Exists(scenariosDir))
                     {
-                        var json = File.ReadAllText(file);
-                        var dto = JsonSerializer.Deserialize<SzenarioDTO>(json);
-                        var id = Path.GetFileNameWithoutExtension(file);
-                        var title = dto?.Title;
-                        summaries.Add(new ScenarioSummary
-                        {
-                            Id = id ?? string.Empty,
-                            Title = string.IsNullOrWhiteSpace(title) ? id ?? string.Empty : title!
-                        });
+                        continue;
                     }
-                    catch
+
+                    var scenarioFiles = Directory.EnumerateFiles(scenariosDir, "*.json", SearchOption.TopDirectoryOnly)
+                        .OrderBy(f => f, StringComparer.OrdinalIgnoreCase);
+
+                    foreach (var file in scenarioFiles)
                     {
-                        // Skip malformed files
+                        try
+                        {
+                            var json = File.ReadAllText(file);
+                            var dto = JsonSerializer.Deserialize<SzenarioDTO>(json);
+                            var scenarioFileName = Path.GetFileNameWithoutExtension(file);
+                            // Scenario ID format: {networkId}/{scenarioFileName}
+                            var scenarioId = $"{networkId}/{scenarioFileName}";
+                            var title = dto?.Title;
+                            summaries.Add(new ScenarioSummary
+                            {
+                                Id = scenarioId,
+                                Title = string.IsNullOrWhiteSpace(title) ? scenarioId : title!
+                            });
+                        }
+                        catch
+                        {
+                            // Skip malformed files
+                        }
                     }
                 }
             }
@@ -57,7 +73,18 @@ namespace TrainDispatcherGame.Server.Services
         public static SzenarioDTO? GetScenarioById(string id)
         {
             if (string.IsNullOrWhiteSpace(id)) return null;
-            var filePath = Path.Combine(_dataDirectory, id + ".json");
+            
+            // Parse scenario ID format: {networkId}/{scenarioFileName}
+            var parts = id.Split('/', 2);
+            if (parts.Length != 2)
+            {
+                return null;
+            }
+
+            var networkId = parts[0];
+            var scenarioFileName = parts[1];
+            
+            var filePath = Path.Combine(_dataDirectory, _trackLayoutsSubdirectory, networkId, "scenarios", scenarioFileName + ".json");
             if (!File.Exists(filePath))
             {
                 return null;
@@ -94,7 +121,18 @@ namespace TrainDispatcherGame.Server.Services
         public static Scenario LoadTrainsFromScenario(string scenarioId)
         {
             if (string.IsNullOrWhiteSpace(scenarioId)) throw new Exception("Scenario ID must not be empty");
-            var filePath = Path.Combine(_dataDirectory, scenarioId + ".json");
+            
+            // Parse scenario ID format: {networkId}/{scenarioFileName}
+            var parts = scenarioId.Split('/', 2);
+            if (parts.Length != 2)
+            {
+                throw new Exception($"Invalid scenario ID format: '{scenarioId}'. Expected format: '{{networkId}}/{{scenarioFileName}}'");
+            }
+
+            var networkId = parts[0];
+            var scenarioFileName = parts[1];
+            
+            var filePath = Path.Combine(_dataDirectory, _trackLayoutsSubdirectory, networkId, "scenarios", scenarioFileName + ".json");
             if (!File.Exists(filePath)) throw new Exception($"Scenario file not found: {filePath}");
             var scenarioDTO = LoadScenarioFile(filePath);
 
@@ -146,11 +184,8 @@ namespace TrainDispatcherGame.Server.Services
                 throw new Exception($"Error parsing start time for scenario {scenarioId}: {scenarioDTO.StartTime}");
             }
 
-            if (string.IsNullOrWhiteSpace(scenarioDTO.LayoutId))
-            {
-                throw new Exception($"Scenario '{scenarioId}' is missing required 'layout' field");
-            }
-            var layoutId = scenarioDTO.LayoutId;
+            // Layout ID is determined by the network folder containing the scenario
+            var layoutId = networkId;
             var scenario = new Scenario(scenarioDTO.Title, layoutId, startTime, trains);
 
             return scenario;

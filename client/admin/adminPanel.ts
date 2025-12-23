@@ -7,9 +7,6 @@ import {
    getSimulationStatus,
    advanceSimulationOneMinute,
    setSimulationSpeed,
-   fetchScenarios,
-   getCurrentScenario,
-   setScenario,
 } from "../network/api";
 import { SimulationStatusDto } from "../network/dto";
 import "winbox/dist/winbox.bundle.min.js";
@@ -27,7 +24,7 @@ export class AdminPanel extends (window as any).WinBox {
          x: options?.x ?? "center",
          y: options?.y ?? 60,
          width: options?.width ?? 440,
-         height: options?.height ?? 300,
+         height: options?.height ?? 150,
          background: "#212529",
          class: ["no-full", "modern", "no-max"],
          mount: container,
@@ -73,7 +70,6 @@ export class AdminPanel extends (window as any).WinBox {
          const status = (await getSimulationStatus()) as SimulationStatusDto;       
          this.updateButtonStates(status);
          this.updateSpeedInput(status);
-         // do not refresh scenario selector periodically
       } catch (err) {
          console.error("AdminPanel: failed to update status", err);
       }
@@ -146,14 +142,10 @@ class AdminPanelInternal {
       this.host.style.height = "100%";
       this.host.className = "p-3 text-light";
       this.host.appendChild(this.createControlsSection());
-      this.host.appendChild(this.createScenarioSection());
    }
 
    private createControlsSection(): HTMLDivElement {
-      const section = document.createElement("div");
-      const title = document.createElement("h6");
-      title.className = "mb-2 text-primary";
-      title.textContent = "Controls";
+      const section = document.createElement("div");      
       const group = document.createElement("div");
       group.className = "d-flex flex-wrap gap-1";
       const startBtn = this.button("Start", "btn-success");
@@ -182,58 +174,7 @@ class AdminPanelInternal {
       group.appendChild(advanceBtn);
       group.appendChild(resetBtn);
       group.appendChild(speedWrap);
-      section.appendChild(title);
       section.appendChild(group);
-      return section;
-   }
-   private createScenarioSection(): HTMLDivElement {
-      const section = document.createElement('div');
-      section.className = 'mt-3';
-      const title = document.createElement('h6');
-      title.className = 'mb-2 text-primary';
-      title.textContent = 'Scenario';
-      const row = document.createElement('div');
-      row.className = 'd-flex flex-wrap align-items-center gap-2';
-      const label = document.createElement('span'); label.className = 'text-secondary small'; label.textContent = 'Current:';
-      const current = document.createElement('span'); current.id = 'adminScenarioCurrent'; current.className = 'text-light small'; current.textContent = '-';
-      const select = document.createElement('select'); select.id = 'adminScenarioSelect'; select.className = 'form-select form-select-sm'; select.style.width = '240px';
-      const apply = this.button('Apply', 'btn-info'); apply.id = 'adminScenarioApply';
-      apply.addEventListener('click', async () => {
-         const id = select.value;
-         if (id) {
-            try {
-               await setScenario(id);
-               current.textContent = id;
-            } catch (e) {
-               console.error('Failed to set scenario', e);
-            }
-         }
-      });
-      row.appendChild(label); row.appendChild(current); row.appendChild(select); row.appendChild(apply);
-      section.appendChild(title);
-      section.appendChild(row);
-
-      // Load once on init
-      (async () => {
-         try {
-            const [scenarios, curr] = await Promise.all([
-               fetchScenarios(),
-               getCurrentScenario().catch(() => ({ id: '' }))
-            ]);
-            const currentId = curr?.id ?? '';
-            current.textContent = currentId || '-';
-            select.innerHTML = '';
-            for (const s of scenarios) {
-               const opt = document.createElement('option');
-               opt.value = s.id;
-               opt.text = `${s.title || s.id}`;
-               if (s.id === currentId) opt.selected = true;
-               select.appendChild(opt);
-            }
-         } catch (e) {
-            console.error('Failed to load scenarios', e);
-         }
-      })();
       return section;
    }
    private button(text: string, cls: string): HTMLButtonElement {

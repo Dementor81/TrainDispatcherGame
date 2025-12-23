@@ -330,7 +330,7 @@ app.MapGet("/api/network/{layoutId}", (string layoutId, TrackLayoutService track
         // Ensure the server loads the corresponding layouts and connections
         trackLayoutService.SetActiveLayout(layoutId);
 
-        var networkPath = Path.Combine("TrackLayouts", $"{layoutId}.json");
+        var networkPath = Path.Combine("data", "TrackLayouts", layoutId, "network.json");
         if (!File.Exists(networkPath))
         {
             return Results.NotFound(new { message = $"Network file for layout '{layoutId}' not found" });

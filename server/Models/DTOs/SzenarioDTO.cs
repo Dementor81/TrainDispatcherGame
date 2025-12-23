@@ -7,9 +7,6 @@ namespace TrainDispatcherGame.Server.Models.DTOs
         [JsonPropertyName("title")]
         public string Title { get; set; } = string.Empty;
 
-        [JsonPropertyName("layout")]
-        public string LayoutId { get; set; } = string.Empty;
-
         [JsonPropertyName("start_time")]
         public string StartTime { get; set; } = string.Empty;
 
