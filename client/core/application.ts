@@ -4,6 +4,7 @@ import { TrackLayoutManager } from "../manager/trackLayout_manager";
 import { TrainManager } from "../manager/train_manager";
 import { Renderer } from "../canvas/renderer";
 import Switch from "../sim/switch";
+import Track from "../sim/track";
 import SignalRManager from "../network/signalr";
 import Train from "../sim/train";
 import { getSimulationStatus } from "../network/api";
@@ -12,6 +13,8 @@ import ApprovalToast from "../ui/approvalToast";
 import { SimulationConfig } from "../core/config";
 import TrainRouteManager from "../manager/trainRoute_manager";
 import Signal from "../sim/signal";
+import { CancellableEvent } from "../manager/event_manager";
+import Toast from "../ui/toast";
 
 export class Application {
    private _uiManager: UIManager;
@@ -24,14 +27,13 @@ export class Application {
    private _currentStationId: string | null = null;
    private _signalRManager: SignalRManager;
    private _simulationState: SimulationState = 'Stopped';
-   private _trainRouteClearTimer: number | null = null;
 
    constructor() {
       this._eventManager = new EventManager(this);
       this._uiManager = new UIManager(this, this._eventManager);
       this._trackLayoutManager = new TrackLayoutManager(this);
       this._trainManager = new TrainManager(this._eventManager, this._trackLayoutManager);
-      this._trainRouteManager = new TrainRouteManager(this._trackLayoutManager);
+      this._trainRouteManager = new TrainRouteManager(this._trackLayoutManager, this._eventManager);
       this._signalRManager = new SignalRManager(this._eventManager);
 
       (window as any).app = this;
@@ -117,77 +119,59 @@ export class Application {
    }
 
    private setupEventListeners(): void {
-      // Train sending events
-      this._eventManager.on('sendTrainToServer', async (trainNumber: string, exitId: number) => {
-         await this.handleSendTrainToServer(trainNumber, exitId);
-      });
-
-      // Train stop events
-      this._eventManager.on('trainStoppedAtStation', async (train: Train) => {
-         await this.handleTrainStoppedAtStation(train);
-      });
-
-      // Train departure events
-      this._eventManager.on('trainDepartedFromStation', async (train: Train) => {
-         await this.handleTrainDepartedFromStation(train);
-      });
-
-      // Local collision detection from client sim
-      this._eventManager.on('trainCollision', async (trainA: Train, trainB: Train) => {
-         await this.handleLocalTrainCollision(trainA, trainB);
-      });
-
-      // Local derailment detection from client sim
-      this._eventManager.on('trainDerailed', async (train: Train, sw?: Switch) => {
-         await this.handleLocalTrainDerailment(train, sw);
-      });
-
-      // No server broadcast for collisions; client handles it directly
-
-      // Connection status events
-      this._eventManager.on('connectionStatusChanged', (state: string) => {
-         // No direct app-level reaction for now; state available if needed
-      });
-
-      // Permanent disconnect from SignalR (after all retries failed)
-      this._eventManager.on('permanentlyDisconnected', async () => {
-         console.warn('Application: Permanently disconnected from server. Resetting to start screen.');
-         await this.resetToStartScreen();
-      });
-
-      // Simulation state change events
-      this._eventManager.on('simulationStateChanged', (state: SimulationState) => {
-         this.handleSimulationStateChanged(state);
-      });
-
-      // Signal clicked → build/clear routes and render
-      this._eventManager.on('signalClicked', (signal: Signal) => {
+      // Signal clicked → try to create route and prevent toggle if it fails
+      // IMPORTANT: Register this FIRST using prepend to ensure it runs before trackLayout_manager's handler
+      this._eventManager.prepend('signalClicked', (event: CancellableEvent, signal: Signal) => {
          if (!this._renderer) return;
-         if (signal.track && signal.state) {
+         
+         // Store the original signal state before any potential toggle
+         // signal.state: true = green/go, false = red/stop
+         const wasRed = !signal.state;
+         
+         // Check if signal is currently red (would transition to green)
+         if (wasRed && signal.track) {
+            // Try to create the route - if it fails, prevent the toggle
             const route = this._trainRouteManager.createAndStoreRoute(
                { track: signal.track, km: signal.position },
-               signal.direction
+               signal.direction,
+               signal // Pass the signal so we can remove routes later
             );
+            
             if (!route) {
-               console.warn("TrainRoute creation failed (ended at a switch).");
+               // Route creation failed - prevent the signal toggle
+               event.preventDefault();
+               console.warn("Cannot create route from signal (route would end at a switch). Signal remains red.");
+               Toast.show("Fahrstellung nicht möglich, da keine Fahrstraße gefunden wurde.", 'warning');
+               return;
             }
-         } else {
-            this._trainRouteManager.clearRoutes();
          }
-         this._renderer.renderTrainRoutes(this._trainRouteManager.routes);
+      });
 
-         // Testing: auto-clear all routes after 20 seconds
-         if (this._trainRouteClearTimer !== null) {
-            clearTimeout(this._trainRouteClearTimer);
-            this._trainRouteClearTimer = null;
+      // Signal state changed → handle route removal if signal turned red
+      this._eventManager.on('signalStateChanged', (signal: Signal) => {
+         if (!this._renderer) return;
+         
+         // If signal turned red, remove routes associated with this signal
+         if (!signal.state) {
+            this._trainRouteManager.removeRoutesBySignal(signal);
          }
-         this._trainRouteClearTimer = window.setTimeout(() => {
-            this._trainRouteManager.clearRoutes();
-            if (this._renderer) {
-               this._renderer.renderTrainRoutes(this._trainRouteManager.routes);
-            }
-            this._trainRouteClearTimer = null;
-         }, 20000);
+      });
+
+      // Route created → render the routes
+      this._eventManager.on('routeCreated', () => {
+         if (!this._renderer) return;
+         this._renderer.renderTrainRoutes(this._trainRouteManager.routes);
+      });
+
+      // Routes cleared → render (empty routes)
+      this._eventManager.on('routesCleared', () => {
+         if (!this._renderer) return;
+         this._renderer.renderTrainRoutes(this._trainRouteManager.routes);
+      });
+
+      // Occupied track cleared → remove cleared track from routes
+      this._eventManager.on('occupiedTrackCleared', (clearedTrack: Track) => {
+         this._trainRouteManager.removeClearedTrack(clearedTrack);
       });
 
       // Simulation speed change events (from server)

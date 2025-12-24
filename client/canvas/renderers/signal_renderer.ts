@@ -75,8 +75,8 @@ export class SignalRenderer {
       signalContainer.eventMode = "static";
       signalContainer.on("click", (event) => {
          console.log("Signal clicked at:", event.global.x, event.global.y);
-         // Emit signal click event with the signal (track is accessible via signal.track)
-         this._eventManager.emit("signalClicked", signal);
+         // Emit signal click event as cancellable event with the signal (track is accessible via signal.track)
+         this._eventManager.emitCancellable("signalClicked", signal);
       });
       signalContainer.on("pointerover", (event) => {
          this._canvas.style.cursor = "pointer";

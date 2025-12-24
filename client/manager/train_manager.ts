@@ -222,19 +222,34 @@ export class TrainManager {
             // Store previous position before updating
             const previousTrack = train.track;
             const previousKm = train.km;
+            const previousTailTrack = train.tailTrack;
 
             // Normal movement - update train position
             train.setPosition(result.element, result.km);
             train.setDirection(result.direction);
+
+            // Calculate and update tail position
+            this.updateTailPosition(train);
+
+            // Check if tail track element changed and emit occupiedTrackCleared event
+            if (previousTailTrack instanceof Track && train.tailTrack !== previousTailTrack) {
+               this._eventManager.emit("occupiedTrackCleared", previousTailTrack, train);
+            }
 
             // Check if train passed any signals during this movement
             this.checkSignalsPassed(train, previousTrack, previousKm, result.element, result.km);
 
             return true; // Train was updated
          } else if (result.element instanceof Exit) {
-            // Train reached exit - clear signal reference since this isn't a signal stop
+            // Train reached exit - emit occupiedTrackCleared for tail track before removing train
             const exit = result.element;
             console.log(`Train ${train.number} reached exit ${exit.id}`);
+            
+            // Emit occupiedTrackCleared for the tail track so routes can be updated
+            if (train.tailTrack instanceof Track) {
+               this._eventManager.emit("occupiedTrackCleared", train.tailTrack, train);
+            }
+            
             this.removeTrain(train.number);
             this._eventManager.emit("sendTrainToServer", train.number, exit.id);
             return false;
@@ -523,6 +538,10 @@ export class TrainManager {
          // Set the train's position
          train.setPosition(location.track, location.km);
          train.setDirection(direction);
+         
+         // Initialize tail position
+         this.updateTailPosition(train);
+         
          console.log(
             `Train ${train.number} positioned on track ${location.track.id} at km ${location.km} with direction ${direction}`
          );
@@ -607,6 +626,47 @@ export class TrainManager {
          // Emit event for application to handle server communication
          this._eventManager.emit("sendTrainToServer", train.number, exit.id);
       
+   }
+
+   // Calculate and update the tail position of a train
+   private updateTailPosition(train: Train): void {
+      if (!train.track) {
+         train.setTailPosition(null, 0);
+         return;
+      }
+
+      const trainLength = train.getLength();
+      if (trainLength <= 0) {
+         train.setTailPosition(train.track, train.km);
+         return;
+      }
+
+      // Calculate tail position: tail is behind the head when moving forward (direction = 1)
+      // and ahead of the head when moving backward (direction = -1)
+      const tailOffset = -train.direction * trainLength;
+      
+      try {
+         const tailResult = this._trackLayoutManager.followRailNetwork(
+            train.track,
+            train.km,
+            tailOffset
+         );
+         
+         // Tail can only be on a Track (switches and exits don't have dimensions)
+         if (tailResult.element instanceof Track) {
+            train.setTailPosition(tailResult.element, tailResult.km);
+         } else {
+            // If tail calculation hits a switch or exit, keep tail on current track at boundary
+            // If going backwards (negative offset), tail is at km 0
+            // If going forwards (positive offset), tail is at track.length
+            const boundaryKm = tailOffset < 0 ? 0 : train.track.length;
+            train.setTailPosition(train.track, boundaryKm);
+         }
+      } catch (error) {
+         // If we can't calculate tail position (e.g., train is at a dead end), 
+         // set tail to same as head
+         train.setTailPosition(train.track, train.km);
+      }
    }
 
    // Check if train should stop at a station or depart based on schedule

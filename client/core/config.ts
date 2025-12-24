@@ -37,7 +37,7 @@ export class RendererConfig {
     static readonly signalCircleSpacing = 5; // Horizontal spacing between circles
     static readonly signalTrackOffset = 15; // Distance from track centerline to signal
 
-    static readonly curveTransitionZone = 30;
+    static readonly curveTransitionZone = 20;
     
     // Station rendering configuration
     static readonly stationTextColor = 0xffffff;

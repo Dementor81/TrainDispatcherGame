@@ -125,14 +125,13 @@ export class TrainRenderer {
             text.anchor.set(0.5);
             text.x = carPosition.x;
             text.y = carPosition.y;
-            if(trackAngle > 90 * Math.PI/180) 
-               trackAngle = trackAngle - 180*Math.PI/180;
-
-            if(trackAngle < -90 * Math.PI/180)
-               trackAngle = trackAngle + 180*Math.PI/180;
+            //prevent text from being upside down by rotating it to the correct angle
+            if(trackAngle > Math.PI/2) 
+               trackAngle = trackAngle - Math.PI;
+            if(trackAngle < -Math.PI/2)
+               trackAngle = trackAngle + Math.PI;
             text.rotation = trackAngle;
             
-
             trainContainer.addChild(text);
 
             // Station wait pie chart overlay (no text)

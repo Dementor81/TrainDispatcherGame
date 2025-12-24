@@ -83,13 +83,14 @@ export class Renderer {
       view.addEventListener("webglcontextlost", r.handleWebGLContextLost as any, false);
       view.addEventListener("webglcontextrestored", r.handleWebGLContextRestored as any, false);
 
-      // Initialize renderers
+      // Initialize renderers in z-order (bottom to top)
+      // Routes must be rendered before trains so trains appear on top
       r._trackRenderer = new TrackRenderer(r._pixiApp.stage, trackLayoutManager);
       r._switchRenderer = new SwitchRenderer(r._pixiApp.stage, eventManager, canvas);
       r._signalRenderer = new SignalRenderer(r._pixiApp.stage, eventManager, canvas);
+      r._trainRouteRenderer = new TrainRouteRenderer(r._pixiApp.stage);
       r._trainRenderer = new TrainRenderer(r._pixiApp.stage, trackLayoutManager);
       r._stationRenderer = new StationRenderer(r._pixiApp.stage, trackLayoutManager);
-      r._trainRouteRenderer = new TrainRouteRenderer(r._pixiApp.stage);
 
       // Set up event listeners
       r._eventManager.on('trainRemoved', (trainNumber: string) => {

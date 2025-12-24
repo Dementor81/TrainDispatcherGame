@@ -24,6 +24,8 @@ class Train {
     private _stopReason: TrainStopReason = TrainStopReason.NONE; // Current reason why the train is stopped
     private _stationStopStartTime: Date | null = null; // When the train actually started waiting at station
     private _waitingProgress: number = 0; // 0..1 progress while waiting at station
+    private _tailTrack: Track | null = null; // Track where the tail (end) of the train is positioned
+    private _tailKm: number = 0; // Kilometer position of the tail on the tail track
 
     constructor(number: string, cars: number, speed: number) {
         this._number = number;
@@ -112,6 +114,19 @@ class Train {
         // Clamp to [0,1]
         const clamped = Math.max(0, Math.min(1, progress));
         this._waitingProgress = clamped;
+    }
+
+    get tailTrack(): Track | null {
+        return this._tailTrack;
+    }
+
+    get tailKm(): number {
+        return this._tailKm;
+    }
+
+    setTailPosition(track: Track | null, km: number): void {
+        this._tailTrack = track;
+        this._tailKm = km;
     }
 
     // Calculate the actual length of the train based on configured car width and spacing

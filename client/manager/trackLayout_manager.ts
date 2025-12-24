@@ -8,6 +8,7 @@ import Storage from "../core/storage";
 import { Renderer } from "../canvas/renderer";
 import { Application } from "../core/application";
 import { NetworkConnectionDto } from "../network/dto";
+import { CancellableEvent } from "./event_manager";
 
 // Movement exception for actual errors
 export class MovementException extends Error {
@@ -42,9 +43,9 @@ export class TrackLayoutManager {
          this.handleSwitchClick(sw);
       });
 
-      this._application.eventManager.on("signalClicked", (signal: Signal) => {
+      this._application.eventManager.on("signalClicked", (event: CancellableEvent, signal: Signal) => {
          console.log(`Signal at km ${signal.position} on track ${signal.track?.id} clicked`);
-         this.handleSignalClick(signal);
+         this.handleSignalClick(event, signal);
       });
 
       this._application.eventManager.on("trainPassedSignal", (train: Train, signal: Signal) => {
@@ -185,7 +186,12 @@ export class TrackLayoutManager {
       sw.toggle();
    }
 
-   private handleSignalClick(signal: Signal): void {
+   private handleSignalClick(event: CancellableEvent, signal: Signal): void {
+      // Check if default action was prevented (e.g., route validation failed)
+      if (event.defaultPrevented) {
+         return;
+      }
+      
       // Toggle signal state
       signal.state = !signal.state;
       console.log(`Signal at km ${signal.position} on track ${signal.track?.id} changed to ${signal.state ? 'green' : 'red'}`);
@@ -193,7 +199,10 @@ export class TrackLayoutManager {
       // Redraw the signal to reflect new state
       if (this._renderer) {
          this._renderer.redrawSignal(signal);
-      }      
+      }
+      
+      // Emit event that signal state changed
+      this._application.eventManager.emit('signalStateChanged', signal);
    }
 
    private handleTrainPassedSignal(train: Train, signal: Signal): void {
