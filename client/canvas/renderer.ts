@@ -89,7 +89,7 @@ export class Renderer {
       r._switchRenderer = new SwitchRenderer(r._pixiApp.stage, eventManager, canvas);
       r._signalRenderer = new SignalRenderer(r._pixiApp.stage, eventManager, canvas);
       r._trainRouteRenderer = new TrainRouteRenderer(r._pixiApp.stage);
-      r._trainRenderer = new TrainRenderer(r._pixiApp.stage, trackLayoutManager);
+      r._trainRenderer = new TrainRenderer(r._pixiApp.stage, trackLayoutManager, eventManager, canvas);
       r._stationRenderer = new StationRenderer(r._pixiApp.stage, trackLayoutManager);
 
       // Set up event listeners
@@ -99,7 +99,6 @@ export class Renderer {
 
       // Listen for train events and update renderer
       r._eventManager.on('trainAdded', (train: Train) => {
-         console.log(`Renderer: Train ${train.number} added, updating renderer`);
          r.renderTrains(r._trainManager.getAllTrains());
       });
 

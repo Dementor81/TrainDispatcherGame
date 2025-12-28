@@ -28,7 +28,7 @@ Big Features:
     ✔ admin page with server controls and statistics @done(25-08-30 18:43)
     ✔ szenario editor that helps creating timetables @done(25-08-17 16:32)
     ☐ UI with an overview of the whole network
-    ☐ UI to inspect the open line tracks
+    ✔ UI to inspect the open line tracks @done(25-12-24 15:48)
     ☐ better UI for station selection with a display which station is already taken by whom
     ☐ Streckenblock (the track between stations knows if it is occupied by a train)
 

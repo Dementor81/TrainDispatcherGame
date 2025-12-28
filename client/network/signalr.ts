@@ -21,11 +21,21 @@ export class SignalRManager {
             .configureLogging(LogLevel.Information)
             .build();
 
-        this.setupEventHandlers();
+        this.setupRemoteEventHandlers();
+        this.setupLocalEventHandlers();
     }
 
-    private setupEventHandlers(): void {
-        if (!this.connection) return;
+    private setupLocalEventHandlers(): void {
+        this.eventManager.on("trainCollision", (trainA: Train, trainB: Train) => {
+            this.reportTrainCollision(this.lastPlayerId!, trainA.number, trainB.number, this.lastStationId!);
+        });
+        this.eventManager.on("trainDerailment", (train: Train, switchId: number) => {
+            this.reportTrainDerailed(this.lastPlayerId!, train.number, this.lastStationId!, switchId);
+        });
+    }
+
+    private setupRemoteEventHandlers(): void {
+        if (!this.connection) throw new Error('SignalR connection not established');
 
         // Connection events
         this.connection.onreconnecting((error) => {
@@ -252,6 +262,20 @@ export class SignalRManager {
             console.log(`Reported derailment of train ${trainNumber} at station ${stationId}${switchId !== undefined ? ` (switch ${switchId})` : ''}`);
         } catch (error) {
             console.error('Failed to report train derailment:', error);
+            throw error;
+        }
+    }
+
+    public async reportTrainRemoved(playerId: string, trainNumber: string, stationId: string): Promise<void> {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+            throw new Error('SignalR connection not established');
+        }
+
+        try {
+            await this.connection.invoke('TrainRemoved', playerId, trainNumber, stationId);
+            console.log(`Reported train ${trainNumber} removed at station ${stationId}`);
+        } catch (error) {
+            console.error('Failed to report train removed:', error);
             throw error;
         }
     }

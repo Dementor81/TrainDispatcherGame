@@ -7,6 +7,7 @@ import { EventManager } from "./event_manager";
 import { TrackLayoutManager, MovementException } from "./trackLayout_manager";
 import { SimulationConfig } from "../core/config";
 import { getSimulationStatus } from "../network/api";
+import Tools from "../core/utils";
 
 export class TrainManager {
    private _trains: Train[] = [];
@@ -36,7 +37,6 @@ export class TrainManager {
       this._eventManager.on("trainReachedExit", (train: Train, exit: Exit) => {
          this.handleTrainReachedExit(train, exit);
       });
-
    }
 
    // ==================== SIMULATION METHODS ====================
@@ -79,7 +79,7 @@ export class TrainManager {
       }
       if (this._timerWorker) {
          try {
-            this._timerWorker.postMessage({ type: 'stop' });
+            this._timerWorker.postMessage({ type: "stop" });
             this._timerWorker.terminate();
          } catch {}
          this._timerWorker = null;
@@ -97,15 +97,15 @@ export class TrainManager {
       // Prefer Web Worker-based timer; fall back to setInterval if creation fails
       try {
          // new URL with import.meta.url lets Webpack bundle the worker
-         this._timerWorker = new Worker(new URL('../core/simulationTimer.worker.ts', import.meta.url), { type: 'module' } as any);
+         this._timerWorker = new Worker(new URL("../core/simulationTimer.worker.ts", import.meta.url), { type: "module" } as any);
          this._timerWorker.onmessage = (evt: MessageEvent<any>) => {
             if (!this._isSimulationRunning) return;
             // Could compute delta time here using evt.data.now if we later switch to dt-based movement
             this.updateSimulation();
          };
-         this._timerWorker.postMessage({ type: 'start', intervalMs });
+         this._timerWorker.postMessage({ type: "start", intervalMs });
       } catch (err) {
-         console.warn('Worker timer unavailable, falling back to setInterval', err);
+         console.warn("Worker timer unavailable, falling back to setInterval", err);
          this._simulationTimer = setInterval(() => {
             this.updateSimulation();
          }, intervalMs);
@@ -165,27 +165,16 @@ export class TrainManager {
 
    // Update a single train's position
    private updateTrain(train: Train): boolean {
-      if (!train.track) {
-         console.log(`Train ${train.number} can't move or is stopped`);
-         return false; // Train can't move or is stopped
+      if (!train.position) {
+         throw new Error(`Train ${train.number} has no position`);
       }
 
-      // Detect derailment caused by switching under the train's body
-      if (this.detectTrainDerailment(train)) {
+      if(train.stopReason === TrainStopReason.COLLISION || train.stopReason === TrainStopReason.EMERGENCY_STOP) {
          return false;
       }
 
       // Calculate movement distance based on elapsed time
-
-      // Collision check with other trains on the same track
       const proposedDistance = train.getMovementDistance();
-
-      const blockingTrain = this.detectTrainCollision(train, proposedDistance);
-      if (blockingTrain) {
-         // Do not advance this tick to avoid collision
-         this._eventManager.emit("trainCollision", train, blockingTrain);
-         return false;
-      }
 
       if (train.stoppedBySignal !== null) {
          if (train.stoppedBySignal.isTrainAllowedToGo()) {
@@ -198,13 +187,12 @@ export class TrainManager {
          if (stoppingSignal) {
             // Signal is red - stop the train and store the signal reference
             train.setStoppedBySignal(stoppingSignal);
-            console.log(`Train ${train.number} stopped by signal at km ${stoppingSignal.position} on track ${train.track.id}`);
+            console.log(`Train ${train.number} stopped by signal at km ${stoppingSignal.position} on track ${train.position?.track.id}`);
             this._eventManager.emit("trainStoppedBySignal", train, stoppingSignal);
             return false;
          }
       }
 
-      
       if (this.checkStationStop(train, proposedDistance)) {
          return false;
       }
@@ -215,24 +203,39 @@ export class TrainManager {
 
       // Use TrackLayoutManager to calculate new position
       try {
-         const result = this._trackLayoutManager.followRailNetwork(train.track, train.km, movedDistance);
+         const result = this._trackLayoutManager.followRailNetwork(train.position.track, train.position.km, movedDistance);
 
          // Check what type of element we got
          if (result.element instanceof Track) {
             // Store previous position before updating
-            const previousTrack = train.track;
-            const previousKm = train.km;
-            const previousTailTrack = train.tailTrack;
+            const previousTrack = train.position.track;
+            const previousKm = train.position.km;
+            const previousTailTrack = train.tailPosition?.track;
 
             // Normal movement - update train position
             train.setPosition(result.element, result.km);
             train.setDirection(result.direction);
 
             // Calculate and update tail position
-            this.updateTailPosition(train);
+            const tailUpdated = this.updateTailPosition(train);
+            if (!tailUpdated) {
+               //if the tail position update fails, the train is derailed
+               console.warn(`Train ${train.number} derailed at switch ${result.element.id}`);
+               this._eventManager.emit("trainDerailed", train, result.element);
+               this.removeTrain(train.number);
+               return false;
+            }
+
+            const blockingTrain = this.detectTrainCollision(train);
+            if (blockingTrain) {               
+               this._eventManager.emit("trainCollision", train, blockingTrain);
+               train.setStopReason(TrainStopReason.COLLISION);
+               blockingTrain.setStopReason(TrainStopReason.COLLISION);
+               return false;
+            }
 
             // Check if tail track element changed and emit occupiedTrackCleared event
-            if (previousTailTrack instanceof Track && train.tailTrack !== previousTailTrack) {
+            if (previousTailTrack instanceof Track && train.tailPosition?.track !== previousTailTrack) {
                this._eventManager.emit("occupiedTrackCleared", previousTailTrack, train);
             }
 
@@ -244,26 +247,26 @@ export class TrainManager {
             // Train reached exit - emit occupiedTrackCleared for tail track before removing train
             const exit = result.element;
             console.log(`Train ${train.number} reached exit ${exit.id}`);
-            
+
             // Emit occupiedTrackCleared for the tail track so routes can be updated
-            if (train.tailTrack instanceof Track) {
-               this._eventManager.emit("occupiedTrackCleared", train.tailTrack, train);
+            if (train.tailPosition) {
+               this._eventManager.emit("occupiedTrackCleared", train.tailPosition.track, train);
             }
-            
+
             this.removeTrain(train.number);
             this._eventManager.emit("sendTrainToServer", train.number, exit.id);
             return false;
          } else if (result.element instanceof Switch) {
             // Train stopped at switch (wrong direction/position) - clear signal reference
             train.setStoppedBySignal(null);
-            
+
             console.log(`Train ${train.number} stopped at switch ${result.element.id}`);
             this._eventManager.emit("trainStoppedAtSwitch", train, result.element);
             return false;
          } else {
             // Unknown element type - clear signal reference
             train.setStoppedBySignal(null);
-            
+
             console.log(`Train ${train.number} encountered unknown element`);
             this._eventManager.emit("trainStopped", train, result);
             return false;
@@ -271,49 +274,16 @@ export class TrainManager {
       } catch (error) {
          // Movement blocked by actual error (invalid track, zero distance, etc.)
          train.setStoppedBySignal(null); // Clear signal reference for error stops
-         
+
          this.handleMovementException(train, error);
          return false;
       }
    }
 
-   // Detect if a train has derailed due to a switch being toggled under its body
-   // Walk backwards along the rail network for the length of the train. If the
-   // traversal is blocked by a switch (i.e., followRailNetwork returns a Switch),
-   // the train's body is interrupted by the current switch state and we consider it derailed.
-   private detectTrainDerailment(train: Train): boolean {
-      const currentTrack = train.track;
-      if (!currentTrack) return false;
-
-      const trainBodyLength = train.getLength();
-      if (trainBodyLength <= 0) return false;
-
-      const distanceOppositeDirection = -train.direction * trainBodyLength;
-
-      try {
-         const result = this._trackLayoutManager.followRailNetwork(
-            currentTrack,
-            train.km,
-            distanceOppositeDirection
-         );
-
-         if (result.element instanceof Switch) {
-            console.warn(`Train ${train.number} derailed at switch ${result.element.id}`);
-            this._eventManager.emit("trainDerailed", train, result.element);
-            this.removeTrain(train.number);
-            return true;
-         }
-      } catch (error) {
-         // If traversal fails unexpectedly, do not mark as derailment here.
-      }
-
-      return false;
-   }
-
    // Check for signals ahead of the train that would stop it
    private checkSignalsAhead(train: Train): Signal | null {
-      if (!train.track) {
-         return null;
+      if (!train.position) {
+         throw new Error(`Train ${train.number} has no position`);
       }
 
       // Total distance to look ahead: movement distance + lookahead distance
@@ -322,16 +292,16 @@ export class TrainManager {
       try {
          // Use followRailNetwork to trace the path ahead
          const result = this._trackLayoutManager.followRailNetwork(
-            train.track,
-            train.km,
+            train.position.track,
+            train.position.km,
             totalLookaheadDistance * train.direction
          );
 
          // Check for signals on the current track first
          const currentTrackSignals = this.checkSignalsOnTrack(
-            train.track,
-            train.km,
-            train.km + totalLookaheadDistance * train.direction,
+            train.position.track,
+            train.position.km,
+            train.position.km + totalLookaheadDistance * train.direction,
             train.direction
          );
 
@@ -340,10 +310,10 @@ export class TrainManager {
          }
 
          // If we moved to a different track, check signals on that track too
-         if (result.element instanceof Track && result.element !== train.track) {
+         if (result.element instanceof Track && result.element !== train.position?.track) {
             const nextTrackSignals = this.checkSignalsOnTrack(
                result.element,
-               result.element === train.track ? train.km : train.direction > 0 ? 0 : result.element.length,
+               result.element === train.position?.track ? train.position.km : train.direction > 0 ? 0 : result.element.length,
                result.km,
                train.direction
             );
@@ -455,73 +425,20 @@ export class TrainManager {
    }
 
    // Determine if another train blocks the proposed movement on the same track
-   private detectTrainCollision(train: Train, proposedDistance: number): Train | null {
-      const currentTrack = train.track;
+   private detectTrainCollision(train: Train): Train | null {
+      const currentTrack = train.position?.track;
       if (!currentTrack) return null;
 
-      const headCurrent = train.km;
-      const headNew = headCurrent + proposedDistance;
-      const pathMin = Math.min(headCurrent, headNew);
-      const pathMax = Math.max(headCurrent, headNew);
-
       for (const other of this._trains) {
-         if (other === train) continue;
-         if (other.track !== currentTrack) continue; // minimal same-track collision check
+         if (other === train || other.tailPosition === null) continue;
+         if (other.tailPosition.track !== currentTrack) continue; // minimal same-track collision check
+         let otherTrainCrashZone = Tools.clamp(
+            other.tailPosition.km + other.getLength() * other.direction,
+            0,
+            currentTrack.length
+         );
 
-         // Compute other's body segment on this track
-         const otherHead = other.km;
-         const otherTail = other.direction > 0 ? otherHead - other.getLength() : otherHead + other.getLength();
-         let otherStart = Math.min(otherHead, otherTail);
-         let otherEnd = Math.max(otherHead, otherTail);
-
-         // Clamp to track bounds
-         otherStart = Math.max(0, otherStart);
-         otherEnd = Math.min(currentTrack.length, otherEnd);
-
-         // Expand by safety gap
-         const expandedStart = Math.max(0, otherStart - SimulationConfig.safetyGapDistance);
-         const expandedEnd = Math.min(currentTrack.length, otherEnd + SimulationConfig.safetyGapDistance);
-
-         // Check intersection between our head path and the other's expanded body segment
-         const intersects = !(pathMax < expandedStart || pathMin > expandedEnd);
-         if (intersects) {
-            return other;
-         }
-      }
-
-      // If the move crosses into a different track, check that segment too
-      try {
-         const result = this._trackLayoutManager.followRailNetwork(currentTrack, headCurrent, proposedDistance);
-         if (result.element instanceof Track && result.element !== currentTrack) {
-            const nextTrack: Track = result.element;
-            const segmentStartKm = train.direction > 0 ? 0 : nextTrack.length;
-            const segmentEndKm = result.km;
-            const segMin = Math.min(segmentStartKm, segmentEndKm);
-            const segMax = Math.max(segmentStartKm, segmentEndKm);
-
-            for (const other of this._trains) {
-               if (other === train) continue;
-               if (other.track !== nextTrack) continue;
-
-               const otherHead = other.km;
-               const otherTail = other.direction > 0 ? otherHead - other.getLength() : otherHead + other.getLength();
-               let otherStart = Math.min(otherHead, otherTail);
-               let otherEnd = Math.max(otherHead, otherTail);
-
-               otherStart = Math.max(0, otherStart);
-               otherEnd = Math.min(nextTrack.length, otherEnd);
-
-               const expandedStart = Math.max(0, otherStart - SimulationConfig.safetyGapDistance);
-               const expandedEnd = Math.min(nextTrack.length, otherEnd + SimulationConfig.safetyGapDistance);
-
-               const intersects = !(segMax < expandedStart || segMin > expandedEnd);
-               if (intersects) {
-                  return other;
-               }
-            }
-         }
-      } catch {
-         // ignore followRailNetwork errors here; collision check best-effort
+         if (Tools.between(train.position.km, other.tailPosition.km, otherTrainCrashZone)) return other;
       }
 
       return null;
@@ -530,7 +447,7 @@ export class TrainManager {
    // ==================== TRAIN MANAGEMENT METHODS ====================
 
    // Add a new train to the manager at a specific exit point
-  spawnTrainAtExitPoint(train: Train, exitPointId: number): void {
+   spawnTrainAtExitPoint(train: Train, exitPointId: number): void {
       // Get the track and kilometer position for this exit point
       const location = this._trackLayoutManager.getExitPointLocation(exitPointId);
       const direction = this._trackLayoutManager.getExitPointDirection(exitPointId);
@@ -538,10 +455,10 @@ export class TrainManager {
          // Set the train's position
          train.setPosition(location.track, location.km);
          train.setDirection(direction);
-         
+
          // Initialize tail position
          this.updateTailPosition(train);
-         
+
          console.log(
             `Train ${train.number} positioned on track ${location.track.id} at km ${location.km} with direction ${direction}`
          );
@@ -551,9 +468,40 @@ export class TrainManager {
 
       this._trains.push(train);
       console.log(`Train added: ${train.getInfo()}`);
-      console.log(`Total trains: ${this._trains.length}`);      
+      console.log(`Total trains: ${this._trains.length}`);
 
       // Emit train added event for other components
+      this._eventManager.emit("trainAdded", train);
+   }
+
+   public spawnLocalTestTrain(): Train | null {
+      const track = this._trackLayoutManager.tracks[0];
+      if (!track) {
+         console.warn("TrainManager: Cannot spawn local test train - no tracks loaded");
+         return null;
+      }
+
+      const trainNumber = this.generateUniqueTestTrainNumber();
+      const train = new Train(trainNumber, 3, 100);
+
+      // Positive direction only (testing requirement)
+      const direction = 1;
+      const km = Tools.clamp(train.getLength() + 0.1, 0, track.length);
+      this.spawnTrainOnTrack(train, track, km, direction);
+      return train;
+   }
+
+   public spawnTrainOnTrack(train: Train, track: Track, km: number, direction: number): void {
+      train.setPosition(track, km);
+      train.setDirection(direction);
+
+      const ok = this.updateTailPosition(train);
+      if (!ok) {
+         console.warn(`TrainManager: Cannot spawn train ${train.number} - tail position hits a switch (derailed)`);
+         return;
+      }
+
+      this._trains.push(train);
       this._eventManager.emit("trainAdded", train);
    }
 
@@ -574,6 +522,23 @@ export class TrainManager {
    // Get a train by number
    getTrain(trainNumber: string): Train | undefined {
       return this._trains.find((train) => train.number === trainNumber);
+   }
+
+   public reverseTrain(trainNumber: string): boolean {
+      const train = this.getTrain(trainNumber);
+      if (!train || !train.position) return false;
+
+      const oldDirection = train.direction;
+      train.setDirection(oldDirection * -1);
+
+      const ok = this.updateTailPosition(train);
+      if (!ok) {
+         // Revert if reversing would make the tail land on a switch (derailed state)
+         train.setDirection(oldDirection);
+         this.updateTailPosition(train);
+         return false;
+      }
+      return true;
    }
 
    // Get all trains
@@ -605,67 +570,71 @@ export class TrainManager {
       this._eventManager.emit("trainsCleared");
    }
 
-   
-
    // Get train info for debugging
    getTrainInfo(): string[] {
       return this._trains.map((train) => train.getInfo());
    }
 
+   private generateUniqueTestTrainNumber(): string {
+      let i = 1;
+      while (true) {
+         const candidate = `TEST-${i}`;
+         if (!this.hasTrain(candidate)) return candidate;
+         i++;
+      }
+   }
+
    // Handle train creation events
-  private handleTrainCreated(train: Train, exitPointId: number): void {
+   private handleTrainCreated(train: Train, exitPointId: number): void {
       console.log(`TrainManager: Received train ${train.getInfo()}`);
       this.spawnTrainAtExitPoint(train, exitPointId);
    }
 
    // Handle train reached exit events
    private handleTrainReachedExit(train: Train, exit: Exit): void {
-      console.log(`TrainManager: Train ${train.number} reached exit ${exit.id}`);  
-         // Remove the train from local simulation
-         this.removeTrain(train.number);
-         // Emit event for application to handle server communication
-         this._eventManager.emit("sendTrainToServer", train.number, exit.id);
-      
+      console.log(`TrainManager: Train ${train.number} reached exit ${exit.id}`);
+      // Remove the train from local simulation
+      this.removeTrain(train.number);
+      // Emit event for application to handle server communication
+      this._eventManager.emit("sendTrainToServer", train.number, exit.id);
    }
 
    // Calculate and update the tail position of a train
-   private updateTailPosition(train: Train): void {
-      if (!train.track) {
-         train.setTailPosition(null, 0);
-         return;
-      }
-
+   // Returns true if the tail position was updated, false if the calculation hits a switch which means the train is derailed
+   private updateTailPosition(train: Train): boolean {
+      if (!train.position) throw new Error(`Train ${train.number} has no position`);
       const trainLength = train.getLength();
-      if (trainLength <= 0) {
-         train.setTailPosition(train.track, train.km);
-         return;
-      }
+      if (trainLength <= 0) throw new Error(`Train ${train.number} has no length`);
 
       // Calculate tail position: tail is behind the head when moving forward (direction = 1)
       // and ahead of the head when moving backward (direction = -1)
       const tailOffset = -train.direction * trainLength;
-      
+
       try {
-         const tailResult = this._trackLayoutManager.followRailNetwork(
-            train.track,
-            train.km,
-            tailOffset
-         );
-         
+         const tailResult = this._trackLayoutManager.followRailNetwork(train.position.track, train.position.km, tailOffset);
+
          // Tail can only be on a Track (switches and exits don't have dimensions)
          if (tailResult.element instanceof Track) {
             train.setTailPosition(tailResult.element, tailResult.km);
-         } else {
-            // If tail calculation hits a switch or exit, keep tail on current track at boundary
+            return true;
+         } else if (tailResult.element instanceof Switch) {
+            return false;
+         } else if (tailResult.element instanceof Exit) {
+            // If tail calculation hits an exit, keep tail on current track at boundary
             // If going backwards (negative offset), tail is at km 0
             // If going forwards (positive offset), tail is at track.length
-            const boundaryKm = tailOffset < 0 ? 0 : train.track.length;
-            train.setTailPosition(train.track, boundaryKm);
+            //this happens when the trains is just spawning.
+            const boundaryKm = tailOffset < 0 ? 0 : train.position?.track.length;
+            train.setTailPosition(train.position?.track, boundaryKm);
+            return true;
+         } else {
+            throw new Error(`Unknown element type: ${tailResult.element}`);
          }
       } catch (error) {
-         // If we can't calculate tail position (e.g., train is at a dead end), 
+         // If we can't calculate tail position (e.g., train is at a dead end),
          // set tail to same as head
-         train.setTailPosition(train.track, train.km);
+         train.setTailPosition(train.position?.track, train.position?.km);
+         return true;
       }
    }
 
@@ -673,7 +642,7 @@ export class TrainManager {
    // returns true if train should stop at a station or is already stopped, false if it should depart or it is not near the station
    private checkStationStop(train: Train, proposedDistance: number): boolean {
       // Early return if no simulation time or no station stop needed
-      if (!this._currentSimulationTime || !train.shouldStopAtCurrentStation || !train.track || !train.track.halt) {
+      if (!this._currentSimulationTime || !train.shouldStopAtCurrentStation || !train.position?.track || !train.position?.track.halt) {
          return false;
       }
 
@@ -682,18 +651,18 @@ export class TrainManager {
          // Train is already stopped - check if it's time to depart
          if (train.departureTime && this._currentSimulationTime >= train.departureTime) {
             // Check if the next signal allows departure
-            const nextSignal = this._trackLayoutManager.getNextSignal(train.track, train.km, train.direction);
+            const nextSignal = this._trackLayoutManager.getNextSignal(train.position.track, train.position.km, train.direction);
             if (nextSignal && !nextSignal.isTrainAllowedToGo()) {
                console.log(`Train ${train.number} cannot depart, Next signal at km ${nextSignal.position} is red`);
                train.setStoppedBySignal(nextSignal);
-               
+
                train.setStopReason(TrainStopReason.STATION);
                this._eventManager.emit("trainStoppedBySignal", train, nextSignal);
                return true; // Signal is red, cannot depart
             }
 
             console.log(`Train ${train.number} departing at scheduled time ${train.departureTime.toLocaleTimeString()}`);
-            
+
             train.setStopReason(TrainStopReason.NONE);
             train.shouldStopAtCurrentStation = false;
             train.setScheduleTimes(null, null); // Clear schedule times
@@ -719,8 +688,8 @@ export class TrainManager {
 
       // Train is not stopped - check if it needs to stop (only calculate distance if needed)
 
-      const trackCenter = train.track.length / 2 + (train.getLength() / 2) * train.direction;
-      const distanceFromCenter = Math.abs(train.km - trackCenter);
+      const trackCenter = train.position?.track.length / 2 + (train.getLength() / 2) * train.direction;
+      const distanceFromCenter = Math.abs(train.position.km - trackCenter);
       const isNearStation = distanceFromCenter <= Math.abs(proposedDistance) + 0.1;
 
       if (isNearStation) {
@@ -729,13 +698,13 @@ export class TrainManager {
             var departureTime = new Date(this._currentSimulationTime.getTime() + SimulationConfig.stationMinStopTime * 1000);
             if (departureTime < train.departureTime) {
                departureTime = train.departureTime;
-            }            
+            }
             train.setScheduleTimes(train.arrivalTime, departureTime);
          }
          console.log(
             `Train ${train.number} stopped at station as scheduled, departure time: ${train.departureTime?.toLocaleTimeString()}`
          );
-         
+
          train.setStopReason(TrainStopReason.STATION);
          // Mark the start of the station stop if not already set, and reset progress
          if (!train.stationStopStartTime) {

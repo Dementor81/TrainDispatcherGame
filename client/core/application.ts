@@ -75,6 +75,7 @@ export class Application {
          // Show the control panel and train overview panel after successfully joining a station
          
          this._uiManager.showTrainOverviewPanel();
+         this._uiManager.showTestingPanel();
 
          // Retrieve simulation state from the server and handle accordingly
          try {
@@ -275,6 +276,23 @@ export class Application {
       this._uiManager.notifyDerailment(train.number, sw?.id);
       // Ensure removal in case not already removed by TrainManager
       this._trainManager.removeTrain(train.number);
+   }
+
+   public async removeTrainAndReport(trainNumber: string): Promise<void> {
+      // Remove locally and mark completed on server
+      if (!this._currentPlayerId || !this._currentStationId) {
+         console.error('Cannot remove train: No current player ID or station ID');
+         return;
+      }
+
+      try {
+         await this._signalRManager.reportTrainRemoved(this._currentPlayerId, trainNumber, this._currentStationId);
+      } catch (error) {
+         console.error(`Application: Failed to report train removed ${trainNumber}:`, error);
+      }
+
+      this._trainManager.removeTrain(trainNumber);
+      this._eventManager.emit('trainsUpdated', this._trainManager.getAllTrains());
    }
 
    // No server collision handler needed

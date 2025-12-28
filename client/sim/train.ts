@@ -1,19 +1,23 @@
 import Track from "./track";
 import Signal from "./signal";
 import { SimulationConfig, RendererConfig } from "../core/config";
+import RailPosition from "./railPosition";
 
 // Enum for reasons why a train might be stopped
 export enum TrainStopReason {
     NONE = "none",
     SIGNAL = "signal",
     STATION = "station",
-    END_OF_TRACK = "end_of_track"
+    END_OF_TRACK = "end_of_track",
+    COLLISION = "collision",
+    EMERGENCY_STOP = "emergency_stop"
+
 }
 
 class Train {
     private _number: string;
-    private _track: Track|null = null;
-    private _km: number = 0;
+    private _position: RailPosition|null = null;
+    private _tailPosition: RailPosition|null = null;
     private _cars: number;
     private _speed: number; // m/s
     private _direction: number; // 1 for forward, -1 for backward
@@ -24,8 +28,6 @@ class Train {
     private _stopReason: TrainStopReason = TrainStopReason.NONE; // Current reason why the train is stopped
     private _stationStopStartTime: Date | null = null; // When the train actually started waiting at station
     private _waitingProgress: number = 0; // 0..1 progress while waiting at station
-    private _tailTrack: Track | null = null; // Track where the tail (end) of the train is positioned
-    private _tailKm: number = 0; // Kilometer position of the tail on the tail track
 
     constructor(number: string, cars: number, speed: number) {
         this._number = number;
@@ -53,12 +55,12 @@ class Train {
         return this._number;
     }
 
-    get track(): Track | null {
-        return this._track;
+    get position(): RailPosition | null {
+        return this._position;
     }
 
-    get km(): number {
-        return this._km;
+    get tailPosition(): RailPosition | null {
+        return this._tailPosition;
     }
 
     get cars(): number {
@@ -116,17 +118,9 @@ class Train {
         this._waitingProgress = clamped;
     }
 
-    get tailTrack(): Track | null {
-        return this._tailTrack;
-    }
-
-    get tailKm(): number {
-        return this._tailKm;
-    }
-
     setTailPosition(track: Track | null, km: number): void {
-        this._tailTrack = track;
-        this._tailKm = km;
+        if (track === null) this._tailPosition = null;
+        else this._tailPosition = new RailPosition(track, km);
     }
 
     // Calculate the actual length of the train based on configured car width and spacing
@@ -150,8 +144,7 @@ class Train {
 
     // Set the train's position
     setPosition(track: Track, km: number): void {
-        this._track = track;
-        this._km = km;
+       this._position = new RailPosition(track, km);
     }   
 
     // Set the train's direction
@@ -200,8 +193,8 @@ class Train {
     getInfo(): string {
         let info = `Train ${this._number}`;
         
-        if (this._track) {
-            info += ` on track ${this._track.id} at km ${this._km}`;
+        if (this._position) {
+            info += ` on track ${this._position.track.id} at km ${this._position.km}`;
         } else {
             info += ` (not positioned)`;
         }

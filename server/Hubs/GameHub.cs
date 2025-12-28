@@ -263,5 +263,28 @@ namespace TrainDispatcherGame.Server.Hubs
             }
             await Task.CompletedTask;
         }
+
+        public async Task TrainRemoved(string playerId, string trainNumber, string stationId)
+        {
+            try
+            {
+                var train = _simulation.Trains.FirstOrDefault(t => t.Number == trainNumber);
+                if (train == null)
+                {
+                    Console.WriteLine($"Failed to mark train removed {trainNumber}: Train not found in simulation");
+                    return;
+                }
+
+                train.completed = true;
+                train.controlledByPlayer = false;
+                Console.WriteLine($"Train {train.Number} removed by client report at station {stationId} (player {playerId})");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error processing TrainRemoved for train {trainNumber}: {ex.Message}");
+            }
+
+            await Task.CompletedTask;
+        }
     }
 } 

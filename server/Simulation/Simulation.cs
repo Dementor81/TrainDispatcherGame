@@ -454,10 +454,10 @@ namespace TrainDispatcherGame.Server.Simulation
         public void HandleCollision(Train trainA, Train trainB)
         {
             try
-            {
-                trainA.completed = true;
-                trainB.completed = true;
-                Console.WriteLine($"Collision: trains {trainA.Number} and {trainB.Number} removed by client report");
+            {                
+                Console.WriteLine($"Collision: trains {trainA.Number} and {trainB.Number} by client report");
+                trainA.damaged = true;
+                trainB.damaged = true;
             }
             catch (Exception ex)
             {
@@ -470,7 +470,7 @@ namespace TrainDispatcherGame.Server.Simulation
         {
             try
             {
-                train.completed = true;
+                train.damaged = true;
                 var switchInfo = switchId.HasValue ? $" at switch {switchId.Value}" : string.Empty;
                 Console.WriteLine($"Derailment: train {train.Number} removed by client report at station {stationId}{switchInfo}");
             }

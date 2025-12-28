@@ -18,6 +18,7 @@ namespace TrainDispatcherGame.Server.Models
         public bool controlledByPlayer { get; set; } = false;
         public bool completed { get; set; } = false;
         public int delay { get; set; } = 0;
+        public bool damaged { get; set; } = false;
 
         public Train(string number)
         {

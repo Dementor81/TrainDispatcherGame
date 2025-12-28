@@ -73,6 +73,9 @@ namespace TrainDispatcherGame.Server.Services
         public static SzenarioDTO? GetScenarioById(string id)
         {
             if (string.IsNullOrWhiteSpace(id)) return null;
+
+            // Clients may URL-encode the id (notably '/' as %2F). Normalize before parsing.
+            id = Uri.UnescapeDataString(id);
             
             // Parse scenario ID format: {networkId}/{scenarioFileName}
             var parts = id.Split('/', 2);
@@ -93,7 +96,12 @@ namespace TrainDispatcherGame.Server.Services
             try
             {
                 var json = File.ReadAllText(filePath);
-                return JsonSerializer.Deserialize<SzenarioDTO>(json);
+                var dto = JsonSerializer.Deserialize<SzenarioDTO>(json);
+                if (dto == null) return null;
+
+                // Always derive the layout from the scenario id's network folder to keep things consistent.
+                dto.Layout = networkId;
+                return dto;
             }
             catch
             {
@@ -121,6 +129,9 @@ namespace TrainDispatcherGame.Server.Services
         public static Scenario LoadTrainsFromScenario(string scenarioId)
         {
             if (string.IsNullOrWhiteSpace(scenarioId)) throw new Exception("Scenario ID must not be empty");
+
+            // Normalize URL-encoded ids (e.g. %2F) in case scenario id came from an HTTP path segment.
+            scenarioId = Uri.UnescapeDataString(scenarioId);
             
             // Parse scenario ID format: {networkId}/{scenarioFileName}
             var parts = scenarioId.Split('/', 2);

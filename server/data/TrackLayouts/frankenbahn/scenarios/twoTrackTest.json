@@ -1,5 +1,6 @@
 {
   "title": "Fahrplan zweigleisig Test",
+  "layout": "frankenbahn",
   "start_time": "00:00",
   "trains": [
     {
@@ -36,6 +37,43 @@
         {
           "station": "rechtsheim",
           "arrival": "00:22:01"
+        }
+      ]
+    },
+    {
+      "number": "59007",
+      "type": "Passenger",
+      "category": "RB",
+      "speed": 120,
+      "cars": 4,
+      "timetable": [
+        {
+          "station": "Linksdorf",
+          "departure": "00:03:21"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:06:25",
+          "departure": "00:06:25"
+        },
+        {
+          "station": "neustadt",
+          "arrival": "00:10:04",
+          "departure": "00:11:04"
+        },
+        {
+          "station": "burghausen",
+          "arrival": "00:14:49",
+          "departure": "00:15:49"
+        },
+        {
+          "station": "ostheim",
+          "arrival": "00:19:34",
+          "departure": "00:20:34"
+        },
+        {
+          "station": "rechtsheim",
+          "arrival": "00:23:37"
         }
       ]
     }

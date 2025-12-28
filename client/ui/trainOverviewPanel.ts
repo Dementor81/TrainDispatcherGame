@@ -33,6 +33,16 @@ export class TrainOverviewPanel extends BasePanel {
     trainsList.className = 'trains-list';
     trainsList.style.maxHeight = '300px';
     trainsList.style.overflowY = 'auto';
+
+    // Click on a train row opens the train details panel
+    trainsList.addEventListener('click', (e: MouseEvent) => {
+      const el = e.target as HTMLElement | null;
+      const row = el?.closest?.('tr[data-train-number]') as HTMLElement | null;
+      const trainNumber = row?.dataset?.trainNumber;
+      if (trainNumber) {
+        this.application.eventManager.emit('trainClicked', trainNumber);
+      }
+    });
     
     
     
@@ -97,7 +107,7 @@ export class TrainOverviewPanel extends BasePanel {
     const isStoppedBySignal = this.application.trains.some(t => t.number === train.trainNumber && t.stoppedBySignal);
     
     return `
-      <tr class="train-row">
+      <tr class="train-row" data-train-number="${train.trainNumber}" style="cursor:pointer">
         <td class="fw-bold ${isStoppedBySignal ? 'text-danger' : ''}">${train.category} ${train.trainNumber}</td>
         <td class="small">${train.fromStation}</td>
         <td class="small">${train.nextStation}</td>
