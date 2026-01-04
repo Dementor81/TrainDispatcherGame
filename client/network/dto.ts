@@ -2,8 +2,15 @@ export interface TrackLayoutDto {
   id: string;
   tracks: TrackDto[];
   switches: SwitchDto[];
+  platforms?: PlatformDto[];
   maxExitDistance?: number;
   connections?: NetworkConnectionDto[];
+}
+
+export interface PlatformDto {
+  track: number;
+  from_km: number;
+  to_km: number;
 }
 
 export interface ExitDto {

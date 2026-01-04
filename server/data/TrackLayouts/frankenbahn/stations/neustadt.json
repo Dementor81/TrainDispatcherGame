@@ -265,5 +265,12 @@
       { "id": 49, "location": { "x": 600, "y": 700 }, "tracks": [119, 133, 120, null] },
       { "id": 50, "location": { "x": 500, "y": 650 }, "tracks": [140, 147, 136, null] },
       { "id": 51, "location": { "x": 450, "y": 600 }, "tracks": [148, 138, 136, null] }
+   ],
+   "platforms": [
+      { "track": 129, "from_km": 592, "to_km": 159 },
+      { "track": 118, "from_km": 108, "to_km": 542 },
+      { "track": 122, "from_km": 70, "to_km": 520 },
+      { "track": 120, "from_km": 417, "to_km": 140 },
+      { "track": 134, "from_km": 88, "to_km": 367 }
    ]
 }

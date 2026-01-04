@@ -7,7 +7,7 @@ import api from "../network/api";
 import Storage from "../core/storage";
 import { Renderer } from "../canvas/renderer";
 import { Application } from "../core/application";
-import { NetworkConnectionDto } from "../network/dto";
+import { NetworkConnectionDto, PlatformDto } from "../network/dto";
 import { CancellableEvent } from "./event_manager";
 
 // Movement exception for actual errors
@@ -22,6 +22,7 @@ export class TrackLayoutManager {
    private _tracks: Track[] = [];
    private _switches: Switch[] = [];
    private _signals: Signal[] = [];
+   private _platforms: PlatformDto[] = [];
    private _layoutId: string = "";
    private _renderer: Renderer | null = null;
    private _onLayoutLoaded: (() => void) | null = null;
@@ -32,6 +33,7 @@ export class TrackLayoutManager {
       this._tracks = [];
       this._switches = [];
       this._signals = [];
+      this._platforms = [];
       this._application = application;
    }
 
@@ -72,6 +74,10 @@ export class TrackLayoutManager {
 
    get layoutId(): string {
       return this._layoutId;
+   }
+
+   get platforms(): PlatformDto[] {
+      return this._platforms;
    }
 
    // Find the track and kilometer position for an exit point
@@ -136,6 +142,7 @@ export class TrackLayoutManager {
       this._signals = trackLayout.signals;
       this._layoutId = trackLayoutDto.id;
       this._connections = trackLayoutDto.connections || [];
+      this._platforms = trackLayoutDto.platforms || [];
 
       // Assign connections to exit points
       this.assignConnectionsToExits();

@@ -248,5 +248,9 @@
       { "id": 71, "location": { "x": 1600, "y": 550 }, "tracks": [207, 202, 196, null] },
       { "id": 72, "location": { "x": 1450, "y": 500 }, "tracks": [203, 204, 201, null] },
       { "id": 73, "location": { "x": 1650, "y": 550 }, "tracks": [207, 208, 205, null] }
+   ],
+   "platforms": [
+      { "track": 183, "from_km": 596, "to_km": 172 },
+      { "track": 194, "from_km": 174, "to_km": 630 }
    ]
 }

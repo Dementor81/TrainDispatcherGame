@@ -17,6 +17,9 @@ namespace TrainDispatcherGame.Server.Models.DTOs.ClientServerCom
         [JsonPropertyName("switches")]
         public List<SwitchDto> Switches { get; set; } = new();
 
+        [JsonPropertyName("platforms")]
+        public List<PlatformDto> Platforms { get; set; } = new();
+
         [JsonPropertyName("maxExitDistance")]
         public int MaxExitDistance { get; set; }
 

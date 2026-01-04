@@ -38,12 +38,18 @@ export class RendererConfig {
     static readonly signalTrackOffset = 15; // Distance from track centerline to signal
 
     static readonly curveTransitionZone = 20;
+
+    // Platform rendering configuration
+    static readonly platformColor = 0x333333;
+    static readonly platformAlpha = 1;
+    static readonly platformThickness = 14; // thickness away from the track
+    static readonly platformOffset = 5; // gap from the track centerline
     
     // Station rendering configuration
     static readonly stationTextColor = 0xffffff;
     static readonly stationTextSize = 24;
     static readonly stationTextFont = "Arial";
-    static readonly stationTextOffset = 30; // Distance above the layout
+    static readonly stationTextOffset = 50; // Distance above the layout
 
      // Exit rendering configuration
      static readonly exitTextColor = 0xffffff;

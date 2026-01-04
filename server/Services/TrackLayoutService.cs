@@ -107,7 +107,8 @@ namespace TrainDispatcherGame.Server.Services
                             {
                                 Id = stationId,  // Use stationId from network file, not dto.Id
                                 Tracks = dto.Tracks ?? new List<TrackDto>(),
-                                Switches = dto.Switches ?? new List<SwitchDto>()
+                                Switches = dto.Switches ?? new List<SwitchDto>(),
+                                Platforms = dto.Platforms ?? new List<PlatformDto>()
                             };
                             // Compute the maximum distance between any two exit points using in-memory tracks
                             model.MaxExitDistance = ComputeMaxExitDistance(model.Tracks);
@@ -448,6 +449,7 @@ namespace TrainDispatcherGame.Server.Services
                 Id = layout.Id,
                 Tracks = layout.Tracks,
                 Switches = layout.Switches,
+                Platforms = layout.Platforms,
                 MaxExitDistance = layout.MaxExitDistance
             };
 

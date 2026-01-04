@@ -10,6 +10,7 @@ namespace TrainDispatcherGame.Server.Models
         public int MaxExitDistance { get; set; }
         public List<TrackDto> Tracks { get; set; } = new List<TrackDto>();
         public List<SwitchDto> Switches { get; set; } = new List<SwitchDto>();
+        public List<PlatformDto> Platforms { get; set; } = new List<PlatformDto>();
     }
 }
 

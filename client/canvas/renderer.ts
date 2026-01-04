@@ -10,6 +10,7 @@ import { RendererConfig } from "../core/config";
 import { Camera } from "./camera";
 import { InputHandler } from "./input_handler";
 import { TrackRenderer } from "./renderers/track_renderer";
+import { PlatformRenderer } from "./renderers/platform_renderer";
 import { SwitchRenderer } from "./renderers/switch_renderer";
 import { SignalRenderer } from "./renderers/signal_renderer";
 import { TrainRenderer } from "./renderers/train_renderer";
@@ -22,6 +23,7 @@ export class Renderer {
    private _camera!: Camera;
    private _inputHandler!: InputHandler;
    private _trackRenderer!: TrackRenderer;
+   private _platformRenderer!: PlatformRenderer;
    private _switchRenderer!: SwitchRenderer;
    private _signalRenderer!: SignalRenderer;
    private _trainRenderer!: TrainRenderer;
@@ -70,6 +72,21 @@ export class Renderer {
             current = current.parent;
             hops++;
          }
+
+         // If we clicked a track, also compute the km along that track (project click point onto the track vector)
+         if (typeof info.trackId === "number") {
+            const clickedTrack = r._trackLayoutManager.tracks.find((t) => t.id === info.trackId);
+            const globalPoint = (event as any).global as { x: number; y: number } | undefined;
+            if (clickedTrack && globalPoint) {
+               const localPoint = r._pixiApp.stage.toLocal(globalPoint as any);
+               const dx = localPoint.x - clickedTrack.start.x;
+               const dy = localPoint.y - clickedTrack.start.y;
+               const kmRaw = dx * clickedTrack.unit.x + dy * clickedTrack.unit.y;
+               const kmClamped = Math.max(0, Math.min(clickedTrack.length, kmRaw));
+               info.trackKm = Math.round(kmClamped * 1000) / 1000;
+            }
+         }
+
          // Always log the raw target; add tags when available
          if (Object.keys(info).length > 0) {
             console.log("[Debug Click] Target:", target, "Tags:", info);
@@ -86,6 +103,7 @@ export class Renderer {
       // Initialize renderers in z-order (bottom to top)
       // Routes must be rendered before trains so trains appear on top
       r._trackRenderer = new TrackRenderer(r._pixiApp.stage, trackLayoutManager);
+      r._platformRenderer = new PlatformRenderer(r._pixiApp.stage, trackLayoutManager);
       r._switchRenderer = new SwitchRenderer(r._pixiApp.stage, eventManager, canvas);
       r._signalRenderer = new SignalRenderer(r._pixiApp.stage, eventManager, canvas);
       r._trainRouteRenderer = new TrainRouteRenderer(r._pixiApp.stage);
@@ -138,12 +156,16 @@ export class Renderer {
 
       const tracks = this._trackLayoutManager.tracks;
       const switches = this._trackLayoutManager.switches;
+      const platforms = this._trackLayoutManager.platforms;
 
       // Render station name
       this._stationRenderer.renderStationName();
 
       // Render tracks
       this._trackRenderer.renderAll(tracks);
+
+      // Render platforms (on top of tracks, below switches/signals)
+      this._platformRenderer.renderAll(platforms);
 
       // Render switches
       this._switchRenderer.renderAll(switches);
@@ -175,6 +197,7 @@ export class Renderer {
 
    public clear(): void {
       this._trackRenderer.clear();
+      this._platformRenderer.clear();
       this._switchRenderer.clear();
       this._signalRenderer.clear();
       this._trainRenderer.clear();

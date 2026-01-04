@@ -13,5 +13,8 @@ namespace TrainDispatcherGame.Server.Models.DTOs
 
         [JsonPropertyName("switches")]
         public List<SwitchDto> Switches { get; set; } = new();
+
+        [JsonPropertyName("platforms")]
+        public List<PlatformDto> Platforms { get; set; } = new();
     }
 }
