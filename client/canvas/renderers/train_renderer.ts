@@ -5,6 +5,7 @@ import { RendererConfig } from "../../core/config";
 import TrackLayoutManager from "../../manager/trackLayout_manager";
 import { EventManager } from "../../manager/event_manager";
 import { PositionCalculator } from "../utils/position_calculator";
+import TrainManager from "../../manager/train_manager";
 
 interface TrainContainer extends PIXI.Container {
    trainNumber?: string;
@@ -16,19 +17,36 @@ interface TrainContainer extends PIXI.Container {
 export class TrainRenderer {
    private _container: PIXI.Container;
    private _trackLayoutManager: TrackLayoutManager;
+   private _trainManager: TrainManager;
    private _eventManager: EventManager;
    private _canvas: HTMLCanvasElement;
    private _trainContainersByNumber: Map<string, TrainContainer> = new Map();
 
-   constructor(stage: PIXI.Container, trackLayoutManager: TrackLayoutManager, eventManager: EventManager, canvas: HTMLCanvasElement) {
+   constructor(stage: PIXI.Container, trackLayoutManager: TrackLayoutManager, eventManager: EventManager, canvas: HTMLCanvasElement, trainManager: TrainManager) {
       this._container = new PIXI.Container();
       this._trackLayoutManager = trackLayoutManager;
       this._eventManager = eventManager;
       this._canvas = canvas;
+      this._trainManager = trainManager;
       stage.addChild(this._container);
    }
 
+   /**
+    * Render a single train, checks if the train is still in the train manager and if not, removes the graphics and returns
+    */
    renderTrain(train: Train): void {
+      const trains = this._trainManager.getAllTrains();
+
+      if (!trains.includes(train)) {
+         // Train is no longer present; remove its graphics if needed and return
+         const existingContainer = this._trainContainersByNumber.get(train.number);
+         if (existingContainer) {
+            this._container.removeChild(existingContainer);
+            this._trainContainersByNumber.delete(train.number);
+         }
+         return;
+      }
+
       if (!train.position) {
          console.warn(`Cannot render train ${train.number}: no track assigned`);
          return;
@@ -37,41 +55,21 @@ export class TrainRenderer {
       const trainContainer = this.getOrCreateTrainContainer(train);
       this.updateTrainGraphics(train, trainContainer);
    }
-
-   redrawTrain(train: Train): void {
-      // Backwards compatible: redraw updates the cached graphics.
-      this.renderTrain(train);
-   }
-
-   removeTrain(trainNumber: string): void {
-      const trainContainer = this._trainContainersByNumber.get(trainNumber) ?? null;
-      if (!trainContainer) return;
-
-      this._trainContainersByNumber.delete(trainNumber);
-      this._container.removeChild(trainContainer);
-      trainContainer.destroy({ children: true });
-      this._canvas.style.cursor = "default";
-   }
-
-   renderAll(trains: Train[]): void {
-      const alive = new Set<string>();
+ 
+   /**
+    * Render all trains by removing all existing containers and rendering all trains
+    */
+   renderAll(): void {
+      this.clear();
+      const trains = this._trainManager.getAllTrains();
       for (const train of trains) {
-         alive.add(train.number);
          this.renderTrain(train);
-      }
-
-      // Remove trains that no longer exist
-      for (const existingTrainNumber of Array.from(this._trainContainersByNumber.keys())) {
-         if (!alive.has(existingTrainNumber)) {
-            this.removeTrain(existingTrainNumber);
-         }
       }
    }
 
    clear(): void {
-      for (const existingTrainNumber of Array.from(this._trainContainersByNumber.keys())) {
-         this.removeTrain(existingTrainNumber);
-      }
+      this._trainContainersByNumber.clear();
+      this._container.removeChildren();
    }
 
    private getOrCreateTrainContainer(train: Train): TrainContainer {

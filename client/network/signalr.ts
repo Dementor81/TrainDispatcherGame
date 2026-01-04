@@ -6,8 +6,8 @@ import { SimulationState } from './dto';
 export class SignalRManager {
     private connection: HubConnection | null = null;
     private eventManager: EventManager;
-    private lastPlayerId: string | null = null;
-    private lastStationId: string | null = null;
+    private playerId: string | null = null;
+    private stationId: string | null = null;
 
     constructor(eventManager: EventManager) {
         this.eventManager = eventManager;
@@ -27,10 +27,10 @@ export class SignalRManager {
 
     private setupLocalEventHandlers(): void {
         this.eventManager.on("trainCollision", (trainA: Train, trainB: Train) => {
-            this.reportTrainCollision(this.lastPlayerId!, trainA.number, trainB.number, this.lastStationId!);
+            this.reportTrainCollision(this.playerId!, trainA.number, trainB.number, this.stationId!);
         });
         this.eventManager.on("trainDerailment", (train: Train, switchId: number) => {
-            this.reportTrainDerailed(this.lastPlayerId!, train.number, this.lastStationId!, switchId);
+            this.reportTrainDerailed(this.playerId!, train.number, this.stationId!, switchId);
         });
     }
 
@@ -144,38 +144,38 @@ export class SignalRManager {
             await this.connection.invoke('JoinStation', playerId, stationId, playerName ?? '');
             
             // Store the player and station IDs for reconnection
-            this.lastPlayerId = playerId;
-            this.lastStationId = stationId;
+            this.playerId = playerId;
+            this.stationId = stationId;
         } catch (error) {
             console.error('Failed to join station:', error);
             throw error;
         }
     }
 
-    public async leaveStation(playerId: string): Promise<void> {
+    public async leaveStation(): Promise<void> {
         if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
             throw new Error('SignalR connection not established');
         }
 
         try {
-            await this.connection.invoke('LeaveStation', playerId);
+            await this.connection.invoke('LeaveStation', this.playerId!);
             
             // Clear stored IDs when leaving station
-            this.lastPlayerId = null;
-            this.lastStationId = null;
+            this.playerId = null;
+            this.stationId = null;
         } catch (error) {
             console.error('Failed to leave station:', error);
             throw error;
         }
     }
 
-    public async getStationStatus(stationId: string): Promise<void> {
+    public async getStationStatus(): Promise<void> {
         if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
             throw new Error('SignalR connection not established');
         }
 
         try {
-            await this.connection.invoke('GetStationStatus', stationId);
+            await this.connection.invoke('GetStationStatus', this.stationId!);
         } catch (error) {
             console.error('Failed to get station status:', error);
             throw error;
@@ -196,13 +196,13 @@ export class SignalRManager {
     }
 
     //send train to server
-    public async sendTrain(playerId: string, trainNumber: string, exitId: number): Promise<void> {
+    public async sendTrain(trainNumber: string, exitId: number): Promise<void> {
         if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
             throw new Error('SignalR connection not established');
         }
 
         try {
-            await this.connection.invoke('ReceiveTrain', playerId, trainNumber, exitId);
+            await this.connection.invoke('ReceiveTrain', this.playerId!, trainNumber, exitId);
         } catch (error) {
             console.error('Failed to send train:', error);
             throw error;
@@ -294,10 +294,10 @@ export class SignalRManager {
     }
 
     private async tryRejoinStation(): Promise<void> {
-        if (this.lastPlayerId && this.lastStationId) {
-            console.log(`SignalR: Attempting to rejoin station ${this.lastStationId} as player ${this.lastPlayerId}`);
+        if (this.playerId && this.stationId) {
+            console.log(`SignalR: Attempting to rejoin station ${this.stationId} as player ${this.playerId}`);
             try {
-                await this.joinStation(this.lastPlayerId, this.lastStationId);
+                await this.joinStation(this.playerId, this.stationId);
                 console.log('SignalR: Successfully rejoined station after reconnection');
             } catch (error) {
                 console.error('SignalR: Failed to rejoin station after reconnection:', error);
@@ -376,8 +376,8 @@ export class SignalRManager {
 
     public get lastStationInfo(): { playerId: string | null, stationId: string | null } {
         return {
-            playerId: this.lastPlayerId,
-            stationId: this.lastStationId
+            playerId: this.playerId,
+            stationId: this.stationId
         };
     }
 

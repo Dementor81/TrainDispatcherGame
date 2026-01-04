@@ -11,7 +11,7 @@ Features:
     ✔ visualize the time a train is stoping at a station @done(25-08-31 14:10)
     ✔ flip the arrow on exitpoints when the regular track is coming from the next track @done(25-10-18 11:56)
     ☐ show platfrom
-    ☐ report passing through a station to the server
+    ✘ report passing through a station to the server @cancelled(26-01-04 17:09) --> server ignors if trains actually passed the station, still calcs the delay
     ☐ add comments to shedulded strain stops like "overtake"
 
 Big Features:
@@ -37,7 +37,7 @@ Bugs:
     ✔ switching a switch while the switch is blocked by a train breaks the game @done(25-09-27 17:58)
     ✔ leaving a station while trains are at the station breaks the game @done(25-09-06 13:34)
     ☐ some random delays of trains at the server side
-    ☐ not all server event sets the delay correctly, when the approuval comes to late
+    ✔ not all server event sets the delay correctly, when the approuval comes to late @done(26-01-04 17:10) --> to be Tested
     
 
 

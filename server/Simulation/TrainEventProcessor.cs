@@ -26,12 +26,11 @@ namespace TrainDispatcherGame.Server.Simulation
 
         public DateTime SimulationTime { get; set; }
 
-        public TrainSpawnEvent CreateSpawnFromConnection(Train train, NetworkConnection connection, bool isReversed, int additionalDistance, DateTime scheduledTime = default)
+        public TrainSpawnEvent CreateSpawnFromConnection(Train train, NetworkConnection connection, bool isReversed, int additionalDistance, DateTime departureTime = default)
         {
-            var distance = connection.Distance + additionalDistance;
-            var seconds = train.GetTravelTime(distance);
+            var seconds = train.GetTravelTime(connection.Distance + additionalDistance);
             return new TrainSpawnEvent(
-                scheduledTime == default ? SimulationTime.AddSeconds(seconds) : scheduledTime.AddSeconds(seconds),
+                departureTime.AddSeconds(seconds),
                 connection,
                 isReversed
             );
@@ -50,7 +49,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 else if (train.TrainEvent is TrainStartEvent)
                     await this.HandleTrainStart(train);
             }
-        }     
+        }
 
         public async Task HandleTrainSpawn(Train train)
         {
@@ -98,29 +97,35 @@ namespace TrainDispatcherGame.Server.Simulation
             await DispatchTrainByServer(train);
         }
 
+        /// <summary>
+        /// the server sends the train to the next station
+        /// </summary>
+        /// <param name="train"></param>
+        /// <exception cref="Exception"></exception>
         public void AdvanceTrainToNextStation(Train train)
         {
             var currentWaypoint = train.GetCurrentWayPoint();
             var nextWaypoint = train.GetNextWayPoint();
             if (currentWaypoint == null || nextWaypoint == null) throw new Exception($"Train {train.Number} waypoints invalid");
 
-            var departureTime = currentWaypoint.DepartureTime > SimulationTime ? currentWaypoint.DepartureTime : SimulationTime;
-            if (departureTime > SimulationTime)
-            {
-                train.delay = (int)(departureTime - SimulationTime).TotalSeconds;
-            }
 
-            var layout = _trackLayoutService.GetTrackLayout(currentWaypoint.Station);
+
+            var layout = _trackLayoutService.GetTrackLayout(currentWaypoint.Station); //layout could be null if the train is at a virtual station at the margin of the map
             bool isReversed;
             var connection = _trackLayoutService.GetRegularConnectionToStation(currentWaypoint.Station, nextWaypoint.Station, out isReversed);
             var distanceToExit = 0;
             if (connection == null) throw new Exception($"No regular connection found for train {train.Number} from {currentWaypoint.Station} to {nextWaypoint.Station}");
             if (layout != null) distanceToExit = layout.MaxExitDistance / 2;
 
+            var departureTime = currentWaypoint.DepartureTime > SimulationTime ? currentWaypoint.DepartureTime : SimulationTime;
             var spawn = CreateSpawnFromConnection(train, connection, isReversed, distanceToExit, departureTime);
+
+
+            train.delay = (int)Math.Max(0, (departureTime - currentWaypoint.DepartureTime).TotalSeconds);
+
             train.TrainEvent = spawn;
-            train.AdvanceToNextWayPoint();
-            _trackRegistry.AddTrain(connection, train);
+            train.AdvanceToNextWayPoint(); //advance to the next waypoint
+            _trackRegistry.AddTrain(connection, train); //add the train to the track registry
         }
 
         public async Task DispatchTrainByServer(Train train)

@@ -30,11 +30,11 @@ export class Application {
 
    constructor() {
       this._eventManager = new EventManager(this);
+      this._signalRManager = new SignalRManager(this._eventManager);
       this._uiManager = new UIManager(this, this._eventManager);
       this._trackLayoutManager = new TrackLayoutManager(this);
-      this._trainManager = new TrainManager(this._eventManager, this._trackLayoutManager);
+      this._trainManager = new TrainManager(this._eventManager, this._trackLayoutManager, this._signalRManager);
       this._trainRouteManager = new TrainRouteManager(this._trackLayoutManager, this._eventManager);
-      this._signalRManager = new SignalRManager(this._eventManager);
 
       (window as any).app = this;
    }
@@ -191,7 +191,7 @@ export class Application {
          return;
       }
       try {         
-         await this._signalRManager.sendTrain(this._currentPlayerId, trainNumber, exitId);
+         
          console.log(`Application: Successfully initiated sending train ${trainNumber} to ${exitId}`);
       } catch (error) {
          console.error(`Application: Failed to send train ${trainNumber}:`, error);

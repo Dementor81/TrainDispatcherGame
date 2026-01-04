@@ -272,28 +272,36 @@ namespace TrainDispatcherGame.Server.Simulation
                 train.controlledByPlayer = false;
                 train.CurrentLocation = null;
 
-                var currentEvent = train.GetCurrentWayPoint();
-                if (currentEvent == null) throw new Exception($"Train {train.Number} has no current event");
+                var currentWayPoint = train.GetCurrentWayPoint();
+                if (currentWayPoint == null) throw new Exception($"Train {train.Number} has no current event");
 
-                if (!currentEvent.Processed)
+                //calculate the expected time at the exit to check if the train is late
+                var layout = _trackLayoutService.GetTrackLayout(currentWayPoint.Station);
+                if (layout == null) throw new Exception($"No layout found for station {currentWayPoint.Station}");
+                var expectedTimeAtExit = currentWayPoint.DepartureTime.AddSeconds(train.GetTravelTime(layout.MaxExitDistance / 2));                
+                train.delay = (int)Math.Max(0, (SimulationTime - expectedTimeAtExit).TotalSeconds); 
+                
+
+                if (currentWayPoint.Stops && !currentWayPoint.Processed)
                 {
-                    Console.WriteLine($"Train {train.Number} missed stop at {currentEvent.Station}!");
+                    Console.WriteLine($"Train {train.Number} missed stop at {currentWayPoint.Station}!");
                 }
-                var nextEvent = train.AdvanceToNextWayPoint();
-                if (nextEvent == null)
+
+                var nextWaypoint = train.AdvanceToNextWayPoint();
+                if (nextWaypoint == null)
                 {
                     Console.WriteLine($"This should not happend, probably a bug in train scheduling, Train {train.Number} has completed all events after it returned from a station");
                     train.completed = true;
                     return;
                 }
 
-                if (nextEvent.Station != connection.ToStation && !isReversed || nextEvent.Station != connection.FromStation && isReversed)
+                if (nextWaypoint.Station != connection.ToStation && !isReversed || nextWaypoint.Station != connection.FromStation && isReversed)
                 {
-                    Console.WriteLine($"Train {train.Number} was missrouted to {connection.ToStation} instead of {nextEvent.Station} or vice versa");
+                    Console.WriteLine($"Train {train.Number} was missrouted to {connection.ToStation} instead of {nextWaypoint.Station} or vice versa");
                     // TODO: handle missrouted train
                 }
 
-                if (nextEvent.IsLast)
+                if (nextWaypoint.IsLast)
                 {
                     Console.WriteLine($"Train {train.Number} has completed all events");
                     train.completed = true;
@@ -364,7 +372,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 if (!approved)
                 {
                     Console.WriteLine($"Approval denied for train {train.Number}");
-                    sendApprovalEvent.ApprovalDenied();
+                    sendApprovalEvent.ApprovalDenied(SimulationTime.AddSeconds(60));
                     return;
                 }
 

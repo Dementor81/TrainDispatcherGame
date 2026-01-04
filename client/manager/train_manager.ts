@@ -8,6 +8,7 @@ import { TrackLayoutManager, MovementException } from "./trackLayout_manager";
 import { SimulationConfig } from "../core/config";
 import { getSimulationStatus } from "../network/api";
 import Tools from "../core/utils";
+import { SignalRManager } from "../network/signalr";
 
 export class TrainManager {
    private _trains: Train[] = [];
@@ -19,24 +20,21 @@ export class TrainManager {
    private _isSimulationRunning: boolean = false;
    private _currentSimulationTime: Date | null = null; // Current simulation time from server
    private _lastSimulationTimeUpdate: number = 0; // When we last updated simulation time
-
+   private _signalRManager: SignalRManager;
    public get currentSimulationTime(): Date | null {
       return this._currentSimulationTime;
    }
 
-   constructor(eventManager: EventManager, trackLayoutManager: TrackLayoutManager) {
+   constructor(eventManager: EventManager, trackLayoutManager: TrackLayoutManager, signalRManager: SignalRManager) {
       this._eventManager = eventManager;
       this._trackLayoutManager = trackLayoutManager;
-
+      this._signalRManager = signalRManager;
       // Subscribe to train creation events
       this._eventManager.on("trainCreated", (train: Train, exitPointId: number) => {
          this.handleTrainCreated(train, exitPointId);
       });
 
-      // Subscribe to train reached exit events to handle sending back to server
-      this._eventManager.on("trainReachedExit", (train: Train, exit: Exit) => {
-         this.handleTrainReachedExit(train, exit);
-      });
+
    }
 
    // ==================== SIMULATION METHODS ====================
@@ -148,19 +146,13 @@ export class TrainManager {
          return; // No trains to update
       }
 
-      let trainsUpdated = false;
-
       // Update each train
       for (const train of this._trains) {
          if (this.updateTrain(train)) {
-            trainsUpdated = true;
+            this._eventManager.emit("trainUpdated", train);
          }
       }
 
-      // Trigger render update if any trains were updated
-      if (true) {
-         this._eventManager.emit("trainsUpdated", this._trains);
-      }
    }
 
    // Update a single train's position
@@ -169,7 +161,7 @@ export class TrainManager {
          throw new Error(`Train ${train.number} has no position`);
       }
 
-      if(train.stopReason === TrainStopReason.COLLISION || train.stopReason === TrainStopReason.EMERGENCY_STOP) {
+      if(train.stopReason === TrainStopReason.COLLISION || train.stopReason === TrainStopReason.EMERGENCY_STOP || train.stopReason === TrainStopReason.DERAILEMENT) {
          return false;
       }
 
@@ -221,8 +213,8 @@ export class TrainManager {
             if (!tailUpdated) {
                //if the tail position update fails, the train is derailed
                console.warn(`Train ${train.number} derailed at switch ${result.element.id}`);
-               this._eventManager.emit("trainDerailed", train, result.element);
-               this.removeTrain(train.number);
+               this._eventManager.emit("trainDerailed", train, result.element);   
+               train.setStopReason(TrainStopReason.DERAILEMENT);            
                return false;
             }
 
@@ -231,7 +223,7 @@ export class TrainManager {
                this._eventManager.emit("trainCollision", train, blockingTrain);
                train.setStopReason(TrainStopReason.COLLISION);
                blockingTrain.setStopReason(TrainStopReason.COLLISION);
-               return false;
+               return true;
             }
 
             // Check if tail track element changed and emit occupiedTrackCleared event
@@ -254,8 +246,8 @@ export class TrainManager {
             }
 
             this.removeTrain(train.number);
-            this._eventManager.emit("sendTrainToServer", train.number, exit.id);
-            return false;
+            this._signalRManager.sendTrain(train.number, exit.id);
+            return true;
          } else if (result.element instanceof Switch) {
             // Train stopped at switch (wrong direction/position) - clear signal reference
             train.setStoppedBySignal(null);
@@ -467,8 +459,6 @@ export class TrainManager {
       }
 
       this._trains.push(train);
-      console.log(`Train added: ${train.getInfo()}`);
-      console.log(`Total trains: ${this._trains.length}`);
 
       // Emit train added event for other components
       this._eventManager.emit("trainAdded", train);
@@ -507,13 +497,9 @@ export class TrainManager {
 
    // Remove a train from the manager
    removeTrain(trainNumber: string): boolean {
-      this._eventManager.emit("trainRemoved", trainNumber);
-
       const index = this._trains.findIndex((train) => train.number === trainNumber);
       if (index !== -1) {
          const removedTrain = this._trains.splice(index, 1)[0];
-         console.log(`Train removed: ${removedTrain.getInfo()}`);
-         console.log(`Total trains: ${this._trains.length}`);
          return true;
       }
       return false;
@@ -590,14 +576,7 @@ export class TrainManager {
       this.spawnTrainAtExitPoint(train, exitPointId);
    }
 
-   // Handle train reached exit events
-   private handleTrainReachedExit(train: Train, exit: Exit): void {
-      console.log(`TrainManager: Train ${train.number} reached exit ${exit.id}`);
-      // Remove the train from local simulation
-      this.removeTrain(train.number);
-      // Emit event for application to handle server communication
-      this._eventManager.emit("sendTrainToServer", train.number, exit.id);
-   }
+
 
    // Calculate and update the tail position of a train
    // Returns true if the tail position was updated, false if the calculation hits a switch which means the train is derailed
@@ -725,3 +704,5 @@ export class TrainManager {
       return false; // Train is not near the station
    }
 }
+
+export default TrainManager;

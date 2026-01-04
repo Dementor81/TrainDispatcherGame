@@ -11,9 +11,9 @@ namespace TrainDispatcherGame.Server.Models
             ApprovalSent = false;
         }
 
-        public void ApprovalDenied()
+        public void ApprovalDenied(DateTime newScheduledTime)
         {
-            ScheduledTime = ScheduledTime.AddSeconds(60);
+            ScheduledTime = newScheduledTime;
             ApprovalSent = false;
         }
     }

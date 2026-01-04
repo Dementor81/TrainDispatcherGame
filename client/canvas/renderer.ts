@@ -89,27 +89,22 @@ export class Renderer {
       r._switchRenderer = new SwitchRenderer(r._pixiApp.stage, eventManager, canvas);
       r._signalRenderer = new SignalRenderer(r._pixiApp.stage, eventManager, canvas);
       r._trainRouteRenderer = new TrainRouteRenderer(r._pixiApp.stage);
-      r._trainRenderer = new TrainRenderer(r._pixiApp.stage, trackLayoutManager, eventManager, canvas);
+      r._trainRenderer = new TrainRenderer(r._pixiApp.stage, trackLayoutManager, eventManager, canvas, trainManager);
       r._stationRenderer = new StationRenderer(r._pixiApp.stage, trackLayoutManager);
 
-      // Set up event listeners
-      r._eventManager.on('trainRemoved', (trainNumber: string) => {
-         r._trainRenderer.removeTrain(trainNumber);
-      });
 
       // Listen for train events and update renderer
       r._eventManager.on('trainAdded', (train: Train) => {
-         r.renderTrains(r._trainManager.getAllTrains());
+         r._trainRenderer.renderTrain(train);
       });
 
       // Listen for simulation updates and update renderer
       r._eventManager.on('trainsUpdated', (trains: Train[]) => {
-         r.renderTrains(trains);
+         r._trainRenderer.renderAll();
       });
 
-      // Redraw request from renderer (e.g., after WebGL context restored)
-      r._eventManager.on('requestTrainsRedraw', () => {
-         r.renderTrains(r._trainManager.getAllTrains());
+      r._eventManager.on('trainUpdated', (train: Train) => {
+         r._trainRenderer.renderTrain(train);
       });
 
       // Handle window resize
@@ -134,7 +129,7 @@ export class Renderer {
       // Rebuild stage contents
       this.renderTrackLayout();
       // Request trains redraw (handled by own subscription)
-      this._eventManager.emit("requestTrainsRedraw");
+      this.renderTrains();
    };
 
    public renderTrackLayout(): void {
@@ -160,8 +155,8 @@ export class Renderer {
       this._camera.zoomToFit(tracks, this._pixiApp.canvas.width, this._pixiApp.canvas.height);
    }
 
-   public renderTrains(trains: Train[]): void {
-      this._trainRenderer.renderAll(trains);
+   public renderTrains(): void {
+      this._trainRenderer.renderAll();
    }
 
    public redrawSwitch(sw: Switch): void {
@@ -172,9 +167,7 @@ export class Renderer {
       this._signalRenderer.redrawSignal(signal);
    }
 
-   public redrawTrain(train: Train): void {
-      this._trainRenderer.redrawTrain(train);
-   }
+
 
    public renderTrainRoutes(routes: TrainRoute[]): void {
       this._trainRouteRenderer.renderAll(routes);
