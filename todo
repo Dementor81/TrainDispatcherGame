@@ -10,7 +10,7 @@ Features:
     ✔ visualize if a train wants to depart but connot due to signaling @done(25-08-17 19:34)
     ✔ visualize the time a train is stoping at a station @done(25-08-31 14:10)
     ✔ flip the arrow on exitpoints when the regular track is coming from the next track @done(25-10-18 11:56)
-    ☐ show platfrom
+    ✔ show platfrom @done(26-01-05 08:50)
     ✘ report passing through a station to the server @cancelled(26-01-04 17:09) --> server ignors if trains actually passed the station, still calcs the delay
     ☐ add comments to shedulded strain stops like "overtake"
 

@@ -203,5 +203,11 @@
       { "id": 55, "location": { "x": 300, "y": 650 }, "tracks": [156, 157, 154, null] },
       { "id": 60, "location": { "x": 550, "y": 750 }, "tracks": [172, 168, 166, null] },
       { "id": 61, "location": { "x": 600, "y": 700 }, "tracks": [170, 169, 168, null] }
+   ],
+   "platforms": [
+      { "track": 153, "from_km": 300, "to_km": 905 },
+      { "track": 157, "from_km": 747, "to_km": 151 },
+      { "track": 166, "from_km": 470, "to_km": 168 },
+      { "track": 170, "from_km": 116, "to_km": 426 }
    ]
 }

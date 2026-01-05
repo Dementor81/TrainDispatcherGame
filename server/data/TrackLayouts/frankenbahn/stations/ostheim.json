@@ -87,7 +87,7 @@
          "start": { "x": 450, "y": 700 },
          "end": { "x": 1250, "y": 700 },
          "signals": [
-            { "type": "main", "position": 680, "direction": 1 }
+            { "type": "main", "position": 700, "direction": 1 }
          ],
          "switches": [
             { "type": "Switch", "id": 76 },
@@ -139,7 +139,7 @@
          "start": { "x": 1400, "y": 700 },
          "end": { "x": 1950, "y": 700 },
          "signals": [],
-         "switches": [{ "type": "Switch", "id": 78 }, {"type": "Exit", "id": 4}]
+         "switches": [{ "type": "Switch", "id": 78 }, {"type": "Exit", "id": 3}]
       },
       {
          "id": 241,
@@ -259,5 +259,11 @@
          "branch": 251,
          "from": 222
       }
+   ],
+   "platforms": [
+      { "track": 222, "from_km": 123, "to_km": 584 },
+      { "track": 227, "from_km": 635, "to_km": 173 },
+      { "track": 234, "from_km": 150, "to_km": 632 },
+      { "track": 230, "from_km": 583, "to_km": 102 }
    ]
 }
