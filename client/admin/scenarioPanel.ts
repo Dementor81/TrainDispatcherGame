@@ -3,65 +3,32 @@ import {
    getCurrentScenario,
    setScenario,
 } from "../network/api";
-import "winbox/dist/winbox.bundle.min.js";
+import { BasePanel } from "../ui/basePanel";
 
-export class ScenarioPanel extends (window as any).WinBox {
-   private container: HTMLDivElement;
-
-   constructor(options?: Partial<{ title: string; x: any; y: any; width: number; height: number }>) {
-      const container = document.createElement("div");
-      // pre-create content before super call uses mount
-      const panel = new ScenarioPanelInternal(container);
-      super({
-         title: options?.title ?? "Scenario Selection",
-         x: options?.x ?? "center",
-         y: options?.y ?? 60,
-         width: options?.width ?? 440,
-         height: options?.height ?? 150,
-         background: "#212529",
-         class: ["no-full", "modern", "no-max"],
-         mount: container,
-      });
-      this.container = container;
-   }
-
-   public getElement(): HTMLDivElement {
-      return this.container;
-   }
-
-   public async update(): Promise<void> {
-      const panelInternal = (this.container as any).__panelInternal as ScenarioPanelInternal;
-      if (panelInternal) {
-         await panelInternal.update();
-      }
-   }
-}
-
-export default ScenarioPanel;
-
-// Internal builder that assembles the panel content
-class ScenarioPanelInternal {
+export class ScenarioPanel extends BasePanel {
    private allNetworks: string[] = [];
    private allScenarios: Array<{ id: string; title: string; networkId: string }> = [];
    private currentScenarioId: string = '';
 
-   constructor(private host: HTMLDivElement) {
-      this.init();
-      // Store reference for update method
-      (this.host as any).__panelInternal = this;
-   }
-   
-   private init(): void {
-      this.host.style.width = "100%";
-      this.host.style.height = "100%";
-      this.host.className = "p-3 text-light";
-      this.host.appendChild(this.createScenarioSection());
+   constructor() {
+      super(null as any, null);
       
-      // Load data on init
+      // Fixed positioning for this singleton panel
+      Object.assign(this.container.style, {
+         position: 'fixed',
+         top: '320px',
+         left: '820px',
+         width: '360px',
+         height: '150px',
+         display: 'block',
+         minWidth: 'unset',
+         maxWidth: 'unset',
+      });
+      
       void this.loadData();
    }
 
-   private createScenarioSection(): HTMLDivElement {
+   protected createContent(): HTMLDivElement {
       const section = document.createElement('div');
       section.className = 'd-flex flex-column gap-3';
       
@@ -146,7 +113,7 @@ class ScenarioPanelInternal {
    }
    
    private updateNetworkDropdown(): void {
-      const networkSelect = this.host.querySelector('#networkSelect') as HTMLSelectElement;
+      const networkSelect = this.container.querySelector('#networkSelect') as HTMLSelectElement;
       if (!networkSelect) return;
       
       networkSelect.innerHTML = '';
@@ -173,8 +140,8 @@ class ScenarioPanelInternal {
    }
    
    private updateScenarioDropdown(): void {
-      const networkSelect = this.host.querySelector('#networkSelect') as HTMLSelectElement;
-      const scenarioSelect = this.host.querySelector('#scenarioSelect') as HTMLSelectElement;
+      const networkSelect = this.container.querySelector('#networkSelect') as HTMLSelectElement;
+      const scenarioSelect = this.container.querySelector('#scenarioSelect') as HTMLSelectElement;
       if (!networkSelect || !scenarioSelect) return;
       
       const selectedNetworkId = networkSelect.value;
@@ -209,9 +176,7 @@ class ScenarioPanelInternal {
          scenarioSelect.appendChild(opt);
       }
    }
-   
-   public async update(): Promise<void> {
-      await this.loadData();
-   }
 }
+
+export default ScenarioPanel;
 

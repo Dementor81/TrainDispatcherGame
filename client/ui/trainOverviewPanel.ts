@@ -12,12 +12,14 @@ export class TrainOverviewPanel extends BasePanel {
   }
 
   protected getContainerId(): string { return 'trainOverviewPanel'; }
-  protected getContainerClasses(): string { return super.getContainerClasses() + ' top-0 end-0'; }
+  protected getContainerClasses(): string { return super.getContainerClasses(); }
   protected getContainerStyles(): Partial<CSSStyleDeclaration> {
     return {
       ...super.getContainerStyles(),
       minWidth: '630px',
-      maxWidth: '900px'
+      maxWidth: '900px',
+      top: '0',
+      right: '0',
     };
   }
 

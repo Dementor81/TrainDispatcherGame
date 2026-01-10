@@ -16,10 +16,9 @@ export class CancellableEvent {
 
 export class EventManager {
     private _listeners: Map<string, EventCallback[]> = new Map();
-    private _application: Application;
 
-    constructor(application: Application) {
-        this._application = application;
+    constructor() {
+        
     }
 
     init() {

@@ -25,7 +25,6 @@
    "dependencies": {
       "@microsoft/signalr": "^8.0.7",
       "bootstrap": "^5.3.7",
-      "pixi.js": "^8.11.0",
-      "winbox": "^0.2.82"
+      "pixi.js": "^8.11.0"
    }
 }

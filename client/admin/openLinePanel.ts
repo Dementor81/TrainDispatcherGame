@@ -1,39 +1,50 @@
 import { fetchOpenLineTracks } from "../network/api";
-import "winbox/dist/winbox.bundle.min.js";
+import { BasePanel } from "../ui/basePanel";
 
-export class OpenLinePanel extends (window as any).WinBox {
-  private container: HTMLDivElement;
-  private updateTimer: number | null = null;
-
-  constructor(options?: Partial<{ title: string; x: any; y: any; width: number; height: number }>) {
-    const container = document.createElement("div");
-    const panel = new OpenLinePanelInternal(container);
-    super({
-      title: options?.title ?? "Open Line Tracks",
-      x: options?.x ?? "right",
-      y: options?.y ?? 300,
-      width: options?.width ?? 720,
-      height: options?.height ?? 520,
-      background: "#212529",
-      class: ["no-full", "modern", "no-max"],
-      mount: container,
+export class OpenLinePanel extends BasePanel {
+  constructor() {
+    super(null as any, 2000);
+    
+    // Fixed positioning for this singleton panel
+    Object.assign(this.container.style, {
+      position: 'fixed',
+      bottom: '0',
+      right: '0',
+      width: '720px',
+      height: '520px',
+      display: 'block',
+      minWidth: 'unset',
+      maxWidth: 'unset',
     });
-    this.container = container;
-    void this.update();
-    this.updateTimer = window.setInterval(() => this.update(), 2000);
-    (this as any).onclose = () => {
-      if (this.updateTimer !== null) {
-        clearInterval(this.updateTimer);
-        this.updateTimer = null;
-      }
-    };
+    
+    this.show();
   }
 
-  public getElement(): HTMLDivElement {
-    return this.container;
+  protected createContent(): HTMLDivElement {
+    const section = document.createElement('div');
+    section.className = 'border border-secondary rounded p-2';
+    section.style.height = '100%';
+    section.style.overflow = 'auto';
+
+    const header = document.createElement('div');
+    header.className = 'd-flex flex-row gap-2 text-secondary small pb-1 border-bottom border-secondary';
+    const h1 = document.createElement('div'); h1.style.width = '160px'; h1.textContent = 'From (Exit)';
+    const h2 = document.createElement('div'); h2.style.width = '160px'; h2.textContent = 'To (Exit)';
+    const h3 = document.createElement('div'); h3.style.width = '120px'; h3.textContent = 'Mode';
+    const h4 = document.createElement('div'); h4.style.width = '80px'; h4.textContent = 'Blocks';
+    const h5 = document.createElement('div'); h5.style.flex = '1 1 auto'; h5.textContent = 'Trains';
+    header.appendChild(h1); header.appendChild(h2); header.appendChild(h3); header.appendChild(h4); header.appendChild(h5);
+
+    const body = document.createElement('div');
+    body.id = 'openLineListBody';
+    body.className = 'pt-1';
+
+    section.appendChild(header);
+    section.appendChild(body);
+    return section;
   }
 
-  public async update(): Promise<void> {
+  protected async Updates(): Promise<void> {
     try {
       const listEl = this.container.querySelector('#openLineListBody') as HTMLElement | null;
       if (!listEl) return;
@@ -93,41 +104,5 @@ export class OpenLinePanel extends (window as any).WinBox {
 }
 
 export default OpenLinePanel;
-
-class OpenLinePanelInternal {
-  constructor(private host: HTMLDivElement) {
-    this.init();
-  }
-  private init(): void {
-    this.host.style.width = '100%';
-    this.host.style.height = '100%';
-    this.host.className = 'p-3 text-light';
-    this.host.appendChild(this.createList());
-  }
-
-  private createList(): HTMLDivElement {
-    const section = document.createElement('div');
-    section.className = 'border border-secondary rounded p-2';
-    section.style.height = 'calc(100% - 0px)';
-    section.style.overflow = 'auto';
-
-    const header = document.createElement('div');
-    header.className = 'd-flex flex-row gap-2 text-secondary small pb-1 border-bottom border-secondary';
-    const h1 = document.createElement('div'); h1.style.width = '160px'; h1.textContent = 'From (Exit)';
-    const h2 = document.createElement('div'); h2.style.width = '160px'; h2.textContent = 'To (Exit)';
-    const h3 = document.createElement('div'); h3.style.width = '120px'; h3.textContent = 'Mode';
-    const h4 = document.createElement('div'); h4.style.width = '80px'; h4.textContent = 'Blocks';
-    const h5 = document.createElement('div'); h5.style.flex = '1 1 auto'; h5.textContent = 'Trains';
-    header.appendChild(h1); header.appendChild(h2); header.appendChild(h3); header.appendChild(h4); header.appendChild(h5);
-
-    const body = document.createElement('div');
-    body.id = 'openLineListBody';
-    body.className = 'pt-1';
-
-    section.appendChild(header);
-    section.appendChild(body);
-    return section;
-  }
-}
 
 

@@ -24,7 +24,7 @@ export class HUDPanel {
         this.container.appendChild(this.timeRow);
         document.body.appendChild(this.container);
         this.updateConnectionStatus(this.application.signalRManager.connected, false);
-        this.updateSimulationState(this.application.simulationState);
+        this.updateSimulationState(this.application.clientSimulation.simulationState);
         this.updateSimulationTime();
     }
 
@@ -119,7 +119,7 @@ export class HUDPanel {
     }
 
     public updateSimulationTime(): void {
-        const date = this.application.trainManager.currentSimulationTime;
+        const date = this.application.clientSimulation.currentSimulationTime;
         if (date == null || this.timeText == null) return;
         this.timeText.textContent = date.toLocaleTimeString();
     }

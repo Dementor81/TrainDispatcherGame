@@ -1,19 +1,27 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import "winbox/dist/winbox.bundle.min.js";
 import "./main.css";
 // Import Bootstrap JS and expose globally for components using window.bootstrap
 import * as bootstrap from "bootstrap";
 (window as any).bootstrap = bootstrap;
 
-import AdminPanel from "./adminPanel";
+import { AdminApplication } from "./adminApplication";
+import { HUDPanel } from "../ui/hudPanel";
+import { ControlPanel } from "../ui/controlPanel";
 import ScenarioPanel from "./scenarioPanel";
 import TrainsPanel from "./trainsPanel";
 import OpenLinePanel from "./openLinePanel";
 
 window.addEventListener("load", async () => {
-  const panel = new AdminPanel();
-  const scenario = new ScenarioPanel({ x: "center", y: 320 });
-  const trains = new TrainsPanel({ x: 0, y: 280 });
-  const openline = new OpenLinePanel({ x: 'right', y: 280 });
-  (window as any).admin = { panel, scenario, trains, openline };
+  const app = new AdminApplication();
+  const hud = new HUDPanel(app as any);
+  hud.show();
+  
+  const panel = new ControlPanel(app as any);
+  panel.show();
+  const scenario = new ScenarioPanel();
+  const trains = new TrainsPanel();
+  const openline = new OpenLinePanel();
+  
+  
+  (window as any).admin = { app, hud, panel, scenario, trains, openline };
 });

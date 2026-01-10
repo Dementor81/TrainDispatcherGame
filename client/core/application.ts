@@ -15,28 +15,44 @@ import TrainRouteManager from "../manager/trainRoute_manager";
 import Signal from "../sim/signal";
 import { CancellableEvent } from "../manager/event_manager";
 import Toast from "../ui/toast";
+import { ClientSimulation } from "../core/clientSimulation";
 
 export class Application {
    private _uiManager: UIManager;
    private _eventManager: EventManager;
    private _trackLayoutManager: TrackLayoutManager;
+   private _clientSimulation: ClientSimulation;
    private _trainManager: TrainManager;
    private _trainRouteManager: TrainRouteManager;
    private _renderer: Renderer | null = null;
    private _currentPlayerId: string | null = null;
    private _currentStationId: string | null = null;
    private _signalRManager: SignalRManager;
-   private _simulationState: SimulationState = 'Stopped';
 
    constructor() {
-      this._eventManager = new EventManager(this);
+      this._eventManager = new EventManager();
       this._signalRManager = new SignalRManager(this._eventManager);
       this._uiManager = new UIManager(this, this._eventManager);
       this._trackLayoutManager = new TrackLayoutManager(this);
-      this._trainManager = new TrainManager(this._eventManager, this._trackLayoutManager, this._signalRManager);
+      this._clientSimulation = new ClientSimulation(this._eventManager);
+      this._trainManager = new TrainManager(
+         this._eventManager, 
+         this._trackLayoutManager, 
+         this._signalRManager,
+         this._clientSimulation
+      );
       this._trainRouteManager = new TrainRouteManager(this._trackLayoutManager, this._eventManager);
 
-      (window as any).app = this;
+      // Set up the simulation tick callback
+      this._clientSimulation.setTickCallback(() => {
+         this._trainManager.updateSimulation();
+      });
+      
+      // Set up the simulation stop callback
+      this._clientSimulation.setStopCallback(() => {
+         this._trainManager.stopSimulation(); // Clear trains
+         ApprovalToast.clearAll(); // Clear any outstanding approval toasts
+      });
    }
 
    async init() {
@@ -73,21 +89,8 @@ export class Application {
          this._trackLayoutManager.loadTrackLayout(layout);
          
          // Show the control panel and train overview panel after successfully joining a station
-         
          this._uiManager.showTrainOverviewPanel();
          this._uiManager.showTestingPanel();
-
-         // Retrieve simulation state from the server and handle accordingly
-         try {
-            const status = await getSimulationStatus();
-            this._simulationState = status.state;
-            this._eventManager.emit('simulationStateChanged', this._simulationState);            
-            if (typeof status.speed === 'number') {
-               SimulationConfig.simulationSpeed = Math.max(0.1, Math.min(100, status.speed));
-            }
-         } catch (error) {
-            console.error("Failed to retrieve simulation state:", error);
-         }
          
       } catch (error) {
          console.error('Failed to join station:', error);
@@ -226,30 +229,6 @@ export class Application {
       }
    }
 
-   private handleSimulationStateChanged(state: SimulationState): void {     
-      this._simulationState = state;
-      
-      // Update the train manager simulation state based on server state
-      switch (state.toLowerCase()) {
-         case 'running':
-            this._trainManager.resumeSimulation();
-            console.log('Application: Resumed client simulation');
-            break;
-         case 'paused':
-            this._trainManager.pauseSimulation();
-            console.log('Application: Paused client simulation');
-            break;
-         case 'stopped':
-            this._trainManager.stopSimulation();
-            console.log('Application: Stopped client simulation');
-            // Clear any outstanding approval toasts when the simulation stops
-            ApprovalToast.clearAll();
-            break;
-         default:
-            console.log(`Application: Unknown simulation state: ${state}`);
-      }
-   }
-
    private async handleLocalTrainCollision(trainA: Train, trainB: Train): Promise<void> {
       if (this._currentPlayerId && this._currentStationId) {
          try {
@@ -337,8 +316,8 @@ export class Application {
       return this._trainRouteManager;
    }
 
-   get simulationState(): SimulationState {
-      return this._simulationState;
+   get clientSimulation(): ClientSimulation {
+      return this._clientSimulation;
    }
 
    public async handleReconnection(): Promise<void> {
@@ -357,6 +336,7 @@ export class Application {
    public async resetToStartScreen(): Promise<void> {
       try {
          // Stop any running simulation and clear trains
+         this._clientSimulation.stopSimulation();
          this._trainManager.clearAllTrains();
 
          // Clear canvas contents
@@ -367,7 +347,6 @@ export class Application {
          // Reset current selections/state
          this._currentPlayerId = null;
          this._currentStationId = null;
-         this._simulationState = 'Stopped';
 
          // Show station selection again
          this._uiManager.showStationSelectionScreen(async (layout: string, playerId: string, playerName?: string) => {

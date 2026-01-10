@@ -6,12 +6,16 @@ export abstract class BasePanel {
   protected updateIntervalMs: number | null = null;
   protected updateTimerId: number | null = null;
   protected application: Application;
+  private isDragging: boolean = false;
+  private dragOffsetX: number = 0;
+  private dragOffsetY: number = 0;
 
   constructor(application: Application, updateIntervalMs: number | null = null) {
     this.application = application;
     this.updateIntervalMs = updateIntervalMs;
     this.container = this.createContainer();
     this.setupContainer();
+    this.setupDragging();
     document.body.appendChild(this.container);
   }
 
@@ -32,6 +36,40 @@ export abstract class BasePanel {
   private setupContainer(): void {
     const content = this.createContent();
     this.container.appendChild(content);
+  }
+
+  private setupDragging(): void {
+    this.container.addEventListener('mousedown', (e: MouseEvent) => {
+      if ((e.target as HTMLElement).closest('button, input, select, textarea, a')) {
+        return; // Don't drag if clicking on interactive elements
+      }
+      
+      this.isDragging = true;
+      const rect = this.container.getBoundingClientRect();
+      this.dragOffsetX = e.clientX - rect.left;
+      this.dragOffsetY = e.clientY - rect.top;
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e: MouseEvent) => {
+      if (!this.isDragging) return;
+      
+      const newLeft = e.clientX - this.dragOffsetX;
+      const newTop = e.clientY - this.dragOffsetY;
+      
+      // Remove any transform and right/bottom positioning when dragging
+      this.container.style.transform = 'none';
+      this.container.style.right = 'unset';
+      this.container.style.bottom = 'unset';
+      this.container.style.left = `${newLeft}px`;
+      this.container.style.top = `${newTop}px`;
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (this.isDragging) {
+        this.isDragging = false;
+      }
+    });
   }
 
   protected getContainerStyles(): Partial<CSSStyleDeclaration> {

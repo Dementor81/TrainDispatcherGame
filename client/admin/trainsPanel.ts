@@ -1,51 +1,53 @@
 import { getAllTrains, getSimulationStatus } from "../network/api";
 import { SimulationStatusDto } from "../network/dto";
-import "winbox/dist/winbox.bundle.min.js";
+import { BasePanel } from "../ui/basePanel";
 
-export class TrainsPanel extends (window as any).WinBox {
-  private container: HTMLDivElement;
-  private updateTimer: number | null = null;
-
-  constructor(options?: Partial<{ title: string, x: any, y: any, width: number, height: number }>) {
-    const container = document.createElement('div');
-    const panel = new TrainsPanelInternal(container);
-    super({
-      title: options?.title ?? 'Trains',
-      x: options?.x ?? 'center',
-      y: options?.y ?? 300,
-      width: options?.width ?? 1020,
-      height: options?.height ?? 520,
-      background: '#212529',
-      class: ['no-full', 'modern', 'no-max'],
-      mount: container,
+export class TrainsPanel extends BasePanel {
+  constructor() {
+    super(null as any, 2000);
+    
+    // Fixed positioning for this singleton panel
+    Object.assign(this.container.style, {
+      position: 'fixed',
+      bottom: '100px',
+      left: '0',
+      width: '800px',
+      height: '520px',
+      display: 'block',
+      minWidth: 'unset',
+      maxWidth: 'unset',
     });
-    this.container = container;
-    // Start periodic self-update and cleanup on close
-    void this.update();
-    this.updateTimer = window.setInterval(() => this.update(), 2000);
-    // Use WinBox onclose callback for cleanup
-    (this as any).onclose = () => {
-      if (this.updateTimer !== null) {
-        clearInterval(this.updateTimer);
-        this.updateTimer = null;
-      }
-    };
+    
+    this.show();
   }
 
-  public getElement(): HTMLDivElement {
-    return this.container;
+  protected createContent(): HTMLDivElement {
+    const section = document.createElement('div');
+    section.className = 'border border-secondary rounded p-2';
+    section.style.height = '100%';
+    section.style.overflow = 'auto';
+
+    const header = document.createElement('div');
+    header.className = 'd-flex flex-row gap-2 text-secondary small pb-1 border-bottom border-secondary';
+    const h1 = document.createElement('div'); h1.style.width = '80px'; h1.textContent = 'Train';
+    const h2 = document.createElement('div'); h2.style.width = '110px'; h2.textContent = 'Status';
+    const h3 = document.createElement('div'); h3.style.width = '160px'; h3.textContent = 'Location';
+    const h4 = document.createElement('div'); h4.style.width = '140px'; h4.textContent = 'Next Event';
+    const h5 = document.createElement('div'); h5.style.width = '110px'; h5.textContent = 'Event Type';
+    const h6 = document.createElement('div'); h6.style.width = '90px'; h6.textContent = 'Delay';
+    header.appendChild(h1); header.appendChild(h2); header.appendChild(h3); header.appendChild(h4); header.appendChild(h5); header.appendChild(h6);
+
+    const body = document.createElement('div');
+    body.id = 'trainsListBody';
+    body.className = 'pt-1';
+
+    section.appendChild(header);
+    section.appendChild(body);
+    return section;
   }
 
-  public async update(): Promise<void> {
+  protected async Updates(): Promise<void> {
     try {
-      // Optional: show sim time in header (element may not exist)
-      const status = await getSimulationStatus() as SimulationStatusDto;
-      const timeEl = this.container.querySelector('#trainsSimulationTime') as HTMLElement | null;
-      if (timeEl && status.currentTime) {
-        const dt = new Date(status.currentTime);
-        timeEl.textContent = dt.toLocaleTimeString();
-      }
-
       const listEl = this.container.querySelector('#trainsListBody') as HTMLElement | null;
       if (!listEl) return;
 
@@ -133,42 +135,5 @@ export class TrainsPanel extends (window as any).WinBox {
 }
 
 export default TrainsPanel;
-
-class TrainsPanelInternal {
-  constructor(private host: HTMLDivElement) {
-    this.init();
-  }
-  private init(): void {
-    this.host.style.width = '100%';
-    this.host.style.height = '100%';
-    this.host.className = 'p-3 text-light';
-    this.host.appendChild(this.createList());
-  }
-  
-  private createList(): HTMLDivElement {
-    const section = document.createElement('div');
-    section.className = 'border border-secondary rounded p-2';
-    section.style.height = 'calc(100% - 40px)';
-    section.style.overflow = 'auto';
-
-    const header = document.createElement('div');
-    header.className = 'd-flex flex-row gap-2 text-secondary small pb-1 border-bottom border-secondary';
-    const h1 = document.createElement('div'); h1.style.width = '80px'; h1.textContent = 'Train';
-    const h2 = document.createElement('div'); h2.style.width = '110px'; h2.textContent = 'Status';
-    const h3 = document.createElement('div'); h3.style.width = '160px'; h3.textContent = 'Location';
-    const h4 = document.createElement('div'); h4.style.width = '140px'; h4.textContent = 'Next Event';
-    const h5 = document.createElement('div'); h5.style.width = '110px'; h5.textContent = 'Event Type';
-    const h6 = document.createElement('div'); h6.style.width = '90px'; h6.textContent = 'Delay';
-    header.appendChild(h1); header.appendChild(h2); header.appendChild(h3); header.appendChild(h4); header.appendChild(h5); header.appendChild(h6);
-
-    const body = document.createElement('div');
-    body.id = 'trainsListBody';
-    body.className = 'pt-1';
-
-    section.appendChild(header);
-    section.appendChild(body);
-    return section;
-  }
-}
 
 

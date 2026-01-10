@@ -1,12 +1,1 @@
-.winbox {    
-    border-radius: 8px 8px 8px 8px;    
-}
-
-.winbox.min {
-    border-radius: 0;
-}
-
-.wb-body {
-   
-    background:none !important;
-}
+/* Admin panel styles - using minimal Bootstrap classes */

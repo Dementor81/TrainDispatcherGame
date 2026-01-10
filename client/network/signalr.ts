@@ -53,13 +53,7 @@ export class SignalRManager {
 
         this.connection.onclose((error) => {
             console.log('SignalR: Connection closed', error);
-            this.notifyConnectionStatusChange();
-            // When automatic reconnect gives up, onclose fires. Notify app to reset.
-            try {
-                this.eventManager.emit('permanentlyDisconnected');
-            } catch (e) {
-                console.error('Failed to emit permanentlyDisconnected event', e);
-            }
+            this.notifyConnectionStatusChange();            
         });
 
         // Game-specific events
@@ -97,8 +91,7 @@ export class SignalRManager {
             this.handleTrainSent(data);
         });
 
-        this.connection.on('SimulationStateChanged', (data) => {
-            console.log('Simulation state changed:', data);
+        this.connection.on('SimulationStateChanged', (data) => {            
             this.handleSimulationStateChanged(data);
         });
 
@@ -356,7 +349,6 @@ export class SignalRManager {
         if (typeof data.speed === 'number') {
             this.eventManager.emit('simulationSpeedChanged', data.speed);
         }
-        console.log(`Emitted simulationStateChanged event for state: ${data.state}`);
     }
 
     // No server collision handler needed

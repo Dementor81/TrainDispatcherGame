@@ -6,142 +6,40 @@ import Signal from "../sim/signal";
 import { EventManager } from "./event_manager";
 import { TrackLayoutManager, MovementException } from "./trackLayout_manager";
 import { SimulationConfig } from "../core/config";
-import { getSimulationStatus } from "../network/api";
 import Tools from "../core/utils";
 import { SignalRManager } from "../network/signalr";
+import { ClientSimulation } from "../core/clientSimulation";
 
 export class TrainManager {
    private _trains: Train[] = [];
    private _eventManager: EventManager;
    private _trackLayoutManager: TrackLayoutManager;
-   // Simulation properties
-   private _simulationTimer: NodeJS.Timeout | null = null;
-   private _timerWorker: Worker | null = null;
-   private _isSimulationRunning: boolean = false;
-   private _currentSimulationTime: Date | null = null; // Current simulation time from server
-   private _lastSimulationTimeUpdate: number = 0; // When we last updated simulation time
    private _signalRManager: SignalRManager;
-   public get currentSimulationTime(): Date | null {
-      return this._currentSimulationTime;
-   }
+   private _clientSimulation: ClientSimulation;
 
-   constructor(eventManager: EventManager, trackLayoutManager: TrackLayoutManager, signalRManager: SignalRManager) {
+   constructor(
+      eventManager: EventManager, 
+      trackLayoutManager: TrackLayoutManager, 
+      signalRManager: SignalRManager,
+      clientSimulation: ClientSimulation
+   ) {
       this._eventManager = eventManager;
       this._trackLayoutManager = trackLayoutManager;
       this._signalRManager = signalRManager;
+      this._clientSimulation = clientSimulation;
+      
       // Subscribe to train creation events
       this._eventManager.on("trainCreated", (train: Train, exitPointId: number) => {
          this.handleTrainCreated(train, exitPointId);
       });
-
-
    }
 
    // ==================== SIMULATION METHODS ====================
 
-   // Start the simulation
-   startSimulation(): void {
-      if (this._isSimulationRunning) {
-         console.log("Simulation is already running");
-         return;
-      }
-
-      this.resumeSimulation();
-
-      console.log("Train simulation started");
-      this._eventManager.emit("simulationStarted");
-   }
-
-   // Stop the simulation
-   stopSimulation(): void {
-      if (!this._isSimulationRunning) {
-         console.log("Simulation is not running");
-         return;
-      }
-
-      this.pauseSimulation();
-
-      this._trains = [];
-
-      this._eventManager.emit("trainsUpdated", this._trains);
-
-      console.log("Train simulation stopped");
-      this._eventManager.emit("simulationStopped");
-   }
-
-   pauseSimulation(): void {
-      this._isSimulationRunning = false;
-      if (this._simulationTimer) {
-         clearInterval(this._simulationTimer);
-         this._simulationTimer = null;
-      }
-      if (this._timerWorker) {
-         try {
-            this._timerWorker.postMessage({ type: "stop" });
-            this._timerWorker.terminate();
-         } catch {}
-         this._timerWorker = null;
-      }
-   }
-
-   resumeSimulation(): void {
-      if (this._isSimulationRunning) {
-         console.log("Simulation is already running");
-         return;
-      }
-      this._isSimulationRunning = true;
-
-      const intervalMs = SimulationConfig.simulationIntervalSeconds * 1000;
-      // Prefer Web Worker-based timer; fall back to setInterval if creation fails
-      try {
-         // new URL with import.meta.url lets Webpack bundle the worker
-         this._timerWorker = new Worker(new URL("../core/simulationTimer.worker.ts", import.meta.url), { type: "module" } as any);
-         this._timerWorker.onmessage = (evt: MessageEvent<any>) => {
-            if (!this._isSimulationRunning) return;
-            // Could compute delta time here using evt.data.now if we later switch to dt-based movement
-            this.updateSimulation();
-         };
-         this._timerWorker.postMessage({ type: "start", intervalMs });
-      } catch (err) {
-         console.warn("Worker timer unavailable, falling back to setInterval", err);
-         this._simulationTimer = setInterval(() => {
-            this.updateSimulation();
-         }, intervalMs);
-      }
-   }
-
-   // Check if simulation is running
-   isSimulationRunning(): boolean {
-      return this._isSimulationRunning;
-   }
-
-   // Client uses SimulationConfig.simulationSpeed globally; no internal copy
-
-   // Get current simulation time from server (with caching)
-   private async getCurrentSimulationTime(): Promise<Date> {
-      const now = Date.now();
-
-      // Cache simulation time for 1 second to avoid too many API calls
-      if (!this._currentSimulationTime || now - this._lastSimulationTimeUpdate > 1000) {
-         try {
-            const status = await getSimulationStatus();
-            this._currentSimulationTime = new Date(status.currentTime);
-            this._lastSimulationTimeUpdate = now;
-         } catch (error) {
-            console.warn("Failed to get simulation time from server, using real time:", error);
-            this._currentSimulationTime = new Date();
-         }
-      }
-
-      return this._currentSimulationTime;
-   }
-
-   // Main simulation update loop
-   private updateSimulation(): void {
-      this.getCurrentSimulationTime().catch((error) => {
-         console.warn("Failed to update simulation time:", error);
-      });
-
+   /**
+    * Main simulation update loop - called by ClientSimulation on each tick
+    */
+   public updateSimulation(): void {
       if (this._trains.length === 0) {
          return; // No trains to update
       }
@@ -152,7 +50,14 @@ export class TrainManager {
             this._eventManager.emit("trainUpdated", train);
          }
       }
+   }
 
+   /**
+    * Stop the simulation and clear all trains
+    */
+   public stopSimulation(): void {
+      this._trains = [];
+      this._eventManager.emit("trainsUpdated", this._trains);
    }
 
    // Update a single train's position
@@ -547,11 +452,6 @@ export class TrainManager {
       const count = this._trains.length;
       this._trains = [];
 
-      // Stop simulation if no trains remain
-      if (this._isSimulationRunning) {
-         this.stopSimulation();
-      }
-
       console.log(`Cleared ${count} trains`);
       this._eventManager.emit("trainsCleared");
    }
@@ -620,15 +520,17 @@ export class TrainManager {
    // Check if train should stop at a station or depart based on schedule
    // returns true if train should stop at a station or is already stopped, false if it should depart or it is not near the station
    private checkStationStop(train: Train, proposedDistance: number): boolean {
+      const currentSimulationTime = this._clientSimulation.currentSimulationTime;
+      
       // Early return if no simulation time or no station stop needed
-      if (!this._currentSimulationTime || !train.shouldStopAtCurrentStation || !train.position?.track || !train.position?.track.halt) {
+      if (!currentSimulationTime || !train.shouldStopAtCurrentStation || !train.position?.track || !train.position?.track.halt) {
          return false;
       }
 
       // Check if train is already stopped at this station
       if (train.stopReason === TrainStopReason.STATION) {
          // Train is already stopped - check if it's time to depart
-         if (train.departureTime && this._currentSimulationTime >= train.departureTime) {
+         if (train.departureTime && currentSimulationTime >= train.departureTime) {
             // Check if the next signal allows departure
             const nextSignal = this._trackLayoutManager.getNextSignal(train.position.track, train.position.km, train.direction);
             if (nextSignal && !nextSignal.isTrainAllowedToGo()) {
@@ -652,11 +554,11 @@ export class TrainManager {
          }
          // While waiting, update progress relative to departure time
          if (!train.stationStopStartTime) {
-            train.setStationStopStartTime(new Date(this._currentSimulationTime!));
+            train.setStationStopStartTime(new Date(currentSimulationTime));
          }
          if (train.departureTime && train.stationStopStartTime) {
             const totalMs = train.departureTime.getTime() - train.stationStopStartTime.getTime();
-            const elapsedMs = this._currentSimulationTime!.getTime() - train.stationStopStartTime.getTime();
+            const elapsedMs = currentSimulationTime.getTime() - train.stationStopStartTime.getTime();
             const progress = totalMs > 0 ? elapsedMs / totalMs : 1;
             train.setWaitingProgress(progress);
          } else {
@@ -673,8 +575,8 @@ export class TrainManager {
 
       if (isNearStation) {
          // Train is arriving and near the station - stop it
-         if (train.arrivalTime && train.departureTime && this._currentSimulationTime > train.arrivalTime) {
-            var departureTime = new Date(this._currentSimulationTime.getTime() + SimulationConfig.stationMinStopTime * 1000);
+         if (train.arrivalTime && train.departureTime && currentSimulationTime > train.arrivalTime) {
+            var departureTime = new Date(currentSimulationTime.getTime() + SimulationConfig.stationMinStopTime * 1000);
             if (departureTime < train.departureTime) {
                departureTime = train.departureTime;
             }
@@ -687,13 +589,13 @@ export class TrainManager {
          train.setStopReason(TrainStopReason.STATION);
          // Mark the start of the station stop if not already set, and reset progress
          if (!train.stationStopStartTime) {
-            train.setStationStopStartTime(new Date(this._currentSimulationTime!));
+            train.setStationStopStartTime(new Date(currentSimulationTime));
             train.setWaitingProgress(0);
          }
          // Update progress based on current time vs departure
          if (train.departureTime && train.stationStopStartTime) {
             const totalMs = train.departureTime.getTime() - train.stationStopStartTime.getTime();
-            const elapsedMs = this._currentSimulationTime!.getTime() - train.stationStopStartTime.getTime();
+            const elapsedMs = currentSimulationTime.getTime() - train.stationStopStartTime.getTime();
             const progress = totalMs > 0 ? elapsedMs / totalMs : 1;
             train.setWaitingProgress(progress);
          }
