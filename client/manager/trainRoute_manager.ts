@@ -133,11 +133,8 @@ export class TrainRouteManager {
          const boundaryKm = atEnd ? currentTrack.length : 0;
          const boundaryConnection = currentTrack.switches[atEnd ? 1 : 0];
          let nextElement: Track | Switch | Exit;
-         let nextDirection: number = currentDirection;
          try {
-            const res = this._layout.findNextTrack(currentTrack, currentDirection);
-            nextElement = res.element;
-            nextDirection = res.direction;
+            nextElement = this._layout.findNextTrack(currentTrack, currentDirection);
          } catch {
             // Dead end / malformed connection
             return null;
@@ -172,7 +169,6 @@ export class TrainRouteManager {
             }
             // Advance onto the next track. Enter from its start when going forward, end when going backward.
             currentTrack = nextElement;
-            currentDirection = nextDirection;
             currentKm = currentDirection > 0 ? 0 : currentTrack.length;
             continue;
          }

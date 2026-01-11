@@ -243,9 +243,11 @@ export class TrackLayoutManager {
       let track: Track | Switch | Exit | null = currentTrack;
       let km: number = currentKm;
       let currentDirection = distance > 0 ? 1 : -1;
-      let nextElementAndDirection: { element: Track | Switch | Exit; direction: number } | null = null;
-
+      // (no statement needed here; merge conflict resolved by omitting unused declaration)
+      console.log("start followRailNetwork");
+      
       while (Math.abs(remainingDistance) > 0) {
+         console.log(`Remaining distance: ${remainingDistance}, Current direction: ${currentDirection}`);
          km += remainingDistance;
 
          if (track instanceof Track && (km > track.length || km < 0)) {
@@ -253,10 +255,7 @@ export class TrackLayoutManager {
             remainingDistance = km < 0 ? km : km - track.length;
 
             // Find the next element through switches (may throw exception)
-            nextElementAndDirection = this.findNextTrack(track, currentDirection);
-            if (nextElementAndDirection == null) throw new MovementException("No next element found");
-            track = nextElementAndDirection.element;
-            currentDirection = nextElementAndDirection.direction;
+            track = this.findNextTrack(track, currentDirection);
             
             if (track instanceof Track) {               
                km = currentDirection > 0 ? 0 : track.length;
@@ -329,8 +328,8 @@ export class TrackLayoutManager {
       // If no signals on current track, check the next track
       try {
          const nextElement = this.findNextTrack(currentTrack, direction);
-         if (nextElement.element instanceof Track) {
-            const nextTrack = nextElement.element;
+         if (nextElement instanceof Track) {
+            const nextTrack = nextElement;
             const startKm = direction > 0 ? 0 : nextTrack.length;
             
             // Look for signals on the next track
@@ -369,9 +368,9 @@ export class TrackLayoutManager {
 
    /**
     * Finds the next element connected to the current track in the given direction
-    * @returns Object with element (Track/Switch/Exit) and direction, or throws MovementException for dead ends
+    * @returns The next element (Track/Switch/Exit), or throws MovementException for dead ends
     */
-   findNextTrack(currentTrack: Track, direction: number): { element: Track | Switch | Exit; direction: number } {
+   findNextTrack(currentTrack: Track, direction: number): Track | Switch | Exit {
       const switchIndex = direction === 1 ? 1 : 0; // 1 = end, 0 = start
       const connection = currentTrack.switches[switchIndex];
 
@@ -380,13 +379,12 @@ export class TrackLayoutManager {
       }
 
       if (connection instanceof Track) {
-         return { element: connection, direction: direction };
+         return connection;
       }
 
       if (connection instanceof Switch) {
          // Check if switch allows passage or blocks movement
          let newTrack: Track | null = null;
-         let newDirection: number | null = null;
 
          if (connection.branch && connection.from) {
             // Determine which track to take based on switch state
@@ -397,18 +395,17 @@ export class TrackLayoutManager {
             }
 
             if (newTrack) {
-               newDirection = newTrack.switches[0] === connection ? 1 : -1;
-               return { element: newTrack, direction: newDirection };
+               return newTrack;
             }
          }
 
          // Switch blocks movement - return the switch itself
-         return { element: connection, direction: direction };
+         return connection;
       }
 
       if (connection instanceof Exit) {
          // Hit an exit - return the exit
-         return { element: connection, direction: direction };
+         return connection;
       }
 
       throw new MovementException(`Unknown connection type on track ${currentTrack.id}`);
