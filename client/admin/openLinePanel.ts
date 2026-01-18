@@ -31,9 +31,8 @@ export class OpenLinePanel extends BasePanel {
     const h1 = document.createElement('div'); h1.style.width = '160px'; h1.textContent = 'From (Exit)';
     const h2 = document.createElement('div'); h2.style.width = '160px'; h2.textContent = 'To (Exit)';
     const h3 = document.createElement('div'); h3.style.width = '120px'; h3.textContent = 'Mode';
-    const h4 = document.createElement('div'); h4.style.width = '80px'; h4.textContent = 'Blocks';
-    const h5 = document.createElement('div'); h5.style.flex = '1 1 auto'; h5.textContent = 'Trains';
-    header.appendChild(h1); header.appendChild(h2); header.appendChild(h3); header.appendChild(h4); header.appendChild(h5);
+    const h4 = document.createElement('div'); h4.style.flex = '1 1 auto'; h4.textContent = 'Train';
+    header.appendChild(h1); header.appendChild(h2); header.appendChild(h3); header.appendChild(h4);
 
     const body = document.createElement('div');
     body.id = 'openLineListBody';
@@ -79,21 +78,15 @@ export class OpenLinePanel extends BasePanel {
         mode.style.width = '120px';
         mode.textContent = t.mode ?? '-';
 
-        const blocks = document.createElement('div');
-        blocks.className = 'text-light';
-        blocks.style.width = '80px';
-        blocks.textContent = String(t.blocks ?? '-')
-
-        const trains = document.createElement('div');
-        trains.className = 'text-light';
-        trains.style.flex = '1 1 auto';
-        trains.textContent = (t.trains && t.trains.length > 0) ? t.trains.join(', ') : '-';
+        const train = document.createElement('div');
+        train.className = 'text-light';
+        train.style.flex = '1 1 auto';
+        train.textContent = t.trainNumber ?? '-';
 
         row.appendChild(from);
         row.appendChild(to);
         row.appendChild(mode);
-        row.appendChild(blocks);
-        row.appendChild(trains);
+        row.appendChild(train);
 
         listEl.appendChild(row);
       }

@@ -20,7 +20,7 @@ namespace TrainDispatcherGame.Server.Simulation
             var connections = _trackLayoutService.GetAllConnections();
             foreach (var connection in connections)
             {
-                if (connection.Mode == NetworkConnection.TrackMode.Regular || connection.Mode == NetworkConnection.TrackMode.SingleTrack)
+                if (connection.Mode == NetworkConnection.TrackMode.DualTrack || connection.Mode == NetworkConnection.TrackMode.SingleTrack)
                 {
                     _openLineTracks[connection] = new OpenLineTrack(connection);
                 }
@@ -34,16 +34,14 @@ namespace TrainDispatcherGame.Server.Simulation
 
         public bool AddTrain(NetworkConnection connection, Train train)
         {
-            if (!_openLineTracks.TryGetValue(connection, out var track)) return false;
+            if (!_openLineTracks.TryGetValue(connection, out var track)) throw new Exception($"for connection {connection.FromStation} to {connection.ToStation} no open line track found");
             return track.AddTrain(train);
         }
 
         public void RemoveTrain(NetworkConnection connection, Train train)
         {
-            if (_openLineTracks.TryGetValue(connection, out var track))
-            {
-                track.RemoveTrain(train);
-            }
+            if (!_openLineTracks.TryGetValue(connection, out var track)) throw new Exception($"for connection {connection.FromStation} to {connection.ToStation} no open line track found");
+            track.RemoveTrain(train);
         }
 
         public IEnumerable<OpenLineTrack> GetAll()

@@ -1,6 +1,7 @@
 import Track from "./track";
 import Switch from "./switch";
 import Signal from "./signal";
+import Exit from "./exit";
 
 export type RouteEndpoint = {
    track: Track;
@@ -16,12 +17,14 @@ class TrainRoute {
    private _start: RouteEndpoint;
    private _end: RouteEndpoint;
    private _signal: Signal | null; // Signal that created this route
+   private _exit: Exit | null; // Exit point if route starts or ends at one
 
-   constructor(start: RouteEndpoint, end: RouteEndpoint, parts: RoutePart[] = [], signal: Signal | null = null) {
+   constructor(start: RouteEndpoint, end: RouteEndpoint, parts: RoutePart[] = [], signal: Signal | null = null, exit: Exit | null = null) {
       this._start = start;
       this._end = end;
       this._parts = parts;
       this._signal = signal;
+      this._exit = exit;
    }
 
    get start(): RouteEndpoint {
@@ -38,6 +41,10 @@ class TrainRoute {
 
    get signal(): Signal | null {
       return this._signal;
+   }
+
+   get exit(): Exit | null {
+      return this._exit;
    }
 
    addPart(part: RoutePart): void {

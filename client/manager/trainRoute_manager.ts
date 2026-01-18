@@ -76,9 +76,10 @@ export class TrainRouteManager {
     * If the route ends at a switch, the route is invalid and null is returned.
     * direction is the direction of the train (1 for left to right, -1 for right to left).
     * @param signal - The signal that created this route (optional)
+    * @param exit - The exit point if route starts from one (optional, will be auto-detected if route ends at one)
     * @returns The created TrainRoute or null if the route is invalid.
     */
-   createAndStoreRoute(start: RouteEndpoint, direction: number = 1, signal: Signal | null = null): TrainRoute | null {
+   createAndStoreRoute(start: RouteEndpoint, direction: number = 1, signal: Signal | null = null, exit: Exit | null = null): TrainRoute | null {
       if (!start || !start.track) throw new Error("Start endpoint must include a valid track");
       if (direction !== 1 && direction !== -1) throw new Error("Direction must be 1 or -1");
 
@@ -87,11 +88,13 @@ export class TrainRouteManager {
       let currentTrack: Track = start.track;
       let currentKm: number = start.km;
       let currentDirection: number = direction >= 0 ? 1 : -1;
+      let endsAtExit = false;
 
       // Protect against malformed layouts causing infinite loops
       const maxSteps = 1000;
       let steps = 0;
       let endEndpoint: RouteEndpoint | null = null;
+      let nextElement: Track | Switch | Exit | null = null;
 
       const pushTrackSegment = (track: Track, fromKm: number, toKm: number): boolean => {
          if (fromKm === toKm) return true;
@@ -132,7 +135,7 @@ export class TrainRouteManager {
          const atEnd = currentDirection > 0;
          const boundaryKm = atEnd ? currentTrack.length : 0;
          const boundaryConnection = currentTrack.switches[atEnd ? 1 : 0];
-         let nextElement: Track | Switch | Exit;
+         
          try {
             nextElement = this._layout.findNextTrack(currentTrack, currentDirection);
          } catch {
@@ -150,6 +153,7 @@ export class TrainRouteManager {
          if (nextElement instanceof Exit) {
             // Route ends at an exit
             endEndpoint = { track: currentTrack, km: boundaryKm };
+            endsAtExit = true;
             break;
          }
 
@@ -175,10 +179,15 @@ export class TrainRouteManager {
       }
 
       if (endEndpoint) {
-         const route = new TrainRoute(start, endEndpoint, parts, signal);
+         // Use provided exit or detect if route ends at one
+         const routeExit = exit || (endsAtExit ? (nextElement as Exit) : null);
+         const route = new TrainRoute(start, endEndpoint, parts, signal, routeExit);
          this._routes.push(route);
          // Emit event that a route was created
          this._eventManager.emit('routeCreated', route);
+         if (endsAtExit) {
+            this._eventManager.emit('routeEndedAtExit', route, nextElement as Exit);
+         }
          return route;
       }
       return null;
@@ -241,6 +250,21 @@ export class TrainRouteManager {
       }
 
       return modified;
+   }
+
+   /**
+    * Remove a specific route
+    * @param route - The route to remove
+    * @returns true if removed, false if not found
+    */
+   removeRoute(route: TrainRoute): boolean {
+      const index = this._routes.indexOf(route);
+      if (index !== -1) {
+         this._routes.splice(index, 1);
+         this._eventManager.emit('routesCleared');
+         return true;
+      }
+      return false;
    }
 
    clearRoutes() {

@@ -286,5 +286,18 @@ namespace TrainDispatcherGame.Server.Hubs
 
             await Task.CompletedTask;
         }
+
+        public async Task SetExitBlockStatus(string playerId, int exitId, bool blocked)
+        {
+            try
+            {
+                Console.WriteLine($"Player {playerId} requested to {(blocked ? "block" : "unblock")} exit {exitId}");
+                await _simulation.HandleExitBlockStatus(playerId, exitId, blocked);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error setting exit block status for exit {exitId}: {ex.Message}");
+            }
+        }
     }
 } 

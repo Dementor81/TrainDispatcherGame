@@ -14,11 +14,9 @@ import { Application } from "../core/application";
 
 export class ControlPanel extends BasePanel {
    private controlsContainer: HTMLDivElement;
-   private trainManager: TrainManager | null = null;
 
    constructor(application: Application) {
       super(application, 500);
-      this.trainManager = application.trainManager;
       this.controlsContainer = this.createControlsContainer();
       this.container.appendChild(this.controlsContainer);
    }

@@ -94,6 +94,23 @@ namespace TrainDispatcherGame.Server.Managers
             }
         }
 
-        // No collision broadcast needed; clients handle locally
+        public async Task SendExitBlockStatus(string stationId, int exitId, bool blocked)
+        {
+            
+            var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+            
+            var player = _playerManager.GetPlayerByStation(normalizedStationId);
+            if (player != null)
+            {
+                await _hubContext.Clients.Group($"station_{normalizedStationId}").SendAsync("ExitBlockStatusChanged", new
+                {
+                    exitId = exitId,
+                    blocked = blocked
+                });
+                Console.WriteLine($"Exit {exitId} at station {normalizedStationId} is now {(blocked ? "blocked" : "unblocked")}");
+            }
+        }
+
+        
     }
 } 

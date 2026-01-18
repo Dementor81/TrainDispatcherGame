@@ -103,6 +103,11 @@ export class SignalRManager {
             this.eventManager.emit('approvalRequested', data);
         });
 
+        this.connection.on('ExitBlockStatusChanged', (data) => {
+            console.log('Exit block status changed:', data);
+            this.handleExitBlockStatusChanged(data);
+        });
+
     }
 
     public async connect(): Promise<void> {
@@ -286,6 +291,20 @@ export class SignalRManager {
         }
     }
 
+    public async setExitBlockStatus(exitId: number, blocked: boolean): Promise<void> {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+            throw new Error('SignalR connection not established');
+        }
+
+        try {
+            await this.connection.invoke('SetExitBlockStatus', this.playerId!, exitId, blocked);
+            console.log(`Requested to ${blocked ? 'block' : 'unblock'} exit ${exitId}`);
+        } catch (error) {
+            console.error('Failed to set exit block status:', error);
+            throw error;
+        }
+    }
+
     private async tryRejoinStation(): Promise<void> {
         if (this.playerId && this.stationId) {
             console.log(`SignalR: Attempting to rejoin station ${this.stationId} as player ${this.playerId}`);
@@ -353,7 +372,10 @@ export class SignalRManager {
 
     // No server collision handler needed
 
-
+    private handleExitBlockStatusChanged(data: any): void {
+        // Emit event through the EventManager for other components to handle
+        this.eventManager.emit('exitBlockStatusChanged', data.exitId, data.blocked);
+    }
 
     public get connectionState(): string {
         if (!this.connection) {

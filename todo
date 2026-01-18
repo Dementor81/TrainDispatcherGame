@@ -13,6 +13,7 @@ Features:
     ✔ show platfrom @done(26-01-05 08:50)
     ✘ report passing through a station to the server @cancelled(26-01-04 17:09) --> server ignors if trains actually passed the station, still calcs the delay
     ☐ add comments to shedulded strain stops like "overtake"
+    ☐ remove the halt property from tracks and replace the information with the platforms
 
 Big Features:
     ✔ uncontrolled stations should be handled by the server @done(25-08-10 13:27)

@@ -308,7 +308,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 }
                 else
                 {
-                    var nextSpawn = _eventProcessor.CreateSpawnFromConnection(train, connection, isReversed, 0);                    
+                    var nextSpawn = _eventProcessor.CreateSpawnFromConnection(train, connection, isReversed, 0, currentWayPoint.DepartureTime);
                     train.TrainEvent = nextSpawn;
                     if (!_openLineTracks.AddTrain(connection, train))
                     {
@@ -529,13 +529,69 @@ namespace TrainDispatcherGame.Server.Simulation
                     To = t.Connection.ToStation,
                     ToExitId = t.Connection.ToExitId,
                     Distance = t.Connection.Distance,
-                    Blocks = t.Connection.Blocks,
                     Mode = t.Connection.Mode.ToString(),
-                    Trains = t.Trains.Select(tr => tr.Number).ToList()
+                    TrainNumber = t.TrainOnTrack != null ? t.TrainOnTrack.Number : null
                 };
                 result.Add(dto);
             }
             return result;
+        }
+
+        /// <summary>
+        /// Handles the report of a station exit being blocked or unblocked by a train route.
+        /// It will notify the neighboring station so it can extend the train route to the other station.
+        /// </summary>
+        /// <param name="playerId">The player id.</param>
+        /// <param name="exitId">The exit id of the station that is being blocked or unblocked.</param>
+        /// <param name="blocked">True if the exit is blocked, false if it is unblocked.</param>
+        public async Task HandleExitBlockStatus(string playerId, int exitId, bool blocked)
+        {
+            try
+            {
+                // Get the player's station
+                var player = _playerManager.GetPlayer(playerId);
+                if (player == null)
+                {
+                    Console.WriteLine($"Player {playerId} not found");
+                    return;
+                }
+                
+                var stationId = player.StationId;
+                
+                // Get the connection for this exit
+                var connection = _trackLayoutService.GetConnection(stationId, exitId, out bool isReversed);
+                if (connection == null)
+                {
+                    Console.WriteLine($"No connection found for exit {exitId} at station {stationId}");
+                    return;
+                }
+                
+                // Determine the other side of the connection
+                string otherStation;
+                int otherExitId;
+                
+                if (isReversed)
+                {
+                    // This exit is actually the ToExitId, so the other side is FromStation/FromExitId
+                    otherStation = connection.FromStation;
+                    otherExitId = connection.FromExitId;
+                }
+                else
+                {
+                    // This exit is the FromExitId, so the other side is ToStation/ToExitId
+                    otherStation = connection.ToStation;
+                    otherExitId = connection.ToExitId;
+                }
+                
+                // Notify the other station
+                await _notificationManager.SendExitBlockStatus(otherStation, otherExitId, blocked);
+                
+                Console.WriteLine($"Exit {exitId} at {stationId} is {(blocked ? "blocked" : "unblocked")}, notified {otherStation} about exit {otherExitId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error handling exit block status: {ex.Message}");
+            }
         }
     }
 }

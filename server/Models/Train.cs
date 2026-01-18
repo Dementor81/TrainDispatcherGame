@@ -25,6 +25,15 @@ namespace TrainDispatcherGame.Server.Models
             Number = number;
         }
 
+        public TrainWayPoint? GetPreviousWayPoint()
+        {
+            if (CurrentWaypointIndex > 0)
+            {
+                return Route[CurrentWaypointIndex - 1];
+            }
+            return null;
+        }
+
         public TrainWayPoint? GetCurrentWayPoint()
         {
             if (CurrentWaypointIndex < Route.Count)

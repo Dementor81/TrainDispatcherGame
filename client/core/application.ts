@@ -16,6 +16,8 @@ import Signal from "../sim/signal";
 import { CancellableEvent } from "../manager/event_manager";
 import Toast from "../ui/toast";
 import { ClientSimulation } from "../core/clientSimulation";
+import TrainRoute from "../sim/trainRoute";
+import Exit from "../sim/exit";
 
 export class Application {
    private _uiManager: UIManager;
@@ -28,6 +30,8 @@ export class Application {
    private _currentPlayerId: string | null = null;
    private _currentStationId: string | null = null;
    private _signalRManager: SignalRManager;
+   private _exitBlockRoutes: Map<number, TrainRoute> = new Map();
+   private _signalBlockedExits: Map<Signal, number> = new Map();
 
    constructor() {
       this._eventManager = new EventManager();
@@ -158,6 +162,14 @@ export class Application {
          // If signal turned red, remove routes associated with this signal
          if (!signal.state) {
             this._trainRouteManager.removeRoutesBySignal(signal);
+            
+            // Check if this signal was blocking an exit and unblock it
+            const blockedExitId = this._signalBlockedExits.get(signal);
+            if (blockedExitId !== undefined) {
+               this._signalRManager.setExitBlockStatus(blockedExitId, false);
+               this._signalBlockedExits.delete(signal);
+               console.log(`Signal turned red, unblocking exit ${blockedExitId}`);
+            }
          }
       });
 
@@ -167,10 +179,13 @@ export class Application {
          this._renderer.renderTrainRoutes(this._trainRouteManager.routes);
       });
 
-      // Routes cleared → render (empty routes)
+      // Routes cleared → render (empty routes) and check for cleared exit-blocking routes
       this._eventManager.on('routesCleared', () => {
          if (!this._renderer) return;
          this._renderer.renderTrainRoutes(this._trainRouteManager.routes);
+         
+         // Check if any exit-blocking routes are now empty and need to be unblocked
+         this.checkAndUnblockClearedExits();
       });
 
       // Occupied track cleared → remove cleared track from routes
@@ -183,6 +198,21 @@ export class Application {
          if (typeof speed === 'number' && !isNaN(speed)) {
             SimulationConfig.simulationSpeed = Math.max(0.1, Math.min(100, speed));
          }
+      });
+
+      this._eventManager.on('routeEndedAtExit', (route: TrainRoute, exit: Exit) => {
+         this._signalRManager.setExitBlockStatus(exit.id, true);
+         
+         // Track which signal is blocking this exit so we can unblock it later
+         if (route.signal) {
+            this._signalBlockedExits.set(route.signal, exit.id);
+            console.log(`Signal is blocking exit ${exit.id}`);
+         }
+      });
+
+      // Exit block status changed (from server) → create or remove blocking route
+      this._eventManager.on('exitBlockStatusChanged', (exitId: number, blocked: boolean) => {
+         this.handleExitBlockStatusChanged(exitId, blocked);
       });
 
       console.log("Event listeners setup complete");
@@ -255,6 +285,77 @@ export class Application {
       this._uiManager.notifyDerailment(train.number, sw?.id);
       // Ensure removal in case not already removed by TrainManager
       this._trainManager.removeTrain(train.number);
+   }
+
+   private checkAndUnblockClearedExits(): void {
+      const exitsToUnblock: number[] = [];
+      
+      // Check each tracked exit-blocking route
+      for (const [exitId, route] of this._exitBlockRoutes.entries()) {
+         if (route.isEmpty()) {
+            exitsToUnblock.push(exitId);
+         }
+      }
+      
+      // Unblock cleared exits
+      for (const exitId of exitsToUnblock) {
+         this._signalRManager.setExitBlockStatus(exitId, false);
+         this._exitBlockRoutes.delete(exitId);
+         console.log(`Exit ${exitId} blocking route fully cleared, reporting unblock`);
+      }
+   }
+
+   private handleExitBlockStatusChanged(exitId: number, blocked: boolean): void {
+      if (blocked) {
+         // Station B: Create blocking route from exit
+         const location = this._trackLayoutManager.getExitPointLocation(exitId);
+         const direction = this._trackLayoutManager.getExitPointDirection(exitId);
+         
+         if (!location.track) {
+            console.error(`Cannot create route: exit ${exitId} track not found`);
+            return;
+         }
+         
+         // Get the exit object to pass to the route
+         const exit = this._trackLayoutManager.getExitById(exitId);
+         
+         const startPoint = {
+            track: location.track,
+            km: location.km
+         };
+         
+         // Create route and pass the exit so it's stored in the route
+         const route = this._trainRouteManager.createAndStoreRoute(startPoint, direction, null, exit);
+         
+         if (route) {
+            console.log(`Created blocking route from exit ${exitId} to next signal`);
+            this._exitBlockRoutes.set(exitId, route);
+         } else {
+            console.warn(`Failed to create blocking route for exit ${exitId}`);
+         }
+      } else {
+         // BOTH stations handle unblock:
+         
+         // Station B: Remove from exitBlockRoutes
+         const blockingRoute = this._exitBlockRoutes.get(exitId);
+         if (blockingRoute) {
+            this._trainRouteManager.removeRoute(blockingRoute);
+            this._exitBlockRoutes.delete(exitId);
+            console.log(`Removed blocking route for exit ${exitId}`);
+         }
+         
+         // Station A: Find and remove route ending at this exit
+         const routeEndingAtExit = this._trainRouteManager.routes.find(r => r.exit?.id === exitId);
+         if (routeEndingAtExit) {
+            this._trainRouteManager.removeRoute(routeEndingAtExit);
+            console.log(`Removed route ending at exit ${exitId} after receiving unblock`);
+            
+            // Also clear the signal tracking
+            if (routeEndingAtExit.signal) {
+               this._signalBlockedExits.delete(routeEndingAtExit.signal);
+            }
+         }
+      }
    }
 
    public async removeTrainAndReport(trainNumber: string): Promise<void> {

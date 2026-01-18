@@ -4,9 +4,8 @@ namespace TrainDispatcherGame.Server.Models
     {
         public enum TrackMode
         {
-            Regular = 0,
-            WrongDirection = 1,
-            SingleTrack = 2
+            DualTrack = 0,
+            SingleTrack = 1
         }
         public string FromStation { get; set; } = string.Empty;
         public int FromExitId { get; set; }
@@ -14,7 +13,7 @@ namespace TrainDispatcherGame.Server.Models
         public int ToExitId { get; set; }
         public int Distance { get; set; } //m
         public int Blocks { get; set; }
-        public TrackMode Mode { get; set; } = TrackMode.Regular;
+        public TrackMode Mode { get; set; } = TrackMode.DualTrack;
     }
 }
 

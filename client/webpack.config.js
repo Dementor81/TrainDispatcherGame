@@ -3,6 +3,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = (env, argv) => {
    const isProduction = argv.mode === "production";
+   const apiProxyTarget = process.env.API_PROXY_TARGET || "http://localhost:5070";
 
    return {
       entry: {
@@ -80,14 +81,14 @@ module.exports = (env, argv) => {
          proxy: [ 
             {
                context: ["/api"],
-               target: "http://localhost:5070",
+               target: apiProxyTarget,
                changeOrigin: true,
                secure: false,
                logLevel: "debug",
             },
             {
                context: ["/gamehub"],
-               target: "http://localhost:5070",
+               target: apiProxyTarget,
                ws: true,
                changeOrigin: true,
                secure: false,

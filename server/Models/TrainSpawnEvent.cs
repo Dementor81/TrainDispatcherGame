@@ -9,6 +9,7 @@ namespace TrainDispatcherGame.Server.Models
 
         public string HeadingStation => IsReversed ? Connection.FromStation : Connection.ToStation;
         public int HeadingExitId => IsReversed ? Connection.FromExitId : Connection.ToExitId;
+        public int CommingFromExitId => IsReversed ? Connection.ToExitId : Connection.FromExitId;
 
         public TrainSpawnEvent(DateTime scheduledTime, NetworkConnection? connection = null, bool isReversed = false) : base(scheduledTime)
         {

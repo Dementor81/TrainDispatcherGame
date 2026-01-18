@@ -86,7 +86,7 @@ namespace TrainDispatcherGame.Server.Services
                 foreach (var stationId in requiredStations)
                 {
                     var layoutFile = Path.Combine(stationsDirectory, $"{stationId}.json");
-                    
+
                     if (!File.Exists(layoutFile))
                     {
                         missingLayouts.Add(stationId);
@@ -160,7 +160,7 @@ namespace TrainDispatcherGame.Server.Services
                 }
 
                 Console.WriteLine($"Successfully loaded {loadedCount} of {requiredStations.Length} required track layouts");
-                
+
                 if (missingLayouts.Count > 0)
                 {
                     Console.WriteLine($"Missing track layouts: {string.Join(", ", missingLayouts)}");
@@ -175,7 +175,7 @@ namespace TrainDispatcherGame.Server.Services
         private string[] LoadNetwork()
         {
             var requiredStations = new List<string>();
-            
+
             try
             {
                 if (string.IsNullOrWhiteSpace(_activeLayoutId))
@@ -229,8 +229,8 @@ namespace TrainDispatcherGame.Server.Services
                     {
                         Console.WriteLine($"Warning: Invalid connection from '{c.FromStation}' to '{c.ToStation}' in network.json.");
                         continue;
-                    }                    
-                    
+                    }
+
                     var fromExit = c.FromExitId;
                     var toExit = c.ToExitId;
 
@@ -238,12 +238,12 @@ namespace TrainDispatcherGame.Server.Services
                     var normalizedToStation = c.ToStation.ToLowerInvariant();
 
                     int sameConnectionCount = network.Connections.Count(conn =>
-                        (conn.FromStation.Equals(c.FromStation, StringComparison.OrdinalIgnoreCase) || 
-                         conn.FromStation.Equals(c.ToStation, StringComparison.OrdinalIgnoreCase)) && 
-                        (conn.ToStation.Equals(c.ToStation, StringComparison.OrdinalIgnoreCase) || 
+                        (conn.FromStation.Equals(c.FromStation, StringComparison.OrdinalIgnoreCase) ||
+                         conn.FromStation.Equals(c.ToStation, StringComparison.OrdinalIgnoreCase)) &&
+                        (conn.ToStation.Equals(c.ToStation, StringComparison.OrdinalIgnoreCase) ||
                          conn.ToStation.Equals(c.FromStation, StringComparison.OrdinalIgnoreCase)));
 
-                    
+
 
                     // Create forward connection with normalized station IDs
                     var forward = new NetworkConnection
@@ -254,29 +254,18 @@ namespace TrainDispatcherGame.Server.Services
                         ToExitId = toExit,
                         Distance = c.Distance,
                         Blocks = c.Blocks,
-                        Mode =  sameConnectionCount == 1 ? NetworkConnection.TrackMode.SingleTrack : NetworkConnection.TrackMode.Regular,
+                        Mode = sameConnectionCount == 1 ? NetworkConnection.TrackMode.SingleTrack : NetworkConnection.TrackMode.DualTrack,
                     };
                     _directedConnections[(normalizedFromStation, forward.FromExitId)] = forward;
                     created++;
                 }
-
-
-
-                Console.WriteLine($"Loaded {created} directed network connections");
-                Console.WriteLine($"Required track layouts: {string.Join(", ", requiredStations)}");
-
-            foreach (var kvp in _directedConnections)
-            {
-                var conn = kvp.Value;
-                Console.WriteLine($"[Debug] Connection: {conn.FromStation} (Exit {conn.FromExitId}) -> {conn.ToStation} (Exit {conn.ToExitId}), Distance: {conn.Distance}, Blocks: {conn.Blocks}, Mode: {conn.Mode}");
-            }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading network.json: {ex.Message}");
             }
-            
-            return requiredStations.ToArray(); 
+
+            return requiredStations.ToArray();
         }
 
         // Computes the maximum pairwise distance between all exit points in the layout, based on track endpoints
@@ -361,7 +350,7 @@ namespace TrainDispatcherGame.Server.Services
         {
             foreach (var conn in _directedConnections.Values)
             {
-                if (conn.FromStation == fromStationId && conn.ToStation == toStationId && (conn.Mode == NetworkConnection.TrackMode.Regular || conn.Mode == NetworkConnection.TrackMode.SingleTrack))
+                if (conn.FromStation == fromStationId && conn.ToStation == toStationId && (conn.Mode == NetworkConnection.TrackMode.DualTrack || conn.Mode == NetworkConnection.TrackMode.SingleTrack))
                 {
                     var layout = GetTrackLayout(toStationId);
                     if (layout != null)
@@ -400,7 +389,7 @@ namespace TrainDispatcherGame.Server.Services
                 }
             }
             return null;
-        }        
+        }
 
         /// <summary>
         /// Get a regular connection to a station. It either returns a forward connection of a two-way or single-track or a reverse connection of a single-track.
@@ -415,7 +404,7 @@ namespace TrainDispatcherGame.Server.Services
             isReversed = false;
             foreach (var conn in _directedConnections.Values)
             {
-                if (conn.FromStation == fromStationId && conn.ToStation == toStationId && (conn.Mode == NetworkConnection.TrackMode.Regular || conn.Mode == NetworkConnection.TrackMode.SingleTrack))
+                if (conn.FromStation == fromStationId && conn.ToStation == toStationId && (conn.Mode == NetworkConnection.TrackMode.DualTrack || conn.Mode == NetworkConnection.TrackMode.SingleTrack))
                 {
                     return conn;
                 }

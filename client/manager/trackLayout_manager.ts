@@ -127,6 +127,17 @@ export class TrackLayoutManager {
       throw new Error(`Exit point ${exitPointId} not found in track layout`);
    }
 
+   getExitById(exitPointId: number): Exit | null {
+      for (const track of this._tracks) {
+         for (const switchItem of track.switches) {
+            if (switchItem instanceof Exit && switchItem.id === exitPointId) {
+               return switchItem;
+            }
+         }
+      }
+      return null;
+   }
+
    async loadTrackLayout(layoutID: string): Promise<void> {
       console.log("Loading track layout:", layoutID);
       try {
@@ -243,11 +254,8 @@ export class TrackLayoutManager {
       let track: Track | Switch | Exit | null = currentTrack;
       let km: number = currentKm;
       let currentDirection = distance > 0 ? 1 : -1;
-      // (no statement needed here; merge conflict resolved by omitting unused declaration)
-      console.log("start followRailNetwork");
       
       while (Math.abs(remainingDistance) > 0) {
-         console.log(`Remaining distance: ${remainingDistance}, Current direction: ${currentDirection}`);
          km += remainingDistance;
 
          if (track instanceof Track && (km > track.length || km < 0)) {

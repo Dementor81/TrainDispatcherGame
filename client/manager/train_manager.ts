@@ -141,14 +141,9 @@ export class TrainManager {
 
             return true; // Train was updated
          } else if (result.element instanceof Exit) {
-            // Train reached exit - emit occupiedTrackCleared for tail track before removing train
+            // Train reached exit - remove train and send to server
             const exit = result.element;
             console.log(`Train ${train.number} reached exit ${exit.id}`);
-
-            // Emit occupiedTrackCleared for the tail track so routes can be updated
-            if (train.tailPosition) {
-               this._eventManager.emit("occupiedTrackCleared", train.tailPosition.track, train);
-            }
 
             this.removeTrain(train.number);
             this._signalRManager.sendTrain(train.number, exit.id);

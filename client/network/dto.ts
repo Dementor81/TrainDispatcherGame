@@ -123,7 +123,6 @@ export interface NetworkConnectionDto {
   to: string;
   toId: number;
   distance: number;
-  blocks: number;
   mode?: string;
 }
 
@@ -133,7 +132,6 @@ export interface OpenLineTrackStatusDto {
   to: string;
   toExitId: number;
   distance: number;
-  blocks: number;
   mode?: string;
-  trains: string[];
+  trainNumber: string | null;
 }

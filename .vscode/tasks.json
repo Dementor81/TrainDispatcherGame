@@ -82,10 +82,14 @@
       },
       {
          "label": "start-webpack",
-         "type": "npm",
-         "script": "start",
+         "type": "shell",
+         "command": "bash",
+         "args": ["-lc", "sleep 5 && npm run start"],
          "options": {
-            "cwd": "${workspaceFolder}/client"
+            "cwd": "${workspaceFolder}/client",
+            "env": {
+               "API_PROXY_TARGET": "http://localhost:5070"
+            }
          },
          "problemMatcher": [],
          "detail": "Starts the webpack development server."
