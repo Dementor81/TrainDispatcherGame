@@ -22,8 +22,7 @@
          "switches": [
             { "type": "Switch", "id": 82 },
             { "type": "Track", "id": 226 }
-         ],
-         "halt": true
+         ]
       },
       {
          "id": 226,
@@ -45,8 +44,7 @@
          "switches": [
             { "type": "Switch", "id": 74 },
             { "type": "Switch", "id": 75 }
-         ],
-         "halt": true
+         ]
       },
       {
          "id": 229,
@@ -69,8 +67,7 @@
          "switches": [
             { "type": "Track", "id": 229 },
             { "type": "Track", "id": 231 }
-         ],
-         "halt": true
+         ]
       },
       {
          "id": 231,
@@ -92,8 +89,7 @@
          "switches": [
             { "type": "Switch", "id": 76 },
             { "type": "Switch", "id": 77 }
-         ],
-         "halt": true
+         ]
       },
       {
          "id": 236,

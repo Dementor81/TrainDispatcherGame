@@ -63,14 +63,8 @@ export default class ApprovalToast {
         strong.textContent = 'Fahranfrage';
         const small = document.createElement('small');
         small.textContent = request.stationId;
-        const closeBtn = document.createElement('button');
-        closeBtn.type = 'button';
-        closeBtn.className = 'btn-close';
-        closeBtn.setAttribute('data-bs-dismiss', 'toast');
-        closeBtn.setAttribute('aria-label', 'Close');
         header.appendChild(strong);
         header.appendChild(small);
-        header.appendChild(closeBtn);
 
         const body = document.createElement('div');
         body.className = 'toast-body';

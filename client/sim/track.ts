@@ -13,7 +13,7 @@ class Track extends BaseSimModule {
       track._id = object.id;
       track._signals = object.signals ? object.signals.map((signalObj: any) => Signal.fromObject(signalObj, track)) : [];
       track._switches = [null, null];
-      track._halt = object.halt;
+      track._halt = false; 
       return track;
    }
 

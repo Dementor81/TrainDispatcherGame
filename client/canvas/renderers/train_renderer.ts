@@ -12,6 +12,7 @@ interface TrainContainer extends PIXI.Container {
    cars?: PIXI.Graphics[];
    numberText?: PIXI.Text;
    stationPie?: PIXI.Graphics;
+   signalWarning?: PIXI.Graphics;
 }
 
 export class TrainRenderer {
@@ -101,6 +102,11 @@ export class TrainRenderer {
       const pie = new PIXI.Graphics();
       trainContainer.stationPie = pie;
       trainContainer.addChild(pie);
+
+      // Create signal warning indicator (exclamation mark)
+      const warning = new PIXI.Graphics();
+      trainContainer.signalWarning = warning;
+      trainContainer.addChild(warning);
 
       this._trainContainersByNumber.set(train.number, trainContainer);
       this._container.addChild(trainContainer);
@@ -231,7 +237,7 @@ export class TrainRenderer {
 
             const pie = trainContainer.stationPie;
             if (pie) {
-               const isWaiting = (train as any).stopReason === TrainStopReason.STATION;
+               const isWaiting = train.stopReason === TrainStopReason.STATION;
                pie.visible = isWaiting;
 
                if (isWaiting) {
@@ -240,14 +246,20 @@ export class TrainRenderer {
                   const cx = carPosition.x + Math.cos(angle - Math.PI / 2) * offset;
                   const cy = carPosition.y + Math.sin(angle - Math.PI / 2) * offset;
                   const r = 5;
-                  const p = Math.max(0, Math.min(1, (train as any).waitingProgress ?? 0));
+                  const p = Math.max(0, Math.min(1, train.waitingProgress ?? 0));
 
                   pie.clear();
-                  pie.circle(cx, cy, r).fill({ color: 0x000000, alpha: 0.35 });
+                  // Background circle
+                  pie.circle(cx, cy, r);
+                  pie.fill({ color: 0x000000, alpha: 0.35 });
+                  // Progress pie
                   if (p > 0) {
                      const start = -Math.PI / 2;
                      const end = start + p * Math.PI * 2;
-                     pie.moveTo(cx, cy).arc(cx, cy, r, start, end).lineTo(cx, cy).fill({ color: 0xffffff, alpha: 0.9 });
+                     pie.moveTo(cx, cy);
+                     pie.arc(cx, cy, r, start, end);
+                     pie.lineTo(cx, cy);
+                     pie.fill({ color: 0xffffff, alpha: 0.9 });
                   }
                } else {
                   pie.clear();
@@ -255,6 +267,36 @@ export class TrainRenderer {
 
                // Ensure overlays stay on top of cars
                trainContainer.addChild(pie);
+            }
+
+            // Render signal warning (exclamation mark) when stopped by signal
+            const warning = trainContainer.signalWarning;
+            if (warning) {
+               const isWaitingAtSignal = train.stopReason === TrainStopReason.SIGNAL;
+               warning.visible = isWaitingAtSignal;
+
+               if (isWaitingAtSignal) {
+                  const angle = carGraphics.rotation;
+                  const offset = RendererConfig.trainHeight / 2 + 8;
+                  const cx = carPosition.x + Math.cos(angle - Math.PI / 2) * offset;
+                  const cy = carPosition.y + Math.sin(angle - Math.PI / 2) * offset;
+                  const size = 10;
+
+                  warning.clear();
+                  // Draw red circle background
+                  warning.circle(cx, cy, size);
+                  warning.fill({ color: 0xff0000, alpha: 0.9 });
+                  // Draw white exclamation mark
+                  warning.rect(cx - 1, cy - 6, 2, 8);
+                  warning.fill({ color: 0xffffff });
+                  warning.circle(cx, cy + 5, 1.5);
+                  warning.fill({ color: 0xffffff });
+               } else {
+                  warning.clear();
+               }
+
+               // Ensure overlays stay on top of cars
+               trainContainer.addChild(warning);
             }
          }
       }

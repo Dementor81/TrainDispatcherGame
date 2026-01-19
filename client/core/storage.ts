@@ -70,6 +70,14 @@ class Storage {
             sw.from = sw.tracks.find((t: Track) => t.id === sw_loaded.tracks[0]) || null;
         });
 
+        // Set halt property based on platforms
+        if (trackLayoutDto.platforms) {
+            const platformTrackIds = new Set(trackLayoutDto.platforms.map(p => p.track));
+            tracks.forEach((track: Track) => {
+                (track as any)._halt = platformTrackIds.has(track.id);
+            });
+        }
+
         // Collect all signals from tracks
         const signals: Signal[] = [];
         tracks.forEach((track: Track) => {

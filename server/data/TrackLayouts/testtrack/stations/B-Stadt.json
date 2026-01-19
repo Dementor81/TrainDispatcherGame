@@ -17,8 +17,7 @@
         {"type": "main", "position":  51, "direction": -1},
         {"type": "main", "position": 530, "direction":  1}
       ],
-      "switches": [ {"type": "Track", "id": 12}, {"type": "Track", "id": 16} ],
-      "halt": true
+      "switches": [ {"type": "Track", "id": 12}, {"type": "Track", "id": 16} ]
     },
     {
       "id": 16,
@@ -35,8 +34,7 @@
         {"type": "main", "position":  98, "direction": -1},
         {"type": "main", "position": 620, "direction":  1}
       ],
-      "switches": [ {"type": "Switch", "id": 0}, {"type": "Switch", "id": 1} ],
-      "halt": true
+      "switches": [ {"type": "Switch", "id": 0}, {"type": "Switch", "id": 1} ]
     },
     {
       "id": 18,
@@ -64,6 +62,10 @@
       "location": {"x": 1200, "y": 600},
       "tracks": [18, 17, 16, null]
     }
+  ],
+  "platforms": [
+    { "track": 15, "from_km": 0, "to_km": 600 },
+    { "track": 17, "from_km": 0, "to_km": 700 }
   ]
 }
  

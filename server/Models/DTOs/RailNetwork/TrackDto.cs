@@ -19,9 +19,6 @@ namespace TrainDispatcherGame.Server.Models.DTOs
 
         [JsonPropertyName("switches")]
         public List<TrackSwitchRefDto> Switches { get; set; } = new();
-
-        [JsonPropertyName("halt")]
-        public bool? Halt { get; set; }
     }
 }
 

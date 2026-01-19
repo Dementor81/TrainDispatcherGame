@@ -18,8 +18,8 @@ export class TrainManager {
    private _clientSimulation: ClientSimulation;
 
    constructor(
-      eventManager: EventManager, 
-      trackLayoutManager: TrackLayoutManager, 
+      eventManager: EventManager,
+      trackLayoutManager: TrackLayoutManager,
       signalRManager: SignalRManager,
       clientSimulation: ClientSimulation
    ) {
@@ -27,7 +27,7 @@ export class TrainManager {
       this._trackLayoutManager = trackLayoutManager;
       this._signalRManager = signalRManager;
       this._clientSimulation = clientSimulation;
-      
+
       // Subscribe to train creation events
       this._eventManager.on("trainCreated", (train: Train, exitPointId: number) => {
          this.handleTrainCreated(train, exitPointId);
@@ -46,7 +46,8 @@ export class TrainManager {
 
       // Update each train
       for (const train of this._trains) {
-         if (this.updateTrain(train)) {
+         const updated = this.updateTrain(train);
+         if (updated) {
             this._eventManager.emit("trainUpdated", train);
          }
       }
@@ -66,7 +67,7 @@ export class TrainManager {
          throw new Error(`Train ${train.number} has no position`);
       }
 
-      if(train.stopReason === TrainStopReason.COLLISION || train.stopReason === TrainStopReason.EMERGENCY_STOP || train.stopReason === TrainStopReason.DERAILEMENT) {
+      if (train.stopReason === TrainStopReason.COLLISION || train.stopReason === TrainStopReason.EMERGENCY_STOP || train.stopReason === TrainStopReason.DERAILEMENT) {
          return false;
       }
 
@@ -77,7 +78,7 @@ export class TrainManager {
          if (train.stoppedBySignal.isTrainAllowedToGo()) {
             train.setStoppedBySignal(null);
          } else {
-            return false;
+            return true;
          }
       } else {
          const stoppingSignal = this.checkSignalsAhead(train);
@@ -86,12 +87,12 @@ export class TrainManager {
             train.setStoppedBySignal(stoppingSignal);
             console.log(`Train ${train.number} stopped by signal at km ${stoppingSignal.position} on track ${train.position?.track.id}`);
             this._eventManager.emit("trainStoppedBySignal", train, stoppingSignal);
-            return false;
+            return true;
          }
       }
 
       if (this.checkStationStop(train, proposedDistance)) {
-         return false;
+         return true;
       }
       if (Math.abs(proposedDistance) <= 0.001) {
          return false;
@@ -118,13 +119,13 @@ export class TrainManager {
             if (!tailUpdated) {
                //if the tail position update fails, the train is derailed
                console.warn(`Train ${train.number} derailed at switch ${result.element.id}`);
-               this._eventManager.emit("trainDerailed", train, result.element);   
-               train.setStopReason(TrainStopReason.DERAILEMENT);            
+               this._eventManager.emit("trainDerailed", train, result.element);
+               train.setStopReason(TrainStopReason.DERAILEMENT);
                return false;
             }
 
             const blockingTrain = this.detectTrainCollision(train);
-            if (blockingTrain) {               
+            if (blockingTrain) {
                this._eventManager.emit("trainCollision", train, blockingTrain);
                train.setStopReason(TrainStopReason.COLLISION);
                blockingTrain.setStopReason(TrainStopReason.COLLISION);
@@ -516,9 +517,19 @@ export class TrainManager {
    // returns true if train should stop at a station or is already stopped, false if it should depart or it is not near the station
    private checkStationStop(train: Train, proposedDistance: number): boolean {
       const currentSimulationTime = this._clientSimulation.currentSimulationTime;
-      
+
       // Early return if no simulation time or no station stop needed
       if (!currentSimulationTime || !train.shouldStopAtCurrentStation || !train.position?.track || !train.position?.track.halt) {
+         return false;
+      }
+
+      // Check if train has already completed its scheduled wait at this station
+      // (e.g., was waiting for signal after scheduled departure time)
+      if (train.waitingProgress >= 0.99) {
+         // Train has already completed its scheduled wait - allow it to depart
+         
+         train.setStopReason(TrainStopReason.NONE);
+         this._eventManager.emit("trainDepartedFromStation", train);
          return false;
       }
 
@@ -527,23 +538,18 @@ export class TrainManager {
          // Train is already stopped - check if it's time to depart
          if (train.departureTime && currentSimulationTime >= train.departureTime) {
             // Check if the next signal allows departure
+            train.setWaitingProgress(1);
+
             const nextSignal = this._trackLayoutManager.getNextSignal(train.position.track, train.position.km, train.direction);
             if (nextSignal && !nextSignal.isTrainAllowedToGo()) {
                console.log(`Train ${train.number} cannot depart, Next signal at km ${nextSignal.position} is red`);
                train.setStoppedBySignal(nextSignal);
-
-               train.setStopReason(TrainStopReason.STATION);
                this._eventManager.emit("trainStoppedBySignal", train, nextSignal);
-               return true; // Signal is red, cannot depart
+               return true; // Signal is red, cannot depart 
             }
 
             console.log(`Train ${train.number} departing at scheduled time ${train.departureTime.toLocaleTimeString()}`);
-
-            train.setStopReason(TrainStopReason.NONE);
-            train.shouldStopAtCurrentStation = false;
-            train.setScheduleTimes(null, null); // Clear schedule times
-            train.setStationStopStartTime(null);
-            train.setWaitingProgress(0);
+            train.setStopReason(TrainStopReason.NONE);            
             this._eventManager.emit("trainDepartedFromStation", train);
             return false;
          }
@@ -556,9 +562,7 @@ export class TrainManager {
             const elapsedMs = currentSimulationTime.getTime() - train.stationStopStartTime.getTime();
             const progress = totalMs > 0 ? elapsedMs / totalMs : 1;
             train.setWaitingProgress(progress);
-         } else {
-            train.setWaitingProgress(0);
-         }
+         } 
          return true; // Train is stopped but not time to depart yet
       }
 
@@ -585,14 +589,6 @@ export class TrainManager {
          // Mark the start of the station stop if not already set, and reset progress
          if (!train.stationStopStartTime) {
             train.setStationStopStartTime(new Date(currentSimulationTime));
-            train.setWaitingProgress(0);
-         }
-         // Update progress based on current time vs departure
-         if (train.departureTime && train.stationStopStartTime) {
-            const totalMs = train.departureTime.getTime() - train.stationStopStartTime.getTime();
-            const elapsedMs = currentSimulationTime.getTime() - train.stationStopStartTime.getTime();
-            const progress = totalMs > 0 ? elapsedMs / totalMs : 1;
-            train.setWaitingProgress(progress);
          }
          this._eventManager.emit("trainStoppedAtStation", train);
          return true;

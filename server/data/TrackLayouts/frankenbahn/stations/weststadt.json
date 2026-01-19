@@ -42,8 +42,7 @@
          "switches": [
             { "type": "Switch", "id": 64 },
             { "type": "Switch", "id": 67 }
-         ],
-         "halt": true
+         ]
       },
       {
          "id": 184,
@@ -119,8 +118,7 @@
          "switches": [
             { "type": "Switch", "id": 66 },
             { "type": "Switch", "id": 68 }
-         ],
-         "halt": true
+         ]
       },
       {
          "id": 196,
