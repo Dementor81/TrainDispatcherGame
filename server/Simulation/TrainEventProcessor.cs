@@ -61,14 +61,14 @@ namespace TrainDispatcherGame.Server.Simulation
         public async Task HandleTrainSpawn(Train train)
         {
             if (train.TrainEvent is not TrainSpawnEvent spawn) throw new Exception($"Train {train.Number} next event is not a spawn event");
-            
-            _openLineTracks.RemoveTrain(spawn.Connection, train);
 
             var station = spawn.HeadingStation;
             var exitPointId = spawn.HeadingExitId;
 
             if (_playerManager.IsStationControlled(station))
             {
+                // DO NOT remove train from open-line track yet
+                // Will be removed when client reports exit is unblocked
                 if (exitPointId == -1) throw new Exception($"Train {train.Number} has invalid exit point id -1 for player controlled station");
                 await _notificationManager.SendTrain(station, train, exitPointId);
                 train.controlledByPlayer = true;                
@@ -76,6 +76,9 @@ namespace TrainDispatcherGame.Server.Simulation
                 train.TrainEvent = null;
                 return;
             }else{
+                // Uncontrolled station: remove immediately as before
+                _openLineTracks.RemoveTrain(spawn.Connection);
+                
                 // If the train is coming from a player controlled station, notify the player that its exit is unblocked
                 var previousWaypoint = train.GetPreviousWayPoint();
                 if (previousWaypoint != null)
@@ -100,6 +103,23 @@ namespace TrainDispatcherGame.Server.Simulation
             var currentWaypoint = train.GetCurrentWayPoint();
             var nextWaypoint = train.GetNextWayPoint();
             if (currentWaypoint == null || nextWaypoint == null) throw new Exception($"Train {train.Number} cannot request approval without valid waypoints");
+
+            // Check if the connection to the next station is blocked
+            var connection = _trackLayoutService.GetRegularConnectionToStation(currentWaypoint.Station, nextWaypoint.Station, out bool isReversed);
+            if (connection != null && _openLineTracks.TryGet(connection, out var track))
+            {
+                if (track.TrainOnTrack != null)
+                {
+                    // Connection is blocked, reschedule approval request using the blocking train's event time
+                    var blockingTrain = track.TrainOnTrack;
+                    if (blockingTrain.TrainEvent != null)
+                    {
+                        sendApprovalEvent.ScheduledTime = blockingTrain.TrainEvent.ScheduledTime.AddSeconds(20);
+                        Console.WriteLine($"Train {train.Number} approval delayed until {blockingTrain.TrainEvent.ScheduledTime:HH:mm:ss} - connection to {nextWaypoint.Station} blocked by train {blockingTrain.Number}");
+                    }                    
+                    return;
+                }
+            }
 
             await _notificationManager.SendApprovalRequest(nextWaypoint.Station, currentWaypoint.Station, train.Number);
             sendApprovalEvent.ApprovalSent = true;

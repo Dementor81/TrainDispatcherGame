@@ -370,10 +370,7 @@ export class SignalRManager {
         }
     }
 
-    // No server collision handler needed
-
-    private handleExitBlockStatusChanged(data: any): void {
-        // Emit event through the EventManager for other components to handle
+    private handleExitBlockStatusChanged(data: any): void {        
         this.eventManager.emit('exitBlockStatusChanged', data.exitId, data.blocked);
     }
 
@@ -396,9 +393,7 @@ export class SignalRManager {
     }
 
     private notifyConnectionStatusChange(): void {
-        // Emit an event with the current HubConnection state as a string
-        const state = this.connectionState;
-        this.eventManager.emit('connectionStatusChanged', state);
+        this.eventManager.emit('connectionStatusChanged', this.connectionState);
     }
 
 

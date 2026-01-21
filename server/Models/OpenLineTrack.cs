@@ -18,9 +18,8 @@ namespace TrainDispatcherGame.Server.Models
             return true;
         }
 
-        public void RemoveTrain(Train train)
+        public void RemoveTrain()
         {
-            if (this.TrainOnTrack != train) throw new Exception($"Train {train.Number} cant be removed from this track because it is not on this track");
             this.TrainOnTrack = null;
         }
 

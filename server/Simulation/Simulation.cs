@@ -566,6 +566,13 @@ namespace TrainDispatcherGame.Server.Simulation
                     return;
                 }
                 
+                // Remove train from open-line track when exit is unblocked
+                if (!blocked)
+                {
+                    _openLineTracks.RemoveTrain(connection);
+                    Console.WriteLine($"Train removed from open-line track {connection.FromStation} → {connection.ToStation}");
+                }
+                
                 // Determine the other side of the connection
                 string otherStation;
                 int otherExitId;

@@ -38,10 +38,10 @@ namespace TrainDispatcherGame.Server.Simulation
             return track.AddTrain(train);
         }
 
-        public void RemoveTrain(NetworkConnection connection, Train train)
+        public void RemoveTrain(NetworkConnection connection)
         {
             if (!_openLineTracks.TryGetValue(connection, out var track)) throw new Exception($"for connection {connection.FromStation} to {connection.ToStation} no open line track found");
-            track.RemoveTrain(train);
+            track.RemoveTrain();
         }
 
         public IEnumerable<OpenLineTrack> GetAll()
