@@ -542,13 +542,11 @@ export class TrainManager {
 
             const nextSignal = this._trackLayoutManager.getNextSignal(train.position.track, train.position.km, train.direction);
             if (nextSignal && !nextSignal.isTrainAllowedToGo()) {
-               console.log(`Train ${train.number} cannot depart, Next signal at km ${nextSignal.position} is red`);
                train.setStoppedBySignal(nextSignal);
                this._eventManager.emit("trainStoppedBySignal", train, nextSignal);
                return true; // Signal is red, cannot depart 
             }
 
-            console.log(`Train ${train.number} departing at scheduled time ${train.departureTime.toLocaleTimeString()}`);
             train.setStopReason(TrainStopReason.NONE);            
             this._eventManager.emit("trainDepartedFromStation", train);
             return false;
@@ -581,9 +579,7 @@ export class TrainManager {
             }
             train.setScheduleTimes(train.arrivalTime, departureTime);
          }
-         console.log(
-            `Train ${train.number} stopped at station as scheduled, departure time: ${train.departureTime?.toLocaleTimeString()}`
-         );
+         
 
          train.setStopReason(TrainStopReason.STATION);
          // Mark the start of the station stop if not already set, and reset progress
