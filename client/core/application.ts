@@ -30,7 +30,6 @@ export class Application {
    private _currentPlayerId: string | null = null;
    private _currentStationId: string | null = null;
    private _signalRManager: SignalRManager;
-   private _exitBlockRoutes: Map<number, TrainRoute> = new Map();
    private _signalBlockedExits: Map<Signal, number> = new Map();
 
    constructor() {
@@ -179,13 +178,10 @@ export class Application {
          this._renderer.renderTrainRoutes(this._trainRouteManager.routes);
       });
 
-      // Routes cleared → render (empty routes) and check for cleared exit-blocking routes
+      // Routes cleared → render (empty routes)
       this._eventManager.on('routesCleared', () => {
          if (!this._renderer) return;
          this._renderer.renderTrainRoutes(this._trainRouteManager.routes);
-         
-         // Check if any exit-blocking routes are now empty and need to be unblocked
-         this.checkAndUnblockClearedExits();
       });
 
       // Occupied track cleared → remove cleared track from routes
@@ -208,6 +204,12 @@ export class Application {
             this._signalBlockedExits.set(route.signal, exit.id);
             console.log(`Signal is blocking exit ${exit.id}`);
          }
+      });
+
+      // Route with exit cleared → notify server that exit is unblocked
+      this._eventManager.on('routeWithExitCleared', (exit: Exit) => {
+         this._signalRManager.setExitBlockStatus(exit.id, false);
+         console.log(`Exit ${exit.id} blocking route fully cleared, reporting unblock`);
       });
 
       // Exit block status changed (from server) → create or remove blocking route
@@ -287,24 +289,6 @@ export class Application {
       this._trainManager.removeTrain(train.number);
    }
 
-   private checkAndUnblockClearedExits(): void {
-      const exitsToUnblock: number[] = [];
-      
-      // Check each tracked exit-blocking route
-      for (const [exitId, route] of this._exitBlockRoutes.entries()) {
-         if (route.isEmpty()) {
-            exitsToUnblock.push(exitId);
-         }
-      }
-      
-      // Unblock cleared exits
-      for (const exitId of exitsToUnblock) {
-         this._signalRManager.setExitBlockStatus(exitId, false);
-         this._exitBlockRoutes.delete(exitId);
-         console.log(`Exit ${exitId} blocking route fully cleared, reporting unblock`);
-      }
-   }
-
    private handleExitBlockStatusChanged(exitId: number, blocked: boolean): void {
       if (blocked) {
          // Station B: Create blocking route from exit
@@ -329,30 +313,20 @@ export class Application {
          
          if (route) {
             console.log(`Created blocking route from exit ${exitId} to next signal`);
-            this._exitBlockRoutes.set(exitId, route);
          } else {
             console.warn(`Failed to create blocking route for exit ${exitId}`);
          }
       } else {
          // BOTH stations handle unblock:
-         
-         // Station B: Remove from exitBlockRoutes
-         const blockingRoute = this._exitBlockRoutes.get(exitId);
-         if (blockingRoute) {
-            this._trainRouteManager.removeRoute(blockingRoute);
-            this._exitBlockRoutes.delete(exitId);
-            console.log(`Removed blocking route for exit ${exitId}`);
-         }
-         
-         // Station A: Find and remove route ending at this exit
-         const routeEndingAtExit = this._trainRouteManager.routes.find(r => r.exit?.id === exitId);
-         if (routeEndingAtExit) {
-            this._trainRouteManager.removeRoute(routeEndingAtExit);
-            console.log(`Removed route ending at exit ${exitId} after receiving unblock`);
+         // Find and remove any route associated with this exit
+         const routeAtExit = this._trainRouteManager.routes.find(r => r.exit?.id === exitId);
+         if (routeAtExit) {
+            this._trainRouteManager.removeRoute(routeAtExit);
+            console.log(`Removed route for exit ${exitId} after receiving unblock`);
             
-            // Also clear the signal tracking
-            if (routeEndingAtExit.signal) {
-               this._signalBlockedExits.delete(routeEndingAtExit.signal);
+            // Also clear the signal tracking if this was a signal-based route
+            if (routeAtExit.signal) {
+               this._signalBlockedExits.delete(routeAtExit.signal);
             }
          }
       }

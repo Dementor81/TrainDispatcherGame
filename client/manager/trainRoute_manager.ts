@@ -233,6 +233,10 @@ export class TrainRouteManager {
             
             // Check if route is now empty
             if (route.isEmpty()) {
+               // If this route has an exit, emit event before removing
+               if (route.exit) {
+                  this._eventManager.emit('routeWithExitCleared', route.exit);
+               }
                routesToRemove.push(route);
             }
          }
