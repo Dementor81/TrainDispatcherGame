@@ -76,7 +76,15 @@ export class OpenLinePanel extends BasePanel {
         const mode = document.createElement('div');
         mode.className = 'text-light';
         mode.style.width = '120px';
-        mode.textContent = t.mode ?? '-';
+        
+        // Display mode as icons
+        if (t.mode === 'DualTrack') {
+          mode.innerHTML = '<i class="bi bi-arrow-left-right"></i>';
+        } else if (t.mode === 'SingleTrack') {
+          mode.innerHTML = '<i class="bi bi-arrows"></i>';
+        } else {
+          mode.textContent = '-';
+        }
 
         const train = document.createElement('div');
         train.className = 'text-light';

@@ -36,7 +36,7 @@ namespace TrainDispatcherGame.Server.Hubs
             var player = players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId);
             if (player != null)
             {
-                // Return any trains currently at this player's station
+                // Return trains at station and clean up open line tracks
                 if (!string.IsNullOrWhiteSpace(player.StationId))
                 {
                     await _simulation.ReturnTrainsAtStation(player.StationId);
@@ -77,8 +77,6 @@ namespace TrainDispatcherGame.Server.Hubs
                     playerName = playerName,
                     message = $"Successfully joined station {normalizedStationId}"
                 });
-                
-                Console.WriteLine($"Player {playerId} joined station {normalizedStationId} via SignalR");
                 
             }
             else
@@ -277,7 +275,6 @@ namespace TrainDispatcherGame.Server.Hubs
 
                 train.completed = true;
                 train.controlledByPlayer = false;
-                Console.WriteLine($"Train {train.Number} removed by client report at station {stationId} (player {playerId})");
             }
             catch (Exception ex)
             {
@@ -291,7 +288,6 @@ namespace TrainDispatcherGame.Server.Hubs
         {
             try
             {
-                Console.WriteLine($"Player {playerId} requested to {(blocked ? "block" : "unblock")} exit {exitId}");
                 await _simulation.HandleExitBlockStatus(playerId, exitId, blocked);
             }
             catch (Exception ex)

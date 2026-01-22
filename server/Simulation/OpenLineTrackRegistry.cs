@@ -48,6 +48,23 @@ namespace TrainDispatcherGame.Server.Simulation
         {
             return _openLineTracks.Values;
         }
+
+        /// <summary>
+        /// Remove a train from all open line tracks. Used when a player disconnects from a station.
+        /// </summary>
+        /// <param name="train">The train to remove.</param>
+        public void RemoveTrainFromAllTracks(Train train)
+        {
+            foreach (var track in _openLineTracks.Values)
+            {
+                if (track.TrainOnTrack == train)
+                {
+                    track.RemoveTrain();
+                }
+            }
+        }
+
+        
     }
 }
 

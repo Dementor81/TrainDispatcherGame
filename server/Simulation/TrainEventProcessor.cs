@@ -104,6 +104,12 @@ namespace TrainDispatcherGame.Server.Simulation
             var nextWaypoint = train.GetNextWayPoint();
             if (currentWaypoint == null || nextWaypoint == null) throw new Exception($"Train {train.Number} cannot request approval without valid waypoints");
 
+            // Check if the next station is still controlled by a player
+            if (!_playerManager.IsStationControlled(nextWaypoint.Station))
+            {
+                AdvanceTrainToNextStation(train);
+                return;
+            }
             // Check if the connection to the next station is blocked
             var connection = _trackLayoutService.GetRegularConnectionToStation(currentWaypoint.Station, nextWaypoint.Station, out bool isReversed);
             if (connection != null && _openLineTracks.TryGet(connection, out var track))

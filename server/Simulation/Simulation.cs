@@ -328,17 +328,17 @@ namespace TrainDispatcherGame.Server.Simulation
         
 
         /// <summary>
-        /// When a player disconnects from a station, any trains currently at that station
-        /// and controlled by the player should be returned to server control so they don't vanish.
+        /// When a player disconnects from a station, return trains at the station to server control
+        /// and remove any trains on open line tracks heading to/from this station.
         /// </summary>
         /// <param name="stationId">The station the player controlled.</param>
         public async Task ReturnTrainsAtStation(string stationId)
         {
             try
             {
-                // Normalize stationId to lowercase for case-insensitive comparison
                 var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
                 
+                // Return trains currently at the station to server control
                 var trainsToReturn = _trains
                     .Where(t => t.controlledByPlayer && string.Equals(t.CurrentLocation, normalizedStationId, StringComparison.OrdinalIgnoreCase))
                     .ToList();
@@ -347,8 +347,10 @@ namespace TrainDispatcherGame.Server.Simulation
                 {
                     train.controlledByPlayer = false;
                     train.CurrentLocation = null;
+                    _openLineTracks.RemoveTrainFromAllTracks(train);
                     await _eventProcessor.DispatchTrainByServer(train);
                 }
+
             }
             catch (Exception ex)
             {
