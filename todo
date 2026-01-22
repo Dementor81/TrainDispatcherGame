@@ -15,6 +15,7 @@ Features:
     ☐ add comments to shedulded strain stops like "overtake"
     ✔ remove the halt property from tracks and replace the information with the platforms @done(26-01-19 19:32)
     ☐ the server does not respect the occupation of open line tracks
+    ☐ signals on one way are upside down
 
 Big Features:
     ✔ uncontrolled stations should be handled by the server @done(25-08-10 13:27)
