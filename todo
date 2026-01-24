@@ -14,34 +14,34 @@ Features:
     ✘ report passing through a station to the server @cancelled(26-01-04 17:09) --> server ignors if trains actually passed the station, still calcs the delay
     ☐ add comments to shedulded strain stops like "overtake"
     ✔ remove the halt property from tracks and replace the information with the platforms @done(26-01-19 19:32)
-    ☐ the server does not respect the occupation of open line tracks
-    ☐ signals on one way are upside down
+    ✔ the server does not respect the occupation of open line tracks @done(26-01-24 18:08)
+    ✔ signals on one way are upside down @done(26-01-24 18:19)
 
 Big Features:
     ✔ uncontrolled stations should be handled by the server @done(25-08-10 13:27)
+    ✔ 2-way tracks @done(25-08-16 19:22)
+    ✔ admin page with server controls and statistics @done(25-08-30 18:43)
+    ✔ szenario editor that helps creating timetables @done(25-08-17 16:32)
+    ✔ UI to inspect the open line tracks @done(25-12-24 15:48)
+    ✔ Streckenblock (the track between stations knows if it is occupied by a train) @done(26-01-24 18:06)
     ☐ handle missrouted trains on client side. maybe it should stop at the exitppoint and the player must confirm  backing up to the station
     ☐ trains can end at a station and return as new trains
     ☐ track occupied detection
-    ✔ 2-way tracks @done(25-08-16 19:22)
     ☐ acceleration and deceleration
     ☐ select a train to see different information
     ☐ shunting
     ☐ coupling and decoupling
     ☐ add game logic to the server to handle multiple game sessions simultaniously
-    ✔ admin page with server controls and statistics @done(25-08-30 18:43)
-    ✔ szenario editor that helps creating timetables @done(25-08-17 16:32)
     ☐ UI with an overview of the whole network
-    ✔ UI to inspect the open line tracks @done(25-12-24 15:48)
     ☐ better UI for station selection with a display which station is already taken by whom
-    ✔ Streckenblock (the track between stations knows if it is occupied by a train) @done(26-01-24 18:06)
 
 Bugs:
     ✔ prevent players with the same name from joining the game (currently breaks the game) @done(25-08-09 15:31)
     ✔ switching a switch while the switch is blocked by a train breaks the game @done(25-09-27 17:58)
     ✔ leaving a station while trains are at the station breaks the game @done(25-09-06 13:34)
+    ✔ not all server event sets the delay correctly, when the approuval comes to late @done(26-01-04 17:10) --> to be Tested
     ☐ some random delays of trains at the server side
     ☐ the server dispatch does not calculate travel times within stations
-    ✔ not all server event sets the delay correctly, when the approuval comes to late @done(26-01-04 17:10) --> to be Tested
     
 
 

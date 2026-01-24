@@ -71,6 +71,14 @@ export class SignalRenderer {
       signalContainer.x = signalPosition.x;
       signalContainer.y = signalPosition.y;
       
+      // Step 1: Rotate signal to align with track direction
+      let rotation = track.rad;
+      // Step 2: If signal is on opposite side (direction -1), flip it 180°
+      if (signal.direction === -1) {
+         rotation += Math.PI;
+      }
+      signalContainer.rotation = rotation;
+      
       // Make signal interactive
       signalContainer.eventMode = "static";
       signalContainer.on("click", (event) => {
