@@ -241,6 +241,7 @@ app.MapGet("/api/simulation/trains", (Simulation simulation) =>
         nextEventType = t.TrainEvent is TrainSpawnEvent ? "Spawn"
             : t.TrainEvent is SendApprovalEvent ? "Approval"
             : t.TrainEvent is TrainStartEvent ? "Start"
+            : t.TrainEvent is RetryDispatchEvent ? "Retry"
             : null,
         spawnStation = (t.TrainEvent as TrainSpawnEvent)?.Connection.ToStation
     }).ToList();

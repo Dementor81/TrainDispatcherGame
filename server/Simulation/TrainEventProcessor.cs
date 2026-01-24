@@ -55,6 +55,8 @@ namespace TrainDispatcherGame.Server.Simulation
                     await this.HandleSendApproval(train);
                 else if (train.TrainEvent is TrainStartEvent)
                     await this.HandleTrainStart(train);
+                else if (train.TrainEvent is RetryDispatchEvent)
+                    AdvanceTrainToNextStation(train);
             }
         }
 
@@ -76,7 +78,6 @@ namespace TrainDispatcherGame.Server.Simulation
                 train.TrainEvent = null;
                 return;
             }else{
-                // Uncontrolled station: remove immediately as before
                 _openLineTracks.RemoveTrain(spawn.Connection);
                 
                 // If the train is coming from a player controlled station, notify the player that its exit is unblocked
@@ -154,6 +155,21 @@ namespace TrainDispatcherGame.Server.Simulation
             var distanceToExit = 0;
             if (connection == null) throw new Exception($"No regular connection found for train {train.Number} from {currentWaypoint.Station} to {nextWaypoint.Station}");
             if (layout != null) distanceToExit = layout.MaxExitDistance / 2;
+
+            // Check if track is occupied
+            if (_openLineTracks.TryGet(connection, out var track) && track.TrainOnTrack != null)
+            {
+                var blockingTrain = track.TrainOnTrack;
+                if (blockingTrain.TrainEvent != null)
+                {
+                    // Create a retry event - train stays at current waypoint
+                    var retryTime = blockingTrain.TrainEvent.ScheduledTime.AddSeconds(20);
+                    train.TrainEvent = new RetryDispatchEvent(retryTime);
+                    train.CurrentLocation = currentWaypoint.Station;
+                    Console.WriteLine($"Train {train.Number} dispatch delayed until {retryTime:HH:mm:ss} - connection blocked by train {blockingTrain.Number}");
+                    return;
+                }
+            }
 
             var spawn = CreateSpawnFromConnection(train, connection, isReversed, distanceToExit, currentWaypoint.DepartureTime);
 
