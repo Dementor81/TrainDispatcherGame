@@ -344,18 +344,12 @@ export class SignalRManager {
     }
 
     private handleTrainSent(data: any): void {
-        // Handle train sent event (train is ready for player control)
-        console.log(`Train ${data.trainNumber} is ready for control at station ${data.stationId}, exit point ${data.exitPointId}, should stop: ${data.shouldStopAtStation}`);
-        
+        console.log(`Train ${data.trainNumber} recieved from server, exit point ${data.exitPointId}, action: ${data.action}`);
         // Create a new Train instance from the server data
-        const train = Train.fromServerData(data);
-              
-        
-        console.log(`Created train: ${train.getInfo()}`)     
+        const train = Train.fromServerData(data);             
         
         // Emit the train created event through the EventManager
         this.eventManager.emit('trainCreated', train, data.exitPointId);
-        console.log(`Emitted trainCreated event for train ${train.number}`);
     }
 
     private handleSimulationStateChanged(data: any): void {

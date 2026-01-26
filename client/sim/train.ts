@@ -2,6 +2,7 @@ import Track from "./track";
 import Signal from "./signal";
 import { SimulationConfig, RendererConfig } from "../core/config";
 import RailPosition from "./railPosition";
+import { TrainWayPointActionType } from "../network/dto";
 
 // Enum for reasons why a train might be stopped
 export enum TrainStopReason {
@@ -21,9 +22,10 @@ class Train {
     private _tailPosition: RailPosition|null = null;
     private _cars: number;
     private _speed: number; // m/s
-    private _direction: number; // 1 for forward, -1 for backward
+    private _drawingDirection: number; // 1 = locomotive on right, -1 = locomotive on left
+    private _movingDirection: number; // 1 = moving forward (increasing km), -1 = moving backward (decreasing km)
     private _stoppedBySignal: Signal | null; // Signal that currently stops this train
-    private _shouldStopAtCurrentStation: boolean = false; // Station ID where train should stop, or null if no stop needed
+    private _action: TrainWayPointActionType = 'PassThrough'; // How the train acts at the current station
     private _arrivalTime: Date | null = null; // Scheduled arrival time at current station
     private _departureTime: Date | null = null; // Scheduled departure time at current station
     private _stopReason: TrainStopReason = TrainStopReason.NONE; // Current reason why the train is stopped
@@ -34,8 +36,9 @@ class Train {
         this._number = number;
         this._cars = cars;
         this._speed = speed 
-        this._direction = 1; 
-        this._stoppedBySignal = null; // Initially not stopped by any signal
+        this._drawingDirection = 1;
+        this._movingDirection = 1;
+        this._stoppedBySignal = null; 
     }
 
     // Static factory method to create a train from server data
@@ -45,7 +48,7 @@ class Train {
         // Set schedule times if provided
         if (data.departureTime) {
             train.setScheduleTimes(data.arrivalTime ? new Date(data.arrivalTime) : null, new Date(data.departureTime));
-            train.shouldStopAtCurrentStation = data.shouldStopAtStation;
+            train.action = data.action || 'PassThrough';
         }
         
         return train;
@@ -72,21 +75,38 @@ class Train {
         return this._speed;
     }
 
-    get direction(): number {
-        return this._direction;
+    get drawingDirection(): number {
+        return this._drawingDirection;
     }
 
+    get movingDirection(): number {
+        return this._movingDirection;
+    }
+
+    // Returns true if the locomotive is at the front (leading the movement)
+    get isLocomotiveLeading(): boolean {
+        return this._drawingDirection === this._movingDirection;
+    }
+
+    // Returns the position of the leading edge of the train (front)
+    get leadingPosition(): RailPosition | null {
+        return this.isLocomotiveLeading ? this._position : this._tailPosition;
+    }
 
     get stoppedBySignal(): Signal | null {
         return this._stoppedBySignal;
     }
 
-    get shouldStopAtCurrentStation(): boolean {
-        return this._shouldStopAtCurrentStation;
+    get action(): TrainWayPointActionType {
+        return this._action;
     }
 
-    set shouldStopAtCurrentStation(shouldStop: boolean) {
-        this._shouldStopAtCurrentStation = shouldStop;
+    set action(action: TrainWayPointActionType) {
+        this._action = action;
+    }
+
+    get shouldStopAtCurrentStation(): boolean {
+        return this._action === 'Stop' || this._action === 'End';
     }
 
     get arrivalTime(): Date | null {
@@ -148,9 +168,14 @@ class Train {
        this._position = new RailPosition(track, km);
     }   
 
-    // Set the train's direction
-    setDirection(direction: number): void {
-        this._direction = direction === 1 ? 1 : -1; // Normalize to 1 or -1
+    // Set the train's drawing direction (locomotive orientation)
+    setDrawingDirection(direction: number): void {
+        this._drawingDirection = direction === 1 ? 1 : -1; // Normalize to 1 or -1
+    }
+
+    // Set the train's moving direction
+    setMovingDirection(direction: number): void {
+        this._movingDirection = direction === 1 ? 1 : -1; // Normalize to 1 or -1
     }
 
 
@@ -181,13 +206,13 @@ class Train {
         this._stopReason = reason;
     }
 
-    // Update train position based on current speed and direction
+    // Update train position based on current speed and moving direction
     // Returns the distance in meters the train should move based on elapsed time
     // speed is in m/s
     getMovementDistance(): number {
 
         const timeElapsedSeconds = SimulationConfig.simulationIntervalSeconds * SimulationConfig.simulationSpeed;
-        return this._speed * timeElapsedSeconds * this._direction;
+        return this._speed * timeElapsedSeconds * this._movingDirection;
     }
 
     // Method to get train info for debugging/logging

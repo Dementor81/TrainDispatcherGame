@@ -101,8 +101,6 @@ export class TrackLayoutManager {
                   // This shouldn't happen with current structure, but handle it
                   km = 0;
                }
-
-               console.log(`Found exit ${exitId} on track ${track.id} at km ${km}`);
                return { track, km };
             }
          }
@@ -206,13 +204,10 @@ export class TrackLayoutManager {
 
    private handleSignalClick(event: CancellableEvent, signal: Signal): void {
       // Check if default action was prevented (e.g., route validation failed)
-      if (event.defaultPrevented) {
-         return;
-      }
-      
+      if (event.defaultPrevented)         return;
+            
       // Toggle signal state
       signal.state = !signal.state;
-      console.log(`Signal at km ${signal.position} on track ${signal.track?.id} changed to ${signal.state ? 'green' : 'red'}`);
       
       // Redraw the signal to reflect new state
       if (this._renderer) {
@@ -226,13 +221,8 @@ export class TrackLayoutManager {
    private handleTrainPassedSignal(train: Train, signal: Signal): void {
       // Automatically set signal to red (stop) after train passes
       if (signal.state) {
-         signal.state = false; // Set to red
-         console.log(`Signal at km ${signal.position} on track ${signal.track?.id} automatically set to red after train ${train.number} passed`);
-         
-         // Redraw the signal to reflect new state
-         if (this._renderer) {
-            this._renderer.redrawSignal(signal);
-         }
+         signal.state = false;    
+         if (this._renderer) this._renderer.redrawSignal(signal);
       }
    }
 

@@ -25,33 +25,25 @@ namespace TrainDispatcherGame.Server.Managers
             {
                 // Get the current event for this train
                 var currentEvent = train.GetCurrentWayPoint();
-                bool shouldStopAtStation = currentEvent?.Stops == true && 
-                                         string.Equals(currentEvent.Station, normalizedStationId, StringComparison.OrdinalIgnoreCase);
-                
+                if (currentEvent == null) throw new Exception($"Train {train.Number} has no current way point");
+                TrainWayPointActionType action = currentEvent.Action;
+                                
                 // Prepare arrival and departure times
-                DateTime? arrivalTime = null;
-                DateTime? departureTime = null;
-                
-                if (currentEvent != null && string.Equals(currentEvent.Station, normalizedStationId, StringComparison.OrdinalIgnoreCase))
-                {
-                    arrivalTime = currentEvent.ArrivalTime;
-                    departureTime = currentEvent.DepartureTime;
-                }
-                
+                DateTime arrivalTime = currentEvent.ArrivalTime;
+                DateTime departureTime = currentEvent.DepartureTime;                
                 await _hubContext.Clients.Group($"station_{normalizedStationId}").SendAsync("TrainSent", new
                 {
                     trainNumber = train.Number,
                     stationId = normalizedStationId,
                     exitPointId = exitPointId,
-                    shouldStopAtStation = shouldStopAtStation,
+                    action = action.ToString(),
                     arrivalTime = arrivalTime,
                     departureTime = departureTime,
                     cars = train.Cars,
-                    delay = train.delay,
                     speed = train.Speed
                 });
                 
-                Console.WriteLine($"Sent train {train.Number} to player {player.Id} at station {normalizedStationId}, exit point {exitPointId}, should stop: {shouldStopAtStation}, arrival: {arrivalTime}, departure: {departureTime}");
+                Console.WriteLine($"Sent train {train.Number} to player {player.Id} at station {normalizedStationId}, exit point {exitPointId}, action: {action}, arrival: {arrivalTime}, departure: {departureTime}");
             }
             else
             {

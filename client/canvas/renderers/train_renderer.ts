@@ -139,6 +139,7 @@ export class TrainRenderer {
          g.eventMode = "dynamic";
          g.on("pointerup", () => {
             this._eventManager.emit("trainClicked", train.number);
+            console.log(train);
          });
          g.on("pointerover", () => {
             this._canvas.style.cursor = "pointer";
@@ -170,7 +171,7 @@ export class TrainRenderer {
                const result = this._trackLayoutManager.followRailNetwork(
                   train.position.track,
                   train.position.km,
-                  carOffsetDistance * -train.direction
+                  carOffsetDistance * -train.drawingDirection
                );
 
                if (result.element instanceof Track) {

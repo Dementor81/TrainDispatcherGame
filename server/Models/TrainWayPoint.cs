@@ -24,5 +24,16 @@ namespace TrainDispatcherGame.Server.Models
                 return ArrivalTime != DepartureTime;
             }
         }
+
+        public TrainWayPointActionType Action
+        {
+            get
+            {
+                if (IsLast)
+                    return TrainWayPointActionType.End;
+                
+                return Stops ? TrainWayPointActionType.Stop : TrainWayPointActionType.PassThrough;
+            }
+        }
     }
 }
