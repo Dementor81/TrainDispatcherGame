@@ -109,6 +109,61 @@ namespace TrainDispatcherGame.Server.Services
             }
         }
 
+        public static void SaveScenario(string id, SzenarioDTO scenario)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new Exception("Scenario ID must not be empty");
+            }
+
+            if (scenario == null)
+            {
+                throw new ArgumentNullException(nameof(scenario));
+            }
+
+            // Clients may URL-encode the id (notably '/' as %2F). Normalize before parsing.
+            id = Uri.UnescapeDataString(id);
+            
+            // Parse scenario ID format: {networkId}/{scenarioFileName}
+            var parts = id.Split('/', 2);
+            if (parts.Length != 2)
+            {
+                throw new Exception($"Invalid scenario ID format: '{id}'. Expected format: '{{networkId}}/{{scenarioFileName}}'");
+            }
+
+            var networkId = parts[0];
+            var scenarioFileName = parts[1];
+            
+            // Validate that the network directory exists
+            var networkDir = Path.Combine(_dataDirectory, _trackLayoutsSubdirectory, networkId);
+            if (!Directory.Exists(networkDir))
+            {
+                throw new Exception($"Network directory not found: {networkId}");
+            }
+
+            // Ensure scenarios directory exists
+            var scenariosDir = Path.Combine(networkDir, "scenarios");
+            if (!Directory.Exists(scenariosDir))
+            {
+                Directory.CreateDirectory(scenariosDir);
+            }
+
+            // Build the file path
+            var filePath = Path.Combine(scenariosDir, scenarioFileName + ".json");
+
+            // Serialize to JSON with proper formatting
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            var json = JsonSerializer.Serialize(scenario, options);
+
+            // Write to file
+            File.WriteAllText(filePath, json);
+        }
+
         private static SzenarioDTO LoadScenarioFile(string filePath)
         {
             try
@@ -156,7 +211,8 @@ namespace TrainDispatcherGame.Server.Services
                     Type = trainSchedule.Type,
                     Category = trainSchedule.Category,
                     Speed = trainSchedule.Speed / 3.6d,
-                    Cars = trainSchedule.Cars
+                    Cars = trainSchedule.Cars,
+                    FollowingTrainNumber = trainSchedule.FollowingTrainNumber
                 };
 
                 foreach (var timetableEntry in trainSchedule.Timetable)
@@ -180,9 +236,7 @@ namespace TrainDispatcherGame.Server.Services
                         }
                     }
 
-                    // Normalize station ID to lowercase for consistent usage throughout the system
-                    var normalizedStationId = timetableEntry.Station?.ToLowerInvariant() ?? string.Empty;
-                    train.Route.Add(new TrainWayPoint(normalizedStationId, arrivalTime, departureTime));
+                    train.Route.Add(new TrainWayPoint(timetableEntry.Station, arrivalTime, departureTime));
                 }
 
                 train.Route.Last().IsLast = true; //save if the waypoint is the last waypoint, in order to make it easier to detect if the train has completed all waypoints.

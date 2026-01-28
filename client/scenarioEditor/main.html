@@ -35,6 +35,9 @@
             <button id="train-recalculate-btn" class="btn btn-sm btn-outline-warning" disabled title="Recalculate selected train times">
               <i class="bi bi-arrow-repeat"></i>
             </button>
+            <button id="save-btn" class="btn btn-sm btn-success">
+              <i class="bi bi-floppy"></i> Save
+            </button>
             <button id="export-btn" class="btn btn-sm btn-outline-light">Export JSON</button>
             <div class="navbar-nav">
               <a class="nav-link" href="main.html">Main</a>
@@ -67,6 +70,11 @@
               <div class="mb-3">
                 <label class="form-label">Category</label>
                 <input id="train-category" class="form-control" type="text" placeholder="e.g., ICE, Freight, Regional" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Following Train Number</label>
+                <input id="train-following-number" class="form-control" type="text" placeholder="Train number that will use this vehicle" />
+                <div class="form-text">If specified, this vehicle will be reused for the following train</div>
               </div>
               <div class="row g-3">
                 <div class="col">

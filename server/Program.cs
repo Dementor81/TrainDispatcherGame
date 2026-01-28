@@ -3,7 +3,9 @@ using TrainDispatcherGame.Server.Managers;
 using TrainDispatcherGame.Server.Hubs;
 using TrainDispatcherGame.Server.Services;
 using TrainDispatcherGame.Server.Models;
+using TrainDispatcherGame.Server.Models.DTOs;
 using Microsoft.AspNetCore.HttpOverrides;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
@@ -321,6 +323,49 @@ app.MapGet("/api/scenarios/{id}", (string id) =>
         return Results.NotFound(new { message = $"Scenario '{id}' not found" });
     }
     return Results.Ok(scenario);
+});
+
+app.MapPut("/api/scenarios/{id}", async (string id, HttpRequest req) =>
+{
+    try
+    {
+        using var reader = new StreamReader(req.Body);
+        var body = await reader.ReadToEndAsync();
+        
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            return Results.BadRequest(new { message = "Request body cannot be empty" });
+        }
+
+        SzenarioDTO? scenario;
+        try
+        {
+            scenario = JsonSerializer.Deserialize<SzenarioDTO>(body, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+        }
+        catch (JsonException ex)
+        {
+            return Results.BadRequest(new { message = $"Invalid JSON: {ex.Message}" });
+        }
+
+        if (scenario == null)
+        {
+            return Results.BadRequest(new { message = "Failed to deserialize scenario" });
+        }
+
+        ScenarioService.SaveScenario(id, scenario);
+        return Results.Ok(new { message = "Scenario saved successfully", id });
+    }
+    catch (Exception ex)
+    {
+        if (ex.Message.Contains("Network directory not found") || ex.Message.Contains("not found"))
+        {
+            return Results.NotFound(new { message = ex.Message });
+        }
+        return Results.Problem(ex.Message);
+    }
 });
 
 // Rail network API for specific layout

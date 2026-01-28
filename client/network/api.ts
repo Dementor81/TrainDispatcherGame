@@ -125,6 +125,7 @@ export default {
   fetchLayout,
   fetchScenarios,
   fetchScenario,
+  saveScenario,
   startSimulation,
   stopSimulation,
   pauseSimulation,
@@ -177,6 +178,18 @@ export async function fetchScenario(id: string): Promise<ScenarioDto> {
   const response = await fetch(`${API_BASE_URL}/scenarios/${encodeURIComponent(id)}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch scenario '${id}': ${response.statusText}`);
+  }
+  return response.json();
+}
+
+export async function saveScenario(id: string, scenario: ScenarioDto): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/scenarios/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(scenario)
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to save scenario '${id}': ${response.statusText}`);
   }
   return response.json();
 }

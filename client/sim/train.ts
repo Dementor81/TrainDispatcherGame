@@ -31,6 +31,7 @@ class Train {
     private _stopReason: TrainStopReason = TrainStopReason.NONE; // Current reason why the train is stopped
     private _stationStopStartTime: Date | null = null; // When the train actually started waiting at station
     private _waitingProgress: number = 0; // 0..1 progress while waiting at station
+    private _followingTrainNumber: string | null = null; // following train number that will use this vehicle, after this train has completed its journey
 
     constructor(number: string, cars: number, speed: number) {
         this._number = number;
@@ -49,6 +50,11 @@ class Train {
         if (data.departureTime) {
             train.setScheduleTimes(data.arrivalTime ? new Date(data.arrivalTime) : null, new Date(data.departureTime));
             train.action = data.action || 'PassThrough';
+        }
+        
+        // Set following train number if provided
+        if (data.followingTrainNumber) {
+            train.followingTrainNumber = data.followingTrainNumber;
         }
         
         return train;
@@ -137,6 +143,14 @@ class Train {
         // Clamp to [0,1]
         const clamped = Math.max(0, Math.min(1, progress));
         this._waitingProgress = clamped;
+    }
+
+    get followingTrainNumber(): string | null {
+        return this._followingTrainNumber;
+    }
+
+    set followingTrainNumber(trainNumber: string | null) {
+        this._followingTrainNumber = trainNumber;
     }
 
     setTailPosition(track: Track | null, km: number): void {

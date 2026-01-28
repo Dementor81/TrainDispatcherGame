@@ -24,5 +24,8 @@ namespace TrainDispatcherGame.Server.Models.DTOs
 
         [JsonPropertyName("timetable")]
         public List<TimetableEntry> Timetable { get; set; } = new();
+
+        [JsonPropertyName("followingTrainNumber")]
+        public string? FollowingTrainNumber { get; set; }
     }
 } 

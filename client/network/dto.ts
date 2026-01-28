@@ -106,6 +106,7 @@ export interface ScenarioTrainDto {
   cars: number;
   path: string[];
   timetable: ScenarioTimetableEntryDto[];
+  followingTrainNumber?: string;
 }
 
 export interface ScenarioTimetableEntryDto {

@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import { fetchScenarios, fetchScenario, fetchNetwork } from "../network/api";
+import { fetchScenarios, fetchScenario, fetchNetwork, saveScenario } from "../network/api";
 import type { ScenarioDto, NetworkDto } from "../network/dto";
 import { toMinutes, minutesToString } from "./utils/timeUtils";
 import { precomputeExitSpans, getDistanceMeters, isSingleTrackSection, deriveOrderedStations } from "./utils/railNetworkUtils";
@@ -902,6 +902,11 @@ export default class SzenariosApplication {
          exportBtn.addEventListener("click", () => this.exportScenarioJson());
       }
 
+      const saveBtn = document.getElementById("save-btn");
+      if (saveBtn) {
+         saveBtn.addEventListener("click", () => this.saveScenarioToServer());
+      }
+
       const addBtn = document.getElementById("add-train-btn");
       if (addBtn) addBtn.addEventListener("click", () => this.handleCreateTrain());
 
@@ -970,6 +975,7 @@ export default class SzenariosApplication {
       (train as any).category = res.category;
       train.speed = res.speed;
       train.cars = res.cars;
+      (train as any).followingTrainNumber = res.followingTrainNumber;
       this.drawScene();
    }
 
@@ -988,6 +994,7 @@ export default class SzenariosApplication {
             category: t.category,
             speed: t.speed,
             cars: t.cars,
+            followingTrainNumber: (t as any).followingTrainNumber,
             timetable: t.timetable.map((e) => {
                const entry: any = { station: e.station };
                if (e.arrival && e.arrival.trim().length > 0) entry.arrival = e.arrival;
@@ -1033,6 +1040,43 @@ export default class SzenariosApplication {
       }
    }
 
+   private async saveScenarioToServer() {
+      if (!this.scenario) {
+         alert("No scenario loaded");
+         return;
+      }
+
+      // Build the scenario data (same format as export)
+      const scenarioData = {
+         title: this.scenario.title,
+         layout: this.scenario.layout,
+         start_time: this.scenario.start_time,
+         trains: this.scenario.trains.map((t) => ({
+            number: t.number,
+            type: t.type,
+            category: t.category,
+            speed: t.speed,
+            cars: t.cars,
+            followingTrainNumber: (t as any).followingTrainNumber,
+            timetable: t.timetable.map((e) => {
+               const entry: any = { station: e.station };
+               if (e.arrival && e.arrival.trim().length > 0) entry.arrival = e.arrival;
+               if (e.departure && e.departure.trim().length > 0) entry.departure = e.departure;
+               return entry;
+            }),
+         })),
+      };
+
+      try {
+         await saveScenario(this.currentScenarioId, scenarioData as any);
+         alert("Scenario saved successfully!");
+      } catch (error) {
+         const message = error instanceof Error ? error.message : "Unknown error";
+         alert(`Failed to save scenario: ${message}`);
+         console.error("Error saving scenario:", error);
+      }
+   }
+
   private async handleCreateTrain() {
      const dialog = new EditTrainDialog();
      const res = await dialog.showCreate(this.stationOrder);
@@ -1048,6 +1092,7 @@ export default class SzenariosApplication {
         category: res.category,
         speed: res.speed,
         cars: res.cars,
+        followingTrainNumber: res.followingTrainNumber,
         timetable: timetable as any,
      };
      this.scenario.trains.push(train as any);

@@ -10,6 +10,7 @@ export type CreateTrainResult = {
   cars: number;
   startStation: string;
   endStation: string;
+  followingTrainNumber?: string;
 };
 
 export type EditTrainResult = {
@@ -18,6 +19,7 @@ export type EditTrainResult = {
   category?: string;
   speed: number;
   cars: number;
+  followingTrainNumber?: string;
 };
 
 export class EditTrainDialog {
@@ -31,6 +33,7 @@ export class EditTrainDialog {
     const catEl = document.getElementById("train-category") as HTMLInputElement | null;
     const speedEl = document.getElementById("train-speed") as HTMLInputElement | null;
     const carsEl = document.getElementById("train-cars") as HTMLInputElement | null;
+    const followingEl = document.getElementById("train-following-number") as HTMLInputElement | null;
     const startSel = document.getElementById("train-start") as HTMLSelectElement | null;
     const endSel = document.getElementById("train-end") as HTMLSelectElement | null;
     const title = document.getElementById("addTrainModalLabel");
@@ -38,7 +41,7 @@ export class EditTrainDialog {
     const submitBtn = document.getElementById("train-submit-btn");
     const form = document.getElementById("add-train-form") as HTMLFormElement | null;
 
-    if (!numEl || !typeEl || !catEl || !speedEl || !carsEl || !startSel || !endSel || !form) return null;
+    if (!numEl || !typeEl || !catEl || !speedEl || !carsEl || !followingEl || !startSel || !endSel || !form) return null;
 
     // Setup for create mode
     if (title) title.textContent = "Add Train";
@@ -53,6 +56,7 @@ export class EditTrainDialog {
     catEl.value = "";
     speedEl.value = "120";
     carsEl.value = "6";
+    followingEl.value = "";
 
     // Populate start/end
     startSel.innerHTML = "";
@@ -76,11 +80,12 @@ export class EditTrainDialog {
         const category = (catEl.value || "").trim() || undefined;
         const speed = parseInt(speedEl.value || "120", 10) || 120;
         const cars = parseInt(carsEl.value || "6", 10) || 6;
+        const followingTrainNumber = (followingEl.value || "").trim() || undefined;
         const startStation = startSel.value;
         const endStation = endSel.value;
         modal.hide();
         cleanup();
-        resolve({ number, type, category, speed, cars, startStation, endStation });
+        resolve({ number, type, category, speed, cars, startStation, endStation, followingTrainNumber });
       };
       const onHidden = () => { cleanup(); resolve(null); };
       const cleanup = () => {
@@ -103,6 +108,7 @@ export class EditTrainDialog {
     const catEl = document.getElementById("train-category") as HTMLInputElement | null;
     const speedEl = document.getElementById("train-speed") as HTMLInputElement | null;
     const carsEl = document.getElementById("train-cars") as HTMLInputElement | null;
+    const followingEl = document.getElementById("train-following-number") as HTMLInputElement | null;
     const startSel = document.getElementById("train-start") as HTMLSelectElement | null;
     const endSel = document.getElementById("train-end") as HTMLSelectElement | null;
     const title = document.getElementById("addTrainModalLabel");
@@ -110,7 +116,7 @@ export class EditTrainDialog {
     const submitBtn = document.getElementById("train-submit-btn");
     const form = document.getElementById("add-train-form") as HTMLFormElement | null;
 
-    if (!numEl || !typeEl || !catEl || !speedEl || !carsEl || !startSel || !endSel || !form) return null;
+    if (!numEl || !typeEl || !catEl || !speedEl || !carsEl || !followingEl || !startSel || !endSel || !form) return null;
 
     // Setup for edit mode
     if (title) title.textContent = "Edit Train";
@@ -125,6 +131,7 @@ export class EditTrainDialog {
     catEl.value = (train.category as string) || "";
     speedEl.value = String(train.speed ?? 120);
     carsEl.value = String(train.cars ?? 6);
+    followingEl.value = train.followingTrainNumber || "";
 
     const modal = new Modal(modalEl);
 
@@ -136,9 +143,10 @@ export class EditTrainDialog {
         const category = (catEl.value || "").trim() || undefined;
         const speed = parseInt(speedEl.value || String(train.speed ?? 120), 10) || (train.speed ?? 120);
         const cars = parseInt(carsEl.value || String(train.cars ?? 6), 10) || (train.cars ?? 6);
+        const followingTrainNumber = (followingEl.value || "").trim() || undefined;
         modal.hide();
         cleanup();
-        resolve({ number, type, category, speed, cars });
+        resolve({ number, type, category, speed, cars, followingTrainNumber });
       };
       const onHidden = () => { cleanup(); resolve(null); };
       const cleanup = () => {
