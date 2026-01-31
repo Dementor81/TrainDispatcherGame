@@ -53,7 +53,7 @@ export class Application {
       
       // Set up the simulation stop callback
       this._clientSimulation.setStopCallback(() => {
-         this._trainManager.stopSimulation(); // Clear trains
+         this._trainManager.clearAllTrains(); // Clear trains
          ApprovalToast.clearAll(); // Clear any outstanding approval toasts
       });
    }
@@ -220,75 +220,6 @@ export class Application {
       console.log("Event listeners setup complete");
    }
 
-  private async handleSendTrainToServer(trainNumber: string, exitId: number): Promise<void> {
-      if (!this._currentPlayerId) {
-         console.error('Cannot send train: No current player ID');
-         return;
-      }
-      try {         
-         
-         console.log(`Application: Successfully initiated sending train ${trainNumber} to ${exitId}`);
-      } catch (error) {
-         console.error(`Application: Failed to send train ${trainNumber}:`, error);
-      }
-   }
-
-   private async handleTrainStoppedAtStation(train: Train): Promise<void> {
-      if (!this._currentPlayerId || !this._currentStationId) {
-         console.error('Cannot report train stopped: No current player ID or station ID');
-         return;
-      }
-
-      try {
-         console.log(`Application: Reporting train ${train.number} stopped at station ${this._currentStationId}`);
-         await this._signalRManager.reportTrainStopped(this._currentPlayerId, train.number, this._currentStationId);
-      } catch (error) {
-         console.error(`Application: Failed to report train ${train.number} stopped:`, error);
-      }
-   }
-
-   private async handleTrainDepartedFromStation(train: Train): Promise<void> {
-      if (!this._currentPlayerId || !this._currentStationId) {
-         console.error('Cannot report train departed: No current player ID or station ID');
-         return;
-      }
-
-      try {
-         console.log(`Application: Reporting train ${train.number} departed from station ${this._currentStationId}`);
-         await this._signalRManager.reportTrainDeparted(this._currentPlayerId, train.number, this._currentStationId);
-      } catch (error) {
-         console.error(`Application: Failed to report train ${train.number} departed:`, error);
-      }
-   }
-
-   private async handleLocalTrainCollision(trainA: Train, trainB: Train): Promise<void> {
-      if (this._currentPlayerId && this._currentStationId) {
-         try {
-            await this._signalRManager.reportTrainCollision(this._currentPlayerId, trainA.number, trainB.number, this._currentStationId);
-         } catch (error) {
-            console.error('Failed to report train collision to server:', error);
-         }
-      }
-
-      this._uiManager.notifyCollision(trainA.number, trainB.number);
-      this._trainManager.removeTrain(trainA.number);
-      this._trainManager.removeTrain(trainB.number);
-   }
-
-   private async handleLocalTrainDerailment(train: Train, sw?: Switch): Promise<void> {
-      if (this._currentPlayerId && this._currentStationId) {
-         try {
-            await this._signalRManager.reportTrainDerailed(this._currentPlayerId, train.number, this._currentStationId, sw?.id);
-         } catch (error) {
-            console.error('Failed to report train derailment to server:', error);
-         }
-      }
-
-      this._uiManager.notifyDerailment(train.number, sw?.id);
-      // Ensure removal in case not already removed by TrainManager
-      this._trainManager.removeTrain(train.number);
-   }
-
    private handleExitBlockStatusChanged(exitId: number, blocked: boolean): void {
       if (blocked) {
          // Station B: Create blocking route from exit
@@ -346,7 +277,7 @@ export class Application {
       }
 
       this._trainManager.removeTrain(trainNumber);
-      this._eventManager.emit('trainsUpdated', this._trainManager.getAllTrains());
+      this._eventManager.emit('trainsUpdated');
    }
 
    // No server collision handler needed

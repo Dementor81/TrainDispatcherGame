@@ -82,7 +82,7 @@ export class TrainDetailsPanel extends BasePanel {
 
     train.setStopReason(TrainStopReason.EMERGENCY_STOP);
     // Trigger immediate redraw/update in addition to the normal tick-based updates
-    this.application.eventManager.emit('trainsUpdated', this.application.trains);
+    this.application.eventManager.emit('trainsUpdated');
   }
 
   private handleResume(): void {
@@ -92,14 +92,14 @@ export class TrainDetailsPanel extends BasePanel {
 
     train.setStoppedBySignal(null); // clears internal stopped-by-signal state
     train.setStopReason(TrainStopReason.NONE);
-    this.application.eventManager.emit('trainsUpdated', this.application.trains);
+    this.application.eventManager.emit('trainsUpdated');
   }
 
   private handleReverse(): void {
     if (!this._trainNumber) return;
     const ok = this.application.trainManager.reverseTrain(this._trainNumber);
     if (!ok) return;
-    this.application.eventManager.emit('trainsUpdated', this.application.trains);
+    this.application.eventManager.emit('trainsUpdated');
   }
 
   private async handleRemove(): Promise<void> {

@@ -117,7 +117,7 @@ export class Renderer {
       });
 
       // Listen for simulation updates and update renderer
-      r._eventManager.on('trainsUpdated', (trains: Train[]) => {
+      r._eventManager.on('trainsUpdated', () => {
          r._trainRenderer.renderAll();
       });
 

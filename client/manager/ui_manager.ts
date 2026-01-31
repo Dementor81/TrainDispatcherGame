@@ -9,6 +9,8 @@ import ApprovalToast from "../ui/approvalToast";
 import { Application } from "../core/application";
 import { EventManager } from "./event_manager";
 import Tools from "../core/utils";
+import Train from "../sim/train";
+import Switch from "../sim/switch";
 
 export class UIManager {
     private _application: Application;
@@ -29,7 +31,9 @@ export class UIManager {
         this._controlPanel = new ControlPanel(this._application);
         this._hud = new HUDPanel(this._application);
         this._hud.show();
-        this._controlPanel.show();
+        if (Tools.isQueryParamTrue('testing')) {
+            this._controlPanel.show();
+        }
         this._notificationModal = new NotificationModal();
 
         // Train clicked (overview list or playfield)
@@ -40,6 +44,16 @@ export class UIManager {
         // Approval requests from server
         this._eventManager.on('approvalRequested', (data: { stationId: string, fromStationId: string, trainNumber: string }) => {
             this.showApprovalToast(data);
+        });
+
+        // Train collision notifications
+        this._eventManager.on('trainCollision', (trainA: Train, trainB: Train) => {
+            this.notifyCollision(trainA.number, trainB.number);
+        });
+
+        // Train derailment notifications
+        this._eventManager.on('trainDerailed', (train: Train, sw?: Switch) => {
+            this.notifyDerailment(train.number, sw?.id);
         });
     }    
 

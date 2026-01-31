@@ -1,5 +1,6 @@
 import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import Train from '../sim/train';
+import Switch from '../sim/switch';
 import { EventManager } from '../manager/event_manager';
 import { SimulationState } from './dto';
 
@@ -26,11 +27,28 @@ export class SignalRManager {
     }
 
     private setupLocalEventHandlers(): void {
-        this.eventManager.on("trainCollision", (trainA: Train, trainB: Train) => {
-            this.reportTrainCollision(this.playerId!, trainA.number, trainB.number, this.stationId!);
+        this.eventManager.on("trainStoppedAtStation", (train: Train) => {
+            if (this.playerId && this.stationId) {
+                this.reportTrainStopped(this.playerId, train.number, this.stationId);
+            }
         });
-        this.eventManager.on("trainDerailment", (train: Train, switchId: number) => {
-            this.reportTrainDerailed(this.playerId!, train.number, this.stationId!, switchId);
+
+        this.eventManager.on("trainDepartedFromStation", (train: Train) => {
+            if (this.playerId && this.stationId) {
+                this.reportTrainDeparted(this.playerId, train.number, this.stationId);
+            }
+        });
+
+        this.eventManager.on("trainCollision", (trainA: Train, trainB: Train) => {
+            if (this.playerId && this.stationId) {
+                this.reportTrainCollision(this.playerId, trainA.number, trainB.number, this.stationId);
+            }
+        });
+
+        this.eventManager.on("trainDerailed", (train: Train, sw?: Switch) => {
+            if (this.playerId && this.stationId) {
+                this.reportTrainDerailed(this.playerId, train.number, this.stationId, sw?.id);
+            }
         });
     }
 

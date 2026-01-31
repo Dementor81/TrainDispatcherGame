@@ -53,13 +53,7 @@ export class TrainManager {
       }
    }
 
-   /**
-    * Stop the simulation and clear all trains
-    */
-   public stopSimulation(): void {
-      this._trains = [];
-      this._eventManager.emit("trainsUpdated", this._trains);
-   }
+
 
    // Update a single train's position
    private updateTrain(train: Train): boolean {
@@ -431,35 +425,17 @@ export class TrainManager {
       return this._trains;
    }
 
-   // Check if a train exists
-   hasTrain(trainNumber: string): boolean {
-      return this._trains.some((train) => train.number === trainNumber);
-   }
-
-   // Get the number of trains
-   getTrainCount(): number {
-      return this._trains.length;
-   }
-
    // Clear all trains
    clearAllTrains(): void {
-      const count = this._trains.length;
       this._trains = [];
-
-      console.log(`Cleared ${count} trains`);
-      this._eventManager.emit("trainsCleared");
-   }
-
-   // Get train info for debugging
-   getTrainInfo(): string[] {
-      return this._trains.map((train) => train.getInfo());
+      this._eventManager.emit("trainsUpdated");
    }
 
    private generateUniqueTestTrainNumber(): string {
       let i = 1;
       while (true) {
          const candidate = `TEST-${i}`;
-         if (!this.hasTrain(candidate)) return candidate;
+         if (!this._trains.some((train) => train.number === candidate)) return candidate;
          i++;
       }
    }
@@ -469,8 +445,6 @@ export class TrainManager {
       console.log(`TrainManager: Received train ${train.getInfo()}`);
       this.spawnTrainAtExitPoint(train, exitPointId);
    }
-
-
 
    // Calculate and update the tail position of a train
    // Returns true if the tail position was updated, false if the calculation hits a switch which means the train is derailed
