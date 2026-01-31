@@ -19,7 +19,7 @@
                "departure": "00:00:30"
             },
             {
-               "station": "Linksdorf"
+               "station": "linksdorf"
             }
 
          ]
@@ -39,7 +39,7 @@
                "departure": "00:02:00"
             },
             {
-               "station": "Linksdorf"
+               "station": "linksdorf"
             }
 
          ]

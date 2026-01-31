@@ -10,7 +10,7 @@
       "cars": 4,
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "departure": "00:01:03"
         },
         {
@@ -71,7 +71,7 @@
           "departure": "00:22:04"
         },
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "00:24:42"
         }
       ]
@@ -84,7 +84,7 @@
       "cars": 4,
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "departure": "00:04:44"
         },
         {
@@ -115,7 +115,7 @@
           "departure": "00:26:13"
         },
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "00:27:43"
         }
       ]
@@ -128,7 +128,7 @@
       "cars": 4,
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "departure": "00:20:06"
         },
         {
@@ -165,7 +165,7 @@
       "cars": 12,
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "departure": "00:06:37"
         },
         {
@@ -202,7 +202,7 @@
       "cars": 9,
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "departure": "00:11:15"
         },
         {
@@ -263,7 +263,7 @@
           "departure": "00:18:39"
         },
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "00:20:57"
         }
       ]
@@ -276,7 +276,7 @@
       "cars": 5,
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "departure": "00:14:16"
         },
         {
@@ -313,7 +313,7 @@
       "cars": 4,
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "departure": "01:00:03"
         },
         {
@@ -350,7 +350,7 @@
       "cars": 5,
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "departure": "01:11:28"
         },
         {
@@ -387,7 +387,7 @@
       "cars": 4,
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "departure": "00:39:57"
         },
         {
@@ -424,7 +424,7 @@
       "cars": 5,
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "departure": "00:45:50"
         },
         {
@@ -485,7 +485,7 @@
           "departure": "00:42:47"
         },
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "00:44:56"
         }
       ]
@@ -522,7 +522,7 @@
           "departure": "00:29:02"
         },
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "00:31:32"
         }
       ]
@@ -559,7 +559,7 @@
           "departure": "00:52:48"
         },
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "00:55:52"
         }
       ]
@@ -596,7 +596,7 @@
           "departure": "00:33:12"
         },
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "00:35:05"
         }
       ]
@@ -741,7 +741,7 @@
           "departure": "00:47:17"
         },
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "00:50:58"
         }
       ]

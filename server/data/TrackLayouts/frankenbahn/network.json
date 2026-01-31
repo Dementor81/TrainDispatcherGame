@@ -4,7 +4,7 @@
    "stations": ["weststadt", "neustadt", "burghausen", "ostheim"],
    "connections": [
       {
-        "from": "Linksdorf",
+        "from": "linksdorf",
         "fromId": 3,
          "to": "weststadt",
         "toId": 2,
@@ -14,7 +14,7 @@
       {
         "from": "weststadt",
         "fromId": 0,
-         "to": "Linksdorf",
+         "to": "linksdorf",
         "toId": 1,
          "distance": 5000,
          "blocks": 1

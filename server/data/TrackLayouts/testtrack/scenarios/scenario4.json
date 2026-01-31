@@ -9,7 +9,7 @@
       "cars": 4,
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "departure": "00:00:13"
         },
         {

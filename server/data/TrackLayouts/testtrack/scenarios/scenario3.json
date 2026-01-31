@@ -9,7 +9,7 @@
       "cars": 4,
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "departure": "00:00:13"
         },
         {
@@ -49,7 +49,7 @@
           "departure": "00:06:48"
         },
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "00:09:11"
         }
       ]
@@ -61,7 +61,7 @@
       "cars": 5,
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "departure": "00:03:02"
         },
         {
@@ -111,7 +111,7 @@
           "departure": "00:23:35"
         },
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "00:25:58"
         }
       ]
@@ -142,7 +142,7 @@
           "departure": "00:18:00"
         },
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "00:19:42"
         }
       ]
@@ -154,7 +154,7 @@
       "cars": 4,
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "departure": "00:13:42"
         },
         {
@@ -204,7 +204,7 @@
           "departure": "00:29:01"
         },
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "00:31:24"
         }
       ]
@@ -216,7 +216,7 @@
       "cars": 6,
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "departure": "00:09:32"
         },
         {
@@ -266,7 +266,7 @@
           "departure": "00:16:18"
         },
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "00:17:48"
         }
       ]
@@ -292,7 +292,7 @@
           "departure": "00:11:35"
         },
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "00:13:34"
         }
       ]
@@ -304,7 +304,7 @@
       "cars": 5,
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "departure": "00:19:48"
         },
         {
@@ -354,7 +354,7 @@
           "departure": "00:32:12"
         },
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "00:33:54"
         }
       ]

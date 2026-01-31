@@ -8,7 +8,7 @@
     ],
     "connections": [
     {
-        "from": "Linksdorf",
+        "from": "linksdorf",
         "fromId": 1,
         "to": "A-Stadt",
         "toId": 0,

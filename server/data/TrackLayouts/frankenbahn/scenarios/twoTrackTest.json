@@ -12,7 +12,7 @@
       "path": [],
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "",
           "departure": "00:08:39"
         },
@@ -53,7 +53,7 @@
       "path": [],
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "",
           "departure": "00:04:33"
         },
@@ -94,7 +94,7 @@
       "path": [],
       "timetable": [
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "",
           "departure": "00:01:12"
         },
@@ -120,7 +120,7 @@
           "departure": "00:06:41"
         },
         {
-          "station": "Linksdorf",
+          "station": "linksdorf",
           "arrival": "00:09:45",
           "departure": ""
         }
