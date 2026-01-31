@@ -33,6 +33,7 @@ export class TrainDetailsPanel extends BasePanel {
 
     const controls = document.createElement('div');
     controls.className = 'd-flex gap-2';
+    controls.id = 'trainControls';
 
     const stopBtn = document.createElement('button');
     stopBtn.className = 'btn btn-sm btn-danger';
@@ -73,6 +74,20 @@ export class TrainDetailsPanel extends BasePanel {
     const titleEl = this.container.querySelector('#trainDetailsTitle') as HTMLDivElement | null;
     if (!titleEl) return;
     titleEl.textContent = this._trainNumber ? `Zug ${this._trainNumber}` : 'Zug';
+
+    const controlsEl = this.container.querySelector('#trainControls') as HTMLDivElement | null;
+    if (controlsEl && this._trainNumber) {
+      const train = this.application.trainManager.getTrain(this._trainNumber);
+      const isSpawned = train && train.position !== null;
+      
+      if (isSpawned) {
+        controlsEl.classList.remove('d-none');
+        controlsEl.classList.add('d-flex');
+      } else {
+        controlsEl.classList.remove('d-flex');
+        controlsEl.classList.add('d-none');
+      }
+    }
   }
 
   private handleEmergencyStop(): void {
