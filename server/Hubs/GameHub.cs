@@ -3,6 +3,7 @@ using TrainDispatcherGame.Server.Models;
 using TrainDispatcherGame.Server.Managers;
 using TrainDispatcherGame.Server.Simulation;
 using System.Linq;
+using TrainDispatcherGame.Server.Logging;
 
 namespace TrainDispatcherGame.Server.Hubs
 {
@@ -20,7 +21,8 @@ namespace TrainDispatcherGame.Server.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            Console.WriteLine($"Client connected: {Context.ConnectionId}");
+            ServerLogger.Instance.LogDebug(Context.ConnectionId, $"Client connected: {Context.ConnectionId}");
+            _playerManager.RegisterConnection(Context.ConnectionId);
             // Track active connections (used to pause when last disconnects)
             System.Threading.Interlocked.Increment(ref _activeConnections);
             await base.OnConnectedAsync();
@@ -28,12 +30,11 @@ namespace TrainDispatcherGame.Server.Hubs
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            Console.WriteLine($"Client disconnected: {Context.ConnectionId}");
+            ServerLogger.Instance.LogDebug(Context.ConnectionId, $"Client disconnected: {Context.ConnectionId}");
             
             // Find and disconnect player associated with this connection
             // We need to track which connection belongs to which player
-            var players = _playerManager.GetAllPlayers();
-            var player = players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId);
+            var player = _playerManager.GetPlayerByConnectionId(Context.ConnectionId);
             if (player != null)
             {
                 // Return trains at station and clean up open line tracks
@@ -42,7 +43,7 @@ namespace TrainDispatcherGame.Server.Hubs
                     await _simulation.ReturnTrainsAtStation(player.StationId);
                 }
                 _playerManager.DisconnectPlayer(player.Id);
-                Console.WriteLine($"Player {player.Id} disconnected from station {player.StationId}");
+                ServerLogger.Instance.LogDebug(player.Id, $"Player {player.Id} disconnected from station {player.StationId}");
 
                 // Player disconnected is handled; simulation pause is controlled by connection count below
             }
@@ -147,7 +148,7 @@ namespace TrainDispatcherGame.Server.Hubs
                 var train = _simulation.Trains.FirstOrDefault(t => t.Number == trainNumber);
                 if (train == null)
                 {
-                    Console.WriteLine($"Failed to receive train {trainNumber}: Train not found in simulation");
+                    ServerLogger.Instance.LogWarning(trainNumber, $"Failed to receive train {trainNumber}: Train not found in simulation");
                     return;
                 }
 
@@ -155,7 +156,7 @@ namespace TrainDispatcherGame.Server.Hubs
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error receiving train {trainNumber}: {ex.Message}");
+                ServerLogger.Instance.LogError(trainNumber, $"Error receiving train {trainNumber}: {ex.Message}");
             }
 
             await Task.CompletedTask;
@@ -169,7 +170,7 @@ namespace TrainDispatcherGame.Server.Hubs
                 var train = _simulation.Trains.FirstOrDefault(t => t.Number == trainNumber);
                 if (train == null)
                 {
-                    Console.WriteLine($"Failed to report train stopped {trainNumber}: Train not found in simulation");
+                    ServerLogger.Instance.LogWarning(trainNumber, $"Failed to report train stopped {trainNumber}: Train not found in simulation");
                     return;
                 }
 
@@ -178,7 +179,7 @@ namespace TrainDispatcherGame.Server.Hubs
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reporting train stopped {trainNumber}: {ex.Message}");
+                ServerLogger.Instance.LogError(trainNumber, $"Error reporting train stopped {trainNumber}: {ex.Message}");
             }
 
             await Task.CompletedTask;
@@ -192,7 +193,7 @@ namespace TrainDispatcherGame.Server.Hubs
                 var train = _simulation.Trains.FirstOrDefault(t => t.Number == trainNumber);
                 if (train == null)
                 {
-                    Console.WriteLine($"Failed to report train departed {trainNumber}: Train not found in simulation");
+                    ServerLogger.Instance.LogWarning(trainNumber, $"Failed to report train departed {trainNumber}: Train not found in simulation");
                     return;
                 }
 
@@ -200,7 +201,7 @@ namespace TrainDispatcherGame.Server.Hubs
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reporting train departed {trainNumber}: {ex.Message}");
+                ServerLogger.Instance.LogError(trainNumber, $"Error reporting train departed {trainNumber}: {ex.Message}");
             }
 
             await Task.CompletedTask;
@@ -214,7 +215,7 @@ namespace TrainDispatcherGame.Server.Hubs
                 var trainB = _simulation.Trains.FirstOrDefault(t => t.Number == trainNumberB);
                 if (trainA == null || trainB == null)
                 {
-                    Console.WriteLine($"Failed to report collision: One or both trains not found ({trainNumberA}, {trainNumberB})");
+                    ServerLogger.Instance.LogWarning(trainNumberA, $"Failed to report collision: One or both trains not found ({trainNumberA}, {trainNumberB})");
                     return;
                 }
 
@@ -222,7 +223,7 @@ namespace TrainDispatcherGame.Server.Hubs
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reporting train collision {trainNumberA} vs {trainNumberB}: {ex.Message}");
+                ServerLogger.Instance.LogError(trainNumberA, $"Error reporting train collision {trainNumberA} vs {trainNumberB}: {ex.Message}");
             }
 
             await Task.CompletedTask;
@@ -235,7 +236,7 @@ namespace TrainDispatcherGame.Server.Hubs
                 var train = _simulation.Trains.FirstOrDefault(t => t.Number == trainNumber);
                 if (train == null)
                 {
-                    Console.WriteLine($"Failed to report derailment: Train not found ({trainNumber})");
+                    ServerLogger.Instance.LogWarning(trainNumber, $"Failed to report derailment: Train not found ({trainNumber})");
                     return;
                 }
 
@@ -243,7 +244,7 @@ namespace TrainDispatcherGame.Server.Hubs
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reporting train derailment {trainNumber}: {ex.Message}");
+                ServerLogger.Instance.LogError(trainNumber, $"Error reporting train derailment {trainNumber}: {ex.Message}");
             }
 
             await Task.CompletedTask;
@@ -257,7 +258,7 @@ namespace TrainDispatcherGame.Server.Hubs
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error processing approval response for train {trainNumber}: {ex.Message}");
+                ServerLogger.Instance.LogError(trainNumber, $"Error processing approval response for train {trainNumber}: {ex.Message}");
             }
             await Task.CompletedTask;
         }
@@ -269,7 +270,7 @@ namespace TrainDispatcherGame.Server.Hubs
                 var train = _simulation.Trains.FirstOrDefault(t => t.Number == trainNumber);
                 if (train == null)
                 {
-                    Console.WriteLine($"Failed to mark train removed {trainNumber}: Train not found in simulation");
+                    ServerLogger.Instance.LogWarning(trainNumber, $"Failed to mark train removed {trainNumber}: Train not found in simulation");
                     return;
                 }
 
@@ -278,7 +279,7 @@ namespace TrainDispatcherGame.Server.Hubs
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error processing TrainRemoved for train {trainNumber}: {ex.Message}");
+                ServerLogger.Instance.LogError(trainNumber, $"Error processing TrainRemoved for train {trainNumber}: {ex.Message}");
             }
 
             await Task.CompletedTask;
@@ -292,7 +293,7 @@ namespace TrainDispatcherGame.Server.Hubs
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error setting exit block status for exit {exitId}: {ex.Message}");
+                ServerLogger.Instance.LogError(exitId.ToString(), $"Error setting exit block status for exit {exitId}: {ex.Message}");
             }
         }
     }

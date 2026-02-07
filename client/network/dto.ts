@@ -95,6 +95,27 @@ export interface TrainWayPointDto {
   action: string;
 }
 
+export enum LogLevel {
+  Debug = 0,
+  Warning = 1,
+  Error = 2,
+}
+
+export interface LogEntryDto {
+  timestamp: string;
+  level: LogLevel;
+  context: string;
+  message: string;
+}
+
+export interface PlayerInfoDto {
+  id: string;
+  name: string;
+  stationId: string;
+  connectedAt: string;
+  isActive: boolean;
+}
+
 // Scenario (planning) types from REST /api/scenarios
 export interface ScenarioSummaryDto {
   id: string;

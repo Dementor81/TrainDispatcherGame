@@ -40,7 +40,7 @@ export abstract class BasePanel {
 
   private setupDragging(): void {
     this.container.addEventListener('mousedown', (e: MouseEvent) => {
-      if ((e.target as HTMLElement).closest('button, input, select, textarea, a')) {
+      if ((e.target as HTMLElement).closest('button, input, select, textarea, a, .no-drag')) {
         return; // Don't drag if clicking on interactive elements
       }
       

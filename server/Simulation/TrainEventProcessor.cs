@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using TrainDispatcherGame.Server.Managers;
 using TrainDispatcherGame.Server.Models;
 using TrainDispatcherGame.Server.Services;
+using TrainDispatcherGame.Server.Logging;
 
 namespace TrainDispatcherGame.Server.Simulation
 {
@@ -76,10 +77,11 @@ namespace TrainDispatcherGame.Server.Simulation
                 train.controlledByPlayer = true;                
                 train.CurrentLocation = station?.ToLowerInvariant() ?? string.Empty;
                 train.TrainEvent = null;
+                ServerLogger.Instance.LogDebug(train.Number, $"Train sent to station {station} and is controlled by player");
                 return;
             }else{
                 _openLineTracks.RemoveTrain(spawn.Connection);
-                
+                ServerLogger.Instance.LogDebug(train.Number, $"handling train spawn at uncontrolled station {station}, train removed from open line track");
                 // If the train is coming from a player controlled station, notify the player that its exit is unblocked
                 var previousWaypoint = train.GetPreviousWayPoint();
                 if (previousWaypoint != null)
@@ -119,11 +121,9 @@ namespace TrainDispatcherGame.Server.Simulation
                 {
                     // Connection is blocked, reschedule approval request using the blocking train's event time
                     var blockingTrain = track.TrainOnTrack;
-                    if (blockingTrain.TrainEvent != null)
-                    {
-                        sendApprovalEvent.ScheduledTime = blockingTrain.TrainEvent.ScheduledTime.AddSeconds(20);
-                        Console.WriteLine($"Train {train.Number} approval delayed until {blockingTrain.TrainEvent.ScheduledTime:HH:mm:ss} - connection to {nextWaypoint.Station} blocked by train {blockingTrain.Number}");
-                    }                    
+                    var retryTime = blockingTrain.TrainEvent?.ScheduledTime.AddSeconds(20) ?? SimulationTime.AddSeconds(20);
+                    sendApprovalEvent.ScheduledTime = retryTime;
+                    ServerLogger.Instance.LogWarning(train.Number, $"Train {train.Number} approval delayed until {retryTime:HH:mm:ss} - connection to {nextWaypoint.Station} blocked by train {blockingTrain.Number}");
                     return;
                 }
             }
@@ -134,6 +134,7 @@ namespace TrainDispatcherGame.Server.Simulation
 
         public async Task HandleTrainStart(Train train)
         {
+            ServerLogger.Instance.LogDebug(train.Number, $"train started at {train.CurrentLocation}");
             await DispatchTrainByServer(train);
         }
 
@@ -147,6 +148,7 @@ namespace TrainDispatcherGame.Server.Simulation
         {
             var currentWaypoint = train.GetCurrentWayPoint();
             var nextWaypoint = train.GetNextWayPoint();
+            ServerLogger.Instance.LogDebug(train.Number,$"advancing train to next station {nextWaypoint?.Station ?? "none"}");         
             if (currentWaypoint == null || nextWaypoint == null) throw new Exception($"Train {train.Number} waypoints invalid");
 
             var layout = _trackLayoutService.GetTrackLayout(currentWaypoint.Station); //layout could be null if the train is at a virtual station at the margin of the map
@@ -160,15 +162,11 @@ namespace TrainDispatcherGame.Server.Simulation
             if (_openLineTracks.TryGet(connection, out var track) && track.TrainOnTrack != null)
             {
                 var blockingTrain = track.TrainOnTrack;
-                if (blockingTrain.TrainEvent != null)
-                {
-                    // Create a retry event - train stays at current waypoint
-                    var retryTime = blockingTrain.TrainEvent.ScheduledTime.AddSeconds(20);
-                    train.TrainEvent = new RetryDispatchEvent(retryTime);
-                    train.CurrentLocation = currentWaypoint.Station;
-                    Console.WriteLine($"Train {train.Number} dispatch delayed until {retryTime:HH:mm:ss} - connection blocked by train {blockingTrain.Number}");
-                    return;
-                }
+                var retryTime = blockingTrain.TrainEvent?.ScheduledTime.AddSeconds(20) ?? SimulationTime.AddSeconds(20);
+                train.TrainEvent = new RetryDispatchEvent(retryTime);
+                train.CurrentLocation = currentWaypoint.Station;
+                ServerLogger.Instance.LogWarning(train.Number, $"Train dispatch delayed until {retryTime:HH:mm:ss} - connection blocked by train {blockingTrain.Number}");
+                return;
             }
 
             var spawn = CreateSpawnFromConnection(train, connection, isReversed, distanceToExit, currentWaypoint.DepartureTime);
@@ -183,13 +181,22 @@ namespace TrainDispatcherGame.Server.Simulation
 
             train.TrainEvent = spawn;
             train.AdvanceToNextWayPoint(); //advance to the next waypoint
+            train.CurrentLocation = null;
             _openLineTracks.AddTrain(connection, train); //add the train to the track registry
+            ServerLogger.Instance.LogDebug(train.Number, $"train added to track registry at {connection.FromStation} to {connection.ToStation}");
         }
 
         public async Task DispatchTrainByServer(Train train)
         {
             var currentWaypoint = train.GetCurrentWayPoint();
             var nextWaypoint = train.GetNextWayPoint();
+            if(nextWaypoint == null){
+                train.completed = true;  
+                ServerLogger.Instance.LogDebug(train.Number, $"train completed");
+                return;
+
+            }
+            ServerLogger.Instance.LogDebug(train.Number, $"dispatching train to next station {nextWaypoint?.Station ?? "none"}");
             if (currentWaypoint == null) throw new Exception($"Train {train.Number} has no current way point");
             if (nextWaypoint == null) throw new Exception($"Train {train.Number} has no next way point");
 
@@ -202,6 +209,7 @@ namespace TrainDispatcherGame.Server.Simulation
                     approvalTime = arrivalWithDelay;
 
                 train.TrainEvent = new SendApprovalEvent(approvalTime);
+                ServerLogger.Instance.LogDebug(train.Number, $"approval requested scheduled at {approvalTime:HH:mm:ss}");
                 return;
             }
 

@@ -4,8 +4,10 @@ using TrainDispatcherGame.Server.Hubs;
 using TrainDispatcherGame.Server.Services;
 using TrainDispatcherGame.Server.Models;
 using TrainDispatcherGame.Server.Models.DTOs;
+using TrainDispatcherGame.Server.Logging;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Text.Json;
+using Microsoft.Extensions.Primitives;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
@@ -120,6 +122,30 @@ app.MapGet("/api/layouts/{fromStation}/exit-to/{toStation}", (string fromStation
     }
 
     return Results.Json(exitPoint);
+});
+
+app.MapGet("/api/logs", (HttpRequest req) =>
+{
+    var contexts = new List<string>();
+    if (req.Query.TryGetValue("context", out StringValues contextValues))
+    {
+        foreach (var value in contextValues)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            var parts = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            contexts.AddRange(parts);
+        }
+    }
+
+    var logs = contexts.Count == 0
+        ? ServerLogger.Instance.GetLogs()
+        : ServerLogger.Instance.GetLogs(contexts);
+
+    return Results.Json(logs);
 });
 
 // Simulation control endpoints
@@ -296,6 +322,7 @@ app.MapGet("/api/players", (PlayerManager playerManager) =>
     var playerResponses = players.Select(p => new
     {
         Id = p.Id,
+        Name = p.Name,
         StationId = p.StationId,
         ConnectedAt = p.ConnectedAt,
         IsActive = p.IsActive
@@ -316,6 +343,7 @@ app.MapGet("/api/players/{playerId}", (string playerId, PlayerManager playerMana
     var response = new
     {
         Id = player.Id,
+        Name = player.Name,
         StationId = player.StationId,
         ConnectedAt = player.ConnectedAt,
         IsActive = player.IsActive

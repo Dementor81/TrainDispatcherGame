@@ -1,4 +1,4 @@
-import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto, OpenLineTrackStatusDto, TrainWayPointDto } from "./dto";
+import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto, OpenLineTrackStatusDto, TrainWayPointDto, LogEntryDto, PlayerInfoDto } from "./dto";
 
 const API_BASE_URL = "/api";
 
@@ -146,6 +146,8 @@ export default {
   getTrainWaypoints,
   fetchNetwork,
   fetchOpenLineTracks,
+  fetchLogs,
+  fetchPlayers,
 };
 
 // Advance simulation time by one minute
@@ -239,6 +241,30 @@ export async function fetchOpenLineTracks(): Promise<OpenLineTrackStatusDto[]> {
   const response = await fetch(`${API_BASE_URL}/openline/tracks`);
   if (!response.ok) {
     throw new Error(`Failed to fetch open line tracks: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+export async function fetchLogs(contexts?: string[]): Promise<LogEntryDto[]> {
+  const url = new URL(`${API_BASE_URL}/logs`, window.location.origin);
+  if (contexts && contexts.length > 0) {
+    for (const context of contexts) {
+      if (context.trim().length > 0) {
+        url.searchParams.append('context', context);
+      }
+    }
+  }
+  const response = await fetch(url.toString());
+  if (!response.ok) {
+    throw new Error(`Failed to fetch logs: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+export async function fetchPlayers(): Promise<PlayerInfoDto[]> {
+  const response = await fetch(`${API_BASE_URL}/players`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch players: ${response.statusText}`);
   }
   return response.json();
 }

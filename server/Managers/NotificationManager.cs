@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
 using TrainDispatcherGame.Server.Models;
 using TrainDispatcherGame.Server.Hubs;
+using TrainDispatcherGame.Server.Logging;
 
 namespace TrainDispatcherGame.Server.Managers
 {
@@ -44,11 +45,11 @@ namespace TrainDispatcherGame.Server.Managers
                     followingTrainNumber = train.FollowingTrainNumber
                 });
                 
-                Console.WriteLine($"Sent train {train.Number} to player {player.Id} at station {normalizedStationId}, exit point {exitPointId}, action: {action}, arrival: {arrivalTime}, departure: {departureTime}");
+                ServerLogger.Instance.LogDebug(train.Number, $"Sent train {train.Number} to player {player.Id} at station {normalizedStationId}, exit point {exitPointId}, action: {action}, arrival: {arrivalTime}, departure: {departureTime}");
             }
             else
             {
-                Console.WriteLine($"No player found for station {normalizedStationId}");
+                ServerLogger.Instance.LogWarning(normalizedStationId, $"No player found for station {normalizedStationId}");
             }
         }
 
@@ -61,7 +62,7 @@ namespace TrainDispatcherGame.Server.Managers
                 speed = speed
             });
             
-            Console.WriteLine($"Sent simulation state change to all clients: {newState}");
+            ServerLogger.Instance.LogDebug(newState.ToString(), $"Sent simulation state change to all clients: {newState}");
         }
 
         public async Task SendApprovalRequest(string stationId, string fromStationId, string trainNumber)
@@ -79,11 +80,11 @@ namespace TrainDispatcherGame.Server.Managers
                     fromStationId = normalizedFromStationId,
                     trainNumber = trainNumber
                 });
-                Console.WriteLine($"Approval requested from station {normalizedStationId} for train {trainNumber} coming from {normalizedFromStationId}");
+                ServerLogger.Instance.LogDebug(trainNumber, $"Approval requested from station {normalizedStationId} for train {trainNumber} coming from {normalizedFromStationId}");
             }
             else
             {
-                Console.WriteLine($"Approval request skipped: no player at station {normalizedStationId}");
+                ServerLogger.Instance.LogWarning(normalizedStationId, $"Approval request skipped: no player at station {normalizedStationId}");
             }
         }
 
@@ -100,7 +101,7 @@ namespace TrainDispatcherGame.Server.Managers
                     exitId = exitId,
                     blocked = blocked
                 });
-                Console.WriteLine($"Exit {exitId} at station {normalizedStationId} is now {(blocked ? "blocked" : "unblocked")}");
+                ServerLogger.Instance.LogDebug(normalizedStationId, $"Exit {exitId} at station {normalizedStationId} is now {(blocked ? "blocked" : "unblocked")}");
             }
         }
 

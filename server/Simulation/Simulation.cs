@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TrainDispatcherGame.Server.Models;
 using TrainDispatcherGame.Server.Managers;
+using TrainDispatcherGame.Server.Logging;
 using TrainDispatcherGame.Server.Services;
 using System.Collections.Generic;
 using System.Linq;
@@ -90,7 +91,7 @@ namespace TrainDispatcherGame.Server.Simulation
             // Ensure clients receive current state
             await _notificationManager.SendSimulationStateChange(this._state, this.Speed);
 
-            Console.WriteLine($"[DEBUG] Scenario set to {scenarioId}");
+            ServerLogger.Instance.LogDebug(scenarioId, $"Scenario set to {scenarioId}");
         }
 
 
@@ -110,13 +111,13 @@ namespace TrainDispatcherGame.Server.Simulation
                         // subtract 60 seconds to the departure time to give the player time to except the train
                         train.TrainEvent = new TrainStartEvent(firstWayPoint.DepartureTime.AddSeconds(-60), firstWayPoint.Station);
                     }
-                    else Console.WriteLine($"Train {train.Number} has no way points");
+                    else ServerLogger.Instance.LogWarning(train.Number, $"Train {train.Number} has no way points");
 
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error creating initial start events: {ex.Message}");
+                ServerLogger.Instance.LogError(_scenarioId ?? string.Empty, $"Error creating initial start events: {ex.Message}");
             }
         }
 
@@ -124,6 +125,9 @@ namespace TrainDispatcherGame.Server.Simulation
 
         public async void Start()
         {
+            ServerLogger.Instance.LogWarning(_scenarioId ?? string.Empty, $"Test warning message");
+            ServerLogger.Instance.LogError(_scenarioId ?? string.Empty, $"Test error message");
+            ServerLogger.Instance.LogDebug(_scenarioId ?? string.Empty, $"Test debug message"); 
             if (_state == SimulationState.Running)
             {
                 return; // Already running
@@ -144,7 +148,7 @@ namespace TrainDispatcherGame.Server.Simulation
 
                 _timer = new Timer(UpdateSimulation, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(TimerInterval));
 
-                Console.WriteLine($"Simulation started at {_simulationStartTime:HH:mm:ss}");
+                ServerLogger.Instance.LogDebug(_scenarioId ?? string.Empty, $"Simulation started at {_simulationStartTime:HH:mm:ss}");
 
                 // Notify all clients about the state change
                 await _notificationManager.SendSimulationStateChange(_state, this.Speed);
@@ -153,7 +157,7 @@ namespace TrainDispatcherGame.Server.Simulation
             {
                 _state = SimulationState.Error;
                 _errorMessage = ex.Message;
-                Console.WriteLine($"Error starting simulation: {ex.Message}");
+                ServerLogger.Instance.LogError(_scenarioId ?? string.Empty, $"Error starting simulation: {ex.Message}");
                 await _notificationManager.SendSimulationStateChange(_state, this.Speed);
             }
         }
@@ -173,7 +177,7 @@ namespace TrainDispatcherGame.Server.Simulation
             _trains.Clear();
             this.Reset();
 
-            Console.WriteLine("Simulation stopped");
+            ServerLogger.Instance.LogDebug(_scenarioId ?? string.Empty, "Simulation stopped");
 
             // Notify all clients about the state change
             await _notificationManager.SendSimulationStateChange(_state, this.Speed);
@@ -190,7 +194,7 @@ namespace TrainDispatcherGame.Server.Simulation
             _timer = null;
             _state = SimulationState.Paused;
 
-            Console.WriteLine($"Simulation paused at {SimulationTime:HH:mm:ss}");
+            ServerLogger.Instance.LogDebug(_scenarioId ?? string.Empty, $"Simulation paused at {SimulationTime:HH:mm:ss}");
 
             // Notify all clients about the state change
             await _notificationManager.SendSimulationStateChange(_state, this.Speed);
@@ -209,7 +213,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 _errorMessage = null;
                 _timer = new Timer(UpdateSimulation, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(TimerInterval));
 
-                Console.WriteLine($"Simulation resumed at {SimulationTime:HH:mm:ss}");
+                ServerLogger.Instance.LogDebug(_scenarioId ?? string.Empty, $"Simulation resumed at {SimulationTime:HH:mm:ss}");
 
                 // Notify all clients about the state change
                 await _notificationManager.SendSimulationStateChange(_state, this.Speed);
@@ -218,51 +222,48 @@ namespace TrainDispatcherGame.Server.Simulation
             {
                 _state = SimulationState.Error;
                 _errorMessage = ex.Message;
-                Console.WriteLine($"Error resuming simulation: {ex.Message}");
+                ServerLogger.Instance.LogError(_scenarioId ?? string.Empty, $"Error resuming simulation: {ex.Message}");
             }
         }
         #endregion
 
-        private async void UpdateSimulation(object? state)
+        private void UpdateSimulation(object? state)
         {
-            await Task.Run(() =>
+            lock (_simulationLock)
             {
-                lock (_simulationLock)
+                if (_state == SimulationState.Running)
                 {
-                    if (_state == SimulationState.Running)
+                    try
                     {
-                        try
-                        {
-                            this.ElapsedSeconds += (TimerInterval / 1000) * this.Speed;
-                            _eventProcessor.SimulationTime = this.SimulationTime;
-                            CheckTrainEvents();
-                        }
-                        catch (Exception ex)
-                        {
-                            _state = SimulationState.Error;
-                            _errorMessage = ex.Message;
-                            Console.WriteLine($"Error in simulation update: {ex.Message}");
-                        }
+                        this.ElapsedSeconds += (TimerInterval / 1000) * this.Speed;
+                        _eventProcessor.SimulationTime = this.SimulationTime;
+                        CheckTrainEvents();
+                    }
+                    catch (Exception ex)
+                    {
+                        _state = SimulationState.Error;
+                        _errorMessage = ex.Message;
+                        ServerLogger.Instance.LogError(_scenarioId ?? string.Empty, $"Error in simulation update: {ex.Message}");
                     }
                 }
-            });
+            }
         }
 
-        private async Task CheckTrainEvents()
+        private void CheckTrainEvents()
         {
             foreach (var train in _trains)
             {
                 if (train.completed || train.controlledByPlayer) continue;
 
-                await _eventProcessor.HandleTrainEvent(train);
+                _eventProcessor.HandleTrainEvent(train).GetAwaiter().GetResult();
             }
         }           
 
-        public async Task TrainReturnedFromClient(Train train, int exitId)
+        public Task TrainReturnedFromClient(Train train, int exitId)
         {
             try
             {
-                Console.WriteLine($"Train {train.Number} returned from client at {train.CurrentLocation} at Exit {exitId}");
+                ServerLogger.Instance.LogDebug(train.Number, $"Train {train.Number} returned from client at {train.CurrentLocation} at Exit {exitId}");
                 if (train.CurrentLocation == null) throw new Exception($"Train {train.Number} has no current location");
 
                 var connection = _trackLayoutService.GetConnection(train.CurrentLocation, exitId, out bool isReversed);
@@ -284,26 +285,26 @@ namespace TrainDispatcherGame.Server.Simulation
 
                 if (currentWayPoint.Stops && !currentWayPoint.Processed)
                 {
-                    Console.WriteLine($"Train {train.Number} missed stop at {currentWayPoint.Station}!");
+                    ServerLogger.Instance.LogWarning(train.Number, $"Train {train.Number} missed stop at {currentWayPoint.Station}!");
                 }
 
                 var nextWaypoint = train.AdvanceToNextWayPoint();
                 if (nextWaypoint == null)
                 {
-                    Console.WriteLine($"This should not happend, probably a bug in train scheduling, Train {train.Number} has completed all events after it returned from a station");
+                    ServerLogger.Instance.LogWarning(train.Number, $"This should not happend, probably a bug in train scheduling, Train {train.Number} has completed all events after it returned from a station");
                     train.completed = true;
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 if (nextWaypoint.Station != connection.ToStation && !isReversed || nextWaypoint.Station != connection.FromStation && isReversed)
                 {
-                    Console.WriteLine($"Train {train.Number} was missrouted to {connection.ToStation} instead of {nextWaypoint.Station} or vice versa");
+                    ServerLogger.Instance.LogWarning(train.Number, $"Train {train.Number} was missrouted to {connection.ToStation} instead of {nextWaypoint.Station} or vice versa");
                     // TODO: handle missrouted train
                 }
 
                 if (nextWaypoint.IsLast)
                 {
-                    Console.WriteLine($"Train {train.Number} has completed all events");
+                    ServerLogger.Instance.LogDebug(train.Number, $"Train {train.Number} has completed all events");
                     train.completed = true;
                 }
                 else
@@ -312,7 +313,7 @@ namespace TrainDispatcherGame.Server.Simulation
                     train.TrainEvent = nextSpawn;
                     if (!_openLineTracks.AddTrain(connection, train))
                     {
-                        Console.WriteLine($"Train {train.Number} collision detected on track from {connection.FromStation} to {connection.ToStation}");
+                        ServerLogger.Instance.LogWarning(train.Number, $"Train {train.Number} collision detected on track from {connection.FromStation} to {connection.ToStation}");
                         train.completed = true;
                     }
                 }
@@ -320,9 +321,10 @@ namespace TrainDispatcherGame.Server.Simulation
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error returning train from client: {ex.Message}");
+                ServerLogger.Instance.LogError(train.Number, $"Error returning train from client: {ex.Message}");
                 throw;
             }
+            return Task.CompletedTask;
         }
 
         
@@ -354,7 +356,7 @@ namespace TrainDispatcherGame.Server.Simulation
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error returning trains at station {stationId} on disconnect: {ex.Message}");
+                ServerLogger.Instance.LogError(stationId ?? string.Empty, $"Error returning trains at station {stationId} on disconnect: {ex.Message}");
             }
         }
 
@@ -365,7 +367,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 var train = _trains.FirstOrDefault(t => t.Number == trainNumber);
                 if (train == null)
                 {
-                    Console.WriteLine($"Approval for unknown train {trainNumber}");
+                    ServerLogger.Instance.LogWarning(trainNumber, $"Approval for unknown train {trainNumber}");
                     return;
                 }
                 var sendApprovalEvent = train.TrainEvent as SendApprovalEvent;
@@ -373,17 +375,17 @@ namespace TrainDispatcherGame.Server.Simulation
 
                 if (!approved)
                 {
-                    Console.WriteLine($"Approval denied for train {train.Number}");
+                    ServerLogger.Instance.LogWarning(train.Number, $"Approval denied for train {train.Number}");
                     sendApprovalEvent.ApprovalDenied(SimulationTime.AddSeconds(60));
                     return;
                 }
 
-                Console.WriteLine($"Approval received for train {train.Number} from {fromStationId}");
+                ServerLogger.Instance.LogDebug(train.Number, $"Approval received for train {train.Number} from {fromStationId}");
                 _eventProcessor.AdvanceTrainToNextStation(train);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error processing approval: {ex.Message}");
+                ServerLogger.Instance.LogError(trainNumber, $"Error processing approval: {ex.Message}");
             }
         }
 
@@ -394,35 +396,35 @@ namespace TrainDispatcherGame.Server.Simulation
                 var currentWaypoint = train.GetCurrentWayPoint();
                 if (currentWaypoint == null)
                 {
-                    Console.WriteLine($"Train {train.Number} has no current event to mark as stopped");
+                    ServerLogger.Instance.LogWarning(train.Number, $"Train {train.Number} has no current event to mark as stopped");
                     return;
                 }
 
                 if (currentWaypoint.Station != stationId)
                 {
-                    Console.WriteLine($"Train {train.Number} reported stopped at {stationId} but current event is for station {currentWaypoint.Station}");
+                    ServerLogger.Instance.LogWarning(train.Number, $"Train {train.Number} reported stopped at {stationId} but current event is for station {currentWaypoint.Station}");
                     return;
                 }
 
                 if (currentWaypoint.Processed)
                 {
-                    Console.WriteLine($"Train {train.Number} station event at {stationId} is already processed");
+                    ServerLogger.Instance.LogWarning(train.Number, $"Train {train.Number} station event at {stationId} is already processed");
                     return;
                 }
 
                 // Mark the current station event as processed
                 currentWaypoint.Processed = true;
                 train.delay = (int)(SimulationTime - currentWaypoint.ArrivalTime).TotalSeconds;
-                Console.WriteLine($"Train {train.Number} successfully stopped at station {stationId} with delay {train.delay} seconds");
+                ServerLogger.Instance.LogDebug(train.Number, $"Train {train.Number} successfully stopped at station {stationId} with delay {train.delay} seconds");
                 if (currentWaypoint.IsLast)
                 {
-                    Console.WriteLine($"Train {train.Number} has completed all events");
+                    ServerLogger.Instance.LogDebug(train.Number, $"Train {train.Number} has completed all events");
                     train.completed = true;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reporting train stopped: {ex.Message}");                
+                ServerLogger.Instance.LogError(train.Number, $"Error reporting train stopped: {ex.Message}");                
             }
         }
 
@@ -433,31 +435,31 @@ namespace TrainDispatcherGame.Server.Simulation
                 var currentEvent = train.GetCurrentWayPoint();
                 if (currentEvent == null)
                 {
-                    Console.WriteLine($"Train {train.Number} has no current event to mark as departed");
+                    ServerLogger.Instance.LogWarning(train.Number, $"Train {train.Number} has no current event to mark as departed");
                     return false;
                 }
 
                 if (currentEvent.Station != stationId)
                 {
-                    Console.WriteLine($"Train {train.Number} reported departed from {stationId} but current event is for station {currentEvent.Station}");
+                    ServerLogger.Instance.LogWarning(train.Number, $"Train {train.Number} reported departed from {stationId} but current event is for station {currentEvent.Station}");
                     return false;
                 }
 
                 if (!currentEvent.Processed)
                 {
-                    Console.WriteLine($"Train {train.Number} station event at {stationId} is not yet processed (must stop before departing)");
+                    ServerLogger.Instance.LogWarning(train.Number, $"Train {train.Number} station event at {stationId} is not yet processed (must stop before departing)");
                     return false;
                 }
 
 
                 train.delay = (int)(SimulationTime - currentEvent.DepartureTime).TotalSeconds;
 
-                Console.WriteLine($"Train {train.Number} successfully departed from station {stationId} with delay {train.delay} seconds");
+                ServerLogger.Instance.LogDebug(train.Number, $"Train {train.Number} successfully departed from station {stationId} with delay {train.delay} seconds");
                 return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reporting train departed: {ex.Message}");
+                ServerLogger.Instance.LogError(train.Number, $"Error reporting train departed: {ex.Message}");
                 return false;
             }
         }
@@ -467,13 +469,13 @@ namespace TrainDispatcherGame.Server.Simulation
         {
             try
             {                
-                Console.WriteLine($"Collision: trains {trainA.Number} and {trainB.Number} by client report");
+                ServerLogger.Instance.LogWarning(trainA.Number, $"Collision: trains {trainA.Number} and {trainB.Number} by client report");
                 trainA.damaged = true;
                 trainB.damaged = true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error handling collision: {ex.Message}");
+                ServerLogger.Instance.LogError(trainA.Number, $"Error handling collision: {ex.Message}");
             }
         }
 
@@ -484,11 +486,11 @@ namespace TrainDispatcherGame.Server.Simulation
             {
                 train.damaged = true;
                 var switchInfo = switchId.HasValue ? $" at switch {switchId.Value}" : string.Empty;
-                Console.WriteLine($"Derailment: train {train.Number} removed by client report at station {stationId}{switchInfo}");
+                ServerLogger.Instance.LogWarning(train.Number, $"Derailment: train {train.Number} removed by client report at station {stationId}{switchInfo}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error handling derailment: {ex.Message}");
+                ServerLogger.Instance.LogError(train.Number, $"Error handling derailment: {ex.Message}");
             }
         }
 
@@ -556,7 +558,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 var player = _playerManager.GetPlayer(playerId);
                 if (player == null)
                 {
-                    Console.WriteLine($"Player {playerId} not found");
+                    ServerLogger.Instance.LogWarning(playerId, $"Player {playerId} not found");
                     return;
                 }
                 
@@ -566,7 +568,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 var connection = _trackLayoutService.GetConnection(stationId, exitId, out bool isReversed);
                 if (connection == null)
                 {
-                    Console.WriteLine($"No connection found for exit {exitId} at station {stationId}");
+                    ServerLogger.Instance.LogWarning(stationId, $"No connection found for exit {exitId} at station {stationId}");
                     return;
                 }
                 
@@ -574,7 +576,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 if (!blocked)
                 {
                     _openLineTracks.RemoveTrain(connection);
-                    Console.WriteLine($"Train removed from open-line track {connection.FromStation} → {connection.ToStation}");
+                    ServerLogger.Instance.LogDebug(stationId, $"Train removed from open-line track {connection.FromStation} → {connection.ToStation}");
                 }
                 
                 // Determine the other side of the connection
@@ -597,11 +599,11 @@ namespace TrainDispatcherGame.Server.Simulation
                 // Notify the other station
                 await _notificationManager.SendExitBlockStatus(otherStation, otherExitId, blocked);
                 
-                Console.WriteLine($"Exit {exitId} at {stationId} is {(blocked ? "blocked" : "unblocked")}, notified {otherStation} about exit {otherExitId}");
+                ServerLogger.Instance.LogDebug(stationId, $"Exit {exitId} at {stationId} is {(blocked ? "blocked" : "unblocked")}, notified {otherStation} about exit {otherExitId}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error handling exit block status: {ex.Message}");
+                ServerLogger.Instance.LogError(playerId, $"Error handling exit block status: {ex.Message}");
             }
         }
     }

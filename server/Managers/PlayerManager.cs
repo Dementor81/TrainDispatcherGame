@@ -29,6 +29,17 @@ namespace TrainDispatcherGame.Server.Managers
                     return true; // Player already controls this station
                 }
 
+                // Remove any existing placeholder bound to this connection
+                if (!string.IsNullOrWhiteSpace(connectionId))
+                {
+                    var existing = _players.Values.FirstOrDefault(p => p.ConnectionId == connectionId);
+                    if (existing != null && existing.Id != playerId)
+                    {
+                        _stationToPlayer.Remove(existing.StationId);
+                        _players.Remove(existing.Id);
+                    }
+                }
+
                 // Remove player from any previous station
                 RemovePlayerFromStation(playerId);
 
@@ -54,6 +65,7 @@ namespace TrainDispatcherGame.Server.Managers
 
                 player = _players[playerId];
                 RemovePlayerFromStation(playerId);
+                player.StationId = string.Empty;
             }
             
             Console.WriteLine($"Player {playerId} released control of station {player.StationId}");
@@ -92,6 +104,35 @@ namespace TrainDispatcherGame.Server.Managers
             }
         }
 
+        public Player? GetPlayerByConnectionId(string connectionId)
+        {
+            lock (_syncRoot)
+            {
+                return _players.Values.FirstOrDefault(p => p.ConnectionId == connectionId);
+            }
+        }
+
+        public void RegisterConnection(string connectionId)
+        {
+            if (string.IsNullOrWhiteSpace(connectionId))
+            {
+                return;
+            }
+
+            lock (_syncRoot)
+            {
+                var existing = _players.Values.FirstOrDefault(p => p.ConnectionId == connectionId);
+                if (existing != null)
+                {
+                    existing.IsActive = true;
+                    return;
+                }
+
+                var player = new Player(connectionId, string.Empty, connectionId, string.Empty);
+                _players[connectionId] = player;
+            }
+        }
+
         public List<string> GetControlledStations()
         {
             lock (_syncRoot)
@@ -107,7 +148,18 @@ namespace TrainDispatcherGame.Server.Managers
             
             lock (_syncRoot)
             {
-                return _stationToPlayer.ContainsKey(normalizedStationId);
+                if (!_stationToPlayer.TryGetValue(normalizedStationId, out var playerId))
+                {
+                    return false;
+                }
+
+                if (_players.TryGetValue(playerId, out var player) && player.IsActive)
+                {
+                    return true;
+                }
+
+                _stationToPlayer.Remove(normalizedStationId);
+                return false;
             }
         }
 
