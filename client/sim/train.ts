@@ -12,7 +12,8 @@ export enum TrainStopReason {
     END_OF_TRACK = "end_of_track",
     COLLISION = "collision",
     EMERGENCY_STOP = "emergency_stop",
-    DERAILEMENT = "derailement"
+    DERAILEMENT = "derailement",
+    ENDED = "ended"
 
 }
 

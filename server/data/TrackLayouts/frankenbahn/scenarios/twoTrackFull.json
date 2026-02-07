@@ -14,31 +14,31 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:04:33"
+          "departure": "00:04:34"
         },
         {
           "station": "weststadt",
-          "arrival": "00:07:07",
-          "departure": "00:07:42"
+          "arrival": "00:07:08",
+          "departure": "00:07:43"
         },
         {
           "station": "neustadt",
-          "arrival": "00:10:51",
-          "departure": "00:11:28"
+          "arrival": "00:10:52",
+          "departure": "00:11:29"
         },
         {
           "station": "burghausen",
-          "arrival": "00:14:43",
-          "departure": "00:21:42"
+          "arrival": "00:14:44",
+          "departure": "00:22:50"
         },
         {
           "station": "ostheim",
-          "arrival": "00:24:57",
-          "departure": "00:25:42"
+          "arrival": "00:26:05",
+          "departure": "00:26:50"
         },
         {
           "station": "rechtsheim",
-          "arrival": "00:28:15",
+          "arrival": "00:29:23",
           "departure": ""
         }
       ],
@@ -96,16 +96,16 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:08:36"
+          "departure": "00:09:52"
         },
         {
           "station": "weststadt",
-          "arrival": "00:10:06",
-          "departure": "00:11:06"
+          "arrival": "00:11:22",
+          "departure": "00:12:22"
         },
         {
           "station": "Me\u00DFbach",
-          "arrival": "00:12:36",
+          "arrival": "00:13:52",
           "departure": ""
         }
       ],
@@ -230,31 +230,31 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:11:04"
+          "departure": "00:12:13"
         },
         {
           "station": "weststadt",
-          "arrival": "00:13:00",
-          "departure": "00:13:00"
+          "arrival": "00:14:09",
+          "departure": "00:14:09"
         },
         {
           "station": "neustadt",
-          "arrival": "00:15:21",
-          "departure": "00:16:44"
+          "arrival": "00:16:30",
+          "departure": "00:17:53"
         },
         {
           "station": "burghausen",
-          "arrival": "00:19:11",
-          "departure": "00:19:11"
+          "arrival": "00:20:20",
+          "departure": "00:20:20"
         },
         {
           "station": "ostheim",
-          "arrival": "00:21:36",
-          "departure": "00:21:36"
+          "arrival": "00:22:45",
+          "departure": "00:22:45"
         },
         {
           "station": "rechtsheim",
-          "arrival": "00:23:31",
+          "arrival": "00:24:40",
           "departure": ""
         }
       ],
@@ -327,16 +327,16 @@
         {
           "station": "burghausen",
           "arrival": "00:24:51",
-          "departure": "00:25:51"
+          "departure": "00:26:04"
         },
         {
           "station": "ostheim",
-          "arrival": "00:29:03",
-          "departure": "00:30:03"
+          "arrival": "00:29:16",
+          "departure": "00:30:16"
         },
         {
           "station": "rechtsheim",
-          "arrival": "00:32:40",
+          "arrival": "00:32:53",
           "departure": ""
         }
       ],
@@ -640,31 +640,31 @@
         {
           "station": "rechtsheim",
           "arrival": "",
-          "departure": "00:23:45"
+          "departure": "00:23:54"
         },
         {
           "station": "ostheim",
-          "arrival": "00:25:40",
-          "departure": "00:25:40"
+          "arrival": "00:25:49",
+          "departure": "00:25:49"
         },
         {
           "station": "burghausen",
-          "arrival": "00:28:05",
-          "departure": "00:28:05"
+          "arrival": "00:28:14",
+          "departure": "00:28:14"
         },
         {
           "station": "neustadt",
-          "arrival": "00:30:32",
-          "departure": "00:31:32"
+          "arrival": "00:30:41",
+          "departure": "00:31:41"
         },
         {
           "station": "weststadt",
-          "arrival": "00:33:54",
-          "departure": "00:33:54"
+          "arrival": "00:34:03",
+          "departure": "00:34:03"
         },
         {
           "station": "linksdorf",
-          "arrival": "00:35:49",
+          "arrival": "00:35:58",
           "departure": ""
         }
       ],
@@ -820,16 +820,16 @@
         {
           "station": "neustadt",
           "arrival": "00:36:06",
-          "departure": "00:38:15"
+          "departure": "00:50:20"
         },
         {
           "station": "weststadt",
-          "arrival": "00:42:01",
-          "departure": "00:42:01"
+          "arrival": "00:54:06",
+          "departure": "00:54:06"
         },
         {
           "station": "linksdorf",
-          "arrival": "00:45:06",
+          "arrival": "00:57:11",
           "departure": ""
         }
       ],
@@ -892,16 +892,16 @@
         {
           "station": "neustadt",
           "arrival": "00:27:14",
-          "departure": "00:33:59"
+          "departure": "00:34:13"
         },
         {
           "station": "weststadt",
-          "arrival": "00:37:45",
-          "departure": "00:37:45"
+          "arrival": "00:37:59",
+          "departure": "00:37:59"
         },
         {
           "station": "linksdorf",
-          "arrival": "00:40:50",
+          "arrival": "00:41:04",
           "departure": ""
         }
       ],
@@ -923,26 +923,26 @@
         {
           "station": "weststadt",
           "arrival": "00:26:43",
-          "departure": "00:31:19"
+          "departure": "00:35:35"
         },
         {
           "station": "neustadt",
-          "arrival": "00:36:02",
-          "departure": "00:41:13"
+          "arrival": "00:40:18",
+          "departure": "00:45:29"
         },
         {
           "station": "burghausen",
-          "arrival": "00:46:06",
-          "departure": "01:04:45"
+          "arrival": "00:50:22",
+          "departure": "01:09:01"
         },
         {
           "station": "ostheim",
-          "arrival": "01:09:37",
-          "departure": "01:16:53"
+          "arrival": "01:13:53",
+          "departure": "01:21:09"
         },
         {
           "station": "rechtsheim",
-          "arrival": "01:20:42",
+          "arrival": "01:24:58",
           "departure": ""
         }
       ],
@@ -984,6 +984,110 @@
         {
           "station": "rechtsheim",
           "arrival": "00:39:39",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "6601",
+      "type": "Passenger",
+      "category": "S",
+      "speed": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "linksdorf",
+          "arrival": "",
+          "departure": "00:07:15"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:09:49",
+          "departure": "00:10:57"
+        },
+        {
+          "station": "neustadt",
+          "arrival": "00:14:06",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": "6602"
+    },
+    {
+      "number": "6602",
+      "type": "Passenger",
+      "category": "S",
+      "speed": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "neustadt",
+          "arrival": "",
+          "departure": "00:16:50"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:19:59",
+          "departure": "00:20:59"
+        },
+        {
+          "station": "linksdorf",
+          "arrival": "00:23:33",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "6603",
+      "type": "Passenger",
+      "category": "S",
+      "speed": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "linksdorf",
+          "arrival": "",
+          "departure": "00:28:41"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:31:15",
+          "departure": "00:32:23"
+        },
+        {
+          "station": "neustadt",
+          "arrival": "00:35:32",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": "6604"
+    },
+    {
+      "number": "6604",
+      "type": "Passenger",
+      "category": "S",
+      "speed": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "neustadt",
+          "arrival": "",
+          "departure": "00:39:17"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:42:26",
+          "departure": "00:43:26"
+        },
+        {
+          "station": "linksdorf",
+          "arrival": "00:46:00",
           "departure": ""
         }
       ],

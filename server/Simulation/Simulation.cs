@@ -387,7 +387,7 @@ namespace TrainDispatcherGame.Server.Simulation
             }
         }
 
-        public bool ReportTrainStopped(Train train, string stationId)
+        public void ReportTrainStopped(Train train, string stationId)
         {
             try
             {
@@ -395,32 +395,34 @@ namespace TrainDispatcherGame.Server.Simulation
                 if (currentWaypoint == null)
                 {
                     Console.WriteLine($"Train {train.Number} has no current event to mark as stopped");
-                    return false;
+                    return;
                 }
 
                 if (currentWaypoint.Station != stationId)
                 {
                     Console.WriteLine($"Train {train.Number} reported stopped at {stationId} but current event is for station {currentWaypoint.Station}");
-                    return false;
+                    return;
                 }
 
                 if (currentWaypoint.Processed)
                 {
                     Console.WriteLine($"Train {train.Number} station event at {stationId} is already processed");
-                    return false;
+                    return;
                 }
 
                 // Mark the current station event as processed
                 currentWaypoint.Processed = true;
                 train.delay = (int)(SimulationTime - currentWaypoint.ArrivalTime).TotalSeconds;
-
                 Console.WriteLine($"Train {train.Number} successfully stopped at station {stationId} with delay {train.delay} seconds");
-                return true;
+                if (currentWaypoint.IsLast)
+                {
+                    Console.WriteLine($"Train {train.Number} has completed all events");
+                    train.completed = true;
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reporting train stopped: {ex.Message}");
-                return false;
+                Console.WriteLine($"Error reporting train stopped: {ex.Message}");                
             }
         }
 

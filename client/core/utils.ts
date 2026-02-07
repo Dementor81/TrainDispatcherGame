@@ -26,6 +26,10 @@ export class Tools {
       return false;
     }
   }
+
+  public static is(value: any, values: any[]): boolean {
+    return values.includes(value);
+  }
 }
 
 export default Tools;
