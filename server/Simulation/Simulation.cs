@@ -49,6 +49,7 @@ namespace TrainDispatcherGame.Server.Simulation
             _openLineTracks = new OpenLineTrackRegistry(_trackLayoutService);
             _eventProcessor = new TrainEventProcessor(_notificationManager, _playerManager, _trackLayoutService, _openLineTracks);
             _timetableService = new StationTimetableService();
+            ServerLogger.Instance.SetSimulationTimeProvider(() => SimulationTime);
             this.Reset();
         }
 

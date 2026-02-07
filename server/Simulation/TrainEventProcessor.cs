@@ -58,6 +58,8 @@ namespace TrainDispatcherGame.Server.Simulation
                     await this.HandleTrainStart(train);
                 else if (train.TrainEvent is RetryDispatchEvent)
                     AdvanceTrainToNextStation(train);
+                else if (train.TrainEvent is TrainWaitEvent)
+                    await this.HandleTrainWaitEvent(train);
             }
         }
 
@@ -74,12 +76,14 @@ namespace TrainDispatcherGame.Server.Simulation
                 // Will be removed when client reports exit is unblocked
                 if (exitPointId == -1) throw new Exception($"Train {train.Number} has invalid exit point id -1 for player controlled station");
                 await _notificationManager.SendTrain(station, train, exitPointId);
-                train.controlledByPlayer = true;                
+                train.controlledByPlayer = true;
                 train.CurrentLocation = station?.ToLowerInvariant() ?? string.Empty;
                 train.TrainEvent = null;
                 ServerLogger.Instance.LogDebug(train.Number, $"Train sent to station {station} and is controlled by player");
                 return;
-            }else{
+            }
+            else
+            {
                 _openLineTracks.RemoveTrain(spawn.Connection);
                 ServerLogger.Instance.LogDebug(train.Number, $"handling train spawn at uncontrolled station {station}, train removed from open line track");
                 // If the train is coming from a player controlled station, notify the player that its exit is unblocked
@@ -93,7 +97,17 @@ namespace TrainDispatcherGame.Server.Simulation
                         await _notificationManager.SendExitBlockStatus(fromStation, spawn.CommingFromExitId, false);
                     }
                 }
-                await DispatchTrainByServer(train);
+                var currentWaypoint = train.GetCurrentWayPoint();
+                if (currentWaypoint != null && currentWaypoint.DepartureTime > SimulationTime)
+                {
+                    train.TrainEvent = new TrainWaitEvent(currentWaypoint.DepartureTime);
+                    ServerLogger.Instance.LogWarning(train.Number, $"Train {train.Number} waiting at {currentWaypoint.Station} until {currentWaypoint.DepartureTime:HH:mm:ss}");
+                    return;
+                }
+                else
+                {
+                    await DispatchTrainByServer(train);
+                }
             }
         }
 
@@ -134,7 +148,7 @@ namespace TrainDispatcherGame.Server.Simulation
 
         public async Task HandleTrainStart(Train train)
         {
-            ServerLogger.Instance.LogDebug(train.Number, $"train started at {train.CurrentLocation}");
+            ServerLogger.Instance.LogDebug(train.Number, $"train started");
             await DispatchTrainByServer(train);
         }
 
@@ -148,7 +162,7 @@ namespace TrainDispatcherGame.Server.Simulation
         {
             var currentWaypoint = train.GetCurrentWayPoint();
             var nextWaypoint = train.GetNextWayPoint();
-            ServerLogger.Instance.LogDebug(train.Number,$"advancing train to next station {nextWaypoint?.Station ?? "none"}");         
+            ServerLogger.Instance.LogDebug(train.Number, $"advancing train to next station {nextWaypoint?.Station ?? "none"}");
             if (currentWaypoint == null || nextWaypoint == null) throw new Exception($"Train {train.Number} waypoints invalid");
 
             var layout = _trackLayoutService.GetTrackLayout(currentWaypoint.Station); //layout could be null if the train is at a virtual station at the margin of the map
@@ -190,8 +204,9 @@ namespace TrainDispatcherGame.Server.Simulation
         {
             var currentWaypoint = train.GetCurrentWayPoint();
             var nextWaypoint = train.GetNextWayPoint();
-            if(nextWaypoint == null){
-                train.completed = true;  
+            if (nextWaypoint == null)
+            {
+                train.completed = true;
                 ServerLogger.Instance.LogDebug(train.Number, $"train completed");
                 return;
 
@@ -215,7 +230,12 @@ namespace TrainDispatcherGame.Server.Simulation
 
             AdvanceTrainToNextStation(train);
         }
+
+        public async Task HandleTrainWaitEvent(Train train)
+        {
+            await DispatchTrainByServer(train);
+        }
+
+        
     }
 }
-
-

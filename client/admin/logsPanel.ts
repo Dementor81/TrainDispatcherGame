@@ -4,6 +4,7 @@ import { BasePanel } from "../ui/basePanel";
 
 export class LogsPanel extends BasePanel {
   private filterInput?: HTMLInputElement;
+  private showRealTime: boolean = false;
 
   constructor() {
     super(null as any, 2000);
@@ -41,12 +42,27 @@ export class LogsPanel extends BasePanel {
     filterInput.placeholder = 'train-1, station_a';
     filterInput.addEventListener('input', () => this.Updates());
     this.filterInput = filterInput;
+    const spacer = document.createElement('div');
+    spacer.style.flex = '1 1 auto';
+
+    const toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = 'btn btn-sm btn-outline-secondary';
+    toggleBtn.title = 'Toggle time display';
+    toggleBtn.innerHTML = '<i class="bi bi-clock"></i>';
+    toggleBtn.addEventListener('click', () => {
+      this.showRealTime = !this.showRealTime;
+      this.Updates();
+    });
+
     filterRow.appendChild(filterLabel);
     filterRow.appendChild(filterInput);
+    filterRow.appendChild(spacer);
+    filterRow.appendChild(toggleBtn);
 
     const output = document.createElement('div');
     output.id = 'logsOutput';
-    output.className = 'form-control form-control-sm bg-dark no-drag ';
+    output.className = 'form-control form-control-sm bg-dark no-drag';
     output.style.flex = '1 1 auto';
     output.style.overflow = 'auto';
     output.style.whiteSpace = 'pre-wrap';
@@ -98,6 +114,7 @@ export class LogsPanel extends BasePanel {
   private normalizeEntry(entry: any): LogEntryDto {
     return {
       timestamp: entry.timestamp ?? entry.Timestamp ?? '',
+      simulationTime: entry.simulationTime ?? entry.SimulationTime ?? entry.simulation_time ?? entry.simulationTimeUtc,
       level: entry.level ?? entry.Level ?? 'Debug',
       context: entry.context ?? entry.Context ?? '',
       message: entry.message ?? entry.Message ?? '',
@@ -111,9 +128,16 @@ export class LogsPanel extends BasePanel {
   }
 
   private formatEntry(entry: LogEntryDto): string {
-    const ts = entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString() : '--:--:--';
+    const ts = this.resolveDisplayTime(entry);
     const ctx = entry.context ? ` [${entry.context}]` : '';
-    return `${ts} ${ctx} ${entry.message}`;
+    return `${ts} ${entry.level}${ctx} ${entry.message}`;
+  }
+
+  private resolveDisplayTime(entry: LogEntryDto): string {
+    const sim = entry.simulationTime ? new Date(entry.simulationTime) : null;
+    const real = entry.timestamp ? new Date(entry.timestamp) : null;
+    const chosen = this.showRealTime ? real : (sim ?? real);
+    return chosen ? chosen.toLocaleTimeString() : '--:--:--';
   }
 }
 

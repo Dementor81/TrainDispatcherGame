@@ -9,12 +9,18 @@ namespace TrainDispatcherGame.Server.Logging
         private static readonly ServerLogger _instance = new ServerLogger();
         private readonly List<LogEntry> _entries = new List<LogEntry>();
         private readonly object _lock = new object();
+        private Func<DateTime?>? _simulationTimeProvider;
 
         private ServerLogger()
         {
         }
 
         public static ServerLogger Instance => _instance;
+
+        public void SetSimulationTimeProvider(Func<DateTime?> provider)
+        {
+            _simulationTimeProvider = provider;
+        }
 
         public IReadOnlyList<LogEntry> GetLogs()
         {
@@ -79,9 +85,10 @@ namespace TrainDispatcherGame.Server.Logging
             var safeContext = context ?? string.Empty;
             var safeMessage = message ?? string.Empty;
 
+            var simulationTime = _simulationTimeProvider?.Invoke();
             lock (_lock)
             {
-                _entries.Add(new LogEntry(DateTime.UtcNow, level, safeContext, safeMessage));
+                _entries.Add(new LogEntry(DateTime.UtcNow, simulationTime, level, safeContext, safeMessage));
             }
         }
     }
