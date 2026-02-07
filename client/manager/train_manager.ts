@@ -109,6 +109,7 @@ export class TrainManager {
             const previousTrack = train.position.track;
             const previousKm = train.position.km;
             const previousTailTrack = train.tailPosition?.track;
+            const previousTailKm = train.tailPosition?.km ?? null;
             
             train.setPosition(result.element, result.km);
 
@@ -130,9 +131,12 @@ export class TrainManager {
                return true;
             }
 
-            // Check if tail track element changed and emit occupiedTrackCleared event
+            // Check if tail passed any signals during this movement
+            this.checkSignalsPassedByTail(train, previousTailTrack ?? null, previousTailKm, train.tailPosition?.track ?? null, train.tailPosition?.km ?? 0);
+
+            // Check if tail track element changed and emit tail pass event
             if (previousTailTrack instanceof Track && train.tailPosition?.track !== previousTailTrack) {
-               this._eventManager.emit("occupiedTrackCleared", previousTailTrack, train);
+               this._eventManager.emit("trainTailPassed", train, { track: previousTailTrack });
             }
 
             // Check if train passed any signals during this movement
@@ -274,6 +278,38 @@ export class TrainManager {
       }
    }
 
+   // Check if train tail passed any signals during movement and emit events
+   private checkSignalsPassedByTail(
+      train: Train,
+      previousTailTrack: Track | null,
+      previousTailKm: number | null,
+      newTailTrack: Track | null,
+      newTailKm: number
+   ): void {
+      if (!previousTailTrack || previousTailKm === null || !newTailTrack) {
+         return;
+      }
+
+      const checkSignalsPassedOnTrackAnyDirection = (train: Train, track: Track, startKm: number, endKm: number): void => {
+         const signal = this._trackLayoutManager.getSignalBetweenKm(track, startKm, endKm);
+         if (signal) {
+            this._eventManager.emit("trainTailPassed", { track: signal.track, km: signal.position });
+         }
+      }
+
+      // if we are still on the same track, check for passed signals on the track
+      if (previousTailTrack === newTailTrack) {
+         checkSignalsPassedOnTrackAnyDirection(train, previousTailTrack, previousTailKm, newTailKm);
+      } else {
+         // if we are on a different track, check for passed signals on the previous track and the new track
+         const endKm = train.movingDirection > 0 ? previousTailTrack.length : 0;
+         checkSignalsPassedOnTrackAnyDirection(train, previousTailTrack, previousTailKm, endKm);
+
+         const startKm = train.movingDirection > 0 ? 0 : newTailTrack.length;
+         checkSignalsPassedOnTrackAnyDirection(train, newTailTrack, startKm, newTailKm);
+      }
+   }
+
    // Check for passed signals on a specific track segment
    private checkSignalsPassedOnTrack(train: Train, track: Track, startKm: number, endKm: number): void {
       // Ensure proper order for comparison
@@ -304,6 +340,7 @@ export class TrainManager {
          }
       }
    }
+
 
    // Handle movement exceptions
    private handleMovementException(train: Train, error: any): void {

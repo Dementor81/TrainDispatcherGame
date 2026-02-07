@@ -20,6 +20,9 @@ export class TrainRouteManager {
       this._eventManager.on("simulationStopped", () => {
          this.clearRoutes();
       });
+      this._eventManager.on("trainTailPassed", ( passed: { track?: Track | null; km?: number }) => {
+         this.handleTrainTailPassed(passed);
+      });
    }
 
    get routes(): TrainRoute[] {
@@ -104,12 +107,12 @@ export class TrainRouteManager {
 
       const pushTrackSegment = (track: Track, fromKm: number, toKm: number): boolean => {
          if (fromKm === toKm) return true;
-         
+
          // Check if this track segment overlaps with any existing route
          if (this.isTrackSegmentOverlapping(track, fromKm, toKm)) {
             return false; // Track segment overlaps, cannot create route
          }
-         
+
          parts.push({ kind: "track", track, fromKm, toKm });
          return true;
       };
@@ -119,29 +122,33 @@ export class TrainRouteManager {
          if (this.isSwitchAlreadyInRoute(sw)) {
             return false; // Switch already in use, cannot create route
          }
-         
+
          parts.push({ kind: "switch", sw });
          return true;
       };
 
       while (steps++ < maxSteps) {
-         // 1) Stop at the next signal on the current track (in direction), but do not search beyond this track
-         const nextSignal = this._layout.getNextSignal(currentTrack, currentKm, currentDirection, true);
+         // 1) Split at the next signal on the current track (any direction)
+         const nextSignal = this._layout.getNextSignalOnTrackAnyDirection(currentTrack, currentKm, currentDirection);
          if (nextSignal) {
             const endKm = nextSignal.position;
             if (!pushTrackSegment(currentTrack, currentKm, endKm)) {
                // Track already in use, cannot create route
                return null;
             }
-            endEndpoint = { track: currentTrack, km: endKm };
-            break;
+            currentKm = endKm;
+            if (nextSignal.direction === currentDirection) {
+               endEndpoint = { track: currentTrack, km: endKm };
+               break;
+            }
+            continue;
          }
 
          // 2) Move to the boundary of the current track in travel direction
          const atEnd = currentDirection > 0;
          const boundaryKm = atEnd ? currentTrack.length : 0;
          const boundaryConnection = currentTrack.switches[atEnd ? 1 : 0];
-         
+
          try {
             nextElement = this._layout.findNextTrack(currentTrack, currentDirection);
          } catch {
@@ -208,12 +215,12 @@ export class TrainRouteManager {
       const initialLength = this._routes.length;
       this._routes = this._routes.filter(route => route.signal !== signal);
       const removed = this._routes.length < initialLength;
-      
+
       if (removed) {
          // Emit event that routes were updated (some routes removed)
          this._eventManager.emit('routesCleared');
       }
-      
+
       return removed;
    }
 
@@ -223,43 +230,37 @@ export class TrainRouteManager {
     * @param clearedTrack - The track that was cleared
     * @returns true if any routes were modified or removed, false otherwise
     */
-   removeClearedTrack(clearedTrack: Track): boolean {
-      let modified = false;
-      const routesToRemove: TrainRoute[] = [];
-
+   removeRoutePartsByTrack(clearedTrack: Track, km: number | null = null, emitRoutesCleared: boolean = true): boolean {
       for (const route of this._routes) {
          // Remove the cleared track from this route
-         const trackRemoved = route.removeTrack(clearedTrack);
-         
-         if (trackRemoved) {
-            modified = true;
-            
-            // Remove first switch if present
-            route.removeFirstSwitchIfPresent();
-            
-            // Check if route is now empty
-            if (route.isEmpty()) {
-               // If this route has an exit, emit event before removing
-               if (route.exit) {
-                  this._eventManager.emit('routeWithExitCleared', route.exit);
+         for (const part of route.parts) {
+            if (part.kind === "track" && part.track === clearedTrack && (km === null || part.toKm === km)) {
+               route.parts.shift();
+               route.removeFirstSwitchIfPresent();
+
+               // Check if route is now empty
+               if (route.isEmpty()) {
+                  // If this route has an exit, emit event before removing
+                  if (route.exit) {
+                     this._eventManager.emit('routeWithExitCleared', route.exit);
+                  }
+                  this._routes = this._routes.filter(r => r !== route);
                }
-               routesToRemove.push(route);
+               this._eventManager.emit('routesCleared');
+               return true;
             }
          }
       }
+      return false;
+   }
 
-      // Remove empty routes
-      if (routesToRemove.length > 0) {
-         this._routes = this._routes.filter(route => !routesToRemove.includes(route));
-         modified = true;
-      }
-
-      if (modified) {
-         // Emit event that routes were updated
-         this._eventManager.emit('routesCleared');
-      }
-
-      return modified;
+   /**
+    * Handle tail passing a signal or clearing a track
+    * @param passed - The passed signal or cleared track
+    */
+   handleTrainTailPassed(passed: { track?: Track | null; km?: number }): void {
+      if (!passed.track) return;
+      this.removeRoutePartsByTrack(passed.track, passed.km ?? null, false);      
    }
 
    /**

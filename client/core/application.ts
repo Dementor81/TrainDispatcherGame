@@ -178,11 +178,6 @@ export class Application {
          this._renderer.renderTrainRoutes(this._trainRouteManager.routes);
       });
 
-      // Occupied track cleared → remove cleared track from routes
-      this._eventManager.on('occupiedTrackCleared', (clearedTrack: Track) => {
-         this._trainRouteManager.removeClearedTrack(clearedTrack);
-      });
-
       // Simulation speed change events (from server)
       this._eventManager.on('simulationSpeedChanged', (speed: number) => {
          if (typeof speed === 'number' && !isNaN(speed)) {

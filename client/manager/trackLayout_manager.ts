@@ -9,7 +9,7 @@ import { Renderer } from "../canvas/renderer";
 import { Application } from "../core/application";
 import { NetworkConnectionDto, PlatformDto } from "../network/dto";
 import { CancellableEvent } from "./event_manager";
-
+import { Tools } from "../core/utils";
 // Movement exception for actual errors
 export class MovementException extends Error {
    constructor(message: string) {
@@ -393,6 +393,25 @@ export class TrackLayoutManager {
    }
 
    /**
+    * Finds the next signal on the current track in the given direction,
+    * ignoring signal direction.
+    */
+   getNextSignalOnTrackAnyDirection(currentTrack: Track, currentKm: number, direction: number): Signal | null {
+      if (!currentTrack) return null;
+      const signals = currentTrack.signals;
+      let i = direction > 0 ? 0 : signals.length - 1;
+      const step = direction > 0 ? 1 : -1;
+      while (i >= 0 && i < signals.length) {
+         const signal = signals[i];
+         if (direction > 0 ? signal.position > currentKm : signal.position < currentKm) {
+            return signal;
+         }
+         i += step;
+      }
+      return null;
+   }
+
+   /**
     * Finds the next element connected to the current track in the given direction
     * @returns The next element (Track/Switch/Exit), or throws MovementException for dead ends
     */
@@ -435,6 +454,13 @@ export class TrackLayoutManager {
       }
 
       throw new MovementException(`Unknown connection type on track ${currentTrack.id}`);
+   }
+
+   getSignalBetweenKm(track: Track, fromKm: number, toKm: number): Signal | null {
+      if (!track) return null;
+      const signals = track.signals;
+      const signal = signals.find(signal => Tools.between(signal.position, fromKm, toKm));
+      return signal ?? null;
    }
 
 
