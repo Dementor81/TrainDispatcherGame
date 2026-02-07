@@ -9,6 +9,7 @@ import { SimulationConfig } from "../core/config";
 import Tools from "../core/utils";
 import { SignalRManager } from "../network/signalr";
 import { ClientSimulation } from "../core/clientSimulation";
+import { getTrainWaypoints } from "../network/api";
 
 export class TrainManager {
    private _trains: Train[] = [];
@@ -31,6 +32,11 @@ export class TrainManager {
       // Subscribe to train creation events
       this._eventManager.on("trainCreated", (train: Train, exitPointId: number) => {
          this.handleTrainCreated(train, exitPointId);
+      });
+
+      // Subscribe to simulation stop events
+      this._eventManager.on("simulationStopped", () => {
+         this.clearAllTrains();
       });
    }
 
@@ -103,11 +109,8 @@ export class TrainManager {
             const previousTrack = train.position.track;
             const previousKm = train.position.km;
             const previousTailTrack = train.tailPosition?.track;
-
-            // Normal movement - update train position and moving direction
-            // Note: drawingDirection stays constant unless explicitly changed (e.g., reverseTrain)
+            
             train.setPosition(result.element, result.km);
-            train.setMovingDirection(result.direction);
 
             // Calculate and update tail position
             const tailUpdated = this.updateTailPosition(train);
@@ -170,27 +173,27 @@ export class TrainManager {
 
    // Check for signals ahead of the train that would stop it
    private checkSignalsAhead(train: Train): Signal | null {
-      const leadingPos = train.leadingPosition;
-      if (!leadingPos) {
-         throw new Error(`Train ${train.number} has no leading position`);
+      // Position is always the front of the train
+      if (!train.position) {
+         throw new Error(`Train ${train.number} has no position`);
       }
 
       // Total distance to look ahead: movement distance + lookahead distance
       const totalLookaheadDistance = SimulationConfig.signalLookaheadDistance;
 
       try {
-         // Use followRailNetwork to trace the path ahead from the leading edge
+         // Use followRailNetwork to trace the path ahead from the front
          const result = this._trackLayoutManager.followRailNetwork(
-            leadingPos.track,
-            leadingPos.km,
+            train.position.track,
+            train.position.km,
             totalLookaheadDistance * train.movingDirection
          );
 
          // Check for signals on the current track first
          const currentTrackSignals = this.checkSignalsOnTrack(
-            leadingPos.track,
-            leadingPos.km,
-            leadingPos.km + totalLookaheadDistance * train.movingDirection,
+            train.position.track,
+            train.position.km,
+            train.position.km + totalLookaheadDistance * train.movingDirection,
             train.movingDirection
          );
 
@@ -199,10 +202,10 @@ export class TrainManager {
          }
 
          // If we moved to a different track, check signals on that track too
-         if (result.element instanceof Track && result.element !== leadingPos.track) {
+         if (result.element instanceof Track && result.element !== train.position.track) {
             const nextTrackSignals = this.checkSignalsOnTrack(
                result.element,
-               result.element === leadingPos.track ? leadingPos.km : train.movingDirection > 0 ? 0 : result.element.length,
+               result.element === train.position.track ? train.position.km : train.movingDirection > 0 ? 0 : result.element.length,
                result.km,
                train.movingDirection
             );
@@ -319,15 +322,14 @@ export class TrainManager {
       if (!currentTrack) return null;
 
       for (const other of this._trains) {
-         if (other === train || other.tailPosition === null) continue;
+         if (other === train || other.tailPosition === null || other.position === null) continue;
          if (other.tailPosition.track !== currentTrack) continue; // minimal same-track collision check
-         let otherTrainCrashZone = Tools.clamp(
-            other.tailPosition.km + other.getLength() * other.drawingDirection,
-            0,
-            currentTrack.length
-         );
+         
+         // Other train occupies space between its tail and front (position)
+         const otherTrainFront = other.position.km;
+         const otherTrainBack = other.tailPosition.km;
 
-         if (Tools.between(train.position.km, other.tailPosition.km, otherTrainCrashZone)) return other;
+         if (Tools.between(train.position.km, otherTrainBack, otherTrainFront)) return other;
       }
 
       return null;
@@ -341,10 +343,10 @@ export class TrainManager {
       const location = this._trackLayoutManager.getExitPointLocation(exitPointId);
       const direction = this._trackLayoutManager.getExitPointDirection(exitPointId);
       if (location.track) {
-         // Set the train's position
+         // Set the train's position (always the front)
          train.setPosition(location.track, location.km);
          train.setMovingDirection(direction);
-         train.setDrawingDirection(direction);
+         train.setDrawingDirection(-direction);
 
          // Initialize tail position
          this.updateTailPosition(train);
@@ -363,35 +365,23 @@ export class TrainManager {
    }
 
    public spawnLocalTestTrain(): Train | null {
-      const track = this._trackLayoutManager.tracks[0];
+      const track = this._trackLayoutManager.tracks.find(t => t.id === 183);
       if (!track) {
          console.warn("TrainManager: Cannot spawn local test train - no tracks loaded");
          return null;
       }
 
       const trainNumber = this.generateUniqueTestTrainNumber();
-      const train = new Train(trainNumber, 3, 100);
-
-      // Positive direction only (testing requirement)
+      const train = new Train(trainNumber, 3, 100);      
       const direction = 1;
-      const km = Tools.clamp(train.getLength() + 0.1, 0, track.length);
-      this.spawnTrainOnTrack(train, track, km, direction);
-      return train;
-   }
-
-   public spawnTrainOnTrack(train: Train, track: Track, km: number, direction: number): void {
+      train.setDrawingDirection(direction);
+      const km = 212;
       train.setPosition(track, km);
       train.setMovingDirection(direction);
-      train.setDrawingDirection(direction);
-
-      const ok = this.updateTailPosition(train);
-      if (!ok) {
-         console.warn(`TrainManager: Cannot spawn train ${train.number} - tail position hits a switch (derailed)`);
-         return;
-      }
-
-      this._trains.push(train);
+      this.updateTailPosition(train);
       this._eventManager.emit("trainAdded", train);
+      this._trains.push(train);
+      return train;
    }
 
    // Remove a train from the manager
@@ -411,12 +401,17 @@ export class TrainManager {
 
    public reverseTrain(trainNumber: string): boolean {
       const train = this.getTrain(trainNumber);
-      if (!train || !train.position) return false;
+      if (!train || !train.position || !train.tailPosition) return false;
 
-      
+      // Swap position and tailPosition (front becomes back, back becomes front)
+      const tempTrack = train.position.track;
+      const tempKm = train.position.km;
+      train.setPosition(train.tailPosition.track, train.tailPosition.km);
+      train.setTailPosition(tempTrack, tempKm);
+
+      // Reverse moving direction
       train.setMovingDirection(train.movingDirection * -1);
 
-      
       return true;
    }
 
@@ -453,10 +448,11 @@ export class TrainManager {
       const trainLength = train.getLength();
       if (trainLength <= 0) throw new Error(`Train ${train.number} has no length`);
 
-      // Calculate tail position: tail is behind the locomotive based on drawing direction
-      // drawingDirection = 1 means locomotive on right, so tail is to the left (negative offset)
-      // drawingDirection = -1 means locomotive on left, so tail is to the right (positive offset)
-      const tailOffset = -train.drawingDirection * trainLength;
+      // Calculate tail position: tail is always behind the front (position)
+      // "Behind" means opposite to the direction of movement
+      // movingDirection = 1 (increasing km): tail is at lower km (negative offset)
+      // movingDirection = -1 (decreasing km): tail is at higher km (positive offset)
+      const tailOffset = -trainLength * train.movingDirection;
 
       try {
          const tailResult = this._trackLayoutManager.followRailNetwork(train.position.track, train.position.km, tailOffset);
@@ -486,14 +482,88 @@ export class TrainManager {
       }
    }
 
+   // Handle train ending and transforming into a following train
+   private async handleTrainEnding(train: Train, currentSimulationTime: Date): Promise<void> {
+      const oldNumber = train.number;
+      const followingTrainNumber = train.followingTrainNumber;
+
+      if (!followingTrainNumber) {
+         console.warn(`Train ${oldNumber} has action 'End' but no following train number`);
+         return;
+      }
+
+      try {
+         // Fetch waypoints for the following train
+         const waypoints = await getTrainWaypoints(followingTrainNumber);
+
+         if (waypoints.length < 1) {
+            console.error(`Following train ${followingTrainNumber} has no waypoints`);
+            return;
+         }
+
+         const firstWaypoint = waypoints[0];
+         const secondWaypoint = waypoints.length > 1 ? waypoints[1] : null;
+
+         // Determine new moving direction if we have a second waypoint
+         let newDirection = train.movingDirection; // Default to current direction
+         if (secondWaypoint) {
+            const exit = this._trackLayoutManager.findExitToStation(secondWaypoint.station);
+            if (exit) {
+               // getExitPointDirection returns the spawn direction (moving away from exit)
+               // We need the opposite direction to move toward the exit
+               const exitSpawnDirection = this._trackLayoutManager.getExitPointDirection(exit.id);
+               newDirection = -exitSpawnDirection;
+               console.log(`Train ${oldNumber} will head to ${secondWaypoint.station} via exit ${exit.id} in direction ${newDirection}`);
+            } else {
+               console.warn(`No exit found to station ${secondWaypoint.station}, keeping current direction`);
+            }
+         } else {
+            console.warn(`Following train ${followingTrainNumber} has only one waypoint, cannot determine direction`);
+         }
+
+         // Update train to become the following train
+         train.number = followingTrainNumber;
+         train.setScheduleTimes(new Date(firstWaypoint.arrivalTime), new Date(firstWaypoint.departureTime));
+         train.action = firstWaypoint.action as any;
+         
+         // If direction changed, reverse the train (swap positions and toggle isReversed)
+         if (newDirection !== train.movingDirection) {
+            this.reverseTrain(followingTrainNumber);
+         }
+
+         // Update following train number if the new train has one
+         const newFollowingTrain = waypoints.length > 0 && waypoints[waypoints.length - 1].isLast 
+            ? null 
+            : null; // Server would need to provide this in the waypoint data
+         train.followingTrainNumber = newFollowingTrain;
+
+         // Reset station stop tracking
+         train.setStationStopStartTime(null);
+         train.setWaitingProgress(0);
+
+         console.log(`Train ${oldNumber} transformed into ${followingTrainNumber} at station, new direction: ${newDirection}`);
+         
+         // Emit event for UI updates
+         this._eventManager.emit('trainTransformed', train, oldNumber, followingTrainNumber);
+
+      } catch (error) {
+         console.error(`Failed to fetch waypoints for following train ${followingTrainNumber}:`, error);
+         // Keep train stopped at station if we can't fetch the new timetable
+      }
+   }
+
    // Check if train should stop at a station or depart based on schedule
    // returns true if train should stop at a station or is already stopped, false if it should depart or it is not near the station
    private checkStationStop(train: Train, proposedDistance: number): boolean {
       const currentSimulationTime = this._clientSimulation.currentSimulationTime;
-      const leadingPos = train.leadingPosition;
+      
+      // Position is always the front of the train
+      if (!train.position) {
+         return false;
+      }
 
       // Early return if no simulation time or no station stop needed
-      if (!currentSimulationTime || !train.shouldStopAtCurrentStation || !leadingPos?.track || !leadingPos.track.halt) {
+      if (!currentSimulationTime || !train.shouldStopAtCurrentStation || !train.position.track.halt) {
          return false;
       }
 
@@ -511,10 +581,10 @@ export class TrainManager {
       if (train.stopReason === TrainStopReason.STATION) {
          // Train is already stopped - check if it's time to depart
          if (train.departureTime && currentSimulationTime >= train.departureTime) {
-            // Check if the next signal allows departure (from the leading edge)
+            // Check if the next signal allows departure (from the front)
             train.setWaitingProgress(1);
 
-            const nextSignal = this._trackLayoutManager.getNextSignal(leadingPos.track, leadingPos.km, train.movingDirection);
+            const nextSignal = this._trackLayoutManager.getNextSignal(train.position.track, train.position.km, train.movingDirection);
             if (nextSignal && !nextSignal.isTrainAllowedToGo()) {
                train.setStoppedBySignal(nextSignal);
                this._eventManager.emit("trainStoppedBySignal", train, nextSignal);
@@ -546,11 +616,25 @@ export class TrainManager {
       }
       
       const trainCenterKm = (train.position.km + train.tailPosition.km) / 2;
-      const trackCenter = leadingPos.track.length / 2;
+      const trackCenter = train.position.track.length / 2;
       const distanceFromCenter = Math.abs(trainCenterKm - trackCenter);
       const isNearStation = distanceFromCenter <= Math.abs(proposedDistance) + 0.1;
 
       if (isNearStation) {
+         // Check if train ends here and transforms into a following train
+         if (train.action === 'End' && train.followingTrainNumber) {
+            // Handle train ending asynchronously (don't await to avoid blocking simulation)
+            void this.handleTrainEnding(train, currentSimulationTime);
+            
+            // Stop the train at the station while transformation is in progress
+            train.setStopReason(TrainStopReason.STATION);
+            if (!train.stationStopStartTime) {
+               train.setStationStopStartTime(new Date(currentSimulationTime));
+            }
+            this._eventManager.emit("trainStoppedAtStation", train);
+            return true;
+         }
+
          // Train is arriving and near the station - stop it
          if (train.arrivalTime && train.departureTime && currentSimulationTime > train.arrivalTime) {
             var departureTime = new Date(currentSimulationTime.getTime() + SimulationConfig.stationMinStopTime * 1000);

@@ -24,8 +24,6 @@ export class ClientSimulation {
    
    // Callback to invoke on each simulation tick
    private _onTick: (() => void) | null = null;
-   // Callback to invoke when simulation stops
-   private _onStop: (() => void) | null = null;
 
    public get currentSimulationTime(): Date | null {
       return this._currentSimulationTime;
@@ -81,12 +79,7 @@ export class ClientSimulation {
       }
    }
    
-   /**
-    * Set the callback function to be invoked when simulation stops
-    */
-   public setStopCallback(callback: () => void): void {
-      this._onStop = callback;
-   }
+
    
    /**
     * Handle simulation state changes from the server
@@ -106,10 +99,7 @@ export class ClientSimulation {
             break;
          case 'stopped':
             this.stopSimulation();
-            // Invoke stop callback if set (e.g., to clear trains)
-            if (this._onStop) {
-               this._onStop();
-            }
+            // Invoke stop callback if set (e.g., to clear trains)            
             console.log('ClientSimulation: Stopped');
             break;
          default:

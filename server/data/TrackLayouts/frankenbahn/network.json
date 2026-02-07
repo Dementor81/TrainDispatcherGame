@@ -8,7 +8,7 @@
         "fromId": 3,
          "to": "weststadt",
         "toId": 2,
-         "distance": 5000,
+         "distance": 4000,
          "blocks": 1
       },
       {
@@ -16,7 +16,7 @@
         "fromId": 0,
          "to": "linksdorf",
         "toId": 1,
-         "distance": 5000,
+         "distance": 4000,
          "blocks": 1
       },
       {
@@ -24,7 +24,7 @@
         "fromId": 3,
          "to": "neustadt",
         "toId": 2,
-         "distance": 5000,
+         "distance": 4000,
          "blocks": 1
       },
       {
@@ -32,7 +32,7 @@
         "fromId": 0,
          "to": "weststadt",
         "toId": 1,
-         "distance": 5000,
+         "distance": 4000,
          "blocks": 1
       },
       {
@@ -40,7 +40,7 @@
         "fromId": 5,
          "to": "Meßbach",
         "toId": 0,
-         "distance": 7000,
+         "distance": 4000,
          "blocks": 1
       },
       {
@@ -48,7 +48,7 @@
         "fromId": 3,
          "to": "burghausen",
         "toId": 2,
-         "distance": 5000,
+         "distance": 4000,
          "blocks": 1
       },
       {
@@ -56,7 +56,7 @@
         "fromId": 0,
          "to": "neustadt",
         "toId": 1,
-         "distance": 5000,
+         "distance": 4000,
          "blocks": 1
       },
       {
@@ -64,7 +64,7 @@
         "fromId": 4,
          "to": "Golm",
         "toId": 0,
-         "distance": 7000,
+         "distance": 4000,
          "blocks": 1
       },
       {
@@ -72,7 +72,7 @@
         "fromId": 3,
          "to": "ostheim",
         "toId": 2,
-         "distance": 5000,
+         "distance": 4000,
          "blocks": 1
       },
       {
@@ -80,7 +80,7 @@
         "fromId": 0,
          "to": "burghausen",
         "toId": 1,
-         "distance": 5000,
+         "distance": 4000,
          "blocks": 1
       },
       {
@@ -88,7 +88,7 @@
         "fromId": 3,
          "to": "rechtsheim",
         "toId": 2,
-         "distance": 5000,
+         "distance": 4000,
          "blocks": 1
       },
       {
@@ -96,7 +96,7 @@
         "fromId": 0,
          "to": "ostheim",
         "toId": 1,
-         "distance": 5000,
+         "distance": 4000,
          "blocks": 1
       }
    ]

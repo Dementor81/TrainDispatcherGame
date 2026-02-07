@@ -1,4 +1,4 @@
-import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto, OpenLineTrackStatusDto } from "./dto";
+import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto, OpenLineTrackStatusDto, TrainWayPointDto } from "./dto";
 
 const API_BASE_URL = "/api";
 
@@ -119,6 +119,14 @@ export async function getUpcomingTrains(stationId: string): Promise<StationTimet
   return response.json();
 }
 
+export async function getTrainWaypoints(trainNumber: string): Promise<TrainWayPointDto[]> {
+  const response = await fetch(`${API_BASE_URL}/trains/${encodeURIComponent(trainNumber)}/waypoints`);
+  if (!response.ok) {
+    throw new Error(`Failed to get waypoints for train ${trainNumber}: ${response.statusText}`);
+  }
+  return response.json();
+}
+
 export default {
   fetchAvailableLayouts,
   fetchAvailableStations,
@@ -135,6 +143,7 @@ export default {
   setSimulationSpeed,
   getAllTrains,
   getUpcomingTrains,
+  getTrainWaypoints,
   fetchNetwork,
   fetchOpenLineTracks,
 };

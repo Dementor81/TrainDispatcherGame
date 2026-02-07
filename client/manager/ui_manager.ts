@@ -55,6 +55,11 @@ export class UIManager {
         this._eventManager.on('trainDerailed', (train: Train, sw?: Switch) => {
             this.notifyDerailment(train.number, sw?.id);
         });
+
+        // Simulation stopped notifications
+        this._eventManager.on('simulationStopped', () => {
+            ApprovalToast.clearAll(); // Clear any outstanding approval toasts
+        });
     }    
 
     start() {
@@ -106,13 +111,13 @@ export class UIManager {
     }
 
     notifyCollision(trainNumberA: string, trainNumberB: string): void {
-        const message = `Kollision zwischen Zug ${trainNumberA} und Zug ${trainNumberB}. Beide entfernt.`;
+        const message = `Kollision zwischen Zug ${trainNumberA} und Zug ${trainNumberB}!`;
         this._notificationModal?.show(message, 'Kollision');
     }
 
     notifyDerailment(trainNumber: string, switchId?: number): void {
         const details = switchId !== undefined ? ` an Weiche ${switchId}` : '';
-        const message = `Entgleisung von Zug ${trainNumber}${details}. Zug entfernt.`;
+        const message = `Entgleisung von Zug ${trainNumber}${details}!`;
         this._notificationModal?.show(message, 'Entgleisung');
     }
 

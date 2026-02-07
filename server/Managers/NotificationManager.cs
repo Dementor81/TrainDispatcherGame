@@ -40,7 +40,8 @@ namespace TrainDispatcherGame.Server.Managers
                     arrivalTime = arrivalTime,
                     departureTime = departureTime,
                     cars = train.Cars,
-                    speed = train.Speed
+                    speed = train.Speed,
+                    followingTrainNumber = train.FollowingTrainNumber
                 });
                 
                 Console.WriteLine($"Sent train {train.Number} to player {player.Id} at station {normalizedStationId}, exit point {exitPointId}, action: {action}, arrival: {arrivalTime}, departure: {departureTime}");

@@ -1,12 +1,22 @@
 import { Application } from '../core/application';
 import { BasePanel } from './basePanel';
 import { TrainStopReason } from '../sim/train';
+import { getTrainWaypoints } from '../network/api';
+import { TrainWayPointDto } from '../network/dto';
 
 export class TrainDetailsPanel extends BasePanel {
   private _trainNumber: string | null = null;
 
   constructor(application: Application) {
     super(application, null);
+
+    // Listen for train transformations to update panel if showing that train
+    this.application.eventManager.on('trainTransformed', (train: any, oldNumber: string, newNumber: string) => {
+      if (this._trainNumber === oldNumber) {
+        this._trainNumber = newNumber;
+        void this.Updates();
+      }
+    });
   }
 
   protected getContainerId(): string { return 'trainDetailsPanel'; }
@@ -32,7 +42,7 @@ export class TrainDetailsPanel extends BasePanel {
     header.appendChild(closeBtn);
 
     const controls = document.createElement('div');
-    controls.className = 'd-flex gap-2';
+    controls.className = 'd-flex gap-2 mb-3';
     controls.id = 'trainControls';
 
     const stopBtn = document.createElement('button');
@@ -60,8 +70,13 @@ export class TrainDetailsPanel extends BasePanel {
     controls.appendChild(reverseBtn);
     controls.appendChild(removeBtn);
 
+    const timetableContainer = document.createElement('div');
+    timetableContainer.id = 'trainTimetable';
+    timetableContainer.className = 'mt-2';
+
     root.appendChild(header);
     root.appendChild(controls);
+    root.appendChild(timetableContainer);
     return root;
   }
 
@@ -87,6 +102,76 @@ export class TrainDetailsPanel extends BasePanel {
         controlsEl.classList.remove('d-flex');
         controlsEl.classList.add('d-none');
       }
+    }
+
+    await this.updateTimetable();
+  }
+
+  private async updateTimetable(): Promise<void> {
+    const timetableContainer = this.container.querySelector('#trainTimetable') as HTMLDivElement | null;
+    if (!timetableContainer || !this._trainNumber) return;
+
+    try {
+      const waypoints = await getTrainWaypoints(this._trainNumber);
+      
+      timetableContainer.innerHTML = '';
+      
+      if (waypoints.length === 0) {
+        timetableContainer.textContent = 'No timetable available';
+        return;
+      }
+
+      const table = document.createElement('table');
+      table.className = 'table table-sm table-dark table-striped';
+      table.style.fontSize = 'x-small';
+      
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>Station</th>
+          <th>Ankunft</th>
+          <th>Abfahrt</th>
+          <th>Status</th>
+        </tr>
+      `;
+      
+      const tbody = document.createElement('tbody');
+      waypoints.forEach(wp => {
+        const row = document.createElement('tr');
+        if (wp.processed) {
+          row.className = 'text-muted';
+        }
+        
+        const arrivalTime = new Date(wp.arrivalTime).toLocaleTimeString('de-DE', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+        const departureTime = new Date(wp.departureTime).toLocaleTimeString('de-DE', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+
+        const statusIcon = wp.processed ? '✓' : wp.isLast ? '⏹' : wp.stops ? '■' : '○';
+        const statusText = wp.processed ? 'Erledigt' : wp.isLast ? 'Ende' : wp.stops ? 'Halt' : 'Durchfahrt';
+
+        row.innerHTML = `
+          <td>${wp.station}</td>
+          <td>${arrivalTime}</td>
+          <td>${departureTime}</td>
+          <td>${statusIcon} ${statusText}</td>
+        `;
+        
+        tbody.appendChild(row);
+      });
+      
+      table.appendChild(thead);
+      table.appendChild(tbody);
+      
+      timetableContainer.appendChild(table);
+      
+    } catch (error) {
+      console.error('Failed to fetch train waypoints:', error);
+      timetableContainer.textContent = 'Fehler beim Laden des Fahrplans';
     }
   }
 

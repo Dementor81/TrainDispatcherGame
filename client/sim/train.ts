@@ -18,8 +18,8 @@ export enum TrainStopReason {
 
 class Train {
     private _number: string;
-    private _position: RailPosition|null = null;
-    private _tailPosition: RailPosition|null = null;
+    private _position: RailPosition|null = null; 
+    private _tailPosition: RailPosition|null = null; 
     private _cars: number;
     private _speed: number; // m/s
     private _drawingDirection: number; // 1 = locomotive on right, -1 = locomotive on left
@@ -65,6 +65,10 @@ class Train {
         return this._number;
     }
 
+    set number(value: string) {
+        this._number = value;
+    }
+
     get position(): RailPosition | null {
         return this._position;
     }
@@ -89,15 +93,7 @@ class Train {
         return this._movingDirection;
     }
 
-    // Returns true if the locomotive is at the front (leading the movement)
-    get isLocomotiveLeading(): boolean {
-        return this._drawingDirection === this._movingDirection;
-    }
 
-    // Returns the position of the leading edge of the train (front)
-    get leadingPosition(): RailPosition | null {
-        return this.isLocomotiveLeading ? this._position : this._tailPosition;
-    }
 
     get stoppedBySignal(): Signal | null {
         return this._stoppedBySignal;
@@ -157,6 +153,7 @@ class Train {
         if (track === null) this._tailPosition = null;
         else this._tailPosition = new RailPosition(track, km);
     }
+    
 
     // Calculate the actual length of the train based on configured car width and spacing
     getLength(): number {
@@ -164,15 +161,8 @@ class Train {
             return 0;
         }
         
-        // First car (locomotive) uses locomotive width
-        const locomotiveLength = RendererConfig.locomotiveWidth;
-        
-        // Remaining cars use car width
-        const carLength = RendererConfig.carWidth;
-        const remainingCars = this._cars - 1;
-        
-        // Calculate total length: locomotive + cars + spacing between cars
-        const totalLength = locomotiveLength + (remainingCars * carLength) + (remainingCars * RendererConfig.trainCarSpacing);
+        // All cars (including locomotive) use the same width
+        const totalLength = (this._cars * RendererConfig.carWidth) + ((this._cars - 1) * RendererConfig.trainCarSpacing);
         
         return totalLength;
     }

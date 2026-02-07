@@ -85,6 +85,16 @@ export interface StationTimetableEventDto {
   nextStation: string;
 }
 
+export interface TrainWayPointDto {
+  station: string;
+  arrivalTime: string;
+  departureTime: string;
+  processed: boolean;
+  isLast: boolean;
+  stops: boolean;
+  action: string;
+}
+
 // Scenario (planning) types from REST /api/scenarios
 export interface ScenarioSummaryDto {
   id: string;

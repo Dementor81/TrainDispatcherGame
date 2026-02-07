@@ -193,12 +193,6 @@ namespace TrainDispatcherGame.Server.Simulation
             if (currentWaypoint == null) throw new Exception($"Train {train.Number} has no current way point");
             if (nextWaypoint == null) throw new Exception($"Train {train.Number} has no next way point");
 
-            if (nextWaypoint.IsLast)
-            {
-                train.completed = true;
-                return;
-            }
-
             var requiresApproval = _playerManager.IsStationControlled(nextWaypoint.Station);
             if (requiresApproval)
             {

@@ -113,9 +113,6 @@ export class SignalRManager {
             this.handleSimulationStateChanged(data);
         });
 
-        // No server broadcast handling for collisions; client handles own removal/UI
-
-
         this.connection.on('ApprovalRequested', (data) => {
             console.log('Approval requested:', data);
             this.eventManager.emit('approvalRequested', data);

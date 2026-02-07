@@ -14,6 +14,12 @@ export class TrainRouteManager {
    constructor(layout: TrackLayoutManager, eventManager: EventManager) {
       this._layout = layout;
       this._eventManager = eventManager;
+      this.subscribeToLocalEvents();
+   }
+   subscribeToLocalEvents() {
+      this._eventManager.on("simulationStopped", () => {
+         this.clearRoutes();
+      });
    }
 
    get routes(): TrainRoute[] {

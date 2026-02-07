@@ -250,6 +250,28 @@ app.MapGet("/api/simulation/trains", (Simulation simulation) =>
     return Results.Ok(list);
 });
 
+app.MapGet("/api/trains/{trainNumber}/waypoints", (string trainNumber, Simulation simulation) =>
+{
+    var train = simulation.Trains.FirstOrDefault(t => t.Number == trainNumber);
+    if (train == null)
+    {
+        return Results.NotFound(new { message = $"Train {trainNumber} not found" });
+    }
+
+    var waypoints = train.Route.Select(wp => new
+    {
+        station = wp.Station,
+        arrivalTime = wp.ArrivalTime,
+        departureTime = wp.DepartureTime,
+        processed = wp.Processed,
+        isLast = wp.IsLast,
+        stops = wp.Stops,
+        action = wp.Action.ToString()
+    }).ToList();
+
+    return Results.Ok(waypoints);
+});
+
 
 // Open line tracks status
 app.MapGet("/api/openline/tracks", (Simulation simulation) =>

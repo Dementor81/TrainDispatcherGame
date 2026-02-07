@@ -5,6 +5,9 @@ import { toMinutes, minutesToString } from "./utils/timeUtils";
 import { precomputeExitSpans, getDistanceMeters, isSingleTrackSection, deriveOrderedStations } from "./utils/railNetworkUtils";
 import { getCategoryColor } from "./utils/constants";
 import { EditTrainDialog } from "./editTrainDialog";
+import { detectCollisions } from "./utils/collisionDetection";
+
+type DirectionFilter = 'both' | 'leftToRight' | 'rightToLeft';
 
 export default class SzenariosApplication {
    private readonly container: HTMLElement;
@@ -29,6 +32,7 @@ export default class SzenariosApplication {
    private availableRoutes: string[][] = [];
    private selectedRoute: string[] | null = null;
    private singleTrackBg?: PIXI.Graphics;
+   private conflictBg?: PIXI.Graphics;
    private grid?: PIXI.Graphics;
    private lines?: PIXI.Graphics;
    private labels?: PIXI.Container;
@@ -45,6 +49,7 @@ export default class SzenariosApplication {
    private lastPointerY: number = 0;
    private selectedTrainIdx: number | null = null;
    private modalSubmit?: (ev: Event) => void;
+   private directionFilter: DirectionFilter = 'both';
 
    constructor(container: HTMLElement) {
       this.container = container;
@@ -263,12 +268,14 @@ export default class SzenariosApplication {
 
       // Create layers
       this.singleTrackBg = new PIXI.Graphics();
+      this.conflictBg = new PIXI.Graphics();
       this.grid = new PIXI.Graphics();
       this.lines = new PIXI.Graphics();
       this.labels = new PIXI.Container();
       this.trainLabels = new PIXI.Container();
       this.timeHandles = new PIXI.Container();
       this.app.stage.addChild(this.singleTrackBg);
+      this.app.stage.addChild(this.conflictBg);
       this.app.stage.addChild(this.grid);
       this.app.stage.addChild(this.lines);
       this.app.stage.addChild(this.labels);
@@ -304,6 +311,7 @@ export default class SzenariosApplication {
       // Precompute station exit spans from server-provided MaxExitDistance
       await precomputeExitSpans(network);
       this.setupRouteSelector();
+      this.updateDirectionFilterButton();
       this.drawScene();
       this.setupInteractions();
    }
@@ -370,6 +378,7 @@ export default class SzenariosApplication {
       const yForTime = (timeStr: string): number => yForMinutes(toMinutes(timeStr));
 
       if (this.singleTrackBg) this.singleTrackBg.clear();
+      if (this.conflictBg) this.conflictBg.clear();
       this.grid.clear();
       this.labels.removeChildren();
       this.lines.clear();
@@ -435,6 +444,45 @@ export default class SzenariosApplication {
          }
       }
 
+      // collision/conflict regions
+      if (this.conflictBg && this.scenario && this.network) {
+         const conflicts = detectCollisions(this.scenario.trains, this.network);
+         for (const conflict of conflicts) {
+            // Skip if either station is not in the current route
+            if (!this.stationIndex.has(conflict.fromStation) || !this.stationIndex.has(conflict.toStation)) {
+               continue;
+            }
+            
+            const viewStart = this.viewStartMinutes;
+            const viewEnd = this.viewStartMinutes + this.viewDurationMinutes;
+            
+            // Skip if conflict is completely outside the current time view
+            if (conflict.endTimeMinutes < viewStart || conflict.startTimeMinutes > viewEnd) {
+               continue;
+            }
+            
+            // Clip conflict time to current view
+            const conflictStart = Math.max(conflict.startTimeMinutes, viewStart);
+            const conflictEnd = Math.min(conflict.endTimeMinutes, viewEnd);
+            
+            // Calculate coordinates for the conflict region
+            const x1 = xForStation(conflict.fromStation);
+            const x2 = xForStation(conflict.toStation);
+            const y1 = yForMinutes(conflictStart);
+            const y2 = yForMinutes(conflictEnd);
+            
+            // Draw filled polygon (quadrilateral) for the conflict region
+            this.conflictBg
+               .poly([
+                  x1, y1,  // top-left
+                  x2, y1,  // top-right
+                  x2, y2,  // bottom-right
+                  x1, y2   // bottom-left
+               ])
+               .fill({ color: 0xff0000, alpha: 0.35 });
+         }
+      }
+
       // horizontal time grid aligned to time ticks
       {
          const viewStart = this.viewStartMinutes;
@@ -475,9 +523,18 @@ export default class SzenariosApplication {
       // Draw trains
       for (let idx = 0; idx < this.scenario.trains.length; idx++) {
          const train = this.scenario.trains[idx];
+         
+         // Apply direction filter
+         if (!this.shouldShowTrain(train)) continue;
+         
          const color = getCategoryColor((train as any).category, (train as any).type);
          const entries = train.timetable;
          if (!entries || entries.length === 0) continue;
+         
+         // Check if this train is selected for thicker line
+         const isSelected = idx === this.selectedTrainIdx;
+         const lineWidth = isSelected ? 4 : 2;
+         
          for (let i = 0; i < entries.length - 1; i++) {
             const a = entries[i];
             const b = entries[i + 1];
@@ -614,7 +671,8 @@ export default class SzenariosApplication {
             // handle only for departure (arrival adjustment is not needed)
             this.drawTimeHandle(train, idx, i, "departure", e.departure, x, yForTime);
          }
-         this.lines.stroke({ width: 2, color, alpha: 1, cap: "round" });
+         // Stroke each train individually with appropriate line width
+         this.lines.stroke({ width: lineWidth, color, alpha: 1, cap: "round" });
       }
       // Keep hover overlay in sync with new transforms
       if (this.lastHoverClientY !== null) {
@@ -918,6 +976,13 @@ export default class SzenariosApplication {
       if (deleteBtn) deleteBtn.addEventListener("click", () => this.deleteSelectedTrain());
       if (editBtn) editBtn.addEventListener("click", () => this.editSelectedTrain());
       if (recalculateBtn) recalculateBtn.addEventListener("click", () => this.recalculateTrain());
+
+      const directionBtn = document.getElementById("direction-filter-btn") as HTMLButtonElement | null;
+      if (directionBtn) {
+         directionBtn.addEventListener("click", () => {
+            this.cycleDirectionFilter();
+         });
+      }
    }
 
    private clearStage() {
@@ -930,7 +995,70 @@ export default class SzenariosApplication {
       return this.viewDurationMinutes / Math.max(1, height);
    }
 
+   private getTrainDirection(train: any): 'leftToRight' | 'rightToLeft' | 'unknown' {
+      const timetable = train.timetable || [];
+      if (timetable.length < 2) return 'unknown';
+      
+      const firstStation = timetable[0].station;
+      const lastStation = timetable[timetable.length - 1].station;
+      
+      const firstIndex = this.stationIndex.get(firstStation);
+      const lastIndex = this.stationIndex.get(lastStation);
+      
+      if (firstIndex === undefined || lastIndex === undefined) return 'unknown';
+      
+      if (firstIndex < lastIndex) return 'leftToRight';
+      if (firstIndex > lastIndex) return 'rightToLeft';
+      
+      return 'unknown';
+   }
+
+   private shouldShowTrain(train: any): boolean {
+      if (this.directionFilter === 'both') return true;
+      
+      const direction = this.getTrainDirection(train);
+      if (direction === 'unknown') return true; // Show trains with unknown direction
+      
+      return direction === this.directionFilter;
+   }
+
+   private cycleDirectionFilter() {
+      // Cycle through modes: both -> leftToRight -> rightToLeft -> both
+      if (this.directionFilter === 'both') {
+         this.directionFilter = 'leftToRight';
+      } else if (this.directionFilter === 'leftToRight') {
+         this.directionFilter = 'rightToLeft';
+      } else {
+         this.directionFilter = 'both';
+      }
+      
+      this.updateDirectionFilterButton();
+      this.drawScene();
+   }
+
+   private updateDirectionFilterButton() {
+      const btn = document.getElementById("direction-filter-btn");
+      if (!btn) return;
+      
+      const icon = btn.querySelector("i");
+      if (!icon) return;
+      
+      // Update icon based on current filter
+      icon.className = ''; // Clear all classes
+      if (this.directionFilter === 'both') {
+         icon.className = 'bi bi-arrow-left-right';
+         btn.title = 'Showing all trains (click to filter left-to-right)';
+      } else if (this.directionFilter === 'leftToRight') {
+         icon.className = 'bi bi-arrow-right';
+         btn.title = 'Showing left-to-right trains (click to filter right-to-left)';
+      } else {
+         icon.className = 'bi bi-arrow-left';
+         btn.title = 'Showing right-to-left trains (click to show all)';
+      }
+   }
+
    private setSelectedTrain(idx: number | null) {
+      const changed = this.selectedTrainIdx !== idx;
       this.selectedTrainIdx = idx;
       const copyBtn = document.getElementById("train-copy-btn") as HTMLButtonElement | null;
       const deleteBtn = document.getElementById("train-delete-btn") as HTMLButtonElement | null;
@@ -941,6 +1069,10 @@ export default class SzenariosApplication {
       if (deleteBtn) deleteBtn.disabled = !enabled;
       if (editBtn) editBtn.disabled = !enabled;
       if (recalculateBtn) recalculateBtn.disabled = !enabled;
+      // Defer redraw to avoid interfering with event handling
+      if (changed) {
+         requestAnimationFrame(() => this.drawScene());
+      }
    }
 
    private copySelectedTrain() {

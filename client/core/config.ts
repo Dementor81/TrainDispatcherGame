@@ -16,8 +16,7 @@ export class RendererConfig {
     // Train rendering configuration
     static readonly locomotiveColor = 0x036ffc;
     static readonly carColor = 0x4391f7;
-    static readonly locomotiveWidth = 8;
-    static readonly carWidth = 40;
+    static readonly carWidth = 40; // Width for all cars including locomotive
     static readonly trainHeight = 20;
     static readonly locomotiveRadius = 3;
     static readonly carRadius = 1;

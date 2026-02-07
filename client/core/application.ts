@@ -49,13 +49,7 @@ export class Application {
       // Set up the simulation tick callback
       this._clientSimulation.setTickCallback(() => {
          this._trainManager.updateSimulation();
-      });
-      
-      // Set up the simulation stop callback
-      this._clientSimulation.setStopCallback(() => {
-         this._trainManager.clearAllTrains(); // Clear trains
-         ApprovalToast.clearAll(); // Clear any outstanding approval toasts
-      });
+      });  
    }
 
    async init() {
@@ -343,7 +337,6 @@ export class Application {
       try {
          // Stop any running simulation and clear trains
          this._clientSimulation.stopSimulation();
-         this._trainManager.clearAllTrains();
 
          // Clear canvas contents
          if (this._renderer) {

@@ -35,10 +35,12 @@ export class TrackLayoutManager {
       this._signals = [];
       this._platforms = [];
       this._application = application;
+      this.subscribeToLocalEvents();
    }
 
    setRenderer(renderer: Renderer): void {
       this._renderer = renderer;
+
 
       this._application.eventManager.on("switchClicked", (sw: Switch) => {
          console.log(`Switch ${sw.id} clicked`);
@@ -53,6 +55,17 @@ export class TrackLayoutManager {
       this._application.eventManager.on("trainPassedSignal", (train: Train, signal: Signal) => {
          console.log(`Train ${train.number} passed signal at km ${signal.position} on track ${signal.track?.id}`);
          this.handleTrainPassedSignal(train, signal);
+      });
+   }
+
+   subscribeToLocalEvents() {
+      this._application.eventManager.on("simulationStopped", () => {
+         for (const signal of this._signals) {
+            signal.stop();
+            
+               this._renderer?.redrawSignal(signal);
+            
+         }
       });
    }
 
@@ -111,8 +124,8 @@ export class TrackLayoutManager {
    }
 
    getExitPointDirection(exitPointId: number): number {
-      // If exit is at the start of the track (index 0), direction is positive (1)
-      // If exit is at the end of the track (index 1), direction is negative (-1)
+      // If exit is at the start of the track (index 0), direction is positive (1) - trains spawn moving away
+      // If exit is at the end of the track (index 1), direction is negative (-1) - trains spawn moving away
       const exitId = exitPointId;
       for (const track of this._tracks) {
          for (let i = 0; i < track.switches.length; i++) {
@@ -130,6 +143,21 @@ export class TrackLayoutManager {
          for (const switchItem of track.switches) {
             if (switchItem instanceof Exit && switchItem.id === exitPointId) {
                return switchItem;
+            }
+         }
+      }
+      return null;
+   }
+
+   findExitToStation(stationName: string): Exit | null {
+      for (const track of this._tracks) {
+         for (const switchItem of track.switches) {
+            if (switchItem instanceof Exit && switchItem.connection) {
+               // Check if this exit leads to the target station
+               if (switchItem.connection.to === stationName && 
+                   !switchItem.isInbound) {
+                  return switchItem;
+               }
             }
          }
       }

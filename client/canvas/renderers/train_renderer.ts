@@ -13,6 +13,8 @@ interface TrainContainer extends PIXI.Container {
    numberText?: PIXI.Text;
    stationPie?: PIXI.Graphics;
    signalWarning?: PIXI.Graphics;
+   frontDot?: PIXI.Graphics;
+   tailDot?: PIXI.Graphics;
 }
 
 export class TrainRenderer {
@@ -30,6 +32,33 @@ export class TrainRenderer {
       this._canvas = canvas;
       this._trainManager = trainManager;
       stage.addChild(this._container);
+
+      // Listen for train transformation events
+      this._eventManager.on('trainTransformed', (train: Train, oldNumber: string, newNumber: string) => {
+         this.handleTrainTransformed(oldNumber, newNumber);
+      });
+   }
+
+   /**
+    * Handle train number transformation by updating the container map and display
+    */
+   private handleTrainTransformed(oldNumber: string, newNumber: string): void {
+      const existingContainer = this._trainContainersByNumber.get(oldNumber);
+      if (existingContainer) {
+         // Remove old mapping
+         this._trainContainersByNumber.delete(oldNumber);
+
+         // Update container properties
+         existingContainer.trainNumber = newNumber;
+         if (existingContainer.numberText) {
+            existingContainer.numberText.text = newNumber;
+         }
+
+         // Add new mapping
+         this._trainContainersByNumber.set(newNumber, existingContainer);
+
+         console.log(`TrainRenderer: Updated train container from ${oldNumber} to ${newNumber}`);
+      }
    }
 
    /**
@@ -56,7 +85,7 @@ export class TrainRenderer {
       const trainContainer = this.getOrCreateTrainContainer(train);
       this.updateTrainGraphics(train, trainContainer);
    }
- 
+
    /**
     * Render all trains by removing all existing containers and rendering all trains
     */
@@ -124,18 +153,9 @@ export class TrainRenderer {
          g.destroy();
       }
 
-      // Add missing cars
+      // Add missing cars - create simple graphics, styling will be applied in updateTrainGraphics
       while (cars.length < train.cars) {
-         const carIndex = cars.length;
-         const isLocomotive = carIndex === 0;
-
          const g = new PIXI.Graphics();
-         const carWidth: number = RendererConfig.carWidth;
-         const carColor = isLocomotive ? RendererConfig.locomotiveColor : RendererConfig.carColor;
-         const carRadius = isLocomotive ? RendererConfig.locomotiveRadius : RendererConfig.carRadius;
-
-         g.roundRect(-carWidth / 2, -RendererConfig.trainHeight / 2, carWidth, RendererConfig.trainHeight, carRadius).fill(carColor);
-
          g.eventMode = "dynamic";
          g.on("pointerup", () => {
             this._eventManager.emit("trainClicked", train.number);
@@ -159,31 +179,45 @@ export class TrainRenderer {
       this.ensureCarGraphics(train, trainContainer);
       const cars = trainContainer.cars ?? [];
 
-      for (let carIndex = 0; carIndex < cars.length; carIndex++) {
-         // Calculate how far behind the locomotive this car should be
-         let carTrack = train.position.track;
-         let carKm = train.position.km;
+      let carIndex = 0;
+      let carTrack = train.position.track;
+      let carKm = train.position.km;
 
-         // Use followRailNetwork to find the correct position for this car
-         if (carIndex !== 0) {
-            const carOffsetDistance = carIndex * (RendererConfig.trainCarSpacing + RendererConfig.carWidth);
-            try {
-               const result = this._trackLayoutManager.followRailNetwork(
-                  train.position.track,
-                  train.position.km,
-                  carOffsetDistance * -train.drawingDirection
-               );
+      let drawingDirection = train.drawingDirection;
+      let isReversed = train.movingDirection === train.drawingDirection;
 
-               if (result.element instanceof Track) {
-                  carTrack = result.element;
-                  carKm = result.km;
-               } else {
-                  continue;
-               }
-            } catch {
+      for (carIndex = 0; carIndex < cars.length; carIndex++) {
+         const isLocomotive = carIndex === 0;
+         // move each car, so instead of the center of the first car, the head of the first car is at the position of the train
+         let carOffset = RendererConfig.carWidth / 2 * drawingDirection * (isReversed ? -1 : 1);
+
+         if (carIndex !== 0 && !isReversed || carIndex !== cars.length - 1 && isReversed) {
+            const carPositionInTrain = isReversed ? -(cars.length - carIndex - 1) : carIndex;
+            carOffset += carPositionInTrain * (RendererConfig.trainCarSpacing + RendererConfig.carWidth) * drawingDirection;
+         }
+         try {
+            const result = this._trackLayoutManager.followRailNetwork(
+               train.position.track,
+               train.position.km,
+               carOffset
+            );
+
+            if (result.element instanceof Track) {
+               carTrack = result.element;
+               carKm = result.km;
+            } else {
                continue;
             }
+         } catch {
+            continue;
          }
+         const carGraphics = cars[carIndex];
+         const carColor = isLocomotive ? RendererConfig.locomotiveColor : RendererConfig.carColor;
+         const carRadius = isLocomotive ? RendererConfig.locomotiveRadius : RendererConfig.carRadius;
+
+         carGraphics.clear();
+         carGraphics.roundRect(-RendererConfig.carWidth / 2, -RendererConfig.trainHeight / 2, RendererConfig.carWidth, RendererConfig.trainHeight, carRadius).fill(carColor);
+         //carGraphics.circle(0, 0, 2).fill(carColor);
 
          let curveTrack: Track | null = null;
          // Look ahead
@@ -192,7 +226,7 @@ export class TrainRenderer {
             if (ahead.element instanceof Track && ahead.element !== carTrack) {
                curveTrack = ahead.element;
             }
-         } catch {}
+         } catch { }
          // Look behind if not found ahead
          if (!curveTrack) {
             try {
@@ -200,7 +234,7 @@ export class TrainRenderer {
                if (behind.element instanceof Track && behind.element !== carTrack) {
                   curveTrack = behind.element;
                }
-            } catch {}
+            } catch { }
          }
 
          // Calculate car's screen position
@@ -213,13 +247,12 @@ export class TrainRenderer {
          }
 
          // Position and rotate the car graphics
-         const carGraphics = cars[carIndex];
          carGraphics.x = carPosition.x;
          carGraphics.y = carPosition.y;
          carGraphics.rotation = trackAngle;
 
          // Locomotive-only overlays
-         if (carIndex === 0) {
+         if (isLocomotive) {
             const text = trainContainer.numberText;
             if (text) {
                text.text = train.number;
@@ -299,6 +332,33 @@ export class TrainRenderer {
                // Ensure overlays stay on top of cars
                trainContainer.addChild(warning);
             }
+         }
+         // Remove any existing graphics for front and tail dots before drawing new ones
+         if (trainContainer.frontDot) {
+            trainContainer.removeChild(trainContainer.frontDot);
+         }
+         if (trainContainer.tailDot) {
+            trainContainer.removeChild(trainContainer.tailDot);
+         }
+
+         // Draw a point at the front (train position)
+         if (train.position) {
+            const frontScreen = PositionCalculator.getPointFromPosition(train.position.track, train.position.km);
+            const frontDot = new PIXI.Graphics();
+            frontDot.circle(frontScreen.x, frontScreen.y, 4);
+            frontDot.fill({ color: 0x00ff00, alpha: 1 });
+            trainContainer.addChild(frontDot);
+            trainContainer.frontDot = frontDot;
+         }
+
+         // Draw a point at the tail position
+         if (train.tailPosition) {
+            const tailScreen = PositionCalculator.getPointFromPosition(train.tailPosition.track, train.tailPosition.km);
+            const tailDot = new PIXI.Graphics();
+            tailDot.circle(tailScreen.x, tailScreen.y, 4);
+            tailDot.fill({ color: 0xff00ff, alpha: 1 });
+            trainContainer.addChild(tailDot);
+            trainContainer.tailDot = tailDot;
          }
       }
    }

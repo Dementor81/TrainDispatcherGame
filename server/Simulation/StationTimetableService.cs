@@ -43,6 +43,11 @@ namespace TrainDispatcherGame.Server.Simulation
                     {
                         nextStation = allEvents[eventIndex + 1].Station;
                     }
+                    else if (futureEvent.IsLast)
+                    {
+                        // Train ends at this station - show the station name
+                        nextStation = futureEvent.Station;
+                    }
 
                     stationEvents.Add(new StationTimetableEvent
                     {
