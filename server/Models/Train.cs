@@ -81,7 +81,7 @@ namespace TrainDispatcherGame.Server.Models
             }
             else
             {
-                completed = true;
+                
                 return null;
             }
         }

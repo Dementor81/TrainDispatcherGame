@@ -26,7 +26,6 @@ Big Features:
     ✔ Streckenblock (the track between stations knows if it is occupied by a train) @done(26-01-24 18:06)
     ☐ handle missrouted trains on client side. maybe it should stop at the exitppoint and the player must confirm  backing up to the station
     ☐ trains can end at a station and return as new trains
-    ☐ track occupied detection
     ☐ acceleration and deceleration
     ☐ select a train to see different information
     ☐ shunting
@@ -42,6 +41,7 @@ Bugs:
     ✔ not all server event sets the delay correctly, when the approuval comes to late @done(26-01-04 17:10) --> to be Tested
     ☐ some random delays of trains at the server side
     ☐ the server dispatch does not calculate travel times within stations
+    ☐ trains report departure over and over again
     
 
 

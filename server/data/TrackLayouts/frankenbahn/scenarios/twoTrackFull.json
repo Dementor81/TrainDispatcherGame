@@ -694,7 +694,7 @@
           "departure": "00:16:53"
         },
         {
-          "station": "Golm",
+          "station": "golm",
           "arrival": "00:21:05",
           "departure": ""
         }
@@ -710,7 +710,7 @@
       "path": [],
       "timetable": [
         {
-          "station": "Golm",
+          "station": "golm",
           "arrival": "",
           "departure": "00:30:06"
         },
@@ -756,7 +756,7 @@
           "departure": "00:35:26"
         },
         {
-          "station": "Golm",
+          "station": "golm",
           "arrival": "00:38:56",
           "departure": ""
         }
@@ -772,7 +772,7 @@
       "path": [],
       "timetable": [
         {
-          "station": "Golm",
+          "station": "golm",
           "arrival": "",
           "departure": "00:49:46"
         },
@@ -844,7 +844,7 @@
       "path": [],
       "timetable": [
         {
-          "station": "Golm",
+          "station": "golm",
           "arrival": "",
           "departure": "00:24:41"
         },

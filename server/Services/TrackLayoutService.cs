@@ -253,7 +253,6 @@ namespace TrainDispatcherGame.Server.Services
                         ToStation = normalizedToStation,
                         ToExitId = toExit,
                         Distance = c.Distance,
-                        Blocks = c.Blocks,
                         Mode = sameConnectionCount == 1 ? NetworkConnection.TrackMode.SingleTrack : NetworkConnection.TrackMode.DualTrack,
                     };
                     _directedConnections[(normalizedFromStation, forward.FromExitId)] = forward;
@@ -454,7 +453,6 @@ namespace TrainDispatcherGame.Server.Services
                     ToStation = conn.ToStation,
                     ToExitId = conn.ToExitId,
                     Distance = conn.Distance,
-                    Blocks = conn.Blocks,
                     Mode = conn.Mode.ToString()
                 });
             }

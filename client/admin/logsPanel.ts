@@ -5,6 +5,8 @@ import { BasePanel } from "../ui/basePanel";
 export class LogsPanel extends BasePanel {
   private filterInput?: HTMLInputElement;
   private showRealTime: boolean = false;
+  private lastFilterKey: string = '';
+  private lastRenderedCount: number = 0;
 
   constructor() {
     super(null as any, 2000);
@@ -80,24 +82,40 @@ export class LogsPanel extends BasePanel {
       if (!output) return;
 
       const contexts = this.getFilterContexts();
+      const filterKey = contexts.join('|');
       const logs = await fetchLogs(contexts);
-      output.innerHTML = '';
+      const shouldRebuild = filterKey !== this.lastFilterKey || logs.length < this.lastRenderedCount;
+
+      if (shouldRebuild) {
+        output.innerHTML = '';
+        this.lastFilterKey = filterKey;
+        this.lastRenderedCount = 0;
+      }
 
       if (!logs || logs.length === 0) {
-        const empty = document.createElement('div');
-        empty.className = 'text-muted';
-        empty.textContent = 'No logs available';
-        output.appendChild(empty);
+        if (this.lastRenderedCount === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'text-muted';
+          empty.textContent = 'No logs available';
+          output.appendChild(empty);
+        }
         return;
       }
 
-      for (const raw of logs) {
-        const entry = this.normalizeEntry(raw);
+      if (shouldRebuild && output.firstChild && output.textContent === 'No logs available') {
+        output.innerHTML = '';
+      }
+
+      const startIndex = Math.max(this.lastRenderedCount, 0);
+      for (let i = startIndex; i < logs.length; i++) {
+        const entry = this.normalizeEntry(logs[i]);
         const line = document.createElement('div');
         line.style.color = this.levelColor(entry.level);
         line.textContent = this.formatEntry(entry);
         output.appendChild(line);
       }
+
+      this.lastRenderedCount = logs.length;
     } catch (err) {
       console.error('LogsPanel: failed to update', err);
     }
@@ -130,7 +148,7 @@ export class LogsPanel extends BasePanel {
   private formatEntry(entry: LogEntryDto): string {
     const ts = this.resolveDisplayTime(entry);
     const ctx = entry.context ? ` [${entry.context}]` : '';
-    return `${ts} ${entry.level}${ctx} ${entry.message}`;
+    return `${ts} ${ctx} ${entry.message}`;
   }
 
   private resolveDisplayTime(entry: LogEntryDto): string {

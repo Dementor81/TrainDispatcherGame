@@ -18,10 +18,7 @@ namespace TrainDispatcherGame.Server.Models.DTOs
 
         [JsonPropertyName("distance")]
         public int Distance { get; set; }
-
-        [JsonPropertyName("blocks")]
-        public int Blocks { get; set; }
-
+        
         [JsonPropertyName("mode")]
         public string Mode { get; set; } = string.Empty;
     }

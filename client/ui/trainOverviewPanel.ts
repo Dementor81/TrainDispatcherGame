@@ -4,7 +4,7 @@ import { Application } from '../core/application';
 import { BasePanel } from './basePanel';
 
 export class TrainOverviewPanel extends BasePanel {
-  
+  private _updating:boolean = false;
   
 
   constructor(application: Application) {
@@ -56,6 +56,8 @@ export class TrainOverviewPanel extends BasePanel {
   }
 
   private async updateTrains(): Promise<void> {
+    if(this._updating) return;
+    this._updating = true;
     try {
       const stationId = this.application.currentStationId;
       if (!stationId) {
@@ -64,9 +66,13 @@ export class TrainOverviewPanel extends BasePanel {
       }
       
       const trains = await getUpcomingTrains(stationId);
+      trains.sort((a, b) => this.getSortTimeSeconds(a) - this.getSortTimeSeconds(b));
       this.renderTrains(trains);
     } catch (error) {
       console.error('Failed to update trains:', error);
+    }
+    finally {
+      this._updating = false;
     }
   }
 
@@ -79,46 +85,91 @@ export class TrainOverviewPanel extends BasePanel {
       return;
     }
 
-    trainsList.innerHTML = this.createTrainTable(trains);
+    const tbody = this.ensureTrainTable(trainsList);
+    if (!tbody) return;
+
+    const existingRows = new Map<string, HTMLTableRowElement>();
+    tbody.querySelectorAll<HTMLTableRowElement>('tr[data-train-number]').forEach((row) => {
+      const number = row.dataset.trainNumber;
+      if (number) {
+        existingRows.set(number, row);
+      }
+    });
+
+    const nextNumbers = new Set<string>();
+    for (const train of trains) {
+      const trainNumber = train.trainNumber;
+      nextNumbers.add(trainNumber);
+      let row = existingRows.get(trainNumber);
+      if (!row) {
+        row = document.createElement('tr');
+        row.className = 'train-row';
+        row.dataset.trainNumber = trainNumber;
+        row.style.cursor = 'pointer';
+        tbody.appendChild(row);
+      }
+
+      this.updateTrainRow(row, train);
+      
+    }
+
+    for (const [trainNumber, row] of existingRows) {
+      if (!nextNumbers.has(trainNumber)) {
+        row.remove();
+      }
+    }
   }
 
-  private createTrainTable(trains: StationTimetableEventDto[]): string {
-    return `
-      <div class="table-responsive">
-        <table class="table table-dark table-sm table-borderless mb-0">
-          <thead>
-            <tr class="border-bottom border-secondary">
-              <th>Train</th>
-              <th>From</th>
-              <th>To</th>
-              <th>Arrival</th>
-              <th>Departure</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${trains.map(train => this.createTrainTableRow(train)).join('')}
-          </tbody>
-        </table>
-      </div>
+  private ensureTrainTable(trainsList: HTMLElement): HTMLTableSectionElement | null {
+    const existingTableBody = trainsList.querySelector<HTMLTableSectionElement>('tbody');
+    if (existingTableBody) {
+      return existingTableBody;
+    }
+
+    trainsList.innerHTML = '';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'table-responsive';
+
+    const table = document.createElement('table');
+    table.className = 'table table-dark table-sm table-borderless mb-0';
+
+    const thead = document.createElement('thead');
+    thead.innerHTML = `
+      <tr class="border-bottom border-secondary">
+        <th>Zug</th>
+        <th>Von</th>
+        <th>Nach</th>
+        <th>Ankunft</th>
+        <th>Abfahrt</th>
+        <th>Status</th>
+      </tr>
     `;
+
+    const tbody = document.createElement('tbody');
+
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    wrapper.appendChild(table);
+    trainsList.appendChild(wrapper);
+
+    return tbody;
   }
 
-  private createTrainTableRow(train: StationTimetableEventDto): string {
+  private updateTrainRow(row: HTMLTableRowElement, train: StationTimetableEventDto): void {
     const delayInfo = this.formatDelay(train.currentDelay);
     const isStoppedBySignal = this.application.trains.some(t => t.number === train.trainNumber && t.stoppedBySignal);
+    const hasArrival = train.departureSeconds !== null && train.departureSeconds !== train.arrivalSeconds;
     
-    return `
-      <tr class="train-row" data-train-number="${train.trainNumber}" style="cursor:pointer">
-        <td class="fw-bold ${isStoppedBySignal ? 'text-danger' : ''}">${train.category} ${train.trainNumber}</td>
-        <td class="small">${train.fromStation}</td>
-        <td class="small">${train.nextStation}</td>
-        <td class="small">${
-          train.arrival !== train.departure ? this.formatTime(train.arrival) : '---'
-        }</td>
-        <td class="small">${this.formatTime(train.departure)}</td>
-        <td><span class="badge ${delayInfo.class}">${delayInfo.text}</span></td>
-      </tr>
+    row.innerHTML = `
+      <td class="fw-bold ${isStoppedBySignal ? 'text-danger' : ''}">${train.category} ${train.trainNumber}</td>
+      <td class="small">${train.fromStation}</td>
+      <td class="small">${train.nextStation}</td>
+      <td class="small">${
+        hasArrival ? this.formatSeconds(train.arrivalSeconds) : '---'
+      }</td>
+      <td class="small">${this.formatSeconds(train.departureSeconds)}</td>
+      <td><span class="badge ${delayInfo.class}">${delayInfo.text}</span></td>
     `;
   }
 
@@ -138,19 +189,21 @@ export class TrainOverviewPanel extends BasePanel {
     }
   }
 
-  private formatTime(timeString: string): string {
-    // Convert time string to a more readable format
-    if (timeString.includes(':')) {
-      return timeString;
+  private formatSeconds(seconds?: number | null): string {
+    if (seconds === null || seconds === undefined) {
+      return '';
     }
-    
-    // If it's a full datetime string, extract just the time
-    try {
-      const date = new Date(timeString);
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return timeString;
+    const clamped = Math.max(0, seconds);
+    const hours = Math.floor(clamped / 3600) % 24;
+    const minutes = Math.floor((clamped % 3600) / 60);
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  }
+
+  private getSortTimeSeconds(train: StationTimetableEventDto): number {
+    if (train.departureSeconds !== null && train.departureSeconds !== undefined) {
+      return train.departureSeconds;
     }
+    return train.arrivalSeconds;
   }
 
 

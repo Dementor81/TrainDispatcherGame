@@ -4,100 +4,88 @@
    "stations": ["weststadt", "neustadt", "burghausen", "ostheim"],
    "connections": [
       {
-        "from": "linksdorf",
-        "fromId": 3,
+         "from": "linksdorf",
+         "fromId": 3,
          "to": "weststadt",
-        "toId": 2,
-         "distance": 4000,
-         "blocks": 1
+         "toId": 2,
+         "distance": 4000
       },
       {
-        "from": "weststadt",
-        "fromId": 0,
+         "from": "weststadt",
+         "fromId": 0,
          "to": "linksdorf",
-        "toId": 1,
-         "distance": 4000,
-         "blocks": 1
+         "toId": 1,
+         "distance": 4000
       },
       {
-        "from": "weststadt",
-        "fromId": 3,
+         "from": "weststadt",
+         "fromId": 3,
          "to": "neustadt",
-        "toId": 2,
-         "distance": 4000,
-         "blocks": 1
+         "toId": 2,
+         "distance": 4000
       },
       {
-        "from": "neustadt",
-        "fromId": 0,
+         "from": "neustadt",
+         "fromId": 0,
          "to": "weststadt",
-        "toId": 1,
-         "distance": 4000,
-         "blocks": 1
+         "toId": 1,
+         "distance": 4000
       },
       {
-        "from": "weststadt",
-        "fromId": 5,
-         "to": "Meßbach",
-        "toId": 0,
-         "distance": 4000,
-         "blocks": 1
+         "from": "weststadt",
+         "fromId": 5,
+         "to": "meßbach",
+         "toId": 0,
+         "distance": 4000
       },
       {
-        "from": "neustadt",
-        "fromId": 3,
+         "from": "neustadt",
+         "fromId": 3,
          "to": "burghausen",
-        "toId": 2,
-         "distance": 4000,
-         "blocks": 1
+         "toId": 2,
+         "distance": 4000
       },
       {
-        "from": "burghausen",
-        "fromId": 0,
+         "from": "burghausen",
+         "fromId": 0,
          "to": "neustadt",
-        "toId": 1,
-         "distance": 4000,
-         "blocks": 1
+         "toId": 1,
+         "distance": 4000
       },
       {
-        "from": "burghausen",
-        "fromId": 4,
-         "to": "Golm",
-        "toId": 0,
-         "distance": 4000,
-         "blocks": 1
+         "from": "burghausen",
+         "fromId": 4,
+         "to": "golm",
+         "toId": 0,
+         "distance": 4000
       },
       {
-        "from": "burghausen",
-        "fromId": 3,
+         "from": "burghausen",
+         "fromId": 3,
          "to": "ostheim",
-        "toId": 2,
-         "distance": 4000,
-         "blocks": 1
+         "toId": 2,
+         "distance": 4000
       },
       {
-        "from": "ostheim",
-        "fromId": 0,
+         "from": "ostheim",
+         "fromId": 0,
          "to": "burghausen",
-        "toId": 1,
-         "distance": 4000,
-         "blocks": 1
+         "toId": 1,
+         "distance": 4000
       },
       {
-        "from": "ostheim",
-        "fromId": 3,
+         "from": "ostheim",
+         "fromId": 3,
          "to": "rechtsheim",
-        "toId": 2,
-         "distance": 4000,
-         "blocks": 1
+         "toId": 2,
+         "distance": 4000
       },
       {
-        "from": "rechtsheim",
-        "fromId": 0,
+         "from": "rechtsheim",
+         "fromId": 0,
          "to": "ostheim",
-        "toId": 1,
-         "distance": 4000,
-         "blocks": 1
+         "toId": 1,
+         "distance": 4000
       }
    ]
 }

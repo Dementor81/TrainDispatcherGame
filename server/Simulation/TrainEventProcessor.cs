@@ -98,15 +98,28 @@ namespace TrainDispatcherGame.Server.Simulation
                     }
                 }
                 var currentWaypoint = train.GetCurrentWayPoint();
-                if (currentWaypoint != null && currentWaypoint.DepartureTime > SimulationTime)
+                if (currentWaypoint != null)
                 {
-                    train.TrainEvent = new TrainWaitEvent(currentWaypoint.DepartureTime);
-                    ServerLogger.Instance.LogWarning(train.Number, $"Train {train.Number} waiting at {currentWaypoint.Station} until {currentWaypoint.DepartureTime:HH:mm:ss}");
+                    if(currentWaypoint.IsLast){
+                        ServerLogger.Instance.LogDebug(train.Number, $"Train {train.Number} has completed all events");
+                        train.completed = true;
+                        return;
+                    }
+                    if (currentWaypoint.DepartureTime > SimulationTime)
+                    {
+                        train.TrainEvent = new TrainWaitEvent(currentWaypoint.DepartureTime);
+                        ServerLogger.Instance.LogWarning(train.Number, $"Train {train.Number} waiting at {currentWaypoint.Station} until {currentWaypoint.DepartureTime:HH:mm:ss}");
+                        return;
+                    }
+                    else
+                    {
+                        await DispatchTrainByServer(train);
+                    }
+                }else{
+                    ServerLogger.Instance.LogError(train.Number, $"Train {train.Number} has no current waypoint");
+                    train.completed = true;
+                    train.damaged = true;
                     return;
-                }
-                else
-                {
-                    await DispatchTrainByServer(train);
                 }
             }
         }
@@ -236,6 +249,6 @@ namespace TrainDispatcherGame.Server.Simulation
             await DispatchTrainByServer(train);
         }
 
-        
+
     }
 }

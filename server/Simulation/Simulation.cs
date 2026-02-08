@@ -126,9 +126,8 @@ namespace TrainDispatcherGame.Server.Simulation
 
         public async void Start()
         {
-            ServerLogger.Instance.LogWarning(_scenarioId ?? string.Empty, $"Test warning message");
-            ServerLogger.Instance.LogError(_scenarioId ?? string.Empty, $"Test error message");
-            ServerLogger.Instance.LogDebug(_scenarioId ?? string.Empty, $"Test debug message"); 
+            ServerLogger.Instance.Clear();
+            ServerLogger.Instance.LogWarning(_scenarioId ?? string.Empty, $"All previous logs are gone");
             if (_state == SimulationState.Running)
             {
                 return; // Already running
@@ -258,7 +257,7 @@ namespace TrainDispatcherGame.Server.Simulation
 
                 _eventProcessor.HandleTrainEvent(train).GetAwaiter().GetResult();
             }
-        }           
+        }
 
         public Task TrainReturnedFromClient(Train train, int exitId)
         {
@@ -280,9 +279,9 @@ namespace TrainDispatcherGame.Server.Simulation
                 //calculate the expected time at the exit to check if the train is late
                 var layout = _trackLayoutService.GetTrackLayout(currentWayPoint.Station);
                 if (layout == null) throw new Exception($"No layout found for station {currentWayPoint.Station}");
-                var expectedTimeAtExit = currentWayPoint.DepartureTime.AddSeconds(train.GetTravelTime(layout.MaxExitDistance / 2));                
-                train.delay = (int)Math.Max(0, (SimulationTime - expectedTimeAtExit).TotalSeconds); 
-                
+                var expectedTimeAtExit = currentWayPoint.DepartureTime.AddSeconds(train.GetTravelTime(layout.MaxExitDistance / 2));
+                train.delay = (int)Math.Max(0, (SimulationTime - expectedTimeAtExit).TotalSeconds);
+
 
                 if (currentWayPoint.Stops && !currentWayPoint.Processed)
                 {
@@ -303,21 +302,16 @@ namespace TrainDispatcherGame.Server.Simulation
                     // TODO: handle missrouted train
                 }
 
-                if (nextWaypoint.IsLast)
+
+                var nextSpawn = _eventProcessor.CreateSpawnFromConnection(train, connection, isReversed, 0, currentWayPoint.DepartureTime);
+                train.TrainEvent = nextSpawn;
+                if (!_openLineTracks.AddTrain(connection, train))
                 {
-                    ServerLogger.Instance.LogDebug(train.Number, $"Train {train.Number} has completed all events");
+                    ServerLogger.Instance.LogError(train.Number, $"Train {train.Number} collision detected on track from {connection.FromStation} to {connection.ToStation}");
                     train.completed = true;
+                    train.damaged = true;
                 }
-                else
-                {
-                    var nextSpawn = _eventProcessor.CreateSpawnFromConnection(train, connection, isReversed, 0, currentWayPoint.DepartureTime);
-                    train.TrainEvent = nextSpawn;
-                    if (!_openLineTracks.AddTrain(connection, train))
-                    {
-                        ServerLogger.Instance.LogWarning(train.Number, $"Train {train.Number} collision detected on track from {connection.FromStation} to {connection.ToStation}");
-                        train.completed = true;
-                    }
-                }
+
 
             }
             catch (Exception ex)
@@ -328,7 +322,7 @@ namespace TrainDispatcherGame.Server.Simulation
             return Task.CompletedTask;
         }
 
-        
+
 
         /// <summary>
         /// When a player disconnects from a station, return trains at the station to server control
@@ -340,7 +334,7 @@ namespace TrainDispatcherGame.Server.Simulation
             try
             {
                 var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
-                
+
                 // Return trains currently at the station to server control
                 var trainsToReturn = _trains
                     .Where(t => t.controlledByPlayer && string.Equals(t.CurrentLocation, normalizedStationId, StringComparison.OrdinalIgnoreCase))
@@ -425,7 +419,7 @@ namespace TrainDispatcherGame.Server.Simulation
             }
             catch (Exception ex)
             {
-                ServerLogger.Instance.LogError(train.Number, $"Error reporting train stopped: {ex.Message}");                
+                ServerLogger.Instance.LogError(train.Number, $"Error reporting train stopped: {ex.Message}");
             }
         }
 
@@ -469,7 +463,7 @@ namespace TrainDispatcherGame.Server.Simulation
         public void HandleCollision(Train trainA, Train trainB)
         {
             try
-            {                
+            {
                 ServerLogger.Instance.LogWarning(trainA.Number, $"Collision: trains {trainA.Number} and {trainB.Number} by client report");
                 trainA.damaged = true;
                 trainB.damaged = true;
@@ -562,9 +556,9 @@ namespace TrainDispatcherGame.Server.Simulation
                     ServerLogger.Instance.LogWarning(playerId, $"Player {playerId} not found");
                     return;
                 }
-                
+
                 var stationId = player.StationId;
-                
+
                 // Get the connection for this exit
                 var connection = _trackLayoutService.GetConnection(stationId, exitId, out bool isReversed);
                 if (connection == null)
@@ -572,18 +566,18 @@ namespace TrainDispatcherGame.Server.Simulation
                     ServerLogger.Instance.LogWarning(stationId, $"No connection found for exit {exitId} at station {stationId}");
                     return;
                 }
-                
+
                 // Remove train from open-line track when exit is unblocked
                 if (!blocked)
                 {
                     _openLineTracks.RemoveTrain(connection);
                     ServerLogger.Instance.LogDebug(stationId, $"Train removed from open-line track {connection.FromStation} → {connection.ToStation}");
                 }
-                
+
                 // Determine the other side of the connection
                 string otherStation;
                 int otherExitId;
-                
+
                 if (isReversed)
                 {
                     // This exit is actually the ToExitId, so the other side is FromStation/FromExitId
@@ -596,10 +590,10 @@ namespace TrainDispatcherGame.Server.Simulation
                     otherStation = connection.ToStation;
                     otherExitId = connection.ToExitId;
                 }
-                
+
                 // Notify the other station
                 await _notificationManager.SendExitBlockStatus(otherStation, otherExitId, blocked);
-                
+
                 ServerLogger.Instance.LogDebug(stationId, $"Exit {exitId} at {stationId} is {(blocked ? "blocked" : "unblocked")}, notified {otherStation} about exit {otherExitId}");
             }
             catch (Exception ex)

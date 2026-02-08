@@ -78,8 +78,8 @@ export interface TrainDto {
 export interface StationTimetableEventDto {
   trainNumber: string;
   category?: string;
-  arrival: string;
-  departure: string;
+  arrivalSeconds: number;
+  departureSeconds?: number | null;
   currentDelay: number;
   fromStation: string;
   nextStation: string;
