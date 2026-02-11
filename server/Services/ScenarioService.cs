@@ -1,3 +1,4 @@
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using TrainDispatcherGame.Server.Models;
 using TrainDispatcherGame.Server.Models.DTOs;
@@ -151,17 +152,17 @@ namespace TrainDispatcherGame.Server.Services
             // Build the file path
             var filePath = Path.Combine(scenariosDir, scenarioFileName + ".json");
 
-            // Serialize to JSON with proper formatting
+            // Serialize to JSON with proper formatting (Encoder preserves Unicode like ß instead of \u00DF)
             var options = new JsonSerializerOptions
             {
                 WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
             };
 
             var json = JsonSerializer.Serialize(scenario, options);
 
-            // Write to file
-            File.WriteAllText(filePath, json);
+            File.WriteAllText(filePath, json, System.Text.Encoding.UTF8);
         }
 
         private static SzenarioDTO LoadScenarioFile(string filePath)

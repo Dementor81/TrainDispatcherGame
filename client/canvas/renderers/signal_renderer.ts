@@ -79,13 +79,25 @@ export class SignalRenderer {
       }
       signalContainer.rotation = rotation;
       
-      // Make signal interactive
+      // Make signal interactive - use pointer events to distinguish short vs long click
+      const longPressMs = 500;
+      let longPressTimer: ReturnType<typeof setTimeout> | null = null;
       signalContainer.eventMode = "static";
-      signalContainer.on("click", (event) => {
-         console.log("Signal clicked at:", event.global.x, event.global.y);
-         // Emit signal click event as cancellable event with the signal (track is accessible via signal.track)
-         this._eventManager.emitCancellable("signalClicked", signal);
+      signalContainer.on("pointerdown", () => {
+         longPressTimer = setTimeout(() => {
+            longPressTimer = null;
+            this._eventManager.emit("signalLongClicked", signal);
+         }, longPressMs);
       });
+      const clearAndEmitClick = () => {
+         if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+            this._eventManager.emitCancellable("signalClicked", signal);
+         }
+      };
+      signalContainer.on("pointerup", clearAndEmitClick);
+      signalContainer.on("pointerupoutside", clearAndEmitClick);
       signalContainer.on("pointerover", (event) => {
          this._canvas.style.cursor = "pointer";
       });

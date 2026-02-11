@@ -1,4 +1,4 @@
-{
+﻿{
   "title": "Fahrplan zweigleisig Full",
   "layout": "frankenbahn",
   "start_time": "00:00",
@@ -104,15 +104,15 @@
           "departure": "00:12:22"
         },
         {
-          "station": "Me\u00DFbach",
+          "station": "meßbach",
           "arrival": "00:13:52",
           "departure": ""
         }
       ],
-      "followingTrainNumber": null
+      "followingTrainNumber": "33806"
     },
     {
-      "number": "33803",
+      "number": "33806",
       "type": "Passenger",
       "category": "RB",
       "speed": 120,
@@ -120,18 +120,18 @@
       "path": [],
       "timetable": [
         {
-          "station": "Me\u00DFbach",
+          "station": "meßbach",
           "arrival": "",
-          "departure": "00:19:40"
+          "departure": "00:19:39"
         },
         {
           "station": "weststadt",
-          "arrival": "00:21:10",
-          "departure": "00:29:38"
+          "arrival": "00:21:09",
+          "departure": "00:29:37"
         },
         {
           "station": "linksdorf",
-          "arrival": "00:31:08",
+          "arrival": "00:31:07",
           "departure": ""
         }
       ],
@@ -712,21 +712,21 @@
         {
           "station": "golm",
           "arrival": "",
-          "departure": "00:30:06"
+          "departure": "00:31:18"
         },
         {
           "station": "burghausen",
-          "arrival": "00:34:17",
-          "departure": "00:37:57"
+          "arrival": "00:35:29",
+          "departure": "00:38:04"
         },
         {
           "station": "ostheim",
-          "arrival": "00:41:42",
-          "departure": "00:42:42"
+          "arrival": "00:41:49",
+          "departure": "00:42:49"
         },
         {
           "station": "rechtsheim",
-          "arrival": "00:45:45",
+          "arrival": "00:45:52",
           "departure": ""
         }
       ],
@@ -1088,6 +1088,172 @@
         {
           "station": "linksdorf",
           "arrival": "00:46:00",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "33801",
+      "type": "Passenger",
+      "category": "RB",
+      "speed": 120,
+      "cars": 3,
+      "path": [],
+      "timetable": [
+        {
+          "station": "golm",
+          "arrival": "",
+          "departure": "00:11:58"
+        },
+        {
+          "station": "burghausen",
+          "arrival": "00:14:39",
+          "departure": "00:15:39"
+        },
+        {
+          "station": "ostheim",
+          "arrival": "00:18:54",
+          "departure": "00:19:54"
+        },
+        {
+          "station": "rechtsheim",
+          "arrival": "00:22:27",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "40600",
+      "type": "Freight",
+      "category": "GZ",
+      "speed": 80,
+      "cars": 7,
+      "path": [],
+      "timetable": [
+        {
+          "station": "golm",
+          "arrival": "",
+          "departure": "00:01:12"
+        },
+        {
+          "station": "burghausen",
+          "arrival": "00:05:14",
+          "departure": "00:05:14"
+        },
+        {
+          "station": "ostheim",
+          "arrival": "00:10:05",
+          "departure": "00:10:05"
+        },
+        {
+          "station": "rechtsheim",
+          "arrival": "00:13:55",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "33804",
+      "type": "Passenger",
+      "category": "RB",
+      "speed": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "meßbach",
+          "arrival": "",
+          "departure": "00:01:09"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:03:43",
+          "departure": "00:04:43"
+        },
+        {
+          "station": "linksdorf",
+          "arrival": "00:07:17",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": "33805"
+    },
+    {
+      "number": "46404",
+      "type": "Freight",
+      "category": "GZ",
+      "speed": 100,
+      "cars": 10,
+      "path": [],
+      "timetable": [
+        {
+          "station": "meßbach",
+          "arrival": "",
+          "departure": "00:04:35"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:07:40",
+          "departure": "00:08:40"
+        },
+        {
+          "station": "linksdorf",
+          "arrival": "00:11:45",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "33803",
+      "type": "Passenger",
+      "category": "RB",
+      "speed": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "linksdorf",
+          "arrival": "",
+          "departure": "00:17:00"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:19:34",
+          "departure": "00:22:19"
+        },
+        {
+          "station": "meßbach",
+          "arrival": "00:24:53",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": "33808"
+    },
+    {
+      "number": "33808",
+      "type": "Passenger",
+      "category": "RB",
+      "speed": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "meßbach",
+          "arrival": "",
+          "departure": "00:27:55"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:30:29",
+          "departure": "00:31:29"
+        },
+        {
+          "station": "linksdorf",
+          "arrival": "00:34:03",
           "departure": ""
         }
       ],

@@ -171,51 +171,27 @@ export class TrainManager {
 
    // Check for signals ahead of the train that would stop it
    private checkSignalsAhead(train: Train): Signal | null {
-      // Position is always the front of the train
-      if (!train.position) {
-         throw new Error(`Train ${train.number} has no position`);
-      }
+      if (!train.position) throw new Error(`Train ${train.number} has no position`);
 
-      // Total distance to look ahead: movement distance + lookahead distance
-      const totalLookaheadDistance = SimulationConfig.signalLookaheadDistance;
+      const lookahead = SimulationConfig.signalLookaheadDistance;
+      const dir = train.movingDirection;
+      const endKm = train.position.km + lookahead * dir;
 
       try {
-         // Use followRailNetwork to trace the path ahead from the front
-         const result = this._trackLayoutManager.followRailNetwork(
-            train.position.track,
-            train.position.km,
-            totalLookaheadDistance * train.movingDirection
-         );
+         const result = this._trackLayoutManager.followRailNetwork(train.position.track, train.position.km, lookahead * dir);
 
-         // Check for signals on the current track first
-         const currentTrackSignals = this.checkSignalsOnTrack(
-            train.position.track,
-            train.position.km,
-            train.position.km + totalLookaheadDistance * train.movingDirection,
-            train.movingDirection
-         );
+         const onCurrent = this.checkSignalsOnTrack(train.position.track, train.position.km, endKm, dir);
+         if (onCurrent) return onCurrent;
 
-         if (currentTrackSignals) {
-            return currentTrackSignals;
+         const nextTrack = result.element instanceof Track ? result.element : null;
+         if (nextTrack && nextTrack !== train.position.track) {
+            const nextStart = dir > 0 ? 0 : nextTrack.length;
+            const onNext = this.checkSignalsOnTrack(nextTrack, nextStart, result.km, dir);
+            if (onNext) return onNext;
          }
-
-         // If we moved to a different track, check signals on that track too
-         if (result.element instanceof Track && result.element !== train.position.track) {
-            const nextTrackSignals = this.checkSignalsOnTrack(
-               result.element,
-               result.element === train.position.track ? train.position.km : train.movingDirection > 0 ? 0 : result.element.length,
-               result.km,
-               train.movingDirection
-            );
-
-            if (nextTrackSignals) {
-               return nextTrackSignals;
-            }
-         }
-      } catch (error) {
-         // If we can't trace ahead (dead end, etc.), no signals to worry about
+      } catch {
+         // Dead end or invalid path - no signals to worry about
       }
-
       return null;
    }
 
@@ -320,16 +296,14 @@ export class TrainManager {
          let signalPassed = false;
 
          if (train.movingDirection > 0) {
-            // Moving forward: passed if signal is between start and end positions
-            signalPassed = signal.position > startKm && signal.position <= endKm;
+            // Passed only when strictly past - not when landing exactly on (would set red while still at signal)
+            signalPassed = signal.position > startKm && signal.position < endKm;
          } else {
-            // Moving backward: passed if signal is between end and start positions
-            signalPassed = signal.position < startKm && signal.position >= endKm;
+            signalPassed = signal.position < startKm && signal.position > endKm;
          }
 
          if (signalPassed) {
             console.log(`Train ${train.number} passed signal at km ${signal.position} on track ${track.id}`);
-            // Emit event for signal passed
             this._eventManager.emit("trainPassedSignal", train, signal);
          }
       }

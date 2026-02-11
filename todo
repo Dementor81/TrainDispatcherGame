@@ -12,10 +12,10 @@ Features:
     ✔ flip the arrow on exitpoints when the regular track is coming from the next track @done(25-10-18 11:56)
     ✔ show platfrom @done(26-01-05 08:50)
     ✘ report passing through a station to the server @cancelled(26-01-04 17:09) --> server ignors if trains actually passed the station, still calcs the delay
-    ☐ add comments to shedulded strain stops like "overtake"
     ✔ remove the halt property from tracks and replace the information with the platforms @done(26-01-19 19:32)
     ✔ the server does not respect the occupation of open line tracks @done(26-01-24 18:08)
     ✔ signals on one way are upside down @done(26-01-24 18:19)
+    ☐ add comments to shedulded strain stops like "overtake"
 
 Big Features:
     ✔ uncontrolled stations should be handled by the server @done(25-08-10 13:27)

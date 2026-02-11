@@ -148,6 +148,20 @@ export class Application {
          }
       });
 
+      // Long click on signal → manually remove train route (signal must be red/stop)
+      this._eventManager.on('signalLongClicked', (signal: Signal) => {
+         if (!this._renderer) return;
+         if (signal.state) return; // Not set to stop, do nothing
+         const removed = this._trainRouteManager.removeRoutesBySignal(signal);
+         if (removed) {
+            const blockedExitId = this._signalBlockedExits.get(signal);
+            if (blockedExitId !== undefined) {
+               this._signalRManager.setExitBlockStatus(blockedExitId, false);
+               this._signalBlockedExits.delete(signal);
+            }
+         }
+      });
+
       // Signal state changed → handle route removal if signal turned red
       this._eventManager.on('signalStateChanged', (signal: Signal) => {
          if (!this._renderer) return;
