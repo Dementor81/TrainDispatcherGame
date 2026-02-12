@@ -36,7 +36,7 @@
          "start": { "x": 650, "y": 500 },
          "end": { "x": 1400, "y": 500 },
          "signals": [
-            { "type": "main", "position": 137 , "direction":  -1},
+            { "type": "main", "position": 110 , "direction":  -1},
             { "type": "main", "position": 637 , "direction":  1}
          ],
          "switches": [

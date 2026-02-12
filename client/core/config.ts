@@ -61,7 +61,7 @@ export class SimulationConfig {
     static simulationSpeed = 1.0;
     static readonly simulationIntervalSeconds = 0.020;
     static readonly simulationScale = 1000;
-    static readonly signalLookaheadDistance = 50; // How far ahead trains look for signals (in pixels/km)
+    static readonly signalLookaheadDistance = 25; // How far ahead trains look for signals (in pixels/km)
     static readonly safetyGapDistance = 10; // Minimal distance to keep to the next train ahead (in pixels/km)
     static readonly stationMinStopTime = 60; // Minimum time to stop at a station (in seconds)
 }

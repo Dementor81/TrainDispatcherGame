@@ -260,23 +260,26 @@ export class TrainManager {
          return;
       }
 
-      const checkSignalsPassedOnTrackAnyDirection = (train: Train, track: Track, startKm: number, endKm: number): void => {
-         const signal = this._trackLayoutManager.getSignalBetweenKm(track, startKm, endKm);
-         if (signal) {
+      const checkSignalsPassedOnTrackAnyDirection = (track: Track, startKm: number, endKm: number): void => {
+         const passedSignals = track.signals
+            .filter(signal => Tools.between(signal.position, startKm, endKm))
+            .sort((a, b) => train.movingDirection > 0 ? a.position - b.position : b.position - a.position);
+
+         for (const signal of passedSignals) {
             this._eventManager.emit("trainTailPassed", { track: signal.track, km: signal.position });
          }
-      }
+      };
 
       // if we are still on the same track, check for passed signals on the track
       if (previousTailTrack === newTailTrack) {
-         checkSignalsPassedOnTrackAnyDirection(train, previousTailTrack, previousTailKm, newTailKm);
+         checkSignalsPassedOnTrackAnyDirection(previousTailTrack, previousTailKm, newTailKm);
       } else {
          // if we are on a different track, check for passed signals on the previous track and the new track
          const endKm = train.movingDirection > 0 ? previousTailTrack.length : 0;
-         checkSignalsPassedOnTrackAnyDirection(train, previousTailTrack, previousTailKm, endKm);
+         checkSignalsPassedOnTrackAnyDirection(previousTailTrack, previousTailKm, endKm);
 
          const startKm = train.movingDirection > 0 ? 0 : newTailTrack.length;
-         checkSignalsPassedOnTrackAnyDirection(train, newTailTrack, startKm, newTailKm);
+         checkSignalsPassedOnTrackAnyDirection(newTailTrack, startKm, newTailKm);
       }
    }
 
@@ -551,9 +554,6 @@ export class TrainManager {
       if (!train.shouldStopAtCurrentStation || !train.position!.track.halt) {
          return false;
       }
-
-
-
       // Check if train is already stopped at this station
       if (train.stopReason === TrainStopReason.STATION) {
          // Train is already stopped - check if it's time to depart
@@ -581,6 +581,9 @@ export class TrainManager {
          }
          return true; // Train is stopped but not time to depart yet
       }
+
+      // if the train already called at the station, don't stop it again     
+      if(train.waitingProgress ===1 ) return false;
 
       // Train is not stopped - check if it needs to stop (only calculate distance if needed)
       // Calculate the center of the train (midpoint between head and tail)

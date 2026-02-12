@@ -7,19 +7,19 @@
       "number": "59005",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speed": 160,
       "cars": 4,
       "path": [],
       "timetable": [
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:08:39"
+          "departure": "00:00:39"
         },
         {
           "station": "weststadt",
-          "arrival": "00:11:43",
-          "departure": "00:12:04"
+          "arrival": "00:02:43",
+          "departure": "00:02:04"
         },
         {
           "station": "neustadt",
@@ -39,89 +39,6 @@
         {
           "station": "rechtsheim",
           "arrival": "00:28:55",
-          "departure": ""
-        }
-      ],
-      "followingTrainNumber": null
-    },
-    {
-      "number": "59007",
-      "type": "Passenger",
-      "category": "RB",
-      "speed": 120,
-      "cars": 4,
-      "path": [],
-      "timetable": [
-        {
-          "station": "linksdorf",
-          "arrival": "",
-          "departure": "00:04:33"
-        },
-        {
-          "station": "weststadt",
-          "arrival": "00:07:37",
-          "departure": "00:07:37"
-        },
-        {
-          "station": "neustadt",
-          "arrival": "00:11:16",
-          "departure": "00:12:16"
-        },
-        {
-          "station": "burghausen",
-          "arrival": "00:16:01",
-          "departure": "00:17:01"
-        },
-        {
-          "station": "ostheim",
-          "arrival": "00:20:46",
-          "departure": "00:21:46"
-        },
-        {
-          "station": "rechtsheim",
-          "arrival": "00:24:49",
-          "departure": ""
-        }
-      ],
-      "followingTrainNumber": null
-    },
-    {
-      "number": "6001",
-      "type": "Passenger",
-      "category": "S",
-      "speed": 120,
-      "cars": 6,
-      "path": [],
-      "timetable": [
-        {
-          "station": "linksdorf",
-          "arrival": "",
-          "departure": "00:01:00"
-        },
-        {
-          "station": "weststadt",
-          "arrival": "00:04:16",
-          "departure": ""
-        }
-      ],
-      "followingTrainNumber": "6002"
-    },
-    {
-      "number": "6002",
-      "type": "Passenger",
-      "category": "S",
-      "speed": 120,
-      "cars": 6,
-      "path": [],
-      "timetable": [
-        {
-          "station": "weststadt",
-          "arrival": "",
-          "departure": "00:06:41"
-        },
-        {
-          "station": "linksdorf",
-          "arrival": "00:09:45",
           "departure": ""
         }
       ],
