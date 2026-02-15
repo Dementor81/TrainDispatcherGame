@@ -9,6 +9,16 @@ export class TrainOverviewPanel extends BasePanel {
 
   constructor(application: Application) {
     super(application, 1000);
+    application.eventManager.on('simulationStateChanged', (state: string) => {
+      if (state.toLowerCase() === 'running') {
+        this.clearTrains();
+      }
+    });
+  }
+
+  private clearTrains(): void {
+    const trainsList = document.getElementById('trainsList');
+    if (trainsList) trainsList.innerHTML = '';
   }
 
   protected getContainerId(): string { return 'trainOverviewPanel'; }
@@ -44,9 +54,7 @@ export class TrainOverviewPanel extends BasePanel {
       if (trainNumber) {
         this.application.eventManager.emit('trainClicked', trainNumber);
       }
-    });
-    
-    
+    });   
     
     return trainsList;
   }
@@ -55,18 +63,22 @@ export class TrainOverviewPanel extends BasePanel {
     await this.updateTrains();
   }
 
+  private getSortTimeSeconds(train: StationTimetableEventDto): number {
+    if (train.departureSeconds !== null && train.departureSeconds !== undefined) {
+      return train.departureSeconds;
+    }
+    return train.arrivalSeconds;
+  }
+
   private async updateTrains(): Promise<void> {
     if(this._updating) return;
     this._updating = true;
     try {
-      const stationId = this.application.currentStationId;
-      if (!stationId) {
-        console.error('No station selected');
-        return;
-      }
+
+      const getSortTime = (train: StationTimetableEventDto) => train.departureSeconds ?? train.arrivalSeconds ?? 0;
       
-      const trains = await getUpcomingTrains(stationId);
-      trains.sort((a, b) => this.getSortTimeSeconds(a) - this.getSortTimeSeconds(b));
+      const trains = await getUpcomingTrains(this.application.currentStationId!);
+      trains.sort((a, b) => getSortTime(a) - getSortTime(b));
       this.renderTrains(trains);
     } catch (error) {
       console.error('Failed to update trains:', error);
@@ -81,13 +93,15 @@ export class TrainOverviewPanel extends BasePanel {
     if (!trainsList) return;
 
     if (trains.length === 0) {
-      trainsList.innerHTML = '<div class="text-muted text-center py-3">No upcoming trains</div>';
+      trainsList.innerHTML = '<div class="text-muted text-center py-3">keine Züge vorhanden</div>';
       return;
     }
 
     const tbody = this.ensureTrainTable(trainsList);
     if (!tbody) return;
 
+    //first lets collect all existing rows by their train number
+    //that should normally be all trains, since we dont add trains dynamically
     const existingRows = new Map<string, HTMLTableRowElement>();
     tbody.querySelectorAll<HTMLTableRowElement>('tr[data-train-number]').forEach((row) => {
       const number = row.dataset.trainNumber;
@@ -96,27 +110,20 @@ export class TrainOverviewPanel extends BasePanel {
       }
     });
 
-    const nextNumbers = new Set<string>();
     for (const train of trains) {
-      const trainNumber = train.trainNumber;
-      nextNumbers.add(trainNumber);
-      let row = existingRows.get(trainNumber);
+      let row = existingRows.get(train.trainNumber);
       if (!row) {
         row = document.createElement('tr');
         row.className = 'train-row';
-        row.dataset.trainNumber = trainNumber;
+        row.dataset.trainNumber = train.trainNumber;
         row.style.cursor = 'pointer';
         tbody.appendChild(row);
       }
-
-      this.updateTrainRow(row, train);
-      
+      this.updateTrainRow(row, train);      
     }
 
     for (const [trainNumber, row] of existingRows) {
-      if (!nextNumbers.has(trainNumber)) {
-        row.remove();
-      }
+      if(!trains.find(t => t.trainNumber === trainNumber)) row.remove();
     }
   }
 
@@ -199,12 +206,7 @@ export class TrainOverviewPanel extends BasePanel {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   }
 
-  private getSortTimeSeconds(train: StationTimetableEventDto): number {
-    if (train.departureSeconds !== null && train.departureSeconds !== undefined) {
-      return train.departureSeconds;
-    }
-    return train.arrivalSeconds;
-  }
+  
 
 
 

@@ -11,7 +11,7 @@ export class TrainsPanel extends BasePanel {
       position: 'fixed',
       bottom: '100px',
       left: '0',
-      width: '800px',
+      width: '600px',
       height: '520px',
       display: 'block',
       minWidth: 'unset',
@@ -23,23 +23,23 @@ export class TrainsPanel extends BasePanel {
 
   protected createContent(): HTMLDivElement {
     const section = document.createElement('div');
-    section.className = 'border border-secondary rounded p-2';
+    section.className = 'rounded p-2';
     section.style.height = '100%';
     section.style.overflow = 'auto';
 
     const header = document.createElement('div');
     header.className = 'd-flex flex-row gap-2 text-secondary small pb-1 border-bottom border-secondary';
-    const h1 = document.createElement('div'); h1.style.width = '80px'; h1.textContent = 'Train';
-    const h2 = document.createElement('div'); h2.style.width = '110px'; h2.textContent = 'Status';
+    const h1 = document.createElement('div'); h1.style.width = '60px'; h1.textContent = 'Train';
+    const h2 = document.createElement('div'); h2.style.width = '80px'; h2.textContent = 'Status';
     const h3 = document.createElement('div'); h3.style.width = '160px'; h3.textContent = 'Location';
-    const h4 = document.createElement('div'); h4.style.width = '140px'; h4.textContent = 'Next Event';
-    const h5 = document.createElement('div'); h5.style.width = '110px'; h5.textContent = 'Event Type';
-    const h6 = document.createElement('div'); h6.style.width = '90px'; h6.textContent = 'Delay';
+    const h4 = document.createElement('div'); h4.style.width = '100px'; h4.textContent = 'Next Event';
+    const h5 = document.createElement('div'); h5.style.width = '90px'; h5.textContent = 'Event Type';
+    const h6 = document.createElement('div'); h6.style.width = '60px'; h6.textContent = 'Delay';
     header.appendChild(h1); header.appendChild(h2); header.appendChild(h3); header.appendChild(h4); header.appendChild(h5); header.appendChild(h6);
 
     const body = document.createElement('div');
     body.id = 'trainsListBody';
-    body.className = 'pt-1';
+    body.className = 'pt-1 small';
 
     section.appendChild(header);
     section.appendChild(body);
@@ -56,12 +56,19 @@ export class TrainsPanel extends BasePanel {
       const normalized: Array<any> = trains.map((t: any) => ({
         number: t.number ?? t.Number ?? '-',
         completed: t.completed ?? t.Completed ?? false,
+        damaged: t.damaged ?? t.Damaged ?? false,
         currentLocation: t.currentLocation ?? t.CurrentLocation ?? undefined,
         headingForStation: t.headingForStation ?? t.HeadingForStation ?? undefined,
         delay: t.delay ?? t.Delay ?? undefined,
         nextEventTime: t.nextEventTime ?? t.NextEventTime ?? t.next_event_time,
         nextEventType: t.nextEventType ?? t.NextEventType ?? t.next_event_type,
       }));
+
+      normalized.sort((a, b) => {
+        const ta = a.nextEventTime ? new Date(a.nextEventTime).getTime() : Infinity;
+        const tb = b.nextEventTime ? new Date(b.nextEventTime).getTime() : Infinity;
+        return ta - tb;
+      });
 
       listEl.innerHTML = '';
 
@@ -74,8 +81,6 @@ export class TrainsPanel extends BasePanel {
       }
 
       for (const t of normalized) {
-        // Derived values
-        const statusText = t.completed ? 'Completed' : t.nextEventType === 'Start' ? 'not started' : 'En route';
         let locationText = t.currentLocation ? `At ${t.currentLocation}` : (t.headingForStation ? `To ${t.headingForStation}` : '-');
         const nextEventDate = t.nextEventTime ?? undefined;
         const nextEventText = nextEventDate ? new Date(nextEventDate).toLocaleTimeString() : '-';
@@ -94,10 +99,16 @@ export class TrainsPanel extends BasePanel {
         id.style.width = '80px';
         id.textContent = String(t.number);
 
+        const statusIcon = document.createElement('i');
+        statusIcon.className = t.damaged ? 'bi bi-fire text-danger'
+          : t.completed ? 'bi bi-check text-success'
+          : t.nextEventType === 'Start' ? 'bi bi-pause-fill text-secondary'
+          : 'bi bi-play-fill text-primary';
+        statusIcon.title = t.damaged ? 'Damaged' : t.completed ? 'Completed' : t.nextEventType === 'Start' ? 'Not started' : 'En route';
         const state = document.createElement('div');
         state.className = 'text-light';
-        state.style.width = '110px';
-        state.textContent = statusText;
+        state.style.width = '60px';
+        state.appendChild(statusIcon);
 
         const location = document.createElement('div');
         location.className = 'text-light';
@@ -106,17 +117,17 @@ export class TrainsPanel extends BasePanel {
 
         const schedule = document.createElement('div');
         schedule.className = 'text-light';
-        schedule.style.width = '140px';
+        schedule.style.width = '100px';
         schedule.textContent = nextEventText;
 
         const evtType = document.createElement('div');
         evtType.className = 'text-light';
-        evtType.style.width = '110px';
+        evtType.style.width = '90px';
         evtType.textContent = eventType;
 
         const delay = document.createElement('div');
         delay.className = 'text-light';
-        delay.style.width = '90px';
+        delay.style.width = '60px';
         delay.textContent = (t.delay != null) ? `${t.delay}s` : '-';
 
         row.appendChild(id);

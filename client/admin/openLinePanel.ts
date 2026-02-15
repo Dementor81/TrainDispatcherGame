@@ -22,7 +22,7 @@ export class OpenLinePanel extends BasePanel {
 
   protected createContent(): HTMLDivElement {
     const section = document.createElement('div');
-    section.className = 'border border-secondary rounded p-2';
+    section.className = 'rounded p-2';
     section.style.height = '100%';
     section.style.overflow = 'auto';
 

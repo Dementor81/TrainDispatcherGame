@@ -262,6 +262,7 @@ app.MapGet("/api/simulation/trains", (Simulation simulation) =>
         category = t.Category,
         type = t.Type,
         completed = t.completed,
+        damaged = t.damaged,
         currentLocation = t.CurrentLocation,
         headingForStation = t.TrainEvent is TrainSpawnEvent sp1 ? sp1.HeadingStation : null,
         delay = t.delay,

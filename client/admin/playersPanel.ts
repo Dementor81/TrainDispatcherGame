@@ -21,7 +21,7 @@ export class PlayersPanel extends BasePanel {
 
   protected createContent(): HTMLDivElement {
     const section = document.createElement('div');
-    section.className = 'border border-secondary rounded p-2 small';
+    section.className = 'rounded p-2 small';
     section.style.height = '100%';
     section.style.overflow = 'auto';
 

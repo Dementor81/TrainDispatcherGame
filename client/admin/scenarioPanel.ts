@@ -18,8 +18,8 @@ export class ScenarioPanel extends BasePanel {
          position: 'fixed',
          top: '320px',
          left: '820px',
-         width: '360px',
-         height: '150px',
+         width: '340px',
+         height: '100px',
          display: 'block',
          minWidth: 'unset',
          maxWidth: 'unset',
@@ -30,7 +30,7 @@ export class ScenarioPanel extends BasePanel {
 
    protected createContent(): HTMLDivElement {
       const section = document.createElement('div');
-      section.className = 'd-flex flex-column gap-3';
+      section.className = 'd-flex flex-column gap-3 m-1';
       
       // Network selector
       const networkRow = document.createElement('div');
@@ -38,7 +38,7 @@ export class ScenarioPanel extends BasePanel {
       const networkLabel = document.createElement('label');
       networkLabel.className = 'text-secondary small';
       networkLabel.style.width = '120px';
-      networkLabel.textContent = 'Track Network:';
+      networkLabel.textContent = 'Network:';
       networkLabel.setAttribute('for', 'networkSelect');
       const networkSelect = document.createElement('select');
       networkSelect.id = 'networkSelect';

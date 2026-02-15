@@ -1,1 +1,5 @@
 /* Admin panel styles - using minimal Bootstrap classes */
+
+body {
+  background-color: #252525;
+}

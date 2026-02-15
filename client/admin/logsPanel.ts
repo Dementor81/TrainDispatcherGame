@@ -7,6 +7,8 @@ export class LogsPanel extends BasePanel {
   private showRealTime: boolean = false;
   private lastFilterKey: string = '';
   private lastRenderedCount: number = 0;
+  private autoScroll: boolean = true;
+  private autoScrollBtn?: HTMLButtonElement;
 
   constructor() {
     super(null as any, 2000);
@@ -27,14 +29,14 @@ export class LogsPanel extends BasePanel {
 
   protected createContent(): HTMLDivElement {
     const section = document.createElement('div');
-    section.className = 'd-flex flex-column gap-2 border border-secondary rounded p-2';
+    section.className = 'd-flex flex-column gap-2 rounded p-2';
     section.style.height = '100%';
 
     const filterRow = document.createElement('div');
     filterRow.className = 'd-flex align-items-center gap-2';
     const filterLabel = document.createElement('label');
     filterLabel.className = 'text-secondary small';
-    filterLabel.textContent = 'Filter (contexts):';
+    filterLabel.textContent = 'Filter: ';
     filterLabel.setAttribute('for', 'logsFilterInput');
     filterLabel.style.width = '130px';
     const filterInput = document.createElement('input');
@@ -46,6 +48,18 @@ export class LogsPanel extends BasePanel {
     this.filterInput = filterInput;
     const spacer = document.createElement('div');
     spacer.style.flex = '1 1 auto';
+
+    const autoScrollBtn = document.createElement('button');
+    autoScrollBtn.type = 'button';
+    autoScrollBtn.className = 'btn btn-sm';
+    autoScrollBtn.title = 'Toggle auto-scroll';
+    autoScrollBtn.innerHTML = '<i class="bi bi-caret-down-square"></i>';
+    autoScrollBtn.addEventListener('click', () => {
+      this.autoScroll = !this.autoScroll;
+      if (this.autoScroll) this.scrollToBottom();
+      this.updateAutoScrollButton();
+    });
+    this.autoScrollBtn = autoScrollBtn;
 
     const toggleBtn = document.createElement('button');
     toggleBtn.type = 'button';
@@ -60,6 +74,7 @@ export class LogsPanel extends BasePanel {
     filterRow.appendChild(filterLabel);
     filterRow.appendChild(filterInput);
     filterRow.appendChild(spacer);
+    filterRow.appendChild(autoScrollBtn);
     filterRow.appendChild(toggleBtn);
 
     const output = document.createElement('div');
@@ -70,9 +85,15 @@ export class LogsPanel extends BasePanel {
     output.style.whiteSpace = 'pre-wrap';
     output.style.fontFamily = 'monospace';
     output.style.fontSize = 'small';
+    output.addEventListener('scroll', () => {
+      const atBottom = output.scrollHeight - output.clientHeight - output.scrollTop < 10;
+      if (!atBottom) this.autoScroll = false;
+      this.updateAutoScrollButton();
+    });
 
     section.appendChild(filterRow);
     section.appendChild(output);
+    this.updateAutoScrollButton();
     return section;
   }
 
@@ -116,9 +137,21 @@ export class LogsPanel extends BasePanel {
       }
 
       this.lastRenderedCount = logs.length;
+      if (this.autoScroll) this.scrollToBottom();
     } catch (err) {
       console.error('LogsPanel: failed to update', err);
     }
+  }
+
+  private scrollToBottom(): void {
+    const output = this.container.querySelector('#logsOutput') as HTMLElement | null;
+    if (output) output.scrollTop = output.scrollHeight;
+  }
+
+  private updateAutoScrollButton(): void {
+    if (!this.autoScrollBtn) return;
+    this.autoScrollBtn.title = this.autoScroll ? 'Auto-scroll active (click to pause)' : 'Auto-scroll paused (click to resume)';
+    this.autoScrollBtn.className = this.autoScroll ? 'btn btn-sm btn-secondary' : 'btn btn-sm btn-outline-secondary';
   }
 
   private getFilterContexts(): string[] {
