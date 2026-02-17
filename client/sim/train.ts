@@ -17,6 +17,12 @@ export enum TrainStopReason {
 
 }
 
+type TrainExitState = {
+    id: number;
+    boundaryKm: number;
+    progressMeters: number;
+};
+
 class Train {
     private _number: string;
     private _position: RailPosition|null = null; 
@@ -33,6 +39,7 @@ class Train {
     private _stationStopStartTime: Date | null = null; // When the train actually started waiting at station
     private _waitingProgress: number = 0; // 0..1 progress while waiting at station
     private _followingTrainNumber: string | null = null; // following train number that will use this vehicle, after this train has completed its journey
+    private _exitState: TrainExitState | null = null;
 
     constructor(number: string, cars: number, speed: number) {
         this._number = number;
@@ -148,6 +155,31 @@ class Train {
 
     set followingTrainNumber(trainNumber: string | null) {
         this._followingTrainNumber = trainNumber;
+    }
+
+    get isExiting(): boolean {
+        return this._exitState !== null;
+    }
+
+    get exitId(): number | null {
+        return this._exitState?.id ?? null;
+    }
+
+    get exitProgressMeters(): number {
+        return this._exitState?.progressMeters ?? 0;
+    }
+
+    get exitBoundaryKm(): number | null {
+        return this._exitState?.boundaryKm ?? null;
+    }
+
+    startExiting(exitId: number, boundaryKm: number): void {
+        this._exitState = { id: exitId, boundaryKm, progressMeters: 0 };
+    }
+
+    advanceExitProgress(deltaMeters: number): void {
+        if (!this._exitState) return;
+        this._exitState.progressMeters = Math.max(0, this._exitState.progressMeters + Math.abs(deltaMeters));
     }
 
     setTailPosition(track: Track | null, km: number): void {

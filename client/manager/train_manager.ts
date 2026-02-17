@@ -56,6 +56,10 @@ export class TrainManager {
    // Update a single train's position
    private updateTrain(train: Train): void {
       if (!train.position) throw new Error(`Train ${train.number} has no position`);
+      if (train.isExiting) {
+         this.updateExitingTrain(train);
+         return;
+      }
       if (Tools.is(train.stopReason, [TrainStopReason.COLLISION, TrainStopReason.EMERGENCY_STOP, TrainStopReason.DERAILEMENT, TrainStopReason.ENDED]))
          return;
 
@@ -118,12 +122,13 @@ export class TrainManager {
 
             return; // Train was updated
          } else if (result.element instanceof Exit) {
-            // Train reached exit - remove train and send to server
+            // Train reached exit - begin staged despawn and report when fully cleared
             const exit = result.element;
             console.log(`Train ${train.number} reached exit ${exit.id}`);
-
-            this.removeTrain(train.number);
-            this._signalRManager.sendTrain(train.number, exit.id);
+            const boundaryKm = train.movingDirection > 0 ? train.position.track.length : 0;
+            train.setPosition(train.position.track, boundaryKm);
+            train.startExiting(exit.id, boundaryKm);
+            this.updateTailPosition(train);
             return;
          } else if (result.element instanceof Switch) {
             // Train stopped at switch (wrong direction/position) - clear signal reference            
@@ -441,10 +446,13 @@ export class TrainManager {
 
    // Calculate and update the tail position of a train
    // Returns true if the tail position was updated, false if the calculation hits a switch which means the train is derailed
-   private updateTailPosition(train: Train): boolean {
+   private updateTailPosition(train: Train, trainLengthOverride: number | null = null): boolean {
       if (!train.position) throw new Error(`Train ${train.number} has no position`);
-      const trainLength = train.getLength();
-      if (trainLength <= 0) throw new Error(`Train ${train.number} has no length`);
+      const trainLength = trainLengthOverride ?? train.getLength();
+      if (trainLength <= 0) {
+         train.setTailPosition(train.position.track, train.position.km);
+         return true;
+      }
 
       // Calculate tail position: tail is always behind the front (position)
       // "Behind" means opposite to the direction of movement
@@ -462,12 +470,15 @@ export class TrainManager {
          } else if (tailResult.element instanceof Switch) {
             return false;
          } else if (tailResult.element instanceof Exit) {
-            // If tail calculation hits an exit, keep tail on current track at boundary
-            // If going backwards (negative offset), tail is at km 0
-            // If going forwards (positive offset), tail is at track.length
-            //this happens when the trains is just spawning.
-            const boundaryKm = tailOffset < 0 ? 0 : train.position?.track.length;
-            train.setTailPosition(train.position?.track, boundaryKm);
+            // If tail calculation hits an exit, keep tail at the exit boundary on that exit's track.
+            // This happens while the train is spawning and the tail is still outside the layout.
+            const exitLocation = this._trackLayoutManager.getExitPointLocation(tailResult.element.id);
+            const boundaryTrack = exitLocation.track ?? train.position.track;
+            const boundaryKm =
+               exitLocation.track !== null
+                  ? exitLocation.km
+                  : (tailOffset < 0 ? 0 : train.position.track.length);
+            train.setTailPosition(boundaryTrack, boundaryKm);
             return true;
          } else {
             throw new Error(`Unknown element type: ${tailResult.element}`);
@@ -477,6 +488,40 @@ export class TrainManager {
          // set tail to same as head
          train.setTailPosition(train.position?.track, train.position?.km);
          return true;
+      }
+   }
+
+   private updateExitingTrain(train: Train): void {
+      if (!train.position || train.exitBoundaryKm === null) return;
+
+      const movedDistance = Math.abs(train.getMovementDistance());
+      if (movedDistance <= 0.001) return;
+
+      const previousTailTrack = train.tailPosition?.track ?? null;
+      const previousTailKm = train.tailPosition?.km ?? null;
+
+      train.advanceExitProgress(movedDistance);
+      const remainingLength = Math.max(0, train.getLength() - train.exitProgressMeters);
+
+      // Keep train head fixed at the exit boundary while the remaining cars leave the layout.
+      train.setPosition(train.position.track, train.exitBoundaryKm);
+      this.updateTailPosition(train, remainingLength);
+
+      this.checkSignalsPassedByTail(
+         train,
+         previousTailTrack,
+         previousTailKm,
+         train.tailPosition?.track ?? null,
+         train.tailPosition?.km ?? 0
+      );
+
+      if (train.tailPosition?.track !== previousTailTrack) {
+         this._eventManager.emit("trainTailPassed", { track: previousTailTrack });
+      }
+
+      if (remainingLength <= 0 && train.exitId !== null) {
+         this._signalRManager.sendTrain(train.number, train.exitId);
+         this.removeTrain(train.number);
       }
    }
 

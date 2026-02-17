@@ -178,6 +178,7 @@ export class TrainRenderer {
 
       this.ensureCarGraphics(train, trainContainer);
       const cars = trainContainer.cars ?? [];
+      if (trainContainer.numberText) trainContainer.numberText.visible = false;
 
       let carIndex = 0;
       let carTrack = train.position.track;
@@ -185,8 +186,22 @@ export class TrainRenderer {
 
       let drawingDirection = train.drawingDirection;
       let isReversed = train.movingDirection === train.drawingDirection;
+      const carStepLength = RendererConfig.trainCarSpacing + RendererConfig.carWidth;
+      const despawnedCars = train.isExiting ? Math.min(cars.length, Math.floor(train.exitProgressMeters / carStepLength)) : 0;
+      const exitOffset = train.isExiting ? train.exitProgressMeters * train.movingDirection : 0;
 
       for (carIndex = 0; carIndex < cars.length; carIndex++) {
+         const carGraphics = cars[carIndex];
+         carGraphics.visible = false;
+
+         if (train.isExiting) {
+            const distanceFromFront = isReversed ? (cars.length - 1 - carIndex) : carIndex;
+            if (distanceFromFront < despawnedCars) {
+               // This car has already passed the exit and should no longer be rendered.
+               continue;
+            }
+         }
+
          const isLocomotive = carIndex === 0;
          // move each car, so instead of the center of the first car, the head of the first car is at the position of the train
          let carOffset = RendererConfig.carWidth / 2 * drawingDirection * (isReversed ? -1 : 1);
@@ -199,7 +214,7 @@ export class TrainRenderer {
             const result = this._trackLayoutManager.followRailNetwork(
                train.position.track,
                train.position.km,
-               carOffset
+               carOffset + exitOffset
             );
 
             if (result.element instanceof Track) {
@@ -211,7 +226,7 @@ export class TrainRenderer {
          } catch {
             continue;
          }
-         const carGraphics = cars[carIndex];
+         carGraphics.visible = true;
          const carColor = isLocomotive ? RendererConfig.locomotiveColor : RendererConfig.carColor;
          const carRadius = isLocomotive ? RendererConfig.locomotiveRadius : RendererConfig.carRadius;
 
@@ -255,6 +270,7 @@ export class TrainRenderer {
          if (isLocomotive) {
             const text = trainContainer.numberText;
             if (text) {
+               text.visible = true;
                text.text = train.number;
                text.x = carPosition.x;
                text.y = carPosition.y;

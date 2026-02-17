@@ -8,7 +8,7 @@
       "type": "Passenger",
       "category": "RB",
       "speed": 160,
-      "cars": 4,
+      "cars": 15,
       "path": [],
       "timetable": [
         {
@@ -39,6 +39,31 @@
         {
           "station": "rechtsheim",
           "arrival": "00:28:55",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },{
+      "number": "46404",
+      "type": "Freight",
+      "category": "GZ",
+      "speed": 100,
+      "cars": 10,
+      "path": [],
+      "timetable": [
+        {
+          "station": "meßbach",
+          "arrival": "",
+          "departure": "00:04:35"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:07:40",
+          "departure": "00:08:40"
+        },
+        {
+          "station": "linksdorf",
+          "arrival": "00:11:45",
           "departure": ""
         }
       ],
