@@ -18,6 +18,7 @@ import Toast from "../ui/toast";
 import { ClientSimulation } from "../core/clientSimulation";
 import TrainRoute from "../sim/trainRoute";
 import Exit from "../sim/exit";
+import SoundsManager from "../manager/sounds_manager";
 
 export class Application {
    private _uiManager: UIManager;
@@ -30,11 +31,13 @@ export class Application {
    private _currentPlayerId: string | null = null;
    private _currentStationId: string | null = null;
    private _signalRManager: SignalRManager;
+   private _soundsManager: SoundsManager;
    private _signalBlockedExits: Map<Signal, number> = new Map();
 
    constructor() {
       this._eventManager = new EventManager();
       this._signalRManager = new SignalRManager(this._eventManager);
+      this._soundsManager = new SoundsManager(this._eventManager);
       this._uiManager = new UIManager(this, this._eventManager);
       this._trackLayoutManager = new TrackLayoutManager(this);
       this._clientSimulation = new ClientSimulation(this._eventManager);
@@ -55,6 +58,7 @@ export class Application {
    async init() {
       this._uiManager.init();
       this._eventManager.init();
+      this._soundsManager.init();
 
       await this.initRenderer();
       this.setupEventListeners();

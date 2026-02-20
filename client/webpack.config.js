@@ -42,6 +42,10 @@ module.exports = (env, argv) => {
                type: "asset/resource",
             },
             {
+               test: /\.(mp3|wav|ogg)$/i,
+               type: "asset/resource",
+            },
+            {
                test: /\.(woff|woff2|eot|ttf|otf)$/i,
                type: "asset/resource",
             },
