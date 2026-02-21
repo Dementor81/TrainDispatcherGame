@@ -1,12 +1,15 @@
-import { fetchAvailableStations, StationInfo } from "../network/api";
+import { fetchAvailableStations } from "../network/api";
 import { Tools } from "../core/utils";
 
 export class StationSelector {
   private modal: HTMLElement | null = null;
   private dropdown: HTMLSelectElement | null = null;
-  private playerNameInput: HTMLInputElement | null = null;
+  private selectedPlayerName: HTMLElement | null = null;
+  private selectedGameCode: HTMLElement | null = null;
   private startButton: HTMLButtonElement | null = null;
   private onStationSelected: ((layout: string, playerId: string, playerName?: string) => void) | null = null;
+  private playerName: string | null = null;
+  private gameCode: string | null = null;
 
   constructor() {
     this.initializeElements();
@@ -16,7 +19,8 @@ export class StationSelector {
   private initializeElements(): void {
     this.modal = document.getElementById('stationSelectModal');
     this.dropdown = document.getElementById('DropdownStations') as HTMLSelectElement;
-    this.playerNameInput = document.getElementById('playerNameInput') as HTMLInputElement;
+    this.selectedPlayerName = document.getElementById('selectedPlayerName');
+    this.selectedGameCode = document.getElementById('selectedGameCode');
     this.startButton = document.getElementById('startButton') as HTMLButtonElement;
   }
 
@@ -63,10 +67,9 @@ export class StationSelector {
   }
 
   private handleStartClick(): void {
-    if (!this.dropdown || !this.playerNameInput || !this.onStationSelected) return;
+    if (!this.dropdown || !this.onStationSelected) return;
 
     const selectedStation = this.dropdown.value;
-    const playerName = this.playerNameInput.value.trim();
 
     if (!selectedStation) {
       alert('Bitte wählen Sie einen Bahnhof aus.');
@@ -75,7 +78,7 @@ export class StationSelector {
 
     // Call the callback with the selected station and player GUID, passing playerName optionally
     const playerId = this.getOrCreateClientId();
-    this.onStationSelected(selectedStation, playerId, playerName || undefined);
+    this.onStationSelected(selectedStation, playerId, this.playerName || undefined);
     
     // Hide the modal
     this.hideModal();
@@ -83,11 +86,8 @@ export class StationSelector {
 
   public showModal(onStationSelected: (layout: string, playerId: string, playerName?: string) => void): void {
     this.onStationSelected = onStationSelected;
-    
-    // Clear the player name input
-    if (this.playerNameInput) {
-      this.playerNameInput.value = '';
-    }
+    this.loadJoinContext();
+    this.updateJoinContextDisplay();
     
     // Use Bootstrap's modal API to show the modal
     if (this.modal) {
@@ -102,6 +102,24 @@ export class StationSelector {
       return (crypto as any).randomUUID();
     }
     return Tools.generateGuid();
+  }
+
+  private loadJoinContext(): void {
+    const storedPlayerName = sessionStorage.getItem('playerName')?.trim() ?? '';
+    const storedGameCode = sessionStorage.getItem('gameCode')?.trim() ?? '';
+
+    this.playerName = storedPlayerName || null;
+    this.gameCode = storedGameCode || null;
+  }
+
+  private updateJoinContextDisplay(): void {
+    if (this.selectedPlayerName) {
+      this.selectedPlayerName.textContent = this.playerName ?? '-';
+    }
+
+    if (this.selectedGameCode) {
+      this.selectedGameCode.textContent = this.gameCode ?? '-';
+    }
   }
 
   public hideModal(): void {

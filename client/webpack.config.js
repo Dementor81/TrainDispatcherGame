@@ -7,6 +7,7 @@ module.exports = (env, argv) => {
 
    return {
       entry: {
+         index: "./index.ts",
          main: "./main.ts",
          scenarioEditor: "./scenarioEditor/main.ts",
          admin: "./admin/main.ts",
@@ -52,6 +53,13 @@ module.exports = (env, argv) => {
          ],
       },
       plugins: [
+         new HtmlWebpackPlugin({
+            template: "index.html",
+            filename: "index.html",
+            inject: "head",
+            scriptLoading: "blocking",
+            chunks: ["index"],
+         }),
          new HtmlWebpackPlugin({
             template: "main.html",
             filename: "main.html",

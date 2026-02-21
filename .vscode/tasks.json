@@ -84,7 +84,7 @@
          "label": "start-webpack",
          "type": "shell",
          "command": "bash",
-         "args": ["-lc", "sleep 5 && npm run start"],
+         "args": ["-lc", "sleep 3 && npm run start"],
          "options": {
             "cwd": "${workspaceFolder}/client",
             "env": {
