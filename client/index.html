@@ -13,33 +13,39 @@
         Koordiniere Züge, löse Engpässe und halte den Fahrplan im Team unter Kontrolle.
       </p>
 
-      <div class="join-row">
-        <input
-          id="joinNameInput"
-          type="text"
-          class="form-control"
-          placeholder="Dein Name"
-          aria-label="Dein Name"
-        >
-        <input
-          id="joinCodeInput"
-          type="text"
-          class="form-control"
-          placeholder="Game-Code"
-          aria-label="Game-Code"
-        >
-        <button id="joinGameButton" type="button" class="btn btn-success">
-          Teilnehmen
-        </button>
+      <div id="onlineActions">
+        <div class="join-row">
+          <input
+            id="joinNameInput"
+            type="text"
+            class="form-control"
+            placeholder="Dein Name"
+            aria-label="Dein Name"
+          >
+          <input
+            id="joinCodeInput"
+            type="text"
+            class="form-control"
+            placeholder="Game-Code"
+            aria-label="Game-Code"
+          >
+          <button id="joinGameButton" type="button" class="btn btn-success">
+            Teilnehmen
+          </button>
+        </div>
+
+        <div class="host-section">
+          <p class="host-description">
+            Starte ein neues Spiel als Admin, teile den Code und lade deine Freunde ein.
+          </p>
+          <button id="hostGameButton" type="button" class="btn btn-outline-light">
+            Neues Spiel starten
+          </button>
+        </div>
       </div>
 
-      <div class="host-section">
-        <p class="host-description">
-          Starte ein neues Spiel als Admin, teile den Code und lade deine Freunde ein.
-        </p>
-        <button id="hostGameButton" type="button" class="btn btn-outline-light">
-          Neues Spiel starten
-        </button>
+      <div id="serverUnavailableMessage" class="server-error-box d-none" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i> Der Server ist derzeit nicht erreichbar. Somit kannst du das Spiel nicht starten.
       </div>
     </section>
   </main>

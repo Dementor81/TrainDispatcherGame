@@ -2,13 +2,43 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/landing.css";
 
 window.addEventListener("DOMContentLoaded", () => {
+  const onlineActions = document.getElementById("onlineActions");
+  const serverUnavailableMessage = document.getElementById("serverUnavailableMessage");
   const nameInput = document.getElementById("joinNameInput") as HTMLInputElement | null;
   const codeInput = document.getElementById("joinCodeInput") as HTMLInputElement | null;
   const joinButton = document.getElementById("joinGameButton") as HTMLButtonElement | null;
 
-  if (!nameInput || !codeInput || !joinButton) {
+  if (!onlineActions || !serverUnavailableMessage || !nameInput || !codeInput || !joinButton) {
     return;
   }
+
+  const setServerAvailableState = (isAvailable: boolean) => {
+    onlineActions.classList.toggle("d-none", !isAvailable);
+    serverUnavailableMessage.classList.toggle("d-none", isAvailable);
+  };
+
+  const checkServerAvailability = async (): Promise<boolean> => {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 5000);
+
+    try {
+      const response = await fetch("/api/layouts", {
+        method: "GET",
+        cache: "no-store",
+        signal: controller.signal,
+      });
+
+      return response.ok;
+    } catch {
+      return false;
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  };
+
+  void checkServerAvailability().then((isAvailable) => {
+    setServerAvailableState(isAvailable);
+  });
 
   const clearValidity = (input: HTMLInputElement) => {
     input.setCustomValidity("");
