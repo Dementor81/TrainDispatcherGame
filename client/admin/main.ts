@@ -12,6 +12,7 @@ import TrainsPanel from "./trainsPanel";
 import OpenLinePanel from "./openLinePanel";
 import LogsPanel from "./logsPanel";
 import PlayersPanel from "./playersPanel";
+import GameCodePanel from "./gameCodePanel";
 
 window.addEventListener("load", async () => {
   const app = new AdminApplication();
@@ -25,7 +26,8 @@ window.addEventListener("load", async () => {
   const openline = new OpenLinePanel();
   const logs = new LogsPanel();
   const players = new PlayersPanel();
+  const gameCode = new GameCodePanel();
   
 
-  (window as any).admin = { app, hud, panel, scenario, trains, openline, logs, players };
+  (window as any).admin = { app, hud, panel, scenario, trains, openline, logs, players, gameCode };
 });

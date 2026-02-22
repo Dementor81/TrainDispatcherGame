@@ -9,7 +9,7 @@ Big Features:
     ☐ acceleration and deceleration
     ☐ shunting
     ☐ coupling and decoupling
-    ☐ add game logic to the server to handle multiple game sessions simultaniously
+    ✔ add game logic to the server to handle multiple game sessions simultaniously @done(26-02-22 18:22)
     ☐ UI with an overview of the whole network
     ☐ better UI for station selection with a display which station is already taken by whom
     ☐ slow down trains if the train is on a router with switches set to the branch

@@ -103,13 +103,8 @@ export default class ApprovalToast {
     }
 
     private async respond(request: ApprovalRequest, approved: boolean): Promise<void> {
-        const playerId = this.app.currentPlayerId;
-        if (!playerId) {
-            console.error('No playerId set; cannot respond to approval');
-            return;
-        }
         try {
-            await this.app.signalRManager.respondApproval(playerId, request.trainNumber, request.stationId, approved);
+            await this.app.signalRManager.respondApproval(request.trainNumber, request.stationId, approved);
         } catch (e) {
             console.error('Failed to respond approval', e);
         }

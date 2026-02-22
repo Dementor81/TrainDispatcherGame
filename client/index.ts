@@ -7,8 +7,9 @@ window.addEventListener("DOMContentLoaded", () => {
   const nameInput = document.getElementById("joinNameInput") as HTMLInputElement | null;
   const codeInput = document.getElementById("joinCodeInput") as HTMLInputElement | null;
   const joinButton = document.getElementById("joinGameButton") as HTMLButtonElement | null;
+  const hostButton = document.getElementById("hostGameButton") as HTMLButtonElement | null;
 
-  if (!onlineActions || !serverUnavailableMessage || !nameInput || !codeInput || !joinButton) {
+  if (!onlineActions || !serverUnavailableMessage || !nameInput || !codeInput || !joinButton || !hostButton) {
     return;
   }
 
@@ -72,7 +73,44 @@ window.addEventListener("DOMContentLoaded", () => {
     window.location.href = "main.html";
   };
 
+  const hostGame = async () => {
+    hostButton.disabled = true;
+    try {
+      const response = await fetch("/api/games", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+
+      const payload = await response.json() as { gameCode?: string };
+      const gameCode = payload.gameCode?.trim();
+      if (!gameCode) {
+        throw new Error("Missing game code");
+      }
+
+      const playerName = nameInput.value.trim();
+      if (playerName) {
+        sessionStorage.setItem("playerName", playerName);
+      }
+      sessionStorage.setItem("gameCode", gameCode);
+      window.location.href = "admin.html";
+    } catch (error) {
+      console.error("Failed to create game session", error);
+      alert("Neues Spiel konnte nicht gestartet werden. Bitte versuche es erneut.");
+    } finally {
+      hostButton.disabled = false;
+    }
+  };
+
   joinButton.addEventListener("click", joinGame);
+  hostButton.addEventListener("click", () => {
+    void hostGame();
+  });
   nameInput.addEventListener("input", () => clearValidity(nameInput));
   codeInput.addEventListener("input", () => clearValidity(codeInput));
 

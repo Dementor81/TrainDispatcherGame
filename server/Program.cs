@@ -5,6 +5,7 @@ using TrainDispatcherGame.Server.Services;
 using TrainDispatcherGame.Server.Models;
 using TrainDispatcherGame.Server.Models.DTOs;
 using TrainDispatcherGame.Server.Logging;
+using TrainDispatcherGame.Server.Sessions;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Text.Json;
 using Microsoft.Extensions.Primitives;
@@ -24,24 +25,9 @@ builder.Services.AddCors(options =>
 // Add SignalR
 builder.Services.AddSignalR();
 
-// Add simulation as a singleton service
-builder.Services.AddSingleton<Simulation>(serviceProvider =>
-{
-    var notificationManager = serviceProvider.GetRequiredService<NotificationManager>();
-    var trackLayoutService = serviceProvider.GetRequiredService<TrackLayoutService>();
-    var playerManager = serviceProvider.GetRequiredService<PlayerManager>();
-    var scenarioId = ScenarioService.ListScenarios().Last().Id;
-    return new Simulation(notificationManager, trackLayoutService, playerManager, scenarioId);
-});
-
-// Add player manager as a singleton service
-builder.Services.AddSingleton<PlayerManager>();
-
-// Add notification manager as a singleton service
-builder.Services.AddSingleton<NotificationManager>();
-
 // Add track layout service as a singleton service
 builder.Services.AddSingleton<TrackLayoutService>();
+builder.Services.AddSingleton<GameSessionManager>();
 
 var app = builder.Build();
 
@@ -74,9 +60,60 @@ app.UseStaticFiles();
 // Map SignalR hub with CORS
 app.MapHub<GameHub>("/gamehub").RequireCors("AllowDevClient");
 
-// Endpoint to serve a specific track layout JSON file
-app.MapGet("/api/layouts/{stationName}", (string stationName, TrackLayoutService trackLayoutService) =>
+string GenerateGameCode(GameSessionManager sessionManager)
 {
+    const string alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const int codeLength = 6;
+
+    for (int attempt = 0; attempt < 20; attempt++)
+    {
+        var chars = new char[codeLength];
+        for (int i = 0; i < codeLength; i++)
+        {
+            chars[i] = alphabet[Random.Shared.Next(alphabet.Length)];
+        }
+
+        var code = new string(chars);
+        if (!sessionManager.TryGet(code, out _))
+        {
+            return code;
+        }
+    }
+
+    return Guid.NewGuid().ToString("N")[..codeLength].ToUpperInvariant();
+}
+
+string ResolveGameCode(HttpRequest req)
+{
+    if (req.Query.TryGetValue("gameCode", out var gameCodeValues))
+    {
+        var fromQuery = gameCodeValues.FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(fromQuery))
+        {
+            return GameSessionManager.NormalizeSessionId(fromQuery);
+        }
+    }
+
+    return GameSessionManager.NormalizeSessionId(null);
+}
+
+GameSession ResolveSession(HttpRequest req, GameSessionManager sessionManager)
+{
+    var gameCode = ResolveGameCode(req);
+    return sessionManager.GetOrCreate(gameCode);
+}
+
+app.MapPost("/api/games", (GameSessionManager sessionManager) =>
+{
+    var gameCode = GenerateGameCode(sessionManager);
+    sessionManager.GetOrCreate(gameCode);
+    return Results.Ok(new { gameCode });
+});
+
+// Endpoint to serve a specific track layout JSON file
+app.MapGet("/api/layouts/{stationName}", (string stationName, HttpRequest req, GameSessionManager sessionManager) =>
+{
+    var trackLayoutService = ResolveSession(req, sessionManager).TrackLayoutService;
     stationName = stationName.ToLower();
     var client = trackLayoutService.BuildClientTrackLayout(stationName);
     if (client == null)
@@ -86,8 +123,9 @@ app.MapGet("/api/layouts/{stationName}", (string stationName, TrackLayoutService
     return Results.Json(client);
 });
 
-app.MapGet("/api/layouts", (TrackLayoutService trackLayoutService) =>
+app.MapGet("/api/layouts", (HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var trackLayoutService = ResolveSession(req, sessionManager).TrackLayoutService;
     var layouts = trackLayoutService.GetAllTrackLayouts();
     var stations = layouts.Select(layout => new
     {
@@ -98,8 +136,9 @@ app.MapGet("/api/layouts", (TrackLayoutService trackLayoutService) =>
 });
 
 // Endpoint to get exit points for a station
-app.MapGet("/api/layouts/{stationName}/exits", (string stationName, TrackLayoutService trackLayoutService) =>
+app.MapGet("/api/layouts/{stationName}/exits", (string stationName, HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var trackLayoutService = ResolveSession(req, sessionManager).TrackLayoutService;
     stationName = stationName.ToLower();
     var layout = trackLayoutService.GetTrackLayout(stationName);
     if (layout == null)
@@ -111,8 +150,9 @@ app.MapGet("/api/layouts/{stationName}/exits", (string stationName, TrackLayoutS
 });
 
 // Endpoint to get exit point from one station to another
-app.MapGet("/api/layouts/{fromStation}/exit-to/{toStation}", (string fromStation, string toStation, TrackLayoutService trackLayoutService) =>
+app.MapGet("/api/layouts/{fromStation}/exit-to/{toStation}", (string fromStation, string toStation, HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var trackLayoutService = ResolveSession(req, sessionManager).TrackLayoutService;
     fromStation = fromStation.ToLower();
     toStation = toStation.ToLower();
     var exitPoint = trackLayoutService.GetExitPointToStation(fromStation, toStation);
@@ -126,6 +166,7 @@ app.MapGet("/api/layouts/{fromStation}/exit-to/{toStation}", (string fromStation
 
 app.MapGet("/api/logs", (HttpRequest req) =>
 {
+    var sessionId = ResolveGameCode(req);
     var contexts = new List<string>();
     if (req.Query.TryGetValue("context", out StringValues contextValues))
     {
@@ -141,55 +182,66 @@ app.MapGet("/api/logs", (HttpRequest req) =>
         }
     }
 
+    var prefix = SessionLogContext.SessionPrefix(sessionId);
+    var allLogs = ServerLogger.Instance.GetLogs()
+        .Where(entry => entry.Context.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        .ToList();
     var logs = contexts.Count == 0
-        ? ServerLogger.Instance.GetLogs()
-        : ServerLogger.Instance.GetLogs(contexts);
+        ? allLogs
+        : allLogs.Where(entry => contexts.Any(c => entry.Context.Contains(c, StringComparison.OrdinalIgnoreCase))).ToList();
 
     return Results.Json(logs);
 });
 
 // Simulation control endpoints
-app.MapPost("/api/simulation/start", (Simulation simulation) =>
+app.MapPost("/api/simulation/start", (HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var simulation = ResolveSession(req, sessionManager).Simulation;
     simulation.Start();
     return Results.Ok(new { message = "Simulation started", state = simulation.State.ToString() });
 });
 
-app.MapPost("/api/simulation/stop", (Simulation simulation) =>
+app.MapPost("/api/simulation/stop", (HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var simulation = ResolveSession(req, sessionManager).Simulation;
     simulation.Stop();
     return Results.Ok(new { message = "Simulation stopped", state = simulation.State.ToString() });
 });
 
-app.MapPost("/api/simulation/pause", (Simulation simulation) =>
+app.MapPost("/api/simulation/pause", (HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var simulation = ResolveSession(req, sessionManager).Simulation;
     simulation.Pause();
     return Results.Ok(new { message = "Simulation paused", state = simulation.State.ToString() });
 });
 
-app.MapPost("/api/simulation/resume", async (Simulation simulation) =>
+app.MapPost("/api/simulation/resume", async (HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var simulation = ResolveSession(req, sessionManager).Simulation;
     await simulation.Resume();
     return Results.Ok(new { message = "Simulation resumed", state = simulation.State.ToString() });
 });
 
 // Reset simulation (stop and reload current scenario)
-app.MapPost("/api/simulation/reset", (Simulation simulation) =>
+app.MapPost("/api/simulation/reset", (HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var simulation = ResolveSession(req, sessionManager).Simulation;
     simulation.Stop();
     return Results.Ok(new { message = "Simulation reset", state = simulation.State.ToString() });
 });
 
 // Endpoint to advance simulation time by one minute
-app.MapPost("/api/simulation/advance-minute", (Simulation simulation) =>
+app.MapPost("/api/simulation/advance-minute", (HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var simulation = ResolveSession(req, sessionManager).Simulation;
     simulation.AdvanceSeconds(60);
     return Results.Ok(new { message = "Simulation advanced by 60 seconds", state = simulation.State.ToString(), elapsedSeconds = simulation.ElapsedSeconds, currentTime = simulation.SimulationTime });
 });
 
 // Set simulation speed
-app.MapPost("/api/simulation/speed", async (HttpRequest req, Simulation simulation) =>
+app.MapPost("/api/simulation/speed", async (HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var simulation = ResolveSession(req, sessionManager).Simulation;
     try
     {
         using var reader = new StreamReader(req.Body);
@@ -209,8 +261,9 @@ app.MapPost("/api/simulation/speed", async (HttpRequest req, Simulation simulati
     }
 });
 
-app.MapGet("/api/simulation/status", (Simulation simulation) =>
+app.MapGet("/api/simulation/status", (HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var simulation = ResolveSession(req, sessionManager).Simulation;
     return Results.Ok(new
     {
         state = simulation.State.ToString(),
@@ -222,13 +275,15 @@ app.MapGet("/api/simulation/status", (Simulation simulation) =>
 });
 
 // Scenario selection endpoints for the running simulation
-app.MapGet("/api/simulation/scenario", (Simulation simulation) =>
+app.MapGet("/api/simulation/scenario", (HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var simulation = ResolveSession(req, sessionManager).Simulation;
     return Results.Ok(new { id = simulation.ScenarioId });
 });
 
-app.MapPost("/api/simulation/scenario", async (HttpRequest req, Simulation simulation) =>
+app.MapPost("/api/simulation/scenario", async (HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var simulation = ResolveSession(req, sessionManager).Simulation;
     try
     {
         using var reader = new StreamReader(req.Body);
@@ -254,8 +309,9 @@ app.MapPost("/api/simulation/scenario", async (HttpRequest req, Simulation simul
     }
 });
 
-app.MapGet("/api/simulation/trains", (Simulation simulation) =>
+app.MapGet("/api/simulation/trains", (HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var simulation = ResolveSession(req, sessionManager).Simulation;
     var list = simulation.Trains.Select(t => new
     {
         number = t.Number,
@@ -278,8 +334,9 @@ app.MapGet("/api/simulation/trains", (Simulation simulation) =>
     return Results.Ok(list);
 });
 
-app.MapGet("/api/trains/{trainNumber}/waypoints", (string trainNumber, Simulation simulation) =>
+app.MapGet("/api/trains/{trainNumber}/waypoints", (string trainNumber, HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var simulation = ResolveSession(req, sessionManager).Simulation;
     var train = simulation.Trains.FirstOrDefault(t => t.Number == trainNumber);
     if (train == null)
     {
@@ -302,24 +359,27 @@ app.MapGet("/api/trains/{trainNumber}/waypoints", (string trainNumber, Simulatio
 
 
 // Open line tracks status
-app.MapGet("/api/openline/tracks", (Simulation simulation) =>
+app.MapGet("/api/openline/tracks", (HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var simulation = ResolveSession(req, sessionManager).Simulation;
     var list = simulation.GetOpenLineTrackStatuses();
     return Results.Ok(list);
 });
 
 
 // Endpoint to get upcoming trains for a specific station
-app.MapGet("/api/stations/{stationId}/upcoming-trains", (string stationId, Simulation simulation) =>
+app.MapGet("/api/stations/{stationId}/upcoming-trains", (string stationId, HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var simulation = ResolveSession(req, sessionManager).Simulation;
     stationId = stationId.ToLower();
     var stationEvents = simulation.GetStationTimetableEvents(stationId);
     return Results.Ok(stationEvents);
 });
 
 // Read-only player management endpoints (for admin/debugging)
-app.MapGet("/api/players", (PlayerManager playerManager) =>
+app.MapGet("/api/players", (HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var playerManager = ResolveSession(req, sessionManager).PlayerManager;
     var players = playerManager.GetAllPlayers();
     var playerResponses = players.Select(p => new
     {
@@ -333,8 +393,9 @@ app.MapGet("/api/players", (PlayerManager playerManager) =>
     return Results.Ok(playerResponses);
 });
 
-app.MapGet("/api/players/{playerId}", (string playerId, PlayerManager playerManager) =>
+app.MapGet("/api/players/{playerId}", (string playerId, HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var playerManager = ResolveSession(req, sessionManager).PlayerManager;
     var player = playerManager.GetPlayer(playerId);
 
     if (player == null)
@@ -354,8 +415,9 @@ app.MapGet("/api/players/{playerId}", (string playerId, PlayerManager playerMana
     return Results.Ok(response);
 });
 
-app.MapGet("/api/stations/controlled", (PlayerManager playerManager) =>
+app.MapGet("/api/stations/controlled", (HttpRequest req, GameSessionManager sessionManager) =>
 {
+    var playerManager = ResolveSession(req, sessionManager).PlayerManager;
     var controlledStations = playerManager.GetControlledStations();
     return Results.Ok(controlledStations);
 });

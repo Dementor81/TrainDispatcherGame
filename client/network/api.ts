@@ -2,12 +2,23 @@ import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioD
 
 const API_BASE_URL = "/api";
 
+function getGameCode(): string {
+  const stored = sessionStorage.getItem("gameCode")?.trim();
+  return stored && stored.length > 0 ? stored : "default";
+}
+
+function withGameCode(path: string): string {
+  const url = new URL(path, window.location.origin);
+  url.searchParams.set("gameCode", getGameCode());
+  return url.toString();
+}
+
 export interface StationInfo {
   id: string;
 }
 
 export async function fetchAvailableStations(): Promise<StationInfo[]> {
-  const response = await fetch(`${API_BASE_URL}/layouts`);
+  const response = await fetch(withGameCode(`${API_BASE_URL}/layouts`));
   if (!response.ok) {
     throw new Error(`Failed to fetch station list: ${response.statusText}`);
   }
@@ -21,7 +32,7 @@ export async function fetchAvailableLayouts(): Promise<string[]> {
 }
 
 export async function fetchLayout(name: string): Promise<TrackLayoutDto> {
-  const response = await fetch(`${API_BASE_URL}/layouts/${encodeURIComponent(name)}`);
+  const response = await fetch(withGameCode(`${API_BASE_URL}/layouts/${encodeURIComponent(name)}`));
   if (!response.ok) {
     throw new Error(`Failed to fetch layout "${name}": ${response.statusText}`);
   }
@@ -30,7 +41,7 @@ export async function fetchLayout(name: string): Promise<TrackLayoutDto> {
 
 // Simulation control API functions
 export async function startSimulation(): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/simulation/start`, {
+  const response = await fetch(withGameCode(`${API_BASE_URL}/simulation/start`), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -43,7 +54,7 @@ export async function startSimulation(): Promise<any> {
 }
 
 export async function stopSimulation(): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/simulation/stop`, {
+  const response = await fetch(withGameCode(`${API_BASE_URL}/simulation/stop`), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -56,7 +67,7 @@ export async function stopSimulation(): Promise<any> {
 }
 
 export async function pauseSimulation(): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/simulation/pause`, {
+  const response = await fetch(withGameCode(`${API_BASE_URL}/simulation/pause`), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -69,7 +80,7 @@ export async function pauseSimulation(): Promise<any> {
 }
 
 export async function resumeSimulation(): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/simulation/resume`, {
+  const response = await fetch(withGameCode(`${API_BASE_URL}/simulation/resume`), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -82,7 +93,7 @@ export async function resumeSimulation(): Promise<any> {
 }
 
 export async function resetSimulation(): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/simulation/reset`, {
+  const response = await fetch(withGameCode(`${API_BASE_URL}/simulation/reset`), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -95,7 +106,7 @@ export async function resetSimulation(): Promise<any> {
 }
 
 export async function getSimulationStatus(): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/simulation/status`);
+  const response = await fetch(withGameCode(`${API_BASE_URL}/simulation/status`));
   if (!response.ok) {
     throw new Error(`Failed to get simulation status: ${response.statusText}`);
   }
@@ -104,7 +115,7 @@ export async function getSimulationStatus(): Promise<any> {
 
 // All trains (active + completed)
 export async function getAllTrains(): Promise<any[]> {
-  const response = await fetch(`${API_BASE_URL}/simulation/trains`);
+  const response = await fetch(withGameCode(`${API_BASE_URL}/simulation/trains`));
   if (!response.ok) {
     throw new Error(`Failed to get trains: ${response.statusText}`);
   }
@@ -112,7 +123,7 @@ export async function getAllTrains(): Promise<any[]> {
 }
 
 export async function getUpcomingTrains(stationId: string): Promise<StationTimetableEventDto[]> {
-  const response = await fetch(`${API_BASE_URL}/stations/${encodeURIComponent(stationId)}/upcoming-trains`);
+  const response = await fetch(withGameCode(`${API_BASE_URL}/stations/${encodeURIComponent(stationId)}/upcoming-trains`));
   if (!response.ok) {
     throw new Error(`Failed to get upcoming trains for station ${stationId}: ${response.statusText}`);
   }
@@ -120,7 +131,7 @@ export async function getUpcomingTrains(stationId: string): Promise<StationTimet
 }
 
 export async function getTrainWaypoints(trainNumber: string): Promise<TrainWayPointDto[]> {
-  const response = await fetch(`${API_BASE_URL}/trains/${encodeURIComponent(trainNumber)}/waypoints`);
+  const response = await fetch(withGameCode(`${API_BASE_URL}/trains/${encodeURIComponent(trainNumber)}/waypoints`));
   if (!response.ok) {
     throw new Error(`Failed to get waypoints for train ${trainNumber}: ${response.statusText}`);
   }
@@ -152,7 +163,7 @@ export default {
 
 // Advance simulation time by one minute
 export async function advanceSimulationOneMinute(): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/simulation/advance-minute`, {
+  const response = await fetch(withGameCode(`${API_BASE_URL}/simulation/advance-minute`), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -165,7 +176,7 @@ export async function advanceSimulationOneMinute(): Promise<any> {
 }
 
 export async function setSimulationSpeed(speed: number): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/simulation/speed`, {
+  const response = await fetch(withGameCode(`${API_BASE_URL}/simulation/speed`), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ speed })
@@ -218,7 +229,7 @@ export async function fetchNetwork(layoutId?: string): Promise<NetworkDto> {
 
 // Scenario selection on running simulation
 export async function getCurrentScenario(): Promise<{ id: string }> {
-  const response = await fetch(`${API_BASE_URL}/simulation/scenario`);
+  const response = await fetch(withGameCode(`${API_BASE_URL}/simulation/scenario`));
   if (!response.ok) {
     throw new Error(`Failed to get current scenario: ${response.statusText}`);
   }
@@ -226,7 +237,7 @@ export async function getCurrentScenario(): Promise<{ id: string }> {
 }
 
 export async function setScenario(id: string): Promise<{ message: string; id: string }> {
-  const response = await fetch(`${API_BASE_URL}/simulation/scenario`, {
+  const response = await fetch(withGameCode(`${API_BASE_URL}/simulation/scenario`), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id })
@@ -238,7 +249,7 @@ export async function setScenario(id: string): Promise<{ message: string; id: st
 }
 
 export async function fetchOpenLineTracks(): Promise<OpenLineTrackStatusDto[]> {
-  const response = await fetch(`${API_BASE_URL}/openline/tracks`);
+  const response = await fetch(withGameCode(`${API_BASE_URL}/openline/tracks`));
   if (!response.ok) {
     throw new Error(`Failed to fetch open line tracks: ${response.statusText}`);
   }
@@ -246,7 +257,7 @@ export async function fetchOpenLineTracks(): Promise<OpenLineTrackStatusDto[]> {
 }
 
 export async function fetchLogs(contexts?: string[]): Promise<LogEntryDto[]> {
-  const url = new URL(`${API_BASE_URL}/logs`, window.location.origin);
+  const url = new URL(withGameCode(`${API_BASE_URL}/logs`));
   if (contexts && contexts.length > 0) {
     for (const context of contexts) {
       if (context.trim().length > 0) {
@@ -262,7 +273,7 @@ export async function fetchLogs(contexts?: string[]): Promise<LogEntryDto[]> {
 }
 
 export async function fetchPlayers(): Promise<PlayerInfoDto[]> {
-  const response = await fetch(`${API_BASE_URL}/players`);
+  const response = await fetch(withGameCode(`${API_BASE_URL}/players`));
   if (!response.ok) {
     throw new Error(`Failed to fetch players: ${response.statusText}`);
   }

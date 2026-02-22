@@ -30,6 +30,7 @@ export class Application {
    private _renderer: Renderer | null = null;
    private _currentPlayerId: string | null = null;
    private _currentStationId: string | null = null;
+   private _currentGameCode: string | null = null;
    private _signalRManager: SignalRManager;
    private _soundsManager: SoundsManager;
    private _signalBlockedExits: Map<Signal, number> = new Map();
@@ -80,13 +81,15 @@ export class Application {
       console.log("Selected layout:", layout, "Player ID:", playerId, "Player Name:", playerName);
       
       try {
+         const gameCode = (sessionStorage.getItem("gameCode") || "").trim() || "default";
          // Join the station via SignalR for real-time updates
-         await this._signalRManager.joinStation(playerId, layout, playerName);
+         await this._signalRManager.joinStation(playerId, layout, gameCode, playerName);
          console.log('Successfully joined station via SignalR');
          
          // Store the player ID and station ID, then load the layout
          this._currentPlayerId = playerId;
          this._currentStationId = layout;
+         this._currentGameCode = gameCode;
          this._trackLayoutManager.loadTrackLayout(layout);
          
          // Show the control panel and train overview panel after successfully joining a station
@@ -272,13 +275,13 @@ export class Application {
 
    public async removeTrainAndReport(trainNumber: string): Promise<void> {
       // Remove locally and mark completed on server
-      if (!this._currentPlayerId || !this._currentStationId) {
-         console.error('Cannot remove train: No current player ID or station ID');
+      if (!this._currentStationId) {
+         console.error('Cannot remove train: No current station ID');
          return;
       }
 
       try {
-         await this._signalRManager.reportTrainRemoved(this._currentPlayerId, trainNumber, this._currentStationId);
+         await this._signalRManager.reportTrainRemoved(trainNumber, this._currentStationId);
       } catch (error) {
          console.error(`Application: Failed to report train removed ${trainNumber}:`, error);
       }
@@ -359,6 +362,7 @@ export class Application {
          // Reset current selections/state
          this._currentPlayerId = null;
          this._currentStationId = null;
+         this._currentGameCode = null;
 
          // Show station selection again
          this._uiManager.showStationSelectionScreen(async (layout: string, playerId: string, playerName?: string) => {

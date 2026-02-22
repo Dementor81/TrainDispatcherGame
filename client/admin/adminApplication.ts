@@ -19,6 +19,8 @@ export class AdminApplication {
   private async connect(): Promise<void> {
     try {
       await this.signalRManager.connect();
+      const gameCode = (sessionStorage.getItem("gameCode") || "").trim() || "default";
+      await this.signalRManager.joinSession(gameCode);
       console.log('AdminApplication: Connected to SignalR');
     } catch (error) {
       console.error('AdminApplication: Failed to connect to SignalR', error);

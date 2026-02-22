@@ -8,11 +8,13 @@ namespace TrainDispatcherGame.Server.Simulation
     public class OpenLineTrackRegistry
     {
         private readonly TrackLayoutService _trackLayoutService;
+        private readonly string _sessionId;
         private Dictionary<NetworkConnection, OpenLineTrack> _openLineTracks = new();
 
-        public OpenLineTrackRegistry(TrackLayoutService trackLayoutService)
+        public OpenLineTrackRegistry(TrackLayoutService trackLayoutService, string sessionId)
         {
             _trackLayoutService = trackLayoutService;
+            _sessionId = sessionId;
         }
 
         public void Initialize()
@@ -42,7 +44,7 @@ namespace TrainDispatcherGame.Server.Simulation
         public void RemoveTrain(NetworkConnection connection)
         {
             if (!_openLineTracks.TryGetValue(connection, out var track)) throw new Exception($"for connection {connection.FromStation} to {connection.ToStation} no open line track found");
-            ServerLogger.Instance.LogDebug(track.TrainOnTrack?.Number ?? "none", $"removing train {track.TrainOnTrack?.Number ?? "none"} from track {connection.FromStation} to {connection.ToStation}");
+            ServerLogger.Instance.LogDebug(SessionLogContext.Prefix(_sessionId, track.TrainOnTrack?.Number ?? "none"), $"removing train {track.TrainOnTrack?.Number ?? "none"} from track {connection.FromStation} to {connection.ToStation}");
             track.RemoveTrain();
 
         }
