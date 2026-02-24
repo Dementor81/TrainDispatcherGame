@@ -105,8 +105,27 @@ GameSession ResolveSession(HttpRequest req, GameSessionManager sessionManager)
 
 app.MapPost("/api/games", (GameSessionManager sessionManager) =>
 {
+    if (sessionManager.ActiveGameSessionCount >= sessionManager.MaxConcurrentSessions)
+    {
+        return Results.Json(new
+        {
+            message = "Maximum number of active game sessions reached.",
+            activeSessions = sessionManager.ActiveGameSessionCount,
+            maxSessions = sessionManager.MaxConcurrentSessions
+        }, statusCode: StatusCodes.Status429TooManyRequests);
+    }
+
     var gameCode = GenerateGameCode(sessionManager);
-    sessionManager.GetOrCreate(gameCode);
+    if (!sessionManager.TryGetOrCreateWithinLimit(gameCode, out _))
+    {
+        return Results.Json(new
+        {
+            message = "Maximum number of active game sessions reached.",
+            activeSessions = sessionManager.ActiveGameSessionCount,
+            maxSessions = sessionManager.MaxConcurrentSessions
+        }, statusCode: StatusCodes.Status429TooManyRequests);
+    }
+
     return Results.Ok(new { gameCode });
 });
 
@@ -129,7 +148,9 @@ app.MapGet("/api/layouts", (HttpRequest req, GameSessionManager sessionManager) 
     var layouts = trackLayoutService.GetAllTrackLayouts();
     var stations = layouts.Select(layout => new
     {
-        id = layout.Id
+        id = layout.Id,
+        name = string.IsNullOrWhiteSpace(layout.Name) ? layout.Id : layout.Name,
+        description = layout.Description ?? string.Empty
     }).ToList();
 
     return Results.Json(stations);
@@ -376,49 +397,20 @@ app.MapGet("/api/stations/{stationId}/upcoming-trains", (string stationId, HttpR
     return Results.Ok(stationEvents);
 });
 
-// Read-only player management endpoints (for admin/debugging)
-app.MapGet("/api/players", (HttpRequest req, GameSessionManager sessionManager) =>
+app.MapGet("/api/players/controlled-stations", (HttpRequest req, GameSessionManager sessionManager) =>
 {
     var playerManager = ResolveSession(req, sessionManager).PlayerManager;
     var players = playerManager.GetAllPlayers();
-    var playerResponses = players.Select(p => new
-    {
-        Id = p.Id,
-        Name = p.Name,
-        StationId = p.StationId,
-        ConnectedAt = p.ConnectedAt,
-        IsActive = p.IsActive
-    }).ToList();
+    var controlledStations = players
+        .Where(p => !string.IsNullOrWhiteSpace(p.StationId))
+        .Select(p => new PlayerControlledStationDto
+        {
+            PlayerId = p.Id,
+            PlayerName = p.Name,
+            StationId = p.StationId
+        })
+        .ToList();
 
-    return Results.Ok(playerResponses);
-});
-
-app.MapGet("/api/players/{playerId}", (string playerId, HttpRequest req, GameSessionManager sessionManager) =>
-{
-    var playerManager = ResolveSession(req, sessionManager).PlayerManager;
-    var player = playerManager.GetPlayer(playerId);
-
-    if (player == null)
-    {
-        return Results.NotFound(new { message = $"Player {playerId} not found" });
-    }
-
-    var response = new
-    {
-        Id = player.Id,
-        Name = player.Name,
-        StationId = player.StationId,
-        ConnectedAt = player.ConnectedAt,
-        IsActive = player.IsActive
-    };
-
-    return Results.Ok(response);
-});
-
-app.MapGet("/api/stations/controlled", (HttpRequest req, GameSessionManager sessionManager) =>
-{
-    var playerManager = ResolveSession(req, sessionManager).PlayerManager;
-    var controlledStations = playerManager.GetControlledStations();
     return Results.Ok(controlledStations);
 });
 

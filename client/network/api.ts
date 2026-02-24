@@ -1,4 +1,4 @@
-import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto, OpenLineTrackStatusDto, TrainWayPointDto, LogEntryDto, PlayerInfoDto } from "./dto";
+import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto, OpenLineTrackStatusDto, TrainWayPointDto, LogEntryDto, PlayerControlledStationDto } from "./dto";
 
 const API_BASE_URL = "/api";
 
@@ -15,6 +15,8 @@ function withGameCode(path: string): string {
 
 export interface StationInfo {
   id: string;
+  name: string;
+  description: string;
 }
 
 export async function fetchAvailableStations(): Promise<StationInfo[]> {
@@ -158,7 +160,7 @@ export default {
   fetchNetwork,
   fetchOpenLineTracks,
   fetchLogs,
-  fetchPlayers,
+  fetchControlledStations,
 };
 
 // Advance simulation time by one minute
@@ -272,10 +274,10 @@ export async function fetchLogs(contexts?: string[]): Promise<LogEntryDto[]> {
   return response.json();
 }
 
-export async function fetchPlayers(): Promise<PlayerInfoDto[]> {
-  const response = await fetch(withGameCode(`${API_BASE_URL}/players`));
+export async function fetchControlledStations(): Promise<PlayerControlledStationDto[]> {
+  const response = await fetch(withGameCode(`${API_BASE_URL}/players/controlled-stations`));
   if (!response.ok) {
-    throw new Error(`Failed to fetch players: ${response.statusText}`);
+    throw new Error(`Failed to fetch controlled stations: ${response.statusText}`);
   }
   return response.json();
 }

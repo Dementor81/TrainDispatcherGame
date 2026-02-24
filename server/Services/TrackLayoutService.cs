@@ -63,9 +63,9 @@ namespace TrainDispatcherGame.Server.Services
             }
         }
 
-        private void LoadTrackLayouts(string[] requiredStations)
+        private void LoadTrackLayouts(List<NetworkStationDto> requiredStations)
         {
-            if (requiredStations.Length == 0)
+            if (requiredStations.Count == 0)
             {
                 Console.WriteLine("No required stations found; skipping track layout loading.");
                 return;
@@ -83,8 +83,9 @@ namespace TrainDispatcherGame.Server.Services
                 int loadedCount = 0;
                 var missingLayouts = new List<string>();
 
-                foreach (var stationId in requiredStations)
+                foreach (var station in requiredStations)
                 {
+                    var stationId = station.Id;
                     var layoutFile = Path.Combine(stationsDirectory, $"{stationId}.json");
 
                     if (!File.Exists(layoutFile))
@@ -106,6 +107,8 @@ namespace TrainDispatcherGame.Server.Services
                             var model = new TrackLayout
                             {
                                 Id = stationId,  // Use stationId from network file, not dto.Id
+                                Name = string.IsNullOrWhiteSpace(station.Name) ? stationId : station.Name.Trim(),
+                                Description = station.Description?.Trim() ?? string.Empty,
                                 Tracks = dto.Tracks ?? new List<TrackDto>(),
                                 Switches = dto.Switches ?? new List<SwitchDto>(),
                                 Platforms = dto.Platforms ?? new List<PlatformDto>()
@@ -159,7 +162,7 @@ namespace TrainDispatcherGame.Server.Services
                     }
                 }
 
-                Console.WriteLine($"Successfully loaded {loadedCount} of {requiredStations.Length} required track layouts");
+                Console.WriteLine($"Successfully loaded {loadedCount} of {requiredStations.Count} required track layouts");
 
                 if (missingLayouts.Count > 0)
                 {
@@ -172,23 +175,23 @@ namespace TrainDispatcherGame.Server.Services
             }
         }
 
-        private string[] LoadNetwork()
+        private List<NetworkStationDto> LoadNetwork()
         {
-            var requiredStations = new List<string>();
+            var requiredStations = new List<NetworkStationDto>();
 
             try
             {
                 if (string.IsNullOrWhiteSpace(_activeLayoutId))
                 {
                     Console.WriteLine("No active layout id set; skipping network load.");
-                    return new string[0];
+                    return new List<NetworkStationDto>();
                 }
 
                 var networkPath = Path.Combine(_layoutRoot, "network.json");
                 if (!File.Exists(networkPath))
                 {
                     Console.WriteLine($"Network file 'network.json' not found in '{_layoutRoot}'; skipping network load.");
-                    return new string[0];
+                    return new List<NetworkStationDto>();
                 }
 
                 var json = File.ReadAllText(networkPath);
@@ -196,7 +199,7 @@ namespace TrainDispatcherGame.Server.Services
                 if (network == null)
                 {
                     Console.WriteLine($"Network file '{_activeLayoutId}.json' is empty or invalid.");
-                    return new string[0];
+                    return new List<NetworkStationDto>();
                 }
 
                 // Collect required stations from explicit stations list
@@ -204,22 +207,28 @@ namespace TrainDispatcherGame.Server.Services
                 {
                     foreach (var station in network.Stations)
                     {
-                        if (!string.IsNullOrWhiteSpace(station))
+                        if (!string.IsNullOrWhiteSpace(station.Id))
                         {
-                            requiredStations.Add(station.ToLowerInvariant());
+                            var normalizedStationId = station.Id.ToLowerInvariant();
+                            requiredStations.Add(new NetworkStationDto
+                            {
+                                Id = normalizedStationId,
+                                Name = string.IsNullOrWhiteSpace(station.Name) ? normalizedStationId : station.Name.Trim(),
+                                Description = station.Description?.Trim() ?? string.Empty
+                            });
                         }
                     }
                 }
                 else
                 {
                     Console.WriteLine("No stations found in network.json.");
-                    return new string[0];
+                    return new List<NetworkStationDto>();
                 }
 
                 if (network.Connections == null)
                 {
                     Console.WriteLine("No connections found in network.json.");
-                    return new string[0];
+                    return new List<NetworkStationDto>();
                 }
 
                 int created = 0;
@@ -264,7 +273,7 @@ namespace TrainDispatcherGame.Server.Services
                 Console.WriteLine($"Error loading network.json: {ex.Message}");
             }
 
-            return requiredStations.ToArray();
+            return requiredStations;
         }
 
         // Computes the maximum pairwise distance between all exit points in the layout, based on track endpoints

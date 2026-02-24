@@ -30,6 +30,26 @@ namespace TrainDispatcherGame.Server.Hubs
             return SessionLogContext.Prefix(sessionId, context);
         }
 
+        private async Task NotifyPlayerJoinedSessionStation(string sessionId, Player player)
+        {
+            await Clients.Group(SessionGroup(sessionId)).SendAsync("PlayerJoinedStation", new
+            {
+                playerId = player.Id,
+                playerName = player.Name,
+                stationId = player.StationId
+            });
+        }
+
+        private async Task NotifyPlayerLeftSessionStation(string sessionId, string playerId, string playerName, string stationId)
+        {
+            await Clients.Group(SessionGroup(sessionId)).SendAsync("PlayerLeftStation", new
+            {
+                playerId = playerId,
+                playerName = playerName,
+                stationId = stationId
+            });
+        }
+
         private string? ResolvePlayerId()
         {
             var mappedPlayerId = _sessionManager.GetPlayerIdForConnection(Context.ConnectionId);
@@ -76,6 +96,8 @@ namespace TrainDispatcherGame.Server.Hubs
                 player ??= session.PlayerManager.GetPlayerByConnectionId(Context.ConnectionId);
                 if (player != null)
                 {
+                    var stationId = player.StationId;
+                    var playerName = player.Name;
                     if (!string.IsNullOrWhiteSpace(player.StationId))
                     {
                         await session.Simulation.ReturnTrainsAtStation(player.StationId);
@@ -83,6 +105,10 @@ namespace TrainDispatcherGame.Server.Hubs
                     }
 
                     session.PlayerManager.DisconnectPlayer(player.Id);
+                    if (!string.IsNullOrWhiteSpace(stationId))
+                    {
+                        await NotifyPlayerLeftSessionStation(session.SessionId, player.Id, playerName, stationId);
+                    }
                     ServerLogger.Instance.LogDebug(Ctx(session.SessionId, player.Id), $"Player {player.Id} disconnected from station {player.StationId}");
                 }
             }
@@ -106,7 +132,16 @@ namespace TrainDispatcherGame.Server.Hubs
         {
             // Normalize stationId to lowercase for consistent handling
             var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
-            var session = _sessionManager.GetOrCreate(gameCode);
+            if (!_sessionManager.TryGetOrCreateWithinLimit(gameCode, out var session) || session == null)
+            {
+                await Clients.Caller.SendAsync("StationJoined", new
+                {
+                    success = false,
+                    message = $"Cannot join game: maximum active sessions reached ({_sessionManager.MaxConcurrentSessions})."
+                });
+                return;
+            }
+
             var success = session.PlayerManager.TakeControlOfStation(playerId, normalizedStationId, Context.ConnectionId, playerName);
 
             if (success)
@@ -114,6 +149,11 @@ namespace TrainDispatcherGame.Server.Hubs
                 _sessionManager.BindConnection(Context.ConnectionId, session.SessionId, playerId);
                 await Groups.AddToGroupAsync(Context.ConnectionId, SessionGroup(session.SessionId));
                 await Groups.AddToGroupAsync(Context.ConnectionId, SessionStationGroup(session.SessionId, normalizedStationId));
+                var joinedPlayer = session.PlayerManager.GetPlayer(playerId);
+                if (joinedPlayer != null)
+                {
+                    await NotifyPlayerJoinedSessionStation(session.SessionId, joinedPlayer);
+                }
 
                 // Send confirmation to the client
                 await Clients.Caller.SendAsync("StationJoined", new
@@ -138,7 +178,16 @@ namespace TrainDispatcherGame.Server.Hubs
 
         public async Task JoinSession(string gameCode = "")
         {
-            var session = _sessionManager.GetOrCreate(gameCode);
+            if (!_sessionManager.TryGetOrCreateWithinLimit(gameCode, out var session) || session == null)
+            {
+                await Clients.Caller.SendAsync("SessionJoined", new
+                {
+                    success = false,
+                    message = $"Cannot join session: maximum active sessions reached ({_sessionManager.MaxConcurrentSessions})."
+                });
+                return;
+            }
+
             _sessionManager.BindConnection(Context.ConnectionId, session.SessionId);
             await Groups.AddToGroupAsync(Context.ConnectionId, SessionGroup(session.SessionId));
 
@@ -180,6 +229,10 @@ namespace TrainDispatcherGame.Server.Hubs
                 if (playerBeforeRelease != null && !string.IsNullOrWhiteSpace(playerBeforeRelease.StationId))
                 {
                     await Groups.RemoveFromGroupAsync(Context.ConnectionId, SessionStationGroup(session.SessionId, playerBeforeRelease.StationId));
+                }
+                if (playerBeforeRelease != null && !string.IsNullOrWhiteSpace(playerBeforeRelease.StationId))
+                {
+                    await NotifyPlayerLeftSessionStation(session.SessionId, playerBeforeRelease.Id, playerBeforeRelease.Name, playerBeforeRelease.StationId);
                 }
 
                 await Clients.Caller.SendAsync("StationLeft", new

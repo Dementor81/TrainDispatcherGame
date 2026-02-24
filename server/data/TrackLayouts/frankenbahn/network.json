@@ -1,7 +1,28 @@
 {
    "name": "Frankenbahn",
    "description": "Die Frankenbahn ist eine zweigleisige Bahnstrecke. Sie hat zwei angeschlossenen eingleisigen Strecken.",
-   "stations": ["weststadt", "neustadt", "burghausen", "ostheim"],
+   "stations": [
+      {
+         "id": "weststadt",
+         "name": "Weststadt",
+         "description": "Westlichster Bahnhof der Frankenbahn mit Anbindung an die eingleisige Strecke nach Meßbach."
+      },
+      {
+         "id": "neustadt",
+         "name": "Neustadt",
+         "description": "Zentraler Bahnhof der Frankenbahn mit Verbindungen in beide Richtungen. Hier enden die S-Bahnen aus Richtung Linksdorf."
+      },
+      {
+         "id": "burghausen",
+         "name": "Burghausen",
+         "description": "Umsteigebahnhof zwischen Neustadt, Ostheim und der eingleisigen Strecke nach Golm."
+      },
+      {
+         "id": "ostheim",
+         "name": "Ostheim",
+         "description": "Östlichster Bahnhof."
+      }
+   ],
    "connections": [
       {
          "from": "linksdorf",

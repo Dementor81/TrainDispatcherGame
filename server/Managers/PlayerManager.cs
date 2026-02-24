@@ -133,14 +133,6 @@ namespace TrainDispatcherGame.Server.Managers
             }
         }
 
-        public List<string> GetControlledStations()
-        {
-            lock (_syncRoot)
-            {
-                return _stationToPlayer.Keys.ToList();
-            }
-        }
-
         public bool IsStationControlled(string stationId)
         {
             // Normalize stationId to lowercase for case-insensitive comparison

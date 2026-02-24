@@ -1,4 +1,4 @@
-import { fetchPlayers } from "../network/api";
+import { fetchControlledStations } from "../network/api";
 import { BasePanel } from "../ui/basePanel";
 
 export class PlayersPanel extends BasePanel {
@@ -46,7 +46,7 @@ export class PlayersPanel extends BasePanel {
       const listEl = this.container.querySelector('#playersListBody') as HTMLElement | null;
       if (!listEl) return;
 
-      const players = await fetchPlayers();
+      const players = await fetchControlledStations();
       listEl.innerHTML = "";
 
       if (!players || players.length === 0) {
@@ -64,12 +64,12 @@ export class PlayersPanel extends BasePanel {
         const id = document.createElement('div');
         id.className = 'text-light';
         id.style.width = '160px';
-        id.textContent = p.id || '-';
+        id.textContent = p.playerId || '-';
 
         const name = document.createElement('div');
         name.className = 'text-light';
         name.style.width = '180px';
-        name.textContent = p.name || '-';
+        name.textContent = p.playerName || '-';
 
         const station = document.createElement('div');
         station.className = 'text-light';

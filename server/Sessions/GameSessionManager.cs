@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.SignalR;
 using TrainDispatcherGame.Server.Hubs;
 using TrainDispatcherGame.Server.Managers;
@@ -17,13 +18,27 @@ namespace TrainDispatcherGame.Server.Sessions
         private readonly ConcurrentDictionary<string, string> _connectionToPlayer = new(StringComparer.OrdinalIgnoreCase);
         private readonly IHubContext<GameHub> _hubContext;
         private readonly string _defaultScenarioId;
+        private readonly object _sessionCreateLock = new();
         private DateTime _lastCleanupUtc = DateTime.MinValue;
         private readonly object _cleanupLock = new();
+        private readonly int _maxConcurrentSessions;
 
-        public GameSessionManager(IHubContext<GameHub> hubContext)
+        public GameSessionManager(IHubContext<GameHub> hubContext, IConfiguration configuration)
         {
             _hubContext = hubContext;
             _defaultScenarioId = ScenarioService.ListScenarios().Last().Id;
+            _maxConcurrentSessions = Math.Max(1, configuration.GetValue<int?>("GameSessions:MaxConcurrentSessions") ?? 20);
+        }
+
+        public int MaxConcurrentSessions => _maxConcurrentSessions;
+
+        public int ActiveGameSessionCount
+        {
+            get
+            {
+                SweepInactiveSessionsIfNeeded();
+                return _sessions.Keys.Count(IsCountedGameSession);
+            }
         }
 
         public static string NormalizeSessionId(string? sessionId)
@@ -39,6 +54,45 @@ namespace TrainDispatcherGame.Server.Sessions
             var session = _sessions.GetOrAdd(normalizedSessionId, CreateSession);
             session.Touch();
             return session;
+        }
+
+        public bool TryGetOrCreateWithinLimit(string? sessionId, out GameSession? session)
+        {
+            SweepInactiveSessionsIfNeeded();
+            var normalizedSessionId = NormalizeSessionId(sessionId);
+            if (_sessions.TryGetValue(normalizedSessionId, out var existing))
+            {
+                existing.Touch();
+                session = existing;
+                return true;
+            }
+
+            if (!IsCountedGameSession(normalizedSessionId))
+            {
+                session = GetOrCreate(normalizedSessionId);
+                return true;
+            }
+
+            lock (_sessionCreateLock)
+            {
+                if (_sessions.TryGetValue(normalizedSessionId, out existing))
+                {
+                    existing.Touch();
+                    session = existing;
+                    return true;
+                }
+
+                if (_sessions.Keys.Count(IsCountedGameSession) >= _maxConcurrentSessions)
+                {
+                    session = null;
+                    return false;
+                }
+
+                session = CreateSession(normalizedSessionId);
+                _sessions[normalizedSessionId] = session;
+                session.Touch();
+                return true;
+            }
         }
 
         public bool TryGet(string? sessionId, out GameSession? session)
@@ -124,6 +178,11 @@ namespace TrainDispatcherGame.Server.Sessions
             var sessionTrackLayoutService = new TrackLayoutService();
             var simulation = new TrainDispatcherGame.Server.Simulation.Simulation(notificationManager, sessionTrackLayoutService, playerManager, _defaultScenarioId, sessionId);
             return new GameSession(sessionId, simulation, playerManager, notificationManager, sessionTrackLayoutService);
+        }
+
+        private static bool IsCountedGameSession(string sessionId)
+        {
+            return !string.Equals(sessionId, DefaultSessionId, StringComparison.OrdinalIgnoreCase);
         }
 
         private void SweepInactiveSessionsIfNeeded()

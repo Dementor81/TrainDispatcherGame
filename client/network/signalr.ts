@@ -95,6 +95,16 @@ export class SignalRManager {
             console.log('Session joined:', data);
         });
 
+        this.connection.on('PlayerJoinedStation', (data) => {
+            console.log('Player joined station:', data);
+            this.eventManager.emit('playerStationChanged', data);
+        });
+
+        this.connection.on('PlayerLeftStation', (data) => {
+            console.log('Player left station:', data);
+            this.eventManager.emit('playerStationChanged', data);
+        });
+
         this.connection.on('TrainArriving', (data) => {
             console.log('Train arriving:', data);
             this.handleTrainArriving(data);

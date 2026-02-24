@@ -109,12 +109,10 @@ export interface LogEntryDto {
   message: string;
 }
 
-export interface PlayerInfoDto {
-  id: string;
-  name: string;
+export interface PlayerControlledStationDto {
+  playerId: string;
+  playerName: string;
   stationId: string;
-  connectedAt: string;
-  isActive: boolean;
 }
 
 // Scenario (planning) types from REST /api/scenarios

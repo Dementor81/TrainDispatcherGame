@@ -67,7 +67,7 @@ export class UIManager {
     }
 
     showStationSelectionScreen(onSelect: (layout: string, playerId: string, playerName?: string) => void) {
-        const modal:StationSelector = new StationSelector();
+        const modal:StationSelector = new StationSelector(this._eventManager);
         modal.showModal((layout: string, playerId: string, playerName?: string) => {
             onSelect(layout, playerId, playerName);
          });

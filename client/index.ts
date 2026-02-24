@@ -84,7 +84,14 @@ window.addEventListener("DOMContentLoaded", () => {
       });
 
       if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`);
+        let serverMessage = "";
+        try {
+          const errPayload = await response.json() as { message?: string };
+          serverMessage = errPayload.message?.trim() ?? "";
+        } catch {
+          // ignore parse errors and fall back to generic message
+        }
+        throw new Error(serverMessage || `Server returned ${response.status}`);
       }
 
       const payload = await response.json() as { gameCode?: string };
@@ -101,7 +108,8 @@ window.addEventListener("DOMContentLoaded", () => {
       window.location.href = "admin.html";
     } catch (error) {
       console.error("Failed to create game session", error);
-      alert("Neues Spiel konnte nicht gestartet werden. Bitte versuche es erneut.");
+      const message = error instanceof Error ? error.message : "Neues Spiel konnte nicht gestartet werden.";
+      alert(`Neues Spiel konnte nicht gestartet werden.\n${message}`);
     } finally {
       hostButton.disabled = false;
     }

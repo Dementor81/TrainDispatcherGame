@@ -33,7 +33,7 @@ export class Renderer {
    private _eventManager: EventManager;
    private _trainManager: TrainManager;
 
-   private constructor(canvas: HTMLCanvasElement, trackLayoutManager: TrackLayoutManager, eventManager: EventManager, trainManager: TrainManager) {
+   private constructor(trackLayoutManager: TrackLayoutManager, eventManager: EventManager, trainManager: TrainManager) {
       this._pixiApp = new PIXI.Application();
       this._trackLayoutManager = trackLayoutManager;
       this._eventManager = eventManager;
@@ -41,7 +41,7 @@ export class Renderer {
    }
 
    static async create(canvas: HTMLCanvasElement, trackLayoutManager: TrackLayoutManager, eventManager: EventManager, trainManager: TrainManager): Promise<Renderer> {
-      const r = new Renderer(canvas, trackLayoutManager, eventManager, trainManager);
+      const r = new Renderer(trackLayoutManager, eventManager, trainManager);
       await r._pixiApp.init({
          canvas: canvas,
          resizeTo: window,
@@ -211,5 +211,57 @@ export class Renderer {
 
    public setZoom(zoom: number): void {
       this._camera.setZoom(zoom);
+   }
+
+   public capturePreview(): string {
+      this.renderTrackLayout();
+
+      const sourceCanvas = this._pixiApp.canvas;
+      const sourceWidth = sourceCanvas.width;
+      const sourceHeight = sourceCanvas.height;
+
+      if (sourceWidth <= 0 || sourceHeight <= 0) {
+         throw new Error("Canvas has invalid size");
+      }
+
+      const targetWidth = 1280;
+      const targetHeight = 300;
+      const sourceAspect = sourceWidth / sourceHeight;
+      const targetAspect = targetWidth / targetHeight;
+
+      let cropWidth = sourceWidth;
+      let cropHeight = sourceHeight;
+      let cropX = 0;
+      let cropY = 0;
+
+      if (sourceAspect > targetAspect) {
+         cropWidth = sourceHeight * targetAspect;
+         cropX = (sourceWidth - cropWidth) / 2;
+      } else if (sourceAspect < targetAspect) {
+         cropHeight = sourceWidth / targetAspect;
+         cropY = (sourceHeight - cropHeight) / 2;
+      }
+
+      const previewCanvas = document.createElement('canvas');
+      previewCanvas.width = targetWidth;
+      previewCanvas.height = targetHeight;
+      const context = previewCanvas.getContext('2d');
+      if (!context) {
+         throw new Error("Failed to create preview context");
+      }
+
+      context.drawImage(
+         sourceCanvas,
+         cropX,
+         cropY,
+         cropWidth,
+         cropHeight,
+         0,
+         0,
+         targetWidth,
+         targetHeight
+      );
+
+      return previewCanvas.toDataURL('image/png');
    }
 }

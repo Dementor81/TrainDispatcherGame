@@ -67,6 +67,8 @@ export class Application {
       // Connect to SignalR
       try {
          await this._signalRManager.connect();
+         const gameCode = (sessionStorage.getItem("gameCode") || "").trim() || "default";
+         await this._signalRManager.joinSession(gameCode);
          console.log("SignalR connected successfully");
       } catch (error) {
          console.error("Failed to connect to SignalR:", error);
@@ -91,6 +93,7 @@ export class Application {
          this._currentStationId = layout;
          this._currentGameCode = gameCode;
          this._trackLayoutManager.loadTrackLayout(layout);
+         this.setMainCanvasVisible(true);
          
          // Show the control panel and train overview panel after successfully joining a station
          this._uiManager.showTrainOverviewPanel();
@@ -99,6 +102,7 @@ export class Application {
       } catch (error) {
          console.error('Failed to join station:', error);
          alert(`Fehler beim Übernehmen der Station: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`);
+         this.setMainCanvasVisible(false);
          
          // Show the station selector again if there was an error
           this._uiManager.showStationSelectionScreen(async (layout: string, playerId: string, playerName?: string) => {
@@ -112,6 +116,7 @@ export class Application {
       if (canvas) {
          this._renderer = await Renderer.create(canvas, this._trackLayoutManager, this._eventManager, this._trainManager);
          this._trackLayoutManager.setRenderer(this._renderer);
+         this.setMainCanvasVisible(false);
          
          // Set up callback to render when layout is loaded
          this._trackLayoutManager.setOnLayoutLoaded(() => {
@@ -124,6 +129,14 @@ export class Application {
       } else {
          console.error("Canvas element not found");
       }
+   }
+
+   private setMainCanvasVisible(visible: boolean): void {
+      const canvas = document.getElementById('mainCanvas') as HTMLCanvasElement | null;
+      if (!canvas) {
+         return;
+      }
+      canvas.style.visibility = visible ? 'visible' : 'hidden';
    }
 
    private setupEventListeners(): void {
@@ -292,10 +305,6 @@ export class Application {
 
    // No server collision handler needed
 
-
- 
-
-
    get uiManager(): UIManager {
       return this._uiManager;
    }
@@ -336,6 +345,10 @@ export class Application {
       return this._clientSimulation;
    }
 
+   get renderer(): Renderer | null {
+      return this._renderer;
+   }
+
    public async handleReconnection(): Promise<void> {
       const lastStationInfo = this._signalRManager.lastStationInfo;
       if (lastStationInfo.playerId && lastStationInfo.stationId) {
@@ -358,6 +371,7 @@ export class Application {
          if (this._renderer) {
             this._renderer.clear();
          }
+         this.setMainCanvasVisible(false);
 
          // Reset current selections/state
          this._currentPlayerId = null;

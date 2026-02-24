@@ -15,24 +15,39 @@
     <canvas id="mainCanvas" class="w-100 h-100"></canvas>
   </div>
   <div class="modal fade" id="stationSelectModal" tabindex="-1" aria-labelledby="stationSelectModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog">
+    <div class="modal-dialog station-select-modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Bahnhof auswählen</h5>
+          <h5 class="modal-title"><span id="selectedPlayerName">-</span>, wähle einen Bahnhof und klicke auf Start.</h5>
         </div>
         <div class="modal-body">
-          <p>Wähle einen Bahnhof aus und starte das Spiel.</p>
-
-          <p class="text-muted mb-3">
-            Spieler: <span id="selectedPlayerName">-</span> |
-            Game-Code: <span id="selectedGameCode">-</span>
-          </p>
-          
           <div class="mb-3">
-            <label for="layoutSelect" class="form-label">Bahnhof</label>
-            <select class="form-select" id="DropdownStations">
-              <!-- Options will be populated dynamically -->
-            </select>
+            <div id="stationCarousel" class="carousel slide" data-bs-interval="false" data-bs-ride="false">
+              <div class="carousel-indicators" id="stationCarouselIndicators"></div>
+              <div class="carousel-inner" id="stationCarouselInner"></div>
+              <button id="stationCarouselPrev" class="carousel-control-prev" type="button" data-bs-target="#stationCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+              </button>
+              <button id="stationCarouselNext" class="carousel-control-next" type="button" data-bs-target="#stationCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+              </button>
+            </div>
+          </div>
+          <div class="station-player-table card bg-dark-subtle border-secondary-subtle">
+            
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-sm mb-0 station-player-table-content">
+                  <tbody id="stationPlayersTableBody">
+                    <tr>
+                      <td colspan="2" class="text-muted">Keine weiteren Spieler verbunden</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
