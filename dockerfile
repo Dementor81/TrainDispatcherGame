@@ -28,6 +28,5 @@ ENV ASPNETCORE_HTTP_PORTS=5070
 EXPOSE 5070
 COPY --from=server-build /app/publish .
 # Ensure required data directories are available at runtime
-COPY --from=server-build /src/server/TrackLayouts ./TrackLayouts
 COPY --from=server-build /src/server/data ./data
 ENTRYPOINT ["dotnet", "server.dll"]
