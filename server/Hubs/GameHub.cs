@@ -132,12 +132,22 @@ namespace TrainDispatcherGame.Server.Hubs
         {
             // Normalize stationId to lowercase for consistent handling
             var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
-            if (!_sessionManager.TryGetOrCreateWithinLimit(gameCode, out var session) || session == null)
+            if (!GameSessionManager.TryNormalizeSessionId(gameCode, out var normalizedGameCode))
             {
                 await Clients.Caller.SendAsync("StationJoined", new
                 {
                     success = false,
-                    message = $"Cannot join game: maximum active sessions reached ({_sessionManager.MaxConcurrentSessions})."
+                    message = "Missing or invalid game code."
+                });
+                return;
+            }
+
+            if (!_sessionManager.TryGet(normalizedGameCode, out var session) || session == null)
+            {
+                await Clients.Caller.SendAsync("StationJoined", new
+                {
+                    success = false,
+                    message = "Invalid game code."
                 });
                 return;
             }
@@ -178,12 +188,22 @@ namespace TrainDispatcherGame.Server.Hubs
 
         public async Task JoinSession(string gameCode = "")
         {
-            if (!_sessionManager.TryGetOrCreateWithinLimit(gameCode, out var session) || session == null)
+            if (!GameSessionManager.TryNormalizeSessionId(gameCode, out var normalizedGameCode))
             {
                 await Clients.Caller.SendAsync("SessionJoined", new
                 {
                     success = false,
-                    message = $"Cannot join session: maximum active sessions reached ({_sessionManager.MaxConcurrentSessions})."
+                    message = "Missing or invalid game code."
+                });
+                return;
+            }
+
+            if (!_sessionManager.TryGet(normalizedGameCode, out var session) || session == null)
+            {
+                await Clients.Caller.SendAsync("SessionJoined", new
+                {
+                    success = false,
+                    message = "Invalid game code."
                 });
                 return;
             }

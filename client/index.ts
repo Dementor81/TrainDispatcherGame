@@ -23,7 +23,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const timeoutId = window.setTimeout(() => controller.abort(), 5000);
 
     try {
-      const response = await fetch("/api/layouts", {
+      const response = await fetch("/api/scenarios", {
         method: "GET",
         cache: "no-store",
         signal: controller.signal,
@@ -45,6 +45,15 @@ window.addEventListener("DOMContentLoaded", () => {
     input.setCustomValidity("");
   };
 
+  const prefillGameCodeFromUrl = () => {
+    const gameCode = new URLSearchParams(window.location.search).get("gamecode")?.trim();
+    if (!gameCode) {
+      return;
+    }
+
+    codeInput.value = gameCode;
+  };
+
   const requireValue = (input: HTMLInputElement, message: string): string | null => {
     const value = input.value.trim();
     if (!value) {
@@ -57,7 +66,28 @@ window.addEventListener("DOMContentLoaded", () => {
     return value;
   };
 
-  const joinGame = () => {
+  const isGameCodeValid = async (gameCode: string): Promise<boolean> => {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 5000);
+
+    try {
+      const url = new URL("/api/simulation/status", window.location.origin);
+      url.searchParams.set("gameCode", gameCode);
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        cache: "no-store",
+        signal: controller.signal,
+      });
+
+      return response.ok;
+    } catch {
+      return false;
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  };
+
+  const joinGame = async () => {
     const playerName = requireValue(nameInput, "Bitte gib deinen Namen ein.");
     if (!playerName) {
       return;
@@ -65,6 +95,15 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const gameCode = requireValue(codeInput, "Bitte gib einen Game-Code ein.");
     if (!gameCode) {
+      return;
+    }
+
+    joinButton.disabled = true;
+    const validGameCode = await isGameCodeValid(gameCode);
+    joinButton.disabled = false;
+    if (!validGameCode) {
+      codeInput.setCustomValidity("Der Game-Code ist ungültig oder nicht aktiv.");
+      codeInput.reportValidity();
       return;
     }
 
@@ -115,7 +154,11 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  joinButton.addEventListener("click", joinGame);
+  prefillGameCodeFromUrl();
+
+  joinButton.addEventListener("click", () => {
+    void joinGame();
+  });
   hostButton.addEventListener("click", () => {
     void hostGame();
   });
@@ -129,7 +172,7 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       event.preventDefault();
-      joinGame();
+      void joinGame();
     });
   });
 });

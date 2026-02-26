@@ -10,7 +10,6 @@ namespace TrainDispatcherGame.Server.Sessions
 {
     public class GameSessionManager
     {
-        private const string DefaultSessionId = "default";
         private static readonly TimeSpan SessionInactivityTimeout = TimeSpan.FromMinutes(30);
 
         private readonly ConcurrentDictionary<string, GameSession> _sessions = new(StringComparer.OrdinalIgnoreCase);
@@ -37,14 +36,24 @@ namespace TrainDispatcherGame.Server.Sessions
             get
             {
                 SweepInactiveSessionsIfNeeded();
-                return _sessions.Keys.Count(IsCountedGameSession);
+                return _sessions.Count;
             }
+        }
+
+        public static bool TryNormalizeSessionId(string? sessionId, out string normalizedSessionId)
+        {
+            normalizedSessionId = sessionId?.Trim().ToLowerInvariant() ?? string.Empty;
+            return !string.IsNullOrWhiteSpace(normalizedSessionId);
         }
 
         public static string NormalizeSessionId(string? sessionId)
         {
-            var normalized = sessionId?.Trim().ToLowerInvariant();
-            return string.IsNullOrWhiteSpace(normalized) ? DefaultSessionId : normalized;
+            if (!TryNormalizeSessionId(sessionId, out var normalizedSessionId))
+            {
+                throw new ArgumentException("Game code is required.", nameof(sessionId));
+            }
+
+            return normalizedSessionId;
         }
 
         public GameSession GetOrCreate(string? sessionId)
@@ -59,17 +68,15 @@ namespace TrainDispatcherGame.Server.Sessions
         public bool TryGetOrCreateWithinLimit(string? sessionId, out GameSession? session)
         {
             SweepInactiveSessionsIfNeeded();
-            var normalizedSessionId = NormalizeSessionId(sessionId);
+            if (!TryNormalizeSessionId(sessionId, out var normalizedSessionId))
+            {
+                session = null;
+                return false;
+            }
             if (_sessions.TryGetValue(normalizedSessionId, out var existing))
             {
                 existing.Touch();
                 session = existing;
-                return true;
-            }
-
-            if (!IsCountedGameSession(normalizedSessionId))
-            {
-                session = GetOrCreate(normalizedSessionId);
                 return true;
             }
 
@@ -82,7 +89,7 @@ namespace TrainDispatcherGame.Server.Sessions
                     return true;
                 }
 
-                if (_sessions.Keys.Count(IsCountedGameSession) >= _maxConcurrentSessions)
+                if (_sessions.Count >= _maxConcurrentSessions)
                 {
                     session = null;
                     return false;
@@ -98,7 +105,11 @@ namespace TrainDispatcherGame.Server.Sessions
         public bool TryGet(string? sessionId, out GameSession? session)
         {
             SweepInactiveSessionsIfNeeded();
-            var normalizedSessionId = NormalizeSessionId(sessionId);
+            if (!TryNormalizeSessionId(sessionId, out var normalizedSessionId))
+            {
+                session = null;
+                return false;
+            }
             if (_sessions.TryGetValue(normalizedSessionId, out var existing))
             {
                 existing.Touch();
@@ -158,7 +169,11 @@ namespace TrainDispatcherGame.Server.Sessions
 
         public int GetActiveConnectionCount(string? sessionId)
         {
-            var normalizedSessionId = NormalizeSessionId(sessionId);
+            if (!TryNormalizeSessionId(sessionId, out var normalizedSessionId))
+            {
+                return 0;
+            }
+
             return _connectionToSession.Values.Count(s => string.Equals(s, normalizedSessionId, StringComparison.OrdinalIgnoreCase));
         }
 
@@ -178,11 +193,6 @@ namespace TrainDispatcherGame.Server.Sessions
             var sessionTrackLayoutService = new TrackLayoutService();
             var simulation = new TrainDispatcherGame.Server.Simulation.Simulation(notificationManager, sessionTrackLayoutService, playerManager, _defaultScenarioId, sessionId);
             return new GameSession(sessionId, simulation, playerManager, notificationManager, sessionTrackLayoutService);
-        }
-
-        private static bool IsCountedGameSession(string sessionId)
-        {
-            return !string.Equals(sessionId, DefaultSessionId, StringComparison.OrdinalIgnoreCase);
         }
 
         private void SweepInactiveSessionsIfNeeded()

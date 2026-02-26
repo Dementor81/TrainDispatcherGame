@@ -279,7 +279,7 @@ export class StationSelector {
       const cell = document.createElement('td');
       cell.colSpan = 2;
       cell.className = 'text-muted';
-      cell.textContent = 'No players connected';
+      cell.textContent = 'Keine anderenSpieler verbunden';
       row.appendChild(cell);
       this.stationPlayersTableBody.appendChild(row);
       return;

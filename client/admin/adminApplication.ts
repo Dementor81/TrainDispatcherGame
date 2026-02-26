@@ -19,7 +19,11 @@ export class AdminApplication {
   private async connect(): Promise<void> {
     try {
       await this.signalRManager.connect();
-      const gameCode = (sessionStorage.getItem("gameCode") || "").trim() || "default";
+      const gameCode = (sessionStorage.getItem("gameCode") || "").trim();
+      if (!gameCode) {
+        throw new Error("Missing game code in session storage.");
+      }
+
       await this.signalRManager.joinSession(gameCode);
       console.log('AdminApplication: Connected to SignalR');
     } catch (error) {

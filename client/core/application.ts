@@ -67,7 +67,7 @@ export class Application {
       // Connect to SignalR
       try {
          await this._signalRManager.connect();
-         const gameCode = (sessionStorage.getItem("gameCode") || "").trim() || "default";
+         const gameCode = (sessionStorage.getItem("gameCode") || "").trim();
          await this._signalRManager.joinSession(gameCode);
          console.log("SignalR connected successfully");
       } catch (error) {
@@ -83,7 +83,7 @@ export class Application {
       console.log("Selected layout:", layout, "Player ID:", playerId, "Player Name:", playerName);
       
       try {
-         const gameCode = (sessionStorage.getItem("gameCode") || "").trim() || "default";
+         const gameCode = (sessionStorage.getItem("gameCode") || "").trim();
          // Join the station via SignalR for real-time updates
          await this._signalRManager.joinStation(playerId, layout, gameCode, playerName);
          console.log('Successfully joined station via SignalR');

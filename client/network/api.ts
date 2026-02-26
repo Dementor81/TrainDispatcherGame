@@ -4,7 +4,11 @@ const API_BASE_URL = "/api";
 
 function getGameCode(): string {
   const stored = sessionStorage.getItem("gameCode")?.trim();
-  return stored && stored.length > 0 ? stored : "default";
+  if (!stored) {
+    throw new Error("Missing game code in session storage.");
+  }
+
+  return stored;
 }
 
 function withGameCode(path: string): string {

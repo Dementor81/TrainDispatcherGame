@@ -13,8 +13,14 @@ import OpenLinePanel from "./openLinePanel";
 import LogsPanel from "./logsPanel";
 import PlayersPanel from "./playersPanel";
 import GameCodePanel from "./gameCodePanel";
+import { ensureValidSessionOrShowModal } from "../core/sessionGuard";
 
 window.addEventListener("load", async () => {
+  const validSessionCode = await ensureValidSessionOrShowModal();
+  if (!validSessionCode) {
+    return;
+  }
+
   const app = new AdminApplication();
   const hud = new HUDPanel(app as any);
   hud.show();

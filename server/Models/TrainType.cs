@@ -6,7 +6,8 @@ namespace TrainDispatcherGame.Server.Models
     public enum TrainType
     {
         Passenger,
-        Freight
+        Freight,
+        MultipleUnit
     }
 }
 
