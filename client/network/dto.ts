@@ -58,6 +58,7 @@ export interface PointDto {
 export type SimulationState = 'Stopped' | 'Running' | 'Paused' | 'Error';
 
 export type TrainWayPointActionType = 'PassThrough' | 'Stop' | 'End';
+export type TrainType = 'Passenger' | 'Freight' | 'MultipleUnit';
 
 export interface SimulationStatusDto {
   state: SimulationState;
@@ -70,7 +71,7 @@ export interface SimulationStatusDto {
 export interface TrainDto {
   number: string;
   category?: string;
-  type?: 'Passenger' | 'Freight';
+  type?: TrainType;
   state: string;
   currentLocation?: string;
 }

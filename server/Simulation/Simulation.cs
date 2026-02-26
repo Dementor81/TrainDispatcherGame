@@ -289,7 +289,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 train.delay = (int)Math.Max(0, (SimulationTime - expectedTimeAtExit).TotalSeconds);
 
 
-                if (currentWayPoint.Stops && !currentWayPoint.Processed)
+                if (currentWayPoint.Stops && !currentWayPoint.Processed && train.Type != TrainType.Freight)
                 {
                     ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train {train.Number} missed stop at {currentWayPoint.Station}!");
                 }

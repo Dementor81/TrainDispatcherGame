@@ -2,7 +2,7 @@ import Track from "./track";
 import Signal from "./signal";
 import { SimulationConfig, RendererConfig } from "../core/config";
 import RailPosition from "./railPosition";
-import { TrainWayPointActionType } from "../network/dto";
+import { TrainType, TrainWayPointActionType } from "../network/dto";
 
 // Enum for reasons why a train might be stopped
 export enum TrainStopReason {
@@ -25,6 +25,7 @@ type TrainExitState = {
 
 class Train {
     private _number: string;
+    private _type: TrainType;
     private _position: RailPosition|null = null; 
     private _tailPosition: RailPosition|null = null; 
     private _cars: number;
@@ -41,8 +42,9 @@ class Train {
     private _followingTrainNumber: string | null = null; // following train number that will use this vehicle, after this train has completed its journey
     private _exitState: TrainExitState | null = null;
 
-    constructor(number: string, cars: number, speed: number) {
+    constructor(number: string, cars: number, speed: number, type: TrainType = 'Passenger') {
         this._number = number;
+        this._type = type;
         this._cars = cars;
         this._speed = speed 
         this._drawingDirection = 1;
@@ -52,7 +54,7 @@ class Train {
 
     // Static factory method to create a train from server data
     static fromServerData(data: any): Train {
-        const train = new Train(data.trainNumber, data.cars, data.speed);
+        const train = new Train(data.trainNumber, data.cars, data.speed, data.trainType || 'Passenger');
         
         // Set schedule times if provided
         if (data.departureTime) {
@@ -75,6 +77,10 @@ class Train {
 
     set number(value: string) {
         this._number = value;
+    }
+
+    get type(): TrainType {
+        return this._type;
     }
 
     get position(): RailPosition | null {

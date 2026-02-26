@@ -654,6 +654,11 @@ export class TrainManager {
             return true;
          }
 
+         if (train.type === 'Freight') {
+            train.setWaitingProgress(1);
+            return true;
+         }
+
          // Train is arriving and near the station - stop it
          if (train.arrivalTime && train.departureTime && currentSimulationTime > train.arrivalTime) {
             var departureTime = new Date(currentSimulationTime.getTime() + SimulationConfig.stationMinStopTime * 1000);
