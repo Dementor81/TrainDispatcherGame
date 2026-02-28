@@ -11,18 +11,7 @@ export class LogsPanel extends BasePanel {
   private autoScrollBtn?: HTMLButtonElement;
 
   constructor() {
-    super(null as any, 2000);
-
-    Object.assign(this.container.style, {
-      position: 'fixed',
-      top: '0',
-      right: '0',
-      width: '720px',
-      height: '320px',
-      display: 'block',
-      minWidth: 'unset',
-      maxWidth: 'unset',
-    });
+    super(null as any, {width: 620, height: 320, bottom: 0, right: 0, updateIntervalMs: 2000 });
 
     this.show();
   }

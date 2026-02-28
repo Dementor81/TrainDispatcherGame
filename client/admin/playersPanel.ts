@@ -3,19 +3,8 @@ import { BasePanel } from "../ui/basePanel";
 
 export class PlayersPanel extends BasePanel {
   constructor() {
-    super(null as any, 2000);
-
-    Object.assign(this.container.style, {
-      position: 'fixed',
-      bottom: '0',
-      left: '0',
-      width: '620px',
-      height: '260px',
-      display: 'block',
-      minWidth: 'unset',
-      maxWidth: 'unset',
-    });
-
+    super(null as any, {width: 620, height: 260, right: 0, top: 0, updateIntervalMs: 2000 });
+    
     this.show();
   }
 

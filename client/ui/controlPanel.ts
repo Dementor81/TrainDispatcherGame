@@ -8,7 +8,6 @@ import {
    setSimulationSpeed,
 } from "../network/api";
 import { SimulationStatusDto } from "../network/dto";
-import { TrainManager } from "../manager/train_manager";
 import { BasePanel } from "./basePanel";
 import { Application } from "../core/application";
 
@@ -16,25 +15,14 @@ export class ControlPanel extends BasePanel {
    private controlsContainer: HTMLDivElement;
 
    constructor(application: Application) {
-      super(application, 500);
+      super(application, {
+         updateIntervalMs: 1000,
+         width: 550,
+         bottom: 0,
+         left: 0,
+      });
       this.controlsContainer = this.createControlsContainer();
       this.container.appendChild(this.controlsContainer);
-   }
-
-   protected getContainerId(): string {
-      return "controlPanel";
-   }
-   protected getContainerClasses(): string {
-      return super.getContainerClasses();
-   }
-   protected getContainerStyles(): Partial<CSSStyleDeclaration> {
-      return {
-         ...super.getContainerStyles(),
-         left: "0",
-         bottom: "0",
-         width: "550px",
-         maxWidth: "550px",
-      };
    }
 
    protected createContent(): HTMLDivElement {

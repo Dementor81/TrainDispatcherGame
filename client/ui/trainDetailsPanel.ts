@@ -8,7 +8,10 @@ export class TrainDetailsPanel extends BasePanel {
   private _trainNumber: string | null = null;
 
   constructor(application: Application) {
-    super(application, null);
+    super(application, {
+      bottom: 0,
+      left: 0,
+    });
 
     // Listen for train transformations to update panel if showing that train
     this.application.eventManager.on('trainTransformed', (train: any, oldNumber: string, newNumber: string) => {
@@ -19,8 +22,6 @@ export class TrainDetailsPanel extends BasePanel {
     });
   }
 
-  protected getContainerId(): string { return 'trainDetailsPanel'; }
-  protected getContainerClasses(): string { return super.getContainerClasses() + ' top-0 start-0'; }
 
   protected createContent(): HTMLDivElement {
     const root = document.createElement('div');

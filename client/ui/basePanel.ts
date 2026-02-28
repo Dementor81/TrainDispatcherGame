@@ -1,5 +1,15 @@
 import { Application } from "../core/application";
 
+export interface BasePanelOptions {
+  updateIntervalMs?: number | null;
+  width?: number;
+  height?: number;
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+}
+
 export abstract class BasePanel {
   private static readonly NON_DRAGGABLE_SELECTOR = "button, input, select, textarea, a, .no-drag";
   private static readonly POSITION_STORAGE_PREFIX = "panel-position:";
@@ -23,6 +33,7 @@ export abstract class BasePanel {
     }
 
     const rect = this.container.getBoundingClientRect();
+    this.anchorToTopLeft(rect);
     this.isDragging = true;
     this.dragOffsetX = event.clientX - rect.left;
     this.dragOffsetY = event.clientY - rect.top;
@@ -52,10 +63,10 @@ export abstract class BasePanel {
     }
   };
 
-  constructor(application: Application, updateIntervalMs: number | null = null) {
+  constructor(application: Application, options: BasePanelOptions = {}) {
     this.application = application;
-    this.updateIntervalMs = updateIntervalMs;
-    this.container = this.createContainer();
+    this.updateIntervalMs = options.updateIntervalMs ?? null;
+    this.container = this.createContainer(options);
     this.initialize();
     document.body.appendChild(this.container);
   }
@@ -68,16 +79,45 @@ export abstract class BasePanel {
     this.setupDragging();
   }
 
-  protected createContainer(): HTMLDivElement {
+  protected createContainer(options: BasePanelOptions): HTMLDivElement {
     const container = document.createElement("div");
-    const id = this.getContainerId();
-    if (id) {
-      container.id = id;
-    }
-    container.className = this.getContainerClasses();
-    const styles = this.getContainerStyles();
-    Object.assign(container.style, styles);
+    container.id = this.constructor.name;
+    container.className = "position-absolute m-3 p-1 base-panel text-light rounded shadow-lg";
+    const containerStyles: Partial<CSSStyleDeclaration> = {
+      zIndex: "1000",
+      display: "none",
+      width: this.toPx(options.width),
+      height: this.toPx(options.height) ?? "auto",
+      top: this.toPx(options.top),
+      bottom: this.toPx(options.bottom),
+      left: this.toPx(options.left),
+      right: this.toPx(options.right)
+    };
+    Object.assign(container.style, containerStyles);
     return container;
+  }
+
+  private toPx(value: number | undefined): string | undefined {
+    return value === undefined ? undefined : `${value}px`;
+  }
+
+  private anchorToTopLeft(rect: DOMRect): void {
+    const hasRightAnchor = this.container.style.right !== "" && this.container.style.right !== "unset";
+    const hasBottomAnchor = this.container.style.bottom !== "" && this.container.style.bottom !== "unset";
+
+    this.container.style.transform = "none";
+    if (hasRightAnchor || hasBottomAnchor) {
+      this.container.style.width = `${rect.width}px`;
+      this.container.style.height = `${rect.height}px`;
+    }
+    if (hasRightAnchor) {
+      this.container.style.right = "unset";
+      this.container.style.left = `${rect.left}px`;
+    }
+    if (hasBottomAnchor) {
+      this.container.style.bottom = "unset";
+      this.container.style.top = `${rect.top}px`;
+    }
   }
 
   private setupDragging(): void {
@@ -96,31 +136,8 @@ export abstract class BasePanel {
     return target instanceof HTMLElement && target.closest(BasePanel.NON_DRAGGABLE_SELECTOR) !== null;
   }
 
-  protected getContainerStyles(): Partial<CSSStyleDeclaration> {
-    return {
-      zIndex: "1000",
-      minWidth: "300px",
-      maxWidth: "400px",
-      display: "none"
-    };
-  }
-
-  protected getContainerClasses(): string {
-    return "position-absolute m-3 p-1 bg-dark text-light rounded shadow-lg";
-  }
-
-  protected getContainerId(): string {
-    return "";
-  }
-
   private getStorageKey(): string {
-    const id = this.getContainerId();
-    if (id.length > 0) {
-      return `${BasePanel.POSITION_STORAGE_PREFIX}${id}`;
-    }
-
-    const fallback = this.constructor.name || "BasePanel";
-    return `${BasePanel.POSITION_STORAGE_PREFIX}${fallback}`;
+    return `${BasePanel.POSITION_STORAGE_PREFIX}${this.constructor.name || "BasePanel"}`;
   }
 
   private parsePx(value: string): number | null {
@@ -159,20 +176,20 @@ export abstract class BasePanel {
     }
   }
 
-  private restorePosition(): void {
+  private restorePosition(): boolean {
     try {
       const raw = localStorage.getItem(this.getStorageKey());
       if (!raw) {
-        return;
+        return false;
       }
 
       const parsed = JSON.parse(raw) as { left?: unknown; top?: unknown };
       if (typeof parsed.left !== "number" || typeof parsed.top !== "number") {
-        return;
+        return false;
       }
 
       if (!Number.isFinite(parsed.left) || !Number.isFinite(parsed.top)) {
-        return;
+        return false;
       }
 
       const safePosition = this.clampToViewport(parsed.left, parsed.top);
@@ -182,8 +199,10 @@ export abstract class BasePanel {
       this.container.style.bottom = "unset";
       this.container.style.left = `${safePosition.left}px`;
       this.container.style.top = `${safePosition.top}px`;
+      return true;
     } catch {
       // Ignore malformed payloads and continue with defaults.
+      return false;
     }
   }
 

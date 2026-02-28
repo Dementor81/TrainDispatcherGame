@@ -3,7 +3,7 @@ import { Tools } from "../core/utils";
 import { EventManager } from "../manager/event_manager";
 import { PlayerControlledStationDto } from "../network/dto";
 
-export class StationSelector {
+export class stationSelectorDialog {
   private modal: HTMLElement | null = null;
   private carousel: HTMLElement | null = null;
   private carouselInner: HTMLElement | null = null;

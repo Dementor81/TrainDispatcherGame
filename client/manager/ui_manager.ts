@@ -1,4 +1,4 @@
-import { StationSelector } from "../ui/stationSelector";
+import { stationSelectorDialog } from "../ui/stationSelectorDialog";
 import { ControlPanel } from "../ui/controlPanel";
 import { TrainOverviewPanel } from "../ui/trainOverviewPanel";
 import { TestingPanel } from "../ui/testingPanel";
@@ -67,7 +67,7 @@ export class UIManager {
     }
 
     showStationSelectionScreen(onSelect: (layout: string, playerId: string, playerName?: string) => void) {
-        const modal:StationSelector = new StationSelector(this._eventManager);
+        const modal:stationSelectorDialog = new stationSelectorDialog(this._eventManager);
         modal.showModal((layout: string, playerId: string, playerName?: string) => {
             onSelect(layout, playerId, playerName);
          });

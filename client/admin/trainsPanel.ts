@@ -4,20 +4,8 @@ import { BasePanel } from "../ui/basePanel";
 
 export class TrainsPanel extends BasePanel {
   constructor() {
-    super(null as any, 2000);
-    
-    // Fixed positioning for this singleton panel
-    Object.assign(this.container.style, {
-      position: 'fixed',
-      bottom: '100px',
-      left: '0',
-      width: '600px',
-      height: '520px',
-      display: 'block',
-      minWidth: 'unset',
-      maxWidth: 'unset',
-    });
-    
+    super(null as any, {width: 620, height: 720, updateIntervalMs: 2000, left: 0, top: 60 });
+        
     this.show();
   }
 

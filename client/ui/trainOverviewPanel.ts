@@ -8,7 +8,13 @@ export class TrainOverviewPanel extends BasePanel {
   
 
   constructor(application: Application) {
-    super(application, 1000);
+    super(application, {
+      updateIntervalMs: 1000,
+      width: 630,
+      height: 300,
+      top: 0,
+      right: 0,
+    });
     application.eventManager.on('simulationStateChanged', (state: string) => {
       if (state.toLowerCase() === 'running') {
         this.clearTrains();
@@ -21,18 +27,6 @@ export class TrainOverviewPanel extends BasePanel {
     if (trainsList) trainsList.innerHTML = '';
   }
 
-  protected getContainerId(): string { return 'trainOverviewPanel'; }
-  protected getContainerClasses(): string { return super.getContainerClasses(); }
-  protected getContainerStyles(): Partial<CSSStyleDeclaration> {
-    return {
-      ...super.getContainerStyles(),
-      minWidth: '630px',
-      maxWidth: '900px',
-      top: '0',
-      right: '0',
-    };
-  }
-
   protected createContent(): HTMLDivElement {
     return this.createTrainsContainer();
   }
@@ -43,8 +37,6 @@ export class TrainOverviewPanel extends BasePanel {
     const trainsList = document.createElement('div');
     trainsList.id = 'trainsList';
     trainsList.className = 'trains-list';
-    trainsList.style.maxHeight = '300px';
-    trainsList.style.overflowY = 'auto';
 
     // Click on a train row opens the train details panel
     trainsList.addEventListener('click', (e: MouseEvent) => {
@@ -137,10 +129,8 @@ export class TrainOverviewPanel extends BasePanel {
 
     const wrapper = document.createElement('div');
     wrapper.className = 'table-responsive';
-
     const table = document.createElement('table');
-    table.className = 'table table-dark table-sm table-borderless mb-0';
-
+    table.style.width = 'stretch';
     const thead = document.createElement('thead');
     thead.innerHTML = `
       <tr class="border-bottom border-secondary">

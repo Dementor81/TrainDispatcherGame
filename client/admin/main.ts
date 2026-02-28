@@ -7,7 +7,7 @@ import * as bootstrap from "bootstrap";
 import { AdminApplication } from "./adminApplication";
 import { HUDPanel } from "../ui/hudPanel";
 import { ControlPanel } from "../ui/controlPanel";
-import ScenarioPanel from "./scenarioPanel";
+import scenarioSelectionDialog from "./scenarioSelectionDialog";
 import TrainsPanel from "./trainsPanel";
 import OpenLinePanel from "./openLinePanel";
 import LogsPanel from "./logsPanel";
@@ -27,7 +27,7 @@ window.addEventListener("load", async () => {
   
   const panel = new ControlPanel(app as any);
   panel.show();
-  const scenario = new ScenarioPanel();
+  const scenario = new scenarioSelectionDialog();
   const trains = new TrainsPanel();
   const openline = new OpenLinePanel();
   const logs = new LogsPanel();

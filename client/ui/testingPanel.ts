@@ -4,11 +4,11 @@ import Toast from './toast';
 
 export class TestingPanel extends BasePanel {
   constructor(application: Application) {
-    super(application, null);
+    super(application);
   }
 
-  protected getContainerId(): string { return 'testingPanel'; }
-  protected getContainerClasses(): string { return super.getContainerClasses() + ' bottom-0 end-0'; }
+
+
 
   protected createContent(): HTMLDivElement {
     const container = document.createElement('div');

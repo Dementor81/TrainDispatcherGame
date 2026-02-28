@@ -2,17 +2,7 @@ import { BasePanel } from "../ui/basePanel";
 
 export class GameCodePanel extends BasePanel {
   constructor() {
-    super(null as any, null);
-
-    Object.assign(this.container.style, {
-      position: "fixed",      
-      width: "280px",
-      height: "88px",
-      display: "block",
-      minWidth: "unset",
-      maxWidth: "unset",
-    });
-
+    super(null as any, { width: 280, height: 88 ,top: 600, right: 850});    
     this.show();
   }
 

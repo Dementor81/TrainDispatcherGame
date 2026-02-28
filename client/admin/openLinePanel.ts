@@ -3,20 +3,8 @@ import { BasePanel } from "../ui/basePanel";
 
 export class OpenLinePanel extends BasePanel {
   constructor() {
-    super(null as any, 2000);
-    
-    // Fixed positioning for this singleton panel
-    Object.assign(this.container.style, {
-      position: 'fixed',
-      bottom: '0',
-      right: '0',
-      width: '600px',
-      height: '400px',
-      display: 'block',
-      minWidth: 'unset',
-      maxWidth: 'unset',
-    });
-    
+    super(null as any, {width: 620, height: 400, top: 0, left: 630, updateIntervalMs: 2000 });
+        
     this.show();
   }
 
