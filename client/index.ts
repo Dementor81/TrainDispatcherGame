@@ -144,7 +144,7 @@ window.addEventListener("DOMContentLoaded", () => {
         sessionStorage.setItem("playerName", playerName);
       }
       sessionStorage.setItem("gameCode", gameCode);
-      window.location.href = "admin.html";
+      window.location.href = "gameMaster.html";
     } catch (error) {
       console.error("Failed to create game session", error);
       const message = error instanceof Error ? error.message : "Neues Spiel konnte nicht gestartet werden.";

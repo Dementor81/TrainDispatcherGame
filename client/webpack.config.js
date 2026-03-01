@@ -10,7 +10,7 @@ module.exports = (env, argv) => {
          index: "./index.ts",
          main: "./main.ts",
          scenarioEditor: "./scenarioEditor/main.ts",
-         admin: "./admin/main.ts",
+         gameMaster: "./gameMaster/main.ts",
       },
       output: {
          filename: isProduction ? "[name].[contenthash].js" : "[name].js",
@@ -75,11 +75,11 @@ module.exports = (env, argv) => {
             chunks: ["scenarioEditor"],
          }),
          new HtmlWebpackPlugin({
-            template: "admin/main.html",
-            filename: "admin.html",
+            template: "gameMaster/main.html",
+            filename: "gameMaster.html",
             inject: "head",
             scriptLoading: "blocking",
-            chunks: ["admin"],
+            chunks: ["gameMaster"],
          }),
       ],
       devServer: {

@@ -2,7 +2,7 @@ import { BasePanel } from "../ui/basePanel";
 
 export class GameCodePanel extends BasePanel {
   constructor() {
-    super(null as any, { width: 280, height: 88 ,top: 600, right: 850});    
+    super(null as any, { width: 280, height: 88, top: 600, right: 850 });
     this.show();
   }
 

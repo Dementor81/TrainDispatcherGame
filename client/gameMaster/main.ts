@@ -4,7 +4,7 @@ import "./main.css";
 import * as bootstrap from "bootstrap";
 (window as any).bootstrap = bootstrap;
 
-import { AdminApplication } from "./adminApplication";
+import { GameMasterApplication } from "./gameMasterApplication";
 import { HUDPanel } from "../ui/hudPanel";
 import { ControlPanel } from "../ui/controlPanel";
 import scenarioSelectionDialog from "./scenarioSelectionDialog";
@@ -21,10 +21,10 @@ window.addEventListener("load", async () => {
     return;
   }
 
-  const app = new AdminApplication();
+  const app = new GameMasterApplication();
   const hud = new HUDPanel(app as any);
   hud.show();
-  
+
   const panel = new ControlPanel(app as any);
   panel.show();
   const scenario = new scenarioSelectionDialog();
@@ -33,7 +33,6 @@ window.addEventListener("load", async () => {
   const logs = new LogsPanel();
   const players = new PlayersPanel();
   const gameCode = new GameCodePanel();
-  
 
-  (window as any).admin = { app, hud, panel, scenario, trains, openline, logs, players, gameCode };
+  (window as any).gameMaster = { app, hud, panel, scenario, trains, openline, logs, players, gameCode };
 });

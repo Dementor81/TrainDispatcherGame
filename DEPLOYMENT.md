@@ -69,7 +69,7 @@ sudo docker container run --name train_dispatch_game -d -p5070:5070 marcus360/tr
 
 Once deployed, the application is accessible at:
 - **Main Application**: `http://<host>:5070/main.html`
-- **Admin Panel**: `http://<host>:5070/admin.html`
+- **Game Master Panel**: `http://<host>:5070/gameMaster.html`
 - **Scenarios**: `http://<host>:5070/szenarios.html`
 
 ## HTTPS/SSL Setup
@@ -122,5 +122,5 @@ docker run -d \
 
 Client URLs in production:
 - **Main Application**: `https://<host>/main.html`
-- **Admin Panel**: `https://<host>/admin.html`
+- **Game Master Panel**: `https://<host>/gameMaster.html`
 - **Scenarios**: `https://<host>/szenarios.html`

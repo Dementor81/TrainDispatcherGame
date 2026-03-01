@@ -152,18 +152,18 @@ export class scenarioSelectionDialog {
 
    private updateNetworkDropdown(): void {
       this.networkSelect.innerHTML = "";
-      const emptyOpt = document.createElement('option');
-      emptyOpt.value = '';
-      emptyOpt.textContent = '-- Select Track Network --';
+      const emptyOpt = document.createElement("option");
+      emptyOpt.value = "";
+      emptyOpt.textContent = "-- Select Track Network --";
       this.networkSelect.appendChild(emptyOpt);
 
       for (const network of this.allNetworks) {
-         const opt = document.createElement('option');
+         const opt = document.createElement("option");
          opt.value = network;
          opt.textContent = network;
 
          if (this.currentScenarioId) {
-            const parts = this.currentScenarioId.split('/', 2);
+            const parts = this.currentScenarioId.split("/", 2);
             if (parts[0] === network) {
                opt.selected = true;
             }
@@ -175,12 +175,12 @@ export class scenarioSelectionDialog {
 
    private updateScenarioDropdown(): void {
       const selectedNetworkId = this.networkSelect.value;
-      this.scenarioSelect.innerHTML = '';
+      this.scenarioSelect.innerHTML = "";
 
       if (!selectedNetworkId) {
-         const emptyOpt = document.createElement('option');
-         emptyOpt.value = '';
-         emptyOpt.textContent = '-- Select Track Network First --';
+         const emptyOpt = document.createElement("option");
+         emptyOpt.value = "";
+         emptyOpt.textContent = "-- Select Track Network First --";
          this.scenarioSelect.appendChild(emptyOpt);
          return;
       }
@@ -188,15 +188,15 @@ export class scenarioSelectionDialog {
       const filteredScenarios = this.allScenarios.filter(s => s.networkId === selectedNetworkId);
 
       if (filteredScenarios.length === 0) {
-         const emptyOpt = document.createElement('option');
-         emptyOpt.value = '';
-         emptyOpt.textContent = '-- No Scenarios Available --';
+         const emptyOpt = document.createElement("option");
+         emptyOpt.value = "";
+         emptyOpt.textContent = "-- No Scenarios Available --";
          this.scenarioSelect.appendChild(emptyOpt);
          return;
       }
 
       for (const scenario of filteredScenarios) {
-         const opt = document.createElement('option');
+         const opt = document.createElement("option");
          opt.value = scenario.id;
          opt.textContent = scenario.title;
          if (scenario.id === this.currentScenarioId) {
@@ -212,4 +212,3 @@ export class scenarioSelectionDialog {
 }
 
 export default scenarioSelectionDialog;
-

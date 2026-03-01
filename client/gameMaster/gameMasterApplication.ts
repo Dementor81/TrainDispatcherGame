@@ -2,7 +2,7 @@ import { ClientSimulation } from "../core/clientSimulation";
 import { EventManager } from "../manager/event_manager";
 import { SignalRManager } from "../network/signalr";
 
-export class AdminApplication {
+export class GameMasterApplication {
   public eventManager: EventManager;
   public signalRManager: SignalRManager;
   public clientSimulation: ClientSimulation;
@@ -11,7 +11,7 @@ export class AdminApplication {
     this.eventManager = new EventManager();
     this.signalRManager = new SignalRManager(this.eventManager);
     this.clientSimulation = new ClientSimulation(this.eventManager);
-    
+
     // Connect to SignalR to receive server broadcasts
     this.connect();
   }
@@ -25,9 +25,9 @@ export class AdminApplication {
       }
 
       await this.signalRManager.joinSession(gameCode);
-      console.log('AdminApplication: Connected to SignalR');
+      console.log("GameMasterApplication: Connected to SignalR");
     } catch (error) {
-      console.error('AdminApplication: Failed to connect to SignalR', error);
+      console.error("GameMasterApplication: Failed to connect to SignalR", error);
     }
   }
 
