@@ -14,7 +14,7 @@ class Track extends BaseSimModule {
       track._signals = object.signals ? object.signals.map((signalObj: any) => Signal.fromObject(signalObj, track)) : [];
       track._signals.sort((a, b) => a.position - b.position);
       track._switches = [null, null];
-      track._halt = false; 
+      track._halt = false;
       return track;
    }
 
@@ -115,15 +115,12 @@ class Track extends BaseSimModule {
       return this._halt;
    }
 
-   private resetCache() {
-      this._vector = null;
-      this._rad = null;
-      this._deg = null;
-      this._length = null;
-      this._unit = null;
-      this._slope = null;
-      this._sin = null;
-      this._cos = null;
+   public switchAtStart(): Switch | null {
+      return this._switches[0] as Switch | null;
+   }
+
+   public switchAtEnd(): Switch | null {
+      return this._switches[1] as Switch | null;
    }
 
    along(point: Point, km: number): Point {

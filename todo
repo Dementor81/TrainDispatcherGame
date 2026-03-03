@@ -1,23 +1,23 @@
 Features:
     
     ☐ add comments to shedulded strain stops like "overtake"
+    ☐ MultipleUnit trains for s_bahn and ic trains
     ☐ handle missrouted trains on client side. maybe it should stop at the exitppoint and the player must confirm  backing up to the station
     ✔ select a train to see different information @done(26-03-03 07:40)
 
 Big Features:    
     
+    ☐ coupling and decoupling
+    ☐ slow down trains if the train is on a router with switches set to the branch
     ✔ acceleration and deceleration @done(26-03-03 07:40)
     ✔ shunting @done(26-03-03 07:40)
-    ☐ coupling and decoupling
     ✔ add game logic to the server to handle multiple game sessions simultaniously @done(26-02-22 18:22)
-    ☐ UI with an overview of the whole network
     ✔ better UI for station selection with a display which station is already taken by whom @done(26-02-24 19:22)
-    ☐ slow down trains if the train is on a router with switches set to the branch
 
 Bugs:
 
     ☐ some random delays of trains at the server side
-    ☐ the server dispatch does not calculate travel times within stations
+    ☐ the server dispatch does not calculate travel times within stations, from spawnpoint to stoppingpoint
     
 
 

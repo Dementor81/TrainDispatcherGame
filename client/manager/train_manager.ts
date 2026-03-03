@@ -439,7 +439,7 @@ export class TrainManager {
       }
 
       const trainNumber = this.generateUniqueTestTrainNumber();
-      const train = new Train(this._eventManager, trainNumber, 3, 100);
+      const train = new Train(this._eventManager, trainNumber, 3, 30);
       train.speedCurrent = 0;
       const direction = 1;
       train.setDrawingDirection(direction);

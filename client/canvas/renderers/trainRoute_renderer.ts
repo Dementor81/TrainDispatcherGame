@@ -1,7 +1,9 @@
 import * as PIXI from "pixi.js";
 import TrainRoute, { RoutePart } from "../../sim/trainRoute";
 import Track from "../../sim/track";
+import Switch from "../../sim/switch";
 import { Point } from "../../utils/point";
+import { RendererConfig } from "../../core/config";
 import { SwitchRenderer, SwitchRenderOptions } from "./switch_renderer";
 
 export class TrainRouteRenderer {
@@ -19,20 +21,32 @@ export class TrainRouteRenderer {
       const g = new PIXI.Graphics();
       const routeColor = 0x00aa00;
       const routeWidth = 3;
-      // Make circle color slightly lighter than track color
+      const radius = RendererConfig.switchCircleRadius;
       const circleColor = this.lightenColor(routeColor, 0.2);
 
       for (const route of routes) {
          for (const part of route.parts) {
             if (part.kind === "track") {
                const track: Track = part.track;
-               const fromKm = part.fromKm ?? 0;
-               const toKm = part.toKm ?? track.length;
-               const p1 = this.getPointFromPosition(track, fromKm);
-               const p2 = this.getPointFromPosition(track, toKm);
-               g.moveTo(p1.x, p1.y);
-               g.lineTo(p2.x, p2.y);
-               g.stroke({ width: routeWidth, color: routeColor, alpha: 1, cap: "round" });
+               let fromKm = part.fromKm ?? 0;
+               let toKm = part.toKm ?? track.length;
+
+               if (track.switchAtStart() instanceof Switch) {
+                  if (fromKm === 0) fromKm = radius;
+                  else if (toKm === 0) toKm = radius;
+               }
+               if (track.switchAtEnd() instanceof Switch) {
+                  if (toKm === track.length) toKm = Math.max(toKm - radius, 0);
+                  else if (fromKm === track.length) fromKm = Math.max(fromKm - radius, 0);
+               }
+
+               if (fromKm !== toKm) {
+                  const p1 = this.getPointFromPosition(track, fromKm);
+                  const p2 = this.getPointFromPosition(track, toKm);
+                  g.moveTo(p1.x, p1.y);
+                  g.lineTo(p2.x, p2.y);
+                  g.stroke({ width: routeWidth, color: routeColor, alpha: 1, cap: "round" });
+               }
             } else if (part.kind === "switch") {
                const options: SwitchRenderOptions = {
                   circleColor: circleColor,
