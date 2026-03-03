@@ -50,9 +50,17 @@ function showInvalidSessionModal(): void {
 }
 
 async function hasValidSessionCode(): Promise<boolean> {
-  const gameCode = (sessionStorage.getItem("gameCode") || "").trim();
+  let gameCode = (sessionStorage.getItem("gameCode") || "").trim();
   if (!gameCode) {
-    return false;
+    // Check if the URL parameter 'testing' is set to 'true'. If so, use DEV101 as gameCode.
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("testing") === "true") {
+      gameCode = "DEV101";
+      sessionStorage.setItem("gameCode", gameCode);
+    }
+    else {
+      return false;
+    }
   }
 
   const controller = new AbortController();

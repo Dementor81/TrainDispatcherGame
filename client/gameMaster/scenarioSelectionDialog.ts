@@ -3,8 +3,9 @@ import {
    getCurrentScenario,
    setScenario,
 } from "../network/api";
+import { UI } from "../utils/ui";
 
-export class scenarioSelectionDialog {
+export class ScenarioSelectionDialog {
    private allNetworks: string[] = [];
    private allScenarios: Array<{ id: string; title: string; networkId: string }> = [];
    private currentScenarioId: string = "";
@@ -102,11 +103,8 @@ export class scenarioSelectionDialog {
 
       const footer = document.createElement("div");
       footer.className = "modal-footer border-secondary";
-      const closeFooter = document.createElement("button");
-      closeFooter.type = "button";
-      closeFooter.className = "btn btn-secondary btn-sm";
+      const closeFooter = UI.createButton("btn-secondary btn-sm", "Start Simulation", () => {});
       closeFooter.setAttribute("data-bs-dismiss", "modal");
-      closeFooter.textContent = "Start Simulation";
       footer.appendChild(closeFooter);
 
       content.appendChild(header);
@@ -211,4 +209,4 @@ export class scenarioSelectionDialog {
    }
 }
 
-export default scenarioSelectionDialog;
+export default ScenarioSelectionDialog;

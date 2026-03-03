@@ -3,18 +3,25 @@ import Signal from "./signal";
 import { SimulationConfig, RendererConfig } from "../core/config";
 import RailPosition from "./railPosition";
 import { TrainType, TrainWayPointActionType } from "../network/dto";
+import { EventManager } from "../manager/event_manager";
+import { TrainManager } from "../manager/train_manager";
 
-// Enum for reasons why a train might be stopped
-export enum TrainStopReason {
-    NONE = "none",
-    SIGNAL = "signal",
-    STATION = "station",
+// Explicit finite state machine state for a train
+export enum TrainState {
+    RUNNING = "running",
+    EMERGENCY_BRAKING = "emergency_braking",
+    BRAKING_FOR_SIGNAL = "braking_for_signal",
+    WAITING_AT_SIGNAL = "waiting_at_signal",
+    BRAKING_FOR_STATION = "braking_for_station",
+    WAITING_AT_STATION = "waiting_at_station",
     END_OF_TRACK = "end_of_track",
     COLLISION = "collision",
     EMERGENCY_STOP = "emergency_stop",
     DERAILEMENT = "derailement",
-    ENDED = "ended"
-
+    ENDED = "ended",
+    MANUAL_CONTROL = "manual_control",
+    MISROUTED = "misrouted",
+    EXITING = "exiting"
 }
 
 type TrainExitState = {
@@ -23,38 +30,58 @@ type TrainExitState = {
     progressMeters: number;
 };
 
-class Train {
+const MANUAL_MODE_SPEED_LIMIT_MPS = 20 / 3.6;
+
+export class Train {
+    private _eventManager: EventManager;
     private _number: string;
     private _type: TrainType;
+    private _category: string | null;
     private _position: RailPosition|null = null; 
     private _tailPosition: RailPosition|null = null; 
     private _cars: number;
-    private _speed: number; // m/s
+    private _speedMax: number; // m/s
+    private _speedCurrent: number; // m/s, current speed on client
+    private _speedAimed: number; // m/s, target speed on client
     private _drawingDirection: number; // 1 = locomotive on right, -1 = locomotive on left
     private _movingDirection: number; // 1 = moving forward (increasing km), -1 = moving backward (decreasing km)
     private _stoppedBySignal: Signal | null; // Signal that currently stops this train
     private _action: TrainWayPointActionType = 'PassThrough'; // How the train acts at the current station
     private _arrivalTime: Date | null = null; // Scheduled arrival time at current station
     private _departureTime: Date | null = null; // Scheduled departure time at current station
-    private _stopReason: TrainStopReason = TrainStopReason.NONE; // Current reason why the train is stopped
+    private _state: TrainState = TrainState.RUNNING;
+    private _distanceToStop: number | null = null; // Remaining distance in meters to planned stop target
     private _stationStopStartTime: Date | null = null; // When the train actually started waiting at station
     private _waitingProgress: number = 0; // 0..1 progress while waiting at station
     private _followingTrainNumber: string | null = null; // following train number that will use this vehicle, after this train has completed its journey
     private _exitState: TrainExitState | null = null;
+    private _isManualControl: boolean = false;
 
-    constructor(number: string, cars: number, speed: number, type: TrainType = 'Passenger') {
+    constructor(
+        eventManager: EventManager,
+        number: string,
+        cars: number,
+        speedMax: number,
+        type: TrainType = 'Passenger',
+        category: string | null = null
+    ) {
+        this._eventManager = eventManager;
         this._number = number;
         this._type = type;
+        this._category = category;
         this._cars = cars;
-        this._speed = speed 
+        this._speedMax = speedMax;
+        this._speedCurrent = speedMax;
+        this._speedAimed = speedMax;
         this._drawingDirection = 1;
         this._movingDirection = 1;
         this._stoppedBySignal = null; 
     }
 
     // Static factory method to create a train from server data
-    static fromServerData(data: any): Train {
-        const train = new Train(data.trainNumber, data.cars, data.speed, data.trainType || 'Passenger');
+    static fromServerData(data: any, eventManager: EventManager): Train {
+        const category = data.category ?? data.catagory ?? null;
+        const train = new Train(eventManager, data.trainNumber, data.cars, data.speed, data.trainType || 'Passenger', category);
         
         // Set schedule times if provided
         if (data.departureTime) {
@@ -83,6 +110,14 @@ class Train {
         return this._type;
     }
 
+    get category(): string | null {
+        return this._category;
+    }
+
+    set category(value: string | null) {
+        this._category = value;
+    }
+
     get position(): RailPosition | null {
         return this._position;
     }
@@ -95,8 +130,28 @@ class Train {
         return this._cars;
     }
 
-    get speed(): number {
-        return this._speed;
+    get speedMax(): number {
+        return this._speedMax;
+    }
+
+    get maxAllowedSpeed(): number {
+        return this._isManualControl ? Math.min(this._speedMax, MANUAL_MODE_SPEED_LIMIT_MPS) : this._speedMax;
+    }
+
+    get speedCurrent(): number {
+        return this._speedCurrent;
+    }
+
+    set speedCurrent(value: number) {
+        this._speedCurrent = Math.max(0, value);
+    }
+
+    get speedAimed(): number {
+        return this._speedAimed;
+    }
+
+    set speedAimed(value: number) {
+        this._speedAimed = Math.max(0, value);
     }
 
     get drawingDirection(): number {
@@ -133,8 +188,12 @@ class Train {
         return this._departureTime;
     }
 
-    get stopReason(): TrainStopReason {
-        return this._stopReason;
+    get state(): TrainState {
+        return this._state;
+    }
+
+    get distanceToStop(): number | null {
+        return this._distanceToStop;
     }
 
     get stationStopStartTime(): Date | null {
@@ -179,8 +238,17 @@ class Train {
         return this._exitState?.boundaryKm ?? null;
     }
 
+    get isManualControl(): boolean {
+        return this._isManualControl;
+    }
+
+    get length(): number {
+        return this._cars * RendererConfig.carWidth + ((this._cars - 1) * RendererConfig.trainCarSpacing);
+    }
+
     startExiting(exitId: number, boundaryKm: number): void {
         this._exitState = { id: exitId, boundaryKm, progressMeters: 0 };
+        this.setState(TrainState.EXITING);
     }
 
     advanceExitProgress(deltaMeters: number): void {
@@ -223,16 +291,12 @@ class Train {
 
 
     // Set the signal that is currently stopping this train
-    setStoppedBySignal(signal: Signal | null): void {
+    setStoppedBySignal(signal: Signal | null, distanceToStop: number | null = null): void {
         this._stoppedBySignal = signal;
-        // If stopped by a signal, ensure train is not moving
-        if (signal) {
-            this._stopReason = TrainStopReason.SIGNAL;
-        } else {
-            // If signal is cleared and no other stop reason, clear stop reason
-            if (this._stopReason === TrainStopReason.SIGNAL) {
-                this._stopReason = TrainStopReason.NONE;
-            }
+        if (signal) {            
+            this.setState(TrainState.BRAKING_FOR_SIGNAL, distanceToStop);
+        } else {            
+            if (this._state != TrainState.MANUAL_CONTROL ) this.setState(TrainState.RUNNING);            
         }
     }
 
@@ -244,9 +308,53 @@ class Train {
         this._departureTime = departureTime;
     }
 
-    // Set the stop reason
-    setStopReason(reason: TrainStopReason): void {
-        this._stopReason = reason;
+    isStationState(): boolean {
+        return this._state === TrainState.BRAKING_FOR_STATION
+            || this._state === TrainState.WAITING_AT_STATION;
+    }
+
+    private canTransitionTo(nextState: TrainState): boolean {
+        if (this._state === nextState) return true;
+
+        if (this._state === TrainState.COLLISION || this._state === TrainState.DERAILEMENT || this._state === TrainState.ENDED) {
+            return false;
+        }
+
+        return true;
+    }
+
+    setState(nextState: TrainState, distanceToStop: number | null = null): void {
+        if (!this.canTransitionTo(nextState)) return;
+        const previousState = this._state;
+
+        this._state = nextState;
+        this._distanceToStop = nextState === TrainState.RUNNING || distanceToStop === null
+            ? null
+            : Math.max(0, distanceToStop);
+        this._speedAimed = nextState === TrainState.RUNNING ? this.maxAllowedSpeed : 0;
+        if(TrainManager.isHardStoppedState(nextState)) {
+            this._speedCurrent = 0;
+        }
+        if (previousState !== nextState) {
+            this._eventManager.emit("trainStateChanged", this, previousState, nextState);
+        }
+    }
+
+    consumeDistanceToStop(distance: number): void {
+        if (this._distanceToStop === null) return;
+        this._distanceToStop = Math.max(0, this._distanceToStop - Math.max(0, distance));
+    }
+
+    setManualControlMode(isManual: boolean): void {
+        if(this._isManualControl === isManual) return;
+
+        this._isManualControl = isManual;
+
+        if(isManual) {
+            this.setState(TrainState.MANUAL_CONTROL);
+        } else {
+            this.setState(TrainState.RUNNING);
+        }
     }
 
     // Update train position based on current speed and moving direction
@@ -255,7 +363,8 @@ class Train {
     getMovementDistance(): number {
 
         const timeElapsedSeconds = SimulationConfig.simulationIntervalSeconds * SimulationConfig.simulationSpeed;
-        return this._speed * timeElapsedSeconds * this._movingDirection;
+        const currentSpeed = Math.max(0, Math.min(this._speedCurrent, this.maxAllowedSpeed));
+        return currentSpeed * timeElapsedSeconds * this._movingDirection;
     }
 
     // Method to get train info for debugging/logging
@@ -276,8 +385,8 @@ class Train {
             info += `, departure: ${this._departureTime.toLocaleTimeString()}`;
         }
 
-        if (this._stopReason !== TrainStopReason.NONE) {
-            info += `, stopped: ${this._stopReason}`;
+        if (this._state !== TrainState.RUNNING) {
+            info += `, state: ${this._state}`;
         }
         
         return info;

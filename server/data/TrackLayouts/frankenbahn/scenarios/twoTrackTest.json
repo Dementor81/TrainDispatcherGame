@@ -8,18 +8,18 @@
       "type": "Passenger",
       "category": "RB",
       "speed": 160,
-      "cars": 15,
+      "cars": 5,
       "path": [],
       "timetable": [
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:00:39"
+          "departure": "00:00:00"
         },
         {
           "station": "weststadt",
           "arrival": "00:02:43",
-          "departure": "00:02:04"
+          "departure": "00:03:04"
         },
         {
           "station": "neustadt",

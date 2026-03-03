@@ -1,4 +1,4 @@
-import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto, OpenLineTrackStatusDto, TrainWayPointDto, LogEntryDto, PlayerControlledStationDto } from "./dto";
+import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto, OpenLineTrackStatusDto, TrainWayPointDto, TrainDetailsDto, LogEntryDto, PlayerControlledStationDto } from "./dto";
 
 const API_BASE_URL = "/api";
 
@@ -144,6 +144,14 @@ export async function getTrainWaypoints(trainNumber: string): Promise<TrainWayPo
   return response.json();
 }
 
+export async function getTrainDetails(trainNumber: string): Promise<TrainDetailsDto> {
+  const response = await fetch(withGameCode(`${API_BASE_URL}/trains/${encodeURIComponent(trainNumber)}/details`));
+  if (!response.ok) {
+    throw new Error(`Failed to get details for train ${trainNumber}: ${response.statusText}`);
+  }
+  return response.json();
+}
+
 export default {
   fetchAvailableLayouts,
   fetchAvailableStations,
@@ -161,6 +169,7 @@ export default {
   getAllTrains,
   getUpcomingTrains,
   getTrainWaypoints,
+  getTrainDetails,
   fetchNetwork,
   fetchOpenLineTracks,
   fetchLogs,

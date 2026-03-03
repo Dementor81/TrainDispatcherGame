@@ -71,6 +71,7 @@ export interface SimulationStatusDto {
 export interface TrainDto {
   number: string;
   category?: string;
+  speedMax?: number;
   type?: TrainType;
   state: string;
   currentLocation?: string;
@@ -94,6 +95,14 @@ export interface TrainWayPointDto {
   isLast: boolean;
   stops: boolean;
   action: string;
+}
+
+export interface TrainDetailsDto {
+  trainNumber: string;
+  category?: string | null;
+  type: TrainType | string;
+  cars: number;
+  speedMax: number; // m/s
 }
 
 export enum LogLevel {
@@ -133,7 +142,7 @@ export interface ScenarioTrainDto {
   number: string;
   type: 'Passenger' | 'Freight';
   category?: string;
-  speed: number; // km/h in source
+  speedMax: number; // km/h in source
   cars: number;
   path: string[];
   timetable: ScenarioTimetableEntryDto[];

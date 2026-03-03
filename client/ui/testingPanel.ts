@@ -4,7 +4,10 @@ import Toast from './toast';
 
 export class TestingPanel extends BasePanel {
   constructor(application: Application) {
-    super(application);
+    super(application, {
+      bottom: 0,
+      left: 0,
+    });
   }
 
 

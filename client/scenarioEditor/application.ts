@@ -547,7 +547,7 @@ export default class SzenariosApplication {
             const depA = a.departure ? toMinutes(a.departure) : null;
             const arrB = b.arrival ? toMinutes(b.arrival) : null;
             const distMeters = getDistanceMeters(this.network, a.station, b.station);
-            const speedKmh = Math.max(1, train.speed || 1);
+            const speedKmh = Math.max(1, train.speedMax || 1);
             const travelMinutes = (distMeters * 60) / (1000 * speedKmh);
             let depMinutes = depA;
             let arrMinutes = arrB;
@@ -1105,7 +1105,7 @@ export default class SzenariosApplication {
       train.number = res.number;
       (train as any).type = res.type;
       (train as any).category = res.category;
-      train.speed = res.speed;
+      train.speedMax = res.speedMax;
       train.cars = res.cars;
       (train as any).followingTrainNumber = res.followingTrainNumber;
       this.drawScene();
@@ -1124,7 +1124,7 @@ export default class SzenariosApplication {
             number: t.number,
             type: t.type,
             category: t.category,
-            speed: t.speed,
+            speedMax: t.speedMax,
             cars: t.cars,
             followingTrainNumber: (t as any).followingTrainNumber,
             timetable: t.timetable.map((e) => {
@@ -1187,7 +1187,7 @@ export default class SzenariosApplication {
             number: t.number,
             type: t.type,
             category: t.category,
-            speed: t.speed,
+            speedMax: t.speedMax,
             cars: t.cars,
             followingTrainNumber: (t as any).followingTrainNumber,
             timetable: t.timetable.map((e) => {
@@ -1217,12 +1217,12 @@ export default class SzenariosApplication {
      const endIdx = this.stationOrder.indexOf(res.endStation);
      if (startIdx < 0 || endIdx < 0 || startIdx === endIdx) return;
      const t0 = toMinutes(this.scenario.start_time);
-     const timetable = this.buildTimetable(startIdx, endIdx, res.speed, t0);
+     const timetable = this.buildTimetable(startIdx, endIdx, res.speedMax, t0);
      const train = {
         number: res.number,
         type: res.type,
         category: res.category,
-        speed: res.speed,
+        speedMax: res.speedMax,
         cars: res.cars,
         followingTrainNumber: res.followingTrainNumber,
         timetable: timetable as any,
@@ -1276,7 +1276,7 @@ export default class SzenariosApplication {
       const num = (document.getElementById("train-number") as HTMLInputElement)?.value?.trim() || "NEW";
       const type = ((document.getElementById("train-type") as HTMLSelectElement)?.value as 'Passenger' | 'Freight') || 'Passenger';
       const category = (document.getElementById("train-category") as HTMLInputElement)?.value?.trim() || undefined;
-      const speed = parseInt((document.getElementById("train-speed") as HTMLInputElement)?.value || "120", 10) || 120;
+      const speedMax = parseInt((document.getElementById("train-speed") as HTMLInputElement)?.value || "120", 10) || 120;
       const cars = parseInt((document.getElementById("train-cars") as HTMLInputElement)?.value || "6", 10) || 6;
       const start = (document.getElementById("train-start") as HTMLSelectElement)?.value;
       const end = (document.getElementById("train-end") as HTMLSelectElement)?.value;
@@ -1288,15 +1288,15 @@ export default class SzenariosApplication {
       if (startIdx < 0 || endIdx < 0 || startIdx === endIdx) return;
       const step = startIdx < endIdx ? 1 : -1;
 
-      // Build timetable using scenario start time as initial departure, 1 min dwell, travel by network distance and speed
+      // Build timetable using scenario start time as initial departure, 1 min dwell, travel by network distance and speed limit
       const t0 = toMinutes(this.scenario.start_time);
-      const timetable = this.buildTimetable(startIdx, endIdx, speed, t0);
+      const timetable = this.buildTimetable(startIdx, endIdx, speedMax, t0);
 
       const train = {
          number: num,
          type,
          category,
-         speed,
+         speedMax,
          cars,
          timetable: timetable as any,
       };
@@ -1323,11 +1323,11 @@ export default class SzenariosApplication {
          const secondEntry = train.timetable[1];
          if (!secondEntry) return;
          const dist = getDistanceMeters(this.network, firstEntry.station, secondEntry.station);
-         const travel = (dist * 60) / (1000 * Math.max(1, train.speed));
+         const travel = (dist * 60) / (1000 * Math.max(1, train.speedMax));
          console.log(`Travel time between ${firstEntry.station} and ${secondEntry.station}: ${travel} minutes`);
          t0 = toMinutes(secondEntry.arrival) - travel;
       }
-      const timetable = this.buildTimetable(startIdx, endIdx, train.speed, t0);
+      const timetable = this.buildTimetable(startIdx, endIdx, train.speedMax, t0);
 
       // Update the train's timetable
       train.timetable = timetable as any;

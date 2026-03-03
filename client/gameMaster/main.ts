@@ -7,7 +7,7 @@ import * as bootstrap from "bootstrap";
 import { GameMasterApplication } from "./gameMasterApplication";
 import { HUDPanel } from "../ui/hudPanel";
 import { ControlPanel } from "../ui/controlPanel";
-import scenarioSelectionDialog from "./scenarioSelectionDialog";
+import ScenarioSelectionDialog from "./scenarioSelectionDialog";
 import TrainsPanel from "./trainsPanel";
 import OpenLinePanel from "./openLinePanel";
 import LogsPanel from "./logsPanel";
@@ -27,7 +27,7 @@ window.addEventListener("load", async () => {
 
   const panel = new ControlPanel(app as any);
   panel.show();
-  const scenario = new scenarioSelectionDialog();
+  const scenario = new ScenarioSelectionDialog();
   const trains = new TrainsPanel();
   const openline = new OpenLinePanel();
   const logs = new LogsPanel();

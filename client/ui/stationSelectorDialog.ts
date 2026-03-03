@@ -86,7 +86,7 @@ export class stationSelectorDialog {
       const controlledStations = await this.refreshControlledStations();
 
       if (stations.length === 0) {
-        this.renderStatusSlide('Keine Bahnhöfe verfügbar.', 'Bitte versuche es später erneut.');
+        this.renderStatusSlide('Fehler.', 'Beim Laden der Bahnhöfe ist ein Fehler aufgetreten.');
         return;
       }
 
@@ -143,22 +143,16 @@ export class stationSelectorDialog {
       }
     } catch (error) {
       console.error('Failed to load stations:', error);
-      this.renderStatusSlide('Fehler beim Laden der Bahnhöfe.', 'Bitte versuche es erneut.');
+      this.renderStatusSlide('Fehler.', 'Beim Laden der Bahnhöfe ist ein Fehler aufgetreten.');
     }
   }
 
   private handleStartClick(): void {
     if (!this.onStationSelected) return;
     const selectedStation = this.getSelectedStationId();
-
-    if (!selectedStation) {
-      alert('Bitte wählen Sie einen Bahnhof aus.');
-      return;
-    }
-
     // Call the callback with the selected station and player GUID, passing playerName optionally
     const playerId = this.getOrCreateClientId();
-    this.onStationSelected(selectedStation, playerId, this.playerName || undefined);
+    this.onStationSelected(selectedStation, playerId, this.playerName! );
     
     // Hide the modal
     this.hideModal();
@@ -279,7 +273,7 @@ export class stationSelectorDialog {
       const cell = document.createElement('td');
       cell.colSpan = 2;
       cell.className = 'text-muted';
-      cell.textContent = 'Keine anderenSpieler verbunden';
+      cell.textContent = 'Keine anderen Spieler verbunden';
       row.appendChild(cell);
       this.stationPlayersTableBody.appendChild(row);
       return;

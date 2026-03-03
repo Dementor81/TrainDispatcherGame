@@ -6,7 +6,6 @@ import Signal from "../sim/signal";
 import TrackLayoutManager from "../manager/trackLayout_manager";
 import { EventManager } from "../manager/event_manager";
 import { TrainManager } from "../manager/train_manager";
-import { RendererConfig } from "../core/config";
 import { Camera } from "./camera";
 import { InputHandler } from "./input_handler";
 import { TrackRenderer } from "./renderers/track_renderer";
@@ -31,13 +30,11 @@ export class Renderer {
    private _trainRouteRenderer!: TrainRouteRenderer;
    private _trackLayoutManager: TrackLayoutManager;
    private _eventManager: EventManager;
-   private _trainManager: TrainManager;
 
    private constructor(trackLayoutManager: TrackLayoutManager, eventManager: EventManager, trainManager: TrainManager) {
       this._pixiApp = new PIXI.Application();
       this._trackLayoutManager = trackLayoutManager;
       this._eventManager = eventManager;
-      this._trainManager = trainManager;
    }
 
    static async create(canvas: HTMLCanvasElement, trackLayoutManager: TrackLayoutManager, eventManager: EventManager, trainManager: TrainManager): Promise<Renderer> {
@@ -45,7 +42,7 @@ export class Renderer {
       await r._pixiApp.init({
          canvas: canvas,
          resizeTo: window,
-         backgroundColor: RendererConfig.backgroundColor,
+         backgroundAlpha: 0,
          antialias: true,
          resolution: window.devicePixelRatio || 1,
          autoDensity: true,

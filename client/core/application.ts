@@ -97,7 +97,6 @@ export class Application {
          
          // Show the control panel and train overview panel after successfully joining a station
          this._uiManager.showTrainOverviewPanel();
-         this._uiManager.showTestingPanel();
          
       } catch (error) {
          console.error('Failed to join station:', error);

@@ -4,8 +4,8 @@ import { Application } from '../core/application';
 import { BasePanel } from './basePanel';
 
 export class TrainOverviewPanel extends BasePanel {
-  private _updating:boolean = false;
-  
+  private _updating: boolean = false;
+
 
   constructor(application: Application) {
     super(application, {
@@ -32,8 +32,8 @@ export class TrainOverviewPanel extends BasePanel {
   }
 
   private createTrainsContainer(): HTMLDivElement {
-    
-    
+
+
     const trainsList = document.createElement('div');
     trainsList.id = 'trainsList';
     trainsList.className = 'trains-list';
@@ -46,8 +46,8 @@ export class TrainOverviewPanel extends BasePanel {
       if (trainNumber) {
         this.application.eventManager.emit('trainClicked', trainNumber);
       }
-    });   
-    
+    });
+
     return trainsList;
   }
 
@@ -55,20 +55,13 @@ export class TrainOverviewPanel extends BasePanel {
     await this.updateTrains();
   }
 
-  private getSortTimeSeconds(train: StationTimetableEventDto): number {
-    if (train.departureSeconds !== null && train.departureSeconds !== undefined) {
-      return train.departureSeconds;
-    }
-    return train.arrivalSeconds;
-  }
-
   private async updateTrains(): Promise<void> {
-    if(this._updating) return;
+    if (this._updating) return;
     this._updating = true;
     try {
 
       const getSortTime = (train: StationTimetableEventDto) => train.departureSeconds ?? train.arrivalSeconds ?? 0;
-      
+
       const trains = await getUpcomingTrains(this.application.currentStationId!);
       trains.sort((a, b) => getSortTime(a) - getSortTime(b));
       this.renderTrains(trains);
@@ -111,11 +104,11 @@ export class TrainOverviewPanel extends BasePanel {
         row.style.cursor = 'pointer';
         tbody.appendChild(row);
       }
-      this.updateTrainRow(row, train);      
+      this.updateTrainRow(row, train);
     }
 
     for (const [trainNumber, row] of existingRows) {
-      if(!trains.find(t => t.trainNumber === trainNumber)) row.remove();
+      if (!trains.find(t => t.trainNumber === trainNumber)) row.remove();
     }
   }
 
@@ -157,13 +150,12 @@ export class TrainOverviewPanel extends BasePanel {
     const delayInfo = this.formatDelay(train.currentDelay);
     const isStoppedBySignal = this.application.trains.some(t => t.number === train.trainNumber && t.stoppedBySignal);
     const hasArrival = train.departureSeconds !== null && train.departureSeconds !== train.arrivalSeconds;
-    
+
     row.innerHTML = `
-      <td class="fw-bold ${isStoppedBySignal ? 'text-danger' : ''}">${train.category} ${train.trainNumber}</td>
+      <td class="small fw-bold ${isStoppedBySignal ? 'text-danger' : ''}">${train.category} ${train.trainNumber}</td>
       <td class="small">${train.fromStation}</td>
       <td class="small">${train.nextStation}</td>
-      <td class="small">${
-        hasArrival ? this.formatSeconds(train.arrivalSeconds) : '---'
+      <td class="small">${hasArrival ? this.formatSeconds(train.arrivalSeconds) : '---'
       }</td>
       <td class="small">${this.formatSeconds(train.departureSeconds)}</td>
       <td><span class="badge ${delayInfo.class}">${delayInfo.text}</span></td>
@@ -175,10 +167,10 @@ export class TrainOverviewPanel extends BasePanel {
     if (delaySeconds < 60) {
       return { class: 'text-success', text: 'On time' };
     }
-    
+
     // Convert seconds to minutes
     const delayMinutes = Math.floor(delaySeconds / 60);
-    
+
     if (delayMinutes >= 10) {
       return { class: 'text-danger', text: `+${delayMinutes}min` };
     } else {
@@ -196,7 +188,7 @@ export class TrainOverviewPanel extends BasePanel {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   }
 
-  
+
 
 
 

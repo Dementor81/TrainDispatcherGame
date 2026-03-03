@@ -27,7 +27,7 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    background-color: #2c3e50;
+    background-color: #1c1c1c;
 }
 
 
@@ -125,12 +125,6 @@ body {
     overflow-y: auto;
 }
 
-/* Ensure canvas takes full space */
-#mainCanvas {
-    display: block;
-    background-color: #2c3e50;
-}
-
 /* Make sure buttons don't interfere with canvas interactions */
 .btn {
     pointer-events: auto;
@@ -141,11 +135,18 @@ body {
     max-width: 1200px;
 }
 
+#stationSelectModal .modal-content {
+    background-color: #2a2b2e;
+    color: #f8f9fa;
+}
+
 #stationCarousel {
-    border-radius: 0.5rem;
     overflow: hidden;
-    padding-bottom: 2.25rem;
-    background-color: black;
+    padding-bottom: 2.25rem; /* for the carousel indicators */
+}
+
+.carousel-control-prev-icon, .carousel-control-next-icon {
+    background-size: 200% 200%;
 }
 
 .station-carousel-slide {
@@ -179,7 +180,6 @@ body {
     bottom: 0;
     z-index: 1;
     padding: 1rem 1.25rem 1.1rem;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0));
 }
 
 .station-carousel-caption h5 {
@@ -194,8 +194,8 @@ body {
 
 #stationCarousel .carousel-control-prev,
 #stationCarousel .carousel-control-next {
-    width: 36px;
-    background-color: #79767669;
+    width: 50px;
+    opacity: 1;
 }
 
 #stationCarousel .carousel-indicators [data-bs-target] {
@@ -217,31 +217,40 @@ body {
 
 .station-player-table {
     margin-top: 0.75rem;
-}
-
-.station-player-table .card-header {
-    background: rgba(0, 0, 0, 0.35);
-    color: #f8f9fa;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    max-height: 180px;
 }
 
 .station-player-table-content {
-    color: #f8f9fa;
+    color: #e9ecef;
+    --bs-table-bg: transparent;
+    --bs-table-accent-bg: transparent;
+    --bs-table-striped-bg: transparent;
+    --bs-table-active-bg: transparent;
+    --bs-table-hover-bg: transparent;
+    --bs-table-border-color: transparent;
 }
 
-.station-player-table-content th {
-    background: rgba(0, 0, 0, 0.2);
-    color: rgba(248, 249, 250, 0.85);
-    border-bottom-color: rgba(255, 255, 255, 0.2);
+.station-player-table-content > :not(caption) > * > * {
+    background-color: transparent;
 }
 
 .station-player-table-content td {
-    border-color: rgba(255, 255, 255, 0.12);
+    border: none;
 }
 
-.station-player-table .table-responsive {
-    max-height: 180px;
+.station-player-table-content .text-muted {
+    color: rgba(233, 236, 239, 0.75) !important;
 }
+
+#startButton {
+    width: 200px;
+}
+
+#trainDetailsMeta {
+    font-size: small;
+}
+
+
 
 /* Responsive adjustments */
 @media (max-width: 768px) {

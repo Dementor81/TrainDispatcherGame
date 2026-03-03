@@ -6,7 +6,7 @@ export type CreateTrainResult = {
   number: string;
   type: TrainType;
   category?: string;
-  speed: number;
+  speedMax: number;
   cars: number;
   startStation: string;
   endStation: string;
@@ -17,7 +17,7 @@ export type EditTrainResult = {
   number: string;
   type: TrainType;
   category?: string;
-  speed: number;
+  speedMax: number;
   cars: number;
   followingTrainNumber?: string;
 };
@@ -78,14 +78,14 @@ export class EditTrainDialog {
         const number = (numEl.value || "").trim() || "NEW";
         const type = (typeEl.value as TrainType) || 'Passenger';
         const category = (catEl.value || "").trim() || undefined;
-        const speed = parseInt(speedEl.value || "120", 10) || 120;
+        const speedMax = parseInt(speedEl.value || "120", 10) || 120;
         const cars = parseInt(carsEl.value || "6", 10) || 6;
         const followingTrainNumber = (followingEl.value || "").trim() || undefined;
         const startStation = startSel.value;
         const endStation = endSel.value;
         modal.hide();
         cleanup();
-        resolve({ number, type, category, speed, cars, startStation, endStation, followingTrainNumber });
+        resolve({ number, type, category, speedMax, cars, startStation, endStation, followingTrainNumber });
       };
       const onHidden = () => { cleanup(); resolve(null); };
       const cleanup = () => {
@@ -129,7 +129,7 @@ export class EditTrainDialog {
     numEl.value = train.number || "";
     typeEl.value = (train.type as string) || "Passenger";
     catEl.value = (train.category as string) || "";
-    speedEl.value = String(train.speed ?? 120);
+    speedEl.value = String(train.speedMax ?? 120);
     carsEl.value = String(train.cars ?? 6);
     followingEl.value = train.followingTrainNumber || "";
 
@@ -141,12 +141,12 @@ export class EditTrainDialog {
         const number = (numEl.value || train.number).trim();
         const type = (typeEl.value as TrainType) || (train.type as TrainType) || 'Passenger';
         const category = (catEl.value || "").trim() || undefined;
-        const speed = parseInt(speedEl.value || String(train.speed ?? 120), 10) || (train.speed ?? 120);
+        const speedMax = parseInt(speedEl.value || String(train.speedMax ?? 120), 10) || (train.speedMax ?? 120);
         const cars = parseInt(carsEl.value || String(train.cars ?? 6), 10) || (train.cars ?? 6);
         const followingTrainNumber = (followingEl.value || "").trim() || undefined;
         modal.hide();
         cleanup();
-        resolve({ number, type, category, speed, cars, followingTrainNumber });
+        resolve({ number, type, category, speedMax, cars, followingTrainNumber });
       };
       const onHidden = () => { cleanup(); resolve(null); };
       const cleanup = () => {

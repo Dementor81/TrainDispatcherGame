@@ -402,7 +402,7 @@ export class SignalRManager {
     private handleTrainSent(data: any): void {
         console.log(`Train ${data.trainNumber} recieved from server, exit point ${data.exitPointId}, action: ${data.action}`);
         // Create a new Train instance from the server data
-        const train = Train.fromServerData(data);             
+        const train = Train.fromServerData(data, this.eventManager);             
         
         // Emit the train created event through the EventManager
         this.eventManager.emit('trainCreated', train, data.exitPointId);

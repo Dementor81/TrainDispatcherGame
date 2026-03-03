@@ -248,6 +248,31 @@ namespace TrainDispatcherGame.Server.Endpoints
                 return Results.Ok(waypoints);
             });
 
+            app.MapGet("/api/trains/{trainNumber}/details", (string trainNumber, HttpRequest req, GameSessionManager sessionManager) =>
+            {
+                var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
+                if (sessionError != null)
+                {
+                    return sessionError;
+                }
+
+                var simulation = session!.Simulation;
+                var train = simulation.Trains.FirstOrDefault(t => t.Number == trainNumber);
+                if (train == null)
+                {
+                    return Results.NotFound(new { message = $"Train {trainNumber} not found" });
+                }
+
+                return Results.Ok(new TrainDetailsDto
+                {
+                    TrainNumber = train.Number,
+                    Category = train.Category,
+                    Type = train.Type.ToString(),
+                    Cars = train.Cars,
+                    SpeedMax = train.Speed
+                });
+            });
+
             app.MapGet("/api/openline/tracks", (HttpRequest req, GameSessionManager sessionManager) =>
             {
                 var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);

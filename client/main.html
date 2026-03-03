@@ -1,60 +1,78 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Train Simulator</title>
-  <!-- Bootstrap CSS loaded via TypeScript entry -->
-  <!-- Bootstrap Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-  <!-- Bootstrap JS fallback -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-</head>
-<body class="">
-  <div class="container-fluid position-relative">
-    <canvas id="mainCanvas" class="w-100 h-100"></canvas>
-  </div>
-  <div class="modal fade" id="stationSelectModal" tabindex="-1" aria-labelledby="stationSelectModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog station-select-modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title"><span id="selectedPlayerName">-</span>, wähle einen Bahnhof und klicke auf Start.</h5>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <div id="stationCarousel" class="carousel slide" data-bs-interval="false" data-bs-ride="false">
-              <div class="carousel-indicators" id="stationCarouselIndicators"></div>
-              <div class="carousel-inner" id="stationCarouselInner"></div>
-              <button id="stationCarouselPrev" class="carousel-control-prev" type="button" data-bs-target="#stationCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-              </button>
-              <button id="stationCarouselNext" class="carousel-control-next" type="button" data-bs-target="#stationCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-              </button>
-            </div>
-          </div>
-          <div class="station-player-table card bg-dark-subtle border-secondary-subtle">
-            
-            <div class="card-body p-0">
-              <div class="table-responsive">
-                <table class="table table-sm mb-0 station-player-table-content">
-                  <tbody id="stationPlayersTableBody">
-                    <tr>
-                      <td colspan="2" class="text-muted">Keine weiteren Spieler verbunden</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" id="startButton">Start</button>
-        </div>
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Train Simulator</title>
+      <!-- Bootstrap CSS loaded via TypeScript entry -->
+      <!-- Bootstrap Icons -->
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
+      <!-- Bootstrap JS fallback -->
+      <script
+         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+         crossorigin="anonymous"></script>
+   </head>
+   <body class="">
+      <div class="container-fluid position-relative">
+         <canvas id="mainCanvas" class="w-100 h-100"></canvas>
       </div>
-    </div>
-  </div>
-</body>
+      <div
+         class="modal fade"
+         id="stationSelectModal"
+         tabindex="-1"
+         aria-labelledby="stationSelectModalLabel"
+         aria-hidden="true"
+         data-bs-backdrop="static"
+         data-bs-keyboard="false">
+         <div class="modal-dialog modal-dialog-centered station-select-modal-dialog">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title">Willkommen <span id="selectedPlayerName">-</span>, wähle einen Bahnhof und klicke auf Start.</h5>
+               </div>
+               <div class="modal-body">
+                  <div class="mb-3">
+                     <div id="stationCarousel" class="carousel slide" data-bs-interval="false" data-bs-ride="false">
+                        <div class="carousel-indicators" id="stationCarouselIndicators"></div>
+                        <div class="carousel-inner rounded" id="stationCarouselInner"></div>
+                        <button
+                           id="stationCarouselPrev"
+                           class="carousel-control-prev"
+                           type="button"
+                           data-bs-target="#stationCarousel"
+                           data-bs-slide="prev">
+                           <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                           <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button
+                           id="stationCarouselNext"
+                           class="carousel-control-next"
+                           type="button"
+                           data-bs-target="#stationCarousel"
+                           data-bs-slide="next">
+                           <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                           <span class="visually-hidden">Next</span>
+                        </button>
+                     </div>
+                  </div>
+                </div>
+                <div class="modal-body">
+                  <label for="stationPlayersTableBody" class="form-label">Andere Spieler</label>
+                  <div class="station-player-table">
+                     <table class="table table-dark table-sm mb-0 station-player-table-content">
+                        <tbody id="stationPlayersTableBody">
+                           <tr>
+                              <td colspan="2" class="text-muted">Keine weiteren Spieler verbunden</td>
+                           </tr>
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+               <div class="modal-footer">
+                  <button type="button" class="btn btn-primary btn-lg" id="startButton">Start</button>
+               </div>
+            </div>
+         </div>
+      </div>
+   </body>
 </html>

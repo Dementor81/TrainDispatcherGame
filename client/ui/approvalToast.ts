@@ -50,7 +50,7 @@ export default class ApprovalToast {
 
     private createToastElement(request: ApprovalRequest): HTMLDivElement {
         const toast = document.createElement('div');
-        toast.className = 'toast align-items-center text-bg-dark border-0';
+        toast.className = 'toast align-items-center border-0';
         toast.setAttribute('role', 'alert');
         toast.setAttribute('aria-live', 'assertive');
         toast.setAttribute('aria-atomic', 'true');
@@ -61,15 +61,16 @@ export default class ApprovalToast {
         const strong = document.createElement('strong');
         strong.className = 'me-auto';
         strong.textContent = 'Fahranfrage';
-        const small = document.createElement('small');
-        small.textContent = request.stationId;
+        const small = document.createElement('div');
+        small.className = 'text-secondary';
+        small.textContent = request.fromStationId;
         header.appendChild(strong);
         header.appendChild(small);
 
         const body = document.createElement('div');
-        body.className = 'toast-body';
+        body.className = 'toast-body text-bg-dark';
         const text = document.createElement('div');
-        text.textContent = `Zug ${request.trainNumber} von ${request.fromStationId} annehmen?`;
+        text.textContent = `Wird Zug ${request.trainNumber} angenommen?`;
         body.appendChild(text);
 
         const btnRow = document.createElement('div');

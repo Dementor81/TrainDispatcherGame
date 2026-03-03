@@ -10,6 +10,7 @@ import {
 import { SimulationStatusDto } from "../network/dto";
 import { BasePanel } from "./basePanel";
 import { Application } from "../core/application";
+import { UI } from "../utils/ui";
 
 export class ControlPanel extends BasePanel {
    private controlsContainer: HTMLDivElement;
@@ -38,34 +39,26 @@ export class ControlPanel extends BasePanel {
       buttonGroup.className = "d-flex flex-wrap gap-1";
 
       // Start/Resume button (context-aware)
-      const startResumeBtn = document.createElement("button");
+      const startResumeBtn = UI.createButton("btn-success btn-sm", "Start", () => this.handleStart());
       startResumeBtn.id = "startResumeBtn";
-      startResumeBtn.className = "btn btn-success btn-sm";
       startResumeBtn.innerHTML = '<i class="bi bi-play-fill"></i> Start';
-      startResumeBtn.onclick = () => this.handleStart();
       startResumeBtn.style.width = "100px";
 
       // Stop button
-      const stopBtn = document.createElement("button");
-      stopBtn.className = "btn btn-danger btn-sm";
+      const stopBtn = UI.createButton("btn-danger btn-sm", "Stop", () => this.handleStop());
       stopBtn.innerHTML = '<i class="bi bi-stop-fill"></i> Stop';
-      stopBtn.onclick = () => this.handleStop();
       stopBtn.style.width = "100px";
 
       // Pause button
-      const pauseBtn = document.createElement("button");
+      const pauseBtn = UI.createButton("btn-warning btn-sm", "Pause", () => this.handlePause());
       pauseBtn.id = "pauseBtn";
-      pauseBtn.className = "btn btn-warning btn-sm";
       pauseBtn.innerHTML = '<i class="bi bi-pause-fill"></i> Pause';
       pauseBtn.style.width = "100px";
-      pauseBtn.onclick = () => this.handlePause();
 
       // Advance time by one minute
-      const advanceBtn = document.createElement("button");
+      const advanceBtn = UI.createButton("btn-secondary btn-sm", "+1 min", () => this.handleAdvanceMinute());
       advanceBtn.id = "advanceBtn";
-      advanceBtn.className = "btn btn-secondary btn-sm";
       advanceBtn.innerHTML = '<i class="bi bi-fast-forward-fill"></i> +1 min';
-      advanceBtn.onclick = () => this.handleAdvanceMinute();
 
       // Speed control
       const speedWrap = document.createElement("div");
@@ -82,16 +75,10 @@ export class ControlPanel extends BasePanel {
       speedInput.className = "form-control form-control-sm";
       speedInput.style.width = "60px";
       speedInput.onchange = () => this.handleSpeedChange(speedInput);
-      speedWrap.appendChild(speedLabel);
-      speedWrap.appendChild(speedInput);
+      speedWrap.append(speedLabel, speedInput);
 
-      buttonGroup.appendChild(startResumeBtn);
-      buttonGroup.appendChild(stopBtn);
-      buttonGroup.appendChild(pauseBtn);
-      buttonGroup.appendChild(advanceBtn);
-      buttonGroup.appendChild(speedWrap);
-
-      controlsContainer.appendChild(buttonGroup);
+      buttonGroup.append(startResumeBtn, stopBtn, pauseBtn, advanceBtn, speedWrap);
+      controlsContainer.append(buttonGroup);
 
       return controlsContainer;
    }

@@ -60,4 +60,12 @@ app.MapLogsEndpoints();
 app.MapSimulationEndpoints();
 app.MapScenarioEndpoints();
 
+if (app.Environment.IsDevelopment())
+{
+    const string devGameCode = "DEV101";
+    var sessionManager = app.Services.GetRequiredService<GameSessionManager>();
+    sessionManager.GetOrCreate(devGameCode);
+    app.Logger.LogInformation("Development session ready with game code {GameCode}", devGameCode);
+}
+
 app.Run();

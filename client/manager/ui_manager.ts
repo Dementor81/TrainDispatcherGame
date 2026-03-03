@@ -33,6 +33,10 @@ export class UIManager {
         this._hud.show();
         if (Tools.isQueryParamTrue('testing')) {
             this._controlPanel.show();
+            if (!this._testingPanel) {
+                this._testingPanel = new TestingPanel(this._application);
+            }
+            this._testingPanel.show();
         }
         this._notificationModal = new NotificationModal();
 
@@ -100,15 +104,7 @@ export class UIManager {
         this._trainDetailsPanel.show();
     }
 
-    showTestingPanel(): void {
-        if (!Tools.isQueryParamTrue('testing')) {
-            return;
-        }
-        if (!this._testingPanel) {
-            this._testingPanel = new TestingPanel(this._application);
-        }
-        this._testingPanel.show();
-    }
+
 
     notifyCollision(trainNumberA: string, trainNumberB: string): void {
         const message = `Kollision zwischen Zug ${trainNumberA} und Zug ${trainNumberB}!`;

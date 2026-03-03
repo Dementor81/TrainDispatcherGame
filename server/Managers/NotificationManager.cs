@@ -52,6 +52,7 @@ namespace TrainDispatcherGame.Server.Managers
                 await _hubContext.Clients.Group(SessionStationGroup(normalizedStationId)).SendAsync("TrainSent", new
                 {
                     trainNumber = train.Number,
+                    category = train.Category,
                     trainType = train.Type.ToString(),
                     stationId = normalizedStationId,
                     exitPointId = exitPointId,

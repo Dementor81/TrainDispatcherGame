@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import Train, { TrainStopReason } from "../../sim/train";
+import Train, { TrainState } from "../../sim/train";
 import Track from "../../sim/track";
 import { RendererConfig } from "../../core/config";
 import TrackLayoutManager from "../../manager/trackLayout_manager";
@@ -287,7 +287,7 @@ export class TrainRenderer {
 
             const pie = trainContainer.stationPie;
             if (pie) {
-               const isWaiting = train.stopReason === TrainStopReason.STATION;
+               const isWaiting = train.state === TrainState.WAITING_AT_STATION;
                pie.visible = isWaiting;
 
                if (isWaiting) {
@@ -322,7 +322,7 @@ export class TrainRenderer {
             // Render signal warning (exclamation mark) when stopped by signal
             const warning = trainContainer.signalWarning;
             if (warning) {
-               const isWaitingAtSignal = train.stopReason === TrainStopReason.SIGNAL;
+               const isWaitingAtSignal = train.state === TrainState.BRAKING_FOR_SIGNAL || train.state === TrainState.WAITING_AT_SIGNAL;
                warning.visible = isWaitingAtSignal;
 
                if (isWaitingAtSignal) {
@@ -348,33 +348,6 @@ export class TrainRenderer {
                // Ensure overlays stay on top of cars
                trainContainer.addChild(warning);
             }
-         }
-         // Remove any existing graphics for front and tail dots before drawing new ones
-         if (trainContainer.frontDot) {
-            trainContainer.removeChild(trainContainer.frontDot);
-         }
-         if (trainContainer.tailDot) {
-            trainContainer.removeChild(trainContainer.tailDot);
-         }
-
-         // Draw a point at the front (train position)
-         if (train.position) {
-            const frontScreen = PositionCalculator.getPointFromPosition(train.position.track, train.position.km);
-            const frontDot = new PIXI.Graphics();
-            frontDot.circle(frontScreen.x, frontScreen.y, 4);
-            frontDot.fill({ color: 0x00ff00, alpha: 1 });
-            trainContainer.addChild(frontDot);
-            trainContainer.frontDot = frontDot;
-         }
-
-         // Draw a point at the tail position
-         if (train.tailPosition) {
-            const tailScreen = PositionCalculator.getPointFromPosition(train.tailPosition.track, train.tailPosition.km);
-            const tailDot = new PIXI.Graphics();
-            tailDot.circle(tailScreen.x, tailScreen.y, 4);
-            tailDot.fill({ color: 0xff00ff, alpha: 1 });
-            trainContainer.addChild(tailDot);
-            trainContainer.tailDot = tailDot;
          }
       }
    }
