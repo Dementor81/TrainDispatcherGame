@@ -134,9 +134,6 @@ export class HUDPanel extends BasePanel {
                 textColor = "text-secondary";
         }
         this.stateIcon.className = iconClass;
-        // keep clock icon style unchanged; colorize the time text instead
         this.timeText.className = `fw-bold ${textColor}`;
     }
-
-    // Notifications moved to Bootstrap modal (NotificationModal).
 }

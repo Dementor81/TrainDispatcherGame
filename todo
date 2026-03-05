@@ -1,8 +1,13 @@
 Features:
     
-    ☐ add comments to shedulded strain stops like "overtake"
-    ☐ MultipleUnit trains for s_bahn and ic trains
-    ☐ handle missrouted trains on client side. maybe it should stop at the exitppoint and the player must confirm  backing up to the station
+    ☐ if a train becomas another train, display the new train number in the UI
+    ☐ MultipleUnit trains for s_bahn and ice trains
+    ☐ touchsupport
+    ☐ total delays and train misshapens display for the gamemaster
+    ☐ add a signal for the wrong line
+    ☐ add a Ignore next signal button to the UI that let trains go over the signal
+    ☐ improve the networking code to harden it against short disconnects
+    ✔ handle missrouted trains on client side. maybe it should stop at the exitppoint and the player must confirm  backing up to the station @done(26-03-05 12:17)
     ✔ select a train to see different information @done(26-03-03 07:40)
 
 Big Features:    
@@ -18,6 +23,7 @@ Bugs:
 
     ☐ some random delays of trains at the server side
     ☐ the server dispatch does not calculate travel times within stations, from spawnpoint to stoppingpoint
+    ☐ traindetails panel does stay open when the train is exited
     
 
 

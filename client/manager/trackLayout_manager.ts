@@ -164,6 +164,11 @@ export class TrackLayoutManager {
       return null;
    }
 
+   getExitDestinationStation(exit: Exit): string | null {
+      if (!exit.connection) return null;
+      return exit.isInbound ? exit.connection.from : exit.connection.to;
+   }
+
    async loadTrackLayout(layoutID: string): Promise<void> {
       console.log("Loading track layout:", layoutID);
       try {

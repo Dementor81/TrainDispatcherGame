@@ -404,6 +404,7 @@ export class TrainDetailsPanel extends BasePanel {
       case TrainState.BRAKING_FOR_STATION: return 'Bremsung vor Bahnhof';
       case TrainState.WAITING_AT_STATION: return 'Bahnhofshalt';
       case TrainState.END_OF_TRACK: return 'Streckenende';
+      case TrainState.MISROUTED: return 'Fehlgeleitet';
       case TrainState.COLLISION: return 'Kollision';
       case TrainState.EMERGENCY_STOP: return 'Nothalt';
       case TrainState.DERAILEMENT: return 'Entgleisung';

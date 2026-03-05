@@ -6,6 +6,7 @@ import { HUDPanel } from "../ui/hudPanel";
 import { TrainDetailsPanel } from "../ui/trainDetailsPanel";
 import NotificationModal from "../ui/notificationModal";
 import ApprovalToast from "../ui/approvalToast";
+import Toast from "../ui/toast";
 import { Application } from "../core/application";
 import { EventManager } from "./event_manager";
 import Tools from "../core/utils";
@@ -58,6 +59,11 @@ export class UIManager {
         // Train derailment notifications
         this._eventManager.on('trainDerailed', (train: Train, sw?: Switch) => {
             this.notifyDerailment(train.number, sw?.id);
+        });
+
+        // Train missrouted notifications
+        this._eventManager.on('trainMisrouted', (train: Train) => {
+            this.notifyMisrouted(train.number);
         });
 
         // Simulation stopped notifications
@@ -115,6 +121,11 @@ export class UIManager {
         const details = switchId !== undefined ? ` an Weiche ${switchId}` : '';
         const message = `Entgleisung von Zug ${trainNumber}${details}!`;
         this._notificationModal?.show(message, 'Entgleisung');
+    }
+
+    notifyMisrouted(trainNumber: string): void {
+        const message = `Zug ${trainNumber} ist fehlgeleitet!`;
+        Toast.show(message, 'warning');
     }
 
     showApprovalToast(data: { stationId: string, fromStationId: string, trainNumber: string }): void {
