@@ -204,7 +204,7 @@ export class ClientSimulation {
       const now = Date.now();
 
       // Cache simulation time for 1 second to avoid too many API calls
-      if (!this._currentSimulationTime || now - this._lastSimulationTimeUpdate > 1000) {
+      if (!this._currentSimulationTime || now - this._lastSimulationTimeUpdate > SimulationConfig.simulationTimeUpdateIntervalSeconds * 1000) {
          try {
             const status = await getSimulationStatus();
             this._currentSimulationTime = new Date(status.currentTime);
@@ -212,9 +212,10 @@ export class ClientSimulation {
          } catch (error) {
             console.warn("Failed to get simulation time from server, using real time:", error);
             this._currentSimulationTime = new Date();
-         }
+         }      
+      }else{
+         this._currentSimulationTime = new Date(this._currentSimulationTime.getTime() + SimulationConfig.simulationIntervalSeconds * 1000);
       }
-
       return this._currentSimulationTime;
    }
 

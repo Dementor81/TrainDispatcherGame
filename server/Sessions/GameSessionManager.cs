@@ -11,10 +11,12 @@ namespace TrainDispatcherGame.Server.Sessions
     public class GameSessionManager
     {
         private static readonly TimeSpan SessionInactivityTimeout = TimeSpan.FromMinutes(30);
+        public static readonly TimeSpan PlayerTeardownGracePeriod = TimeSpan.FromSeconds(30);
 
         private readonly ConcurrentDictionary<string, GameSession> _sessions = new(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentDictionary<string, string> _connectionToSession = new(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentDictionary<string, string> _connectionToPlayer = new(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, CancellationTokenSource> _pendingTeardowns = new(StringComparer.OrdinalIgnoreCase);
         private readonly IHubContext<GameHub> _hubContext;
         private readonly string _defaultScenarioId;
         private readonly object _sessionCreateLock = new();
@@ -186,10 +188,53 @@ namespace TrainDispatcherGame.Server.Sessions
             }
         }
 
+        private static string TeardownKey(string sessionId, string playerId) => $"{sessionId}:{playerId}";
+
+        public void SchedulePlayerTeardown(string sessionId, string playerId, Func<Task> action, TimeSpan delay)
+        {
+            var key = TeardownKey(sessionId, playerId);
+            var cts = new CancellationTokenSource();
+            _pendingTeardowns[key] = cts;
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(delay, cts.Token);
+                    if (!cts.Token.IsCancellationRequested)
+                    {
+                        _pendingTeardowns.TryRemove(key, out _);
+                        await action();
+                    }
+                }
+                catch (TaskCanceledException) { }
+            });
+        }
+
+        public bool CancelPlayerTeardown(string sessionId, string playerId)
+        {
+            var key = TeardownKey(sessionId, playerId);
+            if (_pendingTeardowns.TryRemove(key, out var cts))
+            {
+                cts.Cancel();
+                cts.Dispose();
+                return true;
+            }
+            return false;
+        }
+
         private GameSession CreateSession(string sessionId)
         {
             var playerManager = new PlayerManager();
             var notificationManager = new NotificationManager(_hubContext, playerManager, sessionId);
+
+            // Let the notification manager buffer messages when the destination player is in grace period.
+            notificationManager.SetGracePeriodChecker(stationId =>
+            {
+                var player = playerManager.GetPlayerByStation(stationId);
+                return player != null && _pendingTeardowns.ContainsKey(TeardownKey(sessionId, player.Id));
+            });
+
             var sessionTrackLayoutService = new TrackLayoutService();
             var simulation = new TrainDispatcherGame.Server.Simulation.Simulation(notificationManager, sessionTrackLayoutService, playerManager, _defaultScenarioId, sessionId);
             return new GameSession(sessionId, simulation, playerManager, notificationManager, sessionTrackLayoutService);

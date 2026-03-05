@@ -15,6 +15,7 @@ import TrainRouteManager from "../manager/trainRoute_manager";
 import Signal from "../sim/signal";
 import { CancellableEvent } from "../manager/event_manager";
 import Toast from "../ui/toast";
+import NotificationModal from "../ui/notificationModal";
 import { ClientSimulation } from "../core/clientSimulation";
 import TrainRoute from "../sim/trainRoute";
 import Exit from "../sim/exit";
@@ -237,6 +238,24 @@ export class Application {
       // Exit block status changed (from server) → create or remove blocking route
       this._eventManager.on('exitBlockStatusChanged', (exitId: number, blocked: boolean) => {
          this.handleExitBlockStatusChanged(exitId, blocked);
+      });
+
+      // Full station rejoin after grace period expired — clear stale local trains.
+      this._eventManager.on('stationJoinedFull', () => {
+         this._trainManager.clearAllTrains();
+      });
+
+      // All SignalR reconnect attempts exhausted — show a dialog then return to start screen.
+      this._eventManager.on('connectionPermanentlyLost', () => {
+         const modal = new NotificationModal();
+         modal.show(
+            'Die Verbindung zum Server wurde unterbrochen. Bitte wähle eine Station erneut aus.',
+            'Verbindung unterbrochen',
+            () => {
+               modal.destroy();
+               this.resetToStartScreen();
+            }
+         );
       });
 
       console.log("Event listeners setup complete");

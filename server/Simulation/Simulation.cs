@@ -346,6 +346,8 @@ namespace TrainDispatcherGame.Server.Simulation
                     .Where(t => t.controlledByPlayer && string.Equals(t.CurrentLocation, normalizedStationId, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
+                ServerLogger.Instance.LogDebug(Ctx(stationId), $"Returning {trainsToReturn.Count} trains at station {stationId}");
+
                 foreach (var train in trainsToReturn)
                 {
                     train.controlledByPlayer = false;

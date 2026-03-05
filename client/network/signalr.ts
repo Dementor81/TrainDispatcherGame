@@ -10,6 +10,7 @@ export class SignalRManager {
     private playerId: string | null = null;
     private stationId: string | null = null;
     private gameCode: string | null = null;
+    private playerName: string | null = null;
 
     constructor(eventManager: EventManager) {
         this.eventManager = eventManager;
@@ -19,9 +20,15 @@ export class SignalRManager {
     private initializeConnection(): void {
         this.connection = new HubConnectionBuilder()
             .withUrl('/gamehub', { withCredentials: false })
-            .withAutomaticReconnect([0, 2000, 5000, 10000, 30000]) // Reconnect intervals
+            .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
             .configureLogging(LogLevel.Information)
             .build();
+
+        // Match server ClientTimeoutInterval (20s) so both sides agree on when a
+        // connection is dead. Combined with the 30s server grace period this ensures
+        // the client reconnects before the grace period expires.
+        this.connection.serverTimeoutInMilliseconds = 20000;
+        this.connection.keepAliveIntervalInMilliseconds = 10000;
 
         this.setupRemoteEventHandlers();
         this.setupLocalEventHandlers();
@@ -72,7 +79,11 @@ export class SignalRManager {
 
         this.connection.onclose((error) => {
             console.log('SignalR: Connection closed', error);
-            this.notifyConnectionStatusChange();            
+            this.notifyConnectionStatusChange();
+            // All automatic reconnect attempts exhausted while a station was active.
+            if (this.stationId) {
+                this.eventManager.emit('connectionPermanentlyLost');
+            }
         });
 
         // Game-specific events
@@ -171,10 +182,11 @@ export class SignalRManager {
         try {
             await this.connection.invoke('JoinStation', playerId, stationId, gameCode, playerName ?? '');
             
-            // Store the player and station IDs for reconnection
+            // Store context for reconnection; preserve existing name if none supplied
             this.playerId = playerId;
             this.stationId = stationId;
             this.gameCode = gameCode;
+            if (playerName) this.playerName = playerName;
         } catch (error) {
             console.error('Failed to join station:', error);
             throw error;
@@ -206,6 +218,7 @@ export class SignalRManager {
             // Clear stored IDs when leaving station
             this.playerId = null;
             this.stationId = null;
+            this.playerName = null;
         } catch (error) {
             console.error('Failed to leave station:', error);
             throw error;
@@ -354,7 +367,7 @@ export class SignalRManager {
         if (this.playerId && this.stationId && this.gameCode) {
             console.log(`SignalR: Attempting to rejoin station ${this.stationId} as player ${this.playerId}`);
             try {
-                await this.joinStation(this.playerId, this.stationId, this.gameCode);
+                await this.joinStation(this.playerId, this.stationId, this.gameCode, this.playerName ?? undefined);
                 console.log('SignalR: Successfully rejoined station after reconnection');
             } catch (error) {
                 console.error('SignalR: Failed to rejoin station after reconnection:', error);
@@ -375,8 +388,12 @@ export class SignalRManager {
 
     // Event handlers - these can be overridden or extended
     private handleStationJoined(data: any): void {
-        // Override this method to handle station joined events
         console.log('Station joined event:', data);
+        // On a full rejoin (not a grace-period reconnect), the client's local train
+        // state is stale — notify the application so it can clear it.
+        if (data.success && !data.isReconnect) {
+            this.eventManager.emit('stationJoinedFull');
+        }
     }
 
     private handleStationLeft(data: any): void {

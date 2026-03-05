@@ -43,14 +43,31 @@ namespace TrainDispatcherGame.Server.Managers
                 // Remove player from any previous station
                 RemovePlayerFromStation(playerId);
 
-                // Create new player or update existing one
-                var player = new Player(playerId, normalizedStationId, connectionId, playerName);
+                // Preserve existing name if caller didn't supply one
+                var resolvedName = string.IsNullOrWhiteSpace(playerName) && _players.TryGetValue(playerId, out var prev)
+                    ? prev.Name
+                    : playerName;
+
+                var player = new Player(playerId, normalizedStationId, connectionId, resolvedName);
                 _players[playerId] = player;
                 _stationToPlayer[normalizedStationId] = playerId;
             }
 
             Console.WriteLine($"Player {playerId} took control of station {normalizedStationId}");
             return true;
+        }
+
+        public bool UpdateConnectionId(string playerId, string newConnectionId)
+        {
+            lock (_syncRoot)
+            {
+                if (!_players.TryGetValue(playerId, out var player))
+                {
+                    return false;
+                }
+                player.ConnectionId = newConnectionId;
+                return true;
+            }
         }
 
         public bool ReleaseStation(string playerId)

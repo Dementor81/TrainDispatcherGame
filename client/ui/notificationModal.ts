@@ -66,11 +66,14 @@ export class NotificationModal {
         return modal as HTMLDivElement;
     }
 
-    public show(message: string, title?: string): void {
+    public show(message: string, title?: string, onClose?: () => void): void {
         if (title) {
             this.titleElement!.textContent = title;
         }
         this.bodyElement!.textContent = message;
+        if (onClose) {
+            this.modalElement.addEventListener('hidden.bs.modal', onClose, { once: true });
+        }
         this.bootstrapModal.show();
     }
 

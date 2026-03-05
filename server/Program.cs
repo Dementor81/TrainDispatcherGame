@@ -16,8 +16,13 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add SignalR
-builder.Services.AddSignalR();
+// Add SignalR — keep-alive and timeout tuned so the 30s grace period reliably
+// covers the window between server-side disconnect detection and client reconnect.
+builder.Services.AddSignalR(options =>
+{
+    options.KeepAliveInterval = TimeSpan.FromSeconds(10);
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(20);
+});
 
 // Add track layout service as a singleton service
 builder.Services.AddSingleton<TrackLayoutService>();
