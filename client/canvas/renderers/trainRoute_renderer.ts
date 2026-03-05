@@ -31,11 +31,11 @@ export class TrainRouteRenderer {
                let fromKm = part.fromKm ?? 0;
                let toKm = part.toKm ?? track.length;
 
-               if (track.switchAtStart() instanceof Switch) {
+               if (track.switchAtStart()) {
                   if (fromKm === 0) fromKm = radius;
                   else if (toKm === 0) toKm = radius;
                }
-               if (track.switchAtEnd() instanceof Switch) {
+               if (track.switchAtEnd()) {
                   if (toKm === track.length) toKm = Math.max(toKm - radius, 0);
                   else if (fromKm === track.length) fromKm = Math.max(fromKm - radius, 0);
                }

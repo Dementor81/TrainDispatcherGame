@@ -116,11 +116,13 @@ class Track extends BaseSimModule {
    }
 
    public switchAtStart(): Switch | null {
-      return this._switches[0] as Switch | null;
+      const s = this._switches[0];
+      return (s instanceof Switch) ? s : null;
    }
 
    public switchAtEnd(): Switch | null {
-      return this._switches[1] as Switch | null;
+      const s = this._switches[1];
+      return (s instanceof Switch) ? s : null;
    }
 
    along(point: Point, km: number): Point {
