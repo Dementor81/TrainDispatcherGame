@@ -1,5 +1,4 @@
 import { fetchAvailableStations, fetchControlledStations } from "../network/api";
-import { Tools } from "../core/utils";
 import { EventManager } from "../manager/event_manager";
 import { PlayerControlledStationDto } from "../network/dto";
 
@@ -14,6 +13,7 @@ export class stationSelectorDialog {
   private startButton: HTMLButtonElement | null = null;
   private stationPlayersTableBody: HTMLElement | null = null;
   private onStationSelected: ((layout: string, playerId: string, playerName?: string) => void) | null = null;
+  private playerId: string | null = null;
   private previewCache: Map<string, string> = new Map();
   private previewLoadingStations: Set<string> = new Set();
   private stationOrder: string[] = [];
@@ -148,18 +148,17 @@ export class stationSelectorDialog {
   }
 
   private handleStartClick(): void {
-    if (!this.onStationSelected) return;
+    if (!this.onStationSelected || !this.playerId) return;
     const selectedStation = this.getSelectedStationId();
-    // Call the callback with the selected station and player GUID, passing playerName optionally
-    const playerId = this.getOrCreateClientId();
-    this.onStationSelected(selectedStation, playerId, this.playerName! );
+    this.onStationSelected(selectedStation, this.playerId, this.playerName!);
     
     // Hide the modal
     this.hideModal();
   }
 
-  public showModal(onStationSelected: (layout: string, playerId: string, playerName?: string) => void): void {
+  public showModal(onStationSelected: (layout: string, playerId: string, playerName?: string) => void, playerId: string): void {
     this.onStationSelected = onStationSelected;
+    this.playerId = playerId;
     this.loadJoinContext();
     this.updateJoinContextDisplay();
     
@@ -168,14 +167,6 @@ export class stationSelectorDialog {
       const bootstrapModal = new (window as any).bootstrap.Modal(this.modal);
       bootstrapModal.show();
     }
-  }
-
-  private getOrCreateClientId(): string {
-    // Generate a fresh GUID per app instance (no persistence)
-    if ((crypto as any).randomUUID) {
-      return (crypto as any).randomUUID();
-    }
-    return Tools.generateGuid();
   }
 
   private loadJoinContext(): void {

@@ -5,7 +5,7 @@ import { TrainManager } from "../manager/train_manager";
 import { Renderer } from "../canvas/renderer";
 import Switch from "../sim/switch";
 import Track from "../sim/track";
-import SignalRManager from "../network/signalr";
+import SignalRManager, { JoinRejectedError } from "../network/signalr";
 import Train from "../sim/train";
 import { getSimulationStatus } from "../network/api";
 import { SimulationState } from "../network/dto";
@@ -20,6 +20,7 @@ import { ClientSimulation } from "../core/clientSimulation";
 import TrainRoute from "../sim/trainRoute";
 import Exit from "../sim/exit";
 import SoundsManager from "../manager/sounds_manager";
+import Tools from "./utils";
 
 export class Application {
    private _uiManager: UIManager;
@@ -69,30 +70,37 @@ export class Application {
       try {
          await this._signalRManager.connect();
          const gameCode = (sessionStorage.getItem("gameCode") || "").trim();
-         await this._signalRManager.joinSession(gameCode);
+         const playerId = this.ensureSessionPlayerId();
+         const playerName = (sessionStorage.getItem("playerName") || "").trim();
+         await this._signalRManager.join(gameCode, playerId, playerName || undefined);
+         await this.cleanupStationOnStartup();
          console.log("SignalR connected successfully");
       } catch (error) {
+         if (error instanceof JoinRejectedError && error.reason === "already_connected") {
+            this.showAlreadyConnectedModal(error.message);
+            return;
+         }
          console.error("Failed to connect to SignalR:", error);
       }
 
+      const playerId = this.ensureSessionPlayerId();
        this._uiManager.showStationSelectionScreen(async (layout: string, playerId: string, playerName?: string) => {
           await this.handleStationSelection(layout, playerId, playerName);
-      });
+      }, playerId);
    }
 
    private async handleStationSelection(layout: string, playerId: string, playerName?: string): Promise<void> {
       console.log("Selected layout:", layout, "Player ID:", playerId, "Player Name:", playerName);
       
       try {
-         const gameCode = (sessionStorage.getItem("gameCode") || "").trim();
          // Join the station via SignalR for real-time updates
-         await this._signalRManager.joinStation(playerId, layout, gameCode, playerName);
+         await this._signalRManager.joinStation(layout);
          console.log('Successfully joined station via SignalR');
          
          // Store the player ID and station ID, then load the layout
          this._currentPlayerId = playerId;
          this._currentStationId = layout;
-         this._currentGameCode = gameCode;
+         this._currentGameCode = (sessionStorage.getItem("gameCode") || "").trim();
          this._trackLayoutManager.loadTrackLayout(layout);
          this.setMainCanvasVisible(true);
          
@@ -105,10 +113,45 @@ export class Application {
          this.setMainCanvasVisible(false);
          
          // Show the station selector again if there was an error
+         const persistedPlayerId = this.ensureSessionPlayerId();
           this._uiManager.showStationSelectionScreen(async (layout: string, playerId: string, playerName?: string) => {
              this.handleStationSelection(layout, playerId, playerName);
-         });
+         }, persistedPlayerId);
       }
+   }
+
+   private ensureSessionPlayerId(): string {
+      const existingPlayerId = (sessionStorage.getItem("playerId") || "").trim();
+      if (existingPlayerId.length > 0) {
+         return existingPlayerId;
+      }
+
+      const newPlayerId = typeof crypto.randomUUID === "function"
+         ? crypto.randomUUID()
+         : Tools.generateGuid();
+      sessionStorage.setItem("playerId", newPlayerId);
+      return newPlayerId;
+   }
+
+   private async cleanupStationOnStartup(): Promise<void> {
+      try {
+         await this._signalRManager.leaveStation();
+         console.log("Startup cleanup: previous station ownership released.");
+      } catch (error) {
+         console.warn("Startup cleanup failed while leaving previous station:", error);
+      }
+   }
+
+   private showAlreadyConnectedModal(message: string): void {
+      const modal = new NotificationModal();
+      modal.show(
+         message || "Du bist bereits in einem anderen Browser-Tab verbunden.",
+         "Bereits verbunden",
+         () => {
+            modal.destroy();
+            window.location.href = "index.html";
+         }
+      );
    }
 
    private async initRenderer(): Promise<void> {
@@ -321,7 +364,7 @@ export class Application {
       this._eventManager.emit('trainsUpdated');
    }
 
-   // No server collision handler needed
+   
 
    get uiManager(): UIManager {
       return this._uiManager;
@@ -397,9 +440,10 @@ export class Application {
          this._currentGameCode = null;
 
          // Show station selection again
+         const playerId = this.ensureSessionPlayerId();
          this._uiManager.showStationSelectionScreen(async (layout: string, playerId: string, playerName?: string) => {
             await this.handleStationSelection(layout, playerId, playerName);
-         });
+         }, playerId);
       } catch (err) {
          console.error('Application: Error during resetToStartScreen', err);
       }

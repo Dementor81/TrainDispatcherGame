@@ -4,6 +4,16 @@ import Switch from '../sim/switch';
 import { EventManager } from '../manager/event_manager';
 import { SimulationState } from './dto';
 
+export class JoinRejectedError extends Error {
+    public readonly reason: string;
+
+    constructor(reason: string, message: string) {
+        super(message);
+        this.name = 'JoinRejectedError';
+        this.reason = reason;
+    }
+}
+
 export class SignalRManager {
     private connection: HubConnection | null = null;
     private eventManager: EventManager;
@@ -174,19 +184,41 @@ export class SignalRManager {
         }
     }
 
-    public async joinStation(playerId: string, stationId: string, gameCode: string, playerName?: string): Promise<void> {
+    public async join(gameCode: string, playerId: string, playerName?: string): Promise<void> {
         if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
             throw new Error('SignalR connection not established');
         }
 
         try {
-            await this.connection.invoke('JoinStation', playerId, stationId, gameCode, playerName ?? '');
-            
-            // Store context for reconnection; preserve existing name if none supplied
-            this.playerId = playerId;
-            this.stationId = stationId;
+            const result = await this.connection.invoke('Join', playerId, gameCode, playerName ?? '') as {
+                success?: boolean;
+                errorCode?: string;
+                message?: string;
+            } | null;
+
+            if (!result?.success) {
+                const reason = result?.errorCode ?? 'join_failed';
+                const message = result?.message ?? 'Failed to join game session.';
+                throw new JoinRejectedError(reason, message);
+            }
+
             this.gameCode = gameCode;
+            this.playerId = playerId;
             if (playerName) this.playerName = playerName;
+        } catch (error) {
+            console.error('Failed to join game session:', error);
+            throw error;
+        }
+    }
+
+    public async joinStation(stationId: string): Promise<void> {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+            throw new Error('SignalR connection not established');
+        }
+
+        try {
+            await this.connection.invoke('JoinStation', stationId);
+            this.stationId = stationId;
         } catch (error) {
             console.error('Failed to join station:', error);
             throw error;
@@ -215,10 +247,8 @@ export class SignalRManager {
         try {
             await this.connection.invoke('LeaveStation');
             
-            // Clear stored IDs when leaving station
-            this.playerId = null;
+            // Keep player identity/session context; only clear station ownership.
             this.stationId = null;
-            this.playerName = null;
         } catch (error) {
             console.error('Failed to leave station:', error);
             throw error;
@@ -364,13 +394,18 @@ export class SignalRManager {
     }
 
     private async tryRestoreSessionContext(): Promise<void> {
-        if (this.playerId && this.stationId && this.gameCode) {
-            console.log(`SignalR: Attempting to rejoin station ${this.stationId} as player ${this.playerId}`);
+        if (this.playerId && this.gameCode) {
+            console.log(`SignalR: Attempting to rejoin game ${this.gameCode} as player ${this.playerId}`);
             try {
-                await this.joinStation(this.playerId, this.stationId, this.gameCode, this.playerName ?? undefined);
-                console.log('SignalR: Successfully rejoined station after reconnection');
+                await this.join(this.gameCode, this.playerId, this.playerName ?? undefined);
+                if (this.stationId) {
+                    await this.joinStation(this.stationId);
+                    console.log('SignalR: Successfully rejoined station after reconnection');
+                } else {
+                    console.log('SignalR: Successfully rejoined game after reconnection');
+                }
             } catch (error) {
-                console.error('SignalR: Failed to rejoin station after reconnection:', error);
+                console.error('SignalR: Failed to restore game context after reconnection:', error);
             }
             return;
         }

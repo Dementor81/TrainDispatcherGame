@@ -70,6 +70,36 @@ namespace TrainDispatcherGame.Server.Managers
             }
         }
 
+        public void RegisterOrUpdatePlayer(string playerId, string connectionId, string playerName = "")
+        {
+            if (string.IsNullOrWhiteSpace(playerId))
+            {
+                return;
+            }
+
+            lock (_syncRoot)
+            {
+                if (_players.TryGetValue(playerId, out var existingPlayer))
+                {
+                    if (!string.IsNullOrWhiteSpace(connectionId))
+                    {
+                        existingPlayer.ConnectionId = connectionId;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(playerName))
+                    {
+                        existingPlayer.Name = playerName;
+                    }
+
+                    existingPlayer.IsActive = true;
+                    return;
+                }
+
+                var player = new Player(playerId, string.Empty, connectionId, playerName);
+                _players[playerId] = player;
+            }
+        }
+
         public bool ReleaseStation(string playerId)
         {
             Player? player;

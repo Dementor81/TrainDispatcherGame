@@ -76,11 +76,11 @@ export class UIManager {
         
     }
 
-    showStationSelectionScreen(onSelect: (layout: string, playerId: string, playerName?: string) => void) {
+    showStationSelectionScreen(onSelect: (layout: string, playerId: string, playerName?: string) => void, playerId: string) {
         const modal:stationSelectorDialog = new stationSelectorDialog(this._eventManager);
         modal.showModal((layout: string, playerId: string, playerName?: string) => {
             onSelect(layout, playerId, playerName);
-         });
+         }, playerId);
     }
 
     showControlPanel(): void {

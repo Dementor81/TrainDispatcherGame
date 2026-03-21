@@ -169,6 +169,21 @@ namespace TrainDispatcherGame.Server.Sessions
             return _connectionToSession.TryGetValue(connectionId, out var sessionId) ? sessionId : null;
         }
 
+        public bool IsConnectionBoundToSession(string connectionId, string? sessionId)
+        {
+            if (string.IsNullOrWhiteSpace(connectionId) || !TryNormalizeSessionId(sessionId, out var normalizedSessionId))
+            {
+                return false;
+            }
+
+            if (!_connectionToSession.TryGetValue(connectionId, out var mappedSessionId))
+            {
+                return false;
+            }
+
+            return string.Equals(mappedSessionId, normalizedSessionId, StringComparison.OrdinalIgnoreCase);
+        }
+
         public int GetActiveConnectionCount(string? sessionId)
         {
             if (!TryNormalizeSessionId(sessionId, out var normalizedSessionId))
@@ -221,6 +236,16 @@ namespace TrainDispatcherGame.Server.Sessions
                 return true;
             }
             return false;
+        }
+
+        public bool IsPlayerInTeardownGracePeriod(string sessionId, string playerId)
+        {
+            if (string.IsNullOrWhiteSpace(playerId) || !TryNormalizeSessionId(sessionId, out var normalizedSessionId))
+            {
+                return false;
+            }
+
+            return _pendingTeardowns.ContainsKey(TeardownKey(normalizedSessionId, playerId));
         }
 
         private GameSession CreateSession(string sessionId)
