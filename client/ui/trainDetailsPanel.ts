@@ -31,6 +31,9 @@ export class TrainDetailsPanel extends BasePanel {
 
     this.application.eventManager.on('trainStateChanged', (train: Train) => {
       if (!this._trainNumber || train.number !== this._trainNumber) return;
+      if (train.state == TrainState.EXITING) {
+        this.hide();
+      }
       this._train = train;
       void this.Updates();
     });

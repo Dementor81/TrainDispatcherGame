@@ -458,6 +458,7 @@ export class TrainManager {
       const index = this._trains.findIndex((train) => train.number === trainNumber);
       if (index !== -1) {
          const removedTrain = this._trains.splice(index, 1)[0];
+         this._eventManager.emit("trainsUpdated");
          return true;
       }
       return false;

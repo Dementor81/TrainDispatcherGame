@@ -103,6 +103,9 @@ export class UIManager {
     }
 
     showTrainDetailsPanel(trainNumber: string): void {
+        const train = this._application.trainManager.getTrain(trainNumber);
+        if (train?.isExiting) return;
+
         if (!this._trainDetailsPanel) {
             this._trainDetailsPanel = new TrainDetailsPanel(this._application);
         }

@@ -1,6 +1,6 @@
 Features:
     
-    ☐ if a train becomas another train, display the new train number in the UI
+    ☐ if a train becomes another train, display the new train number in the UI
     ☐ MultipleUnit trains for s_bahn and ice trains
     ☐ touchsupport
     ☐ total delays and train misshapens display for the gamemaster
@@ -24,7 +24,7 @@ Bugs:
 
     ☐ some random delays of trains at the server side
     ☐ the server dispatch does not calculate travel times within stations, from spawnpoint to stoppingpoint
-    ☐ traindetails panel does stay open when the train is exited
+    ✔ traindetails panel does stay open when the train is exited @done(26-03-21 12:50)
     
 
 

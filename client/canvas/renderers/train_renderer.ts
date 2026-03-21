@@ -158,10 +158,14 @@ export class TrainRenderer {
          const g = new PIXI.Graphics();
          g.eventMode = "dynamic";
          g.on("pointerup", () => {
+            const t = this._trainManager.getTrain(train.number);
+            if (!t || t.isExiting) return;
             this._eventManager.emit("trainClicked", train.number);
             console.log(train);
          });
          g.on("pointerover", () => {
+            const t = this._trainManager.getTrain(train.number);
+            if (!t || t.isExiting) return;
             this._canvas.style.cursor = "pointer";
          });
          g.on("pointerout", () => {
