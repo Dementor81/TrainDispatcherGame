@@ -4,7 +4,7 @@ import { SimulationConfig, RendererConfig } from "../core/config";
 import RailPosition from "./railPosition";
 import { TrainType, TrainWayPointActionType } from "../network/dto";
 import { EventManager } from "../manager/event_manager";
-import { TrainManager } from "../manager/train_manager";
+import Tools from "../core/utils";
 
 // Explicit finite state machine state for a train
 export enum TrainState {
@@ -323,6 +323,10 @@ export class Train {
         return true;
     }
 
+    static isHardStoppedState(state: TrainState): boolean {
+        return Tools.is(state, [TrainState.COLLISION, TrainState.DERAILEMENT, TrainState.END_OF_TRACK, TrainState.ENDED, TrainState.MISROUTED]);
+    }
+
     setState(nextState: TrainState, distanceToStop: number | null = null): void {
         if (!this.canTransitionTo(nextState)) return;
         const previousState = this._state;
@@ -332,7 +336,7 @@ export class Train {
             ? null
             : Math.max(0, distanceToStop);
         this._speedAimed = nextState === TrainState.RUNNING ? this.maxAllowedSpeed : 0;
-        if(TrainManager.isHardStoppedState(nextState)) {
+        if(Train.isHardStoppedState(nextState)) {
             this._speedCurrent = 0;
         }
         if (previousState !== nextState) {
