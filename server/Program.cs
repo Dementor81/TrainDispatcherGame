@@ -26,6 +26,7 @@ builder.Services.AddSignalR(options =>
 
 // Add track layout service as a singleton service
 builder.Services.AddSingleton<TrackLayoutService>();
+builder.Services.AddSingleton<LicenceKeyValidator>();
 builder.Services.AddSingleton<GameSessionManager>();
 
 var app = builder.Build();

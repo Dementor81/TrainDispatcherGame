@@ -1,0 +1,4 @@
+#File allows comments
+#one licence key per line
+hans #first key
+dieter

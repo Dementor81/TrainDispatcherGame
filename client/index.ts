@@ -1,4 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
+import * as bootstrap from "bootstrap";
 import "./styles/landing.css";
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -9,9 +10,17 @@ window.addEventListener("DOMContentLoaded", () => {
   const joinButton = document.getElementById("joinGameButton") as HTMLButtonElement | null;
   const hostButton = document.getElementById("hostGameButton") as HTMLButtonElement | null;
 
-  if (!onlineActions || !serverUnavailableMessage || !nameInput || !codeInput || !joinButton || !hostButton) {
+  const licenceKeyModalEl = document.getElementById("licenceKeyModal");
+  const licenceKeyInput = document.getElementById("licenceKeyInput") as HTMLInputElement | null;
+  const licenceKeyError = document.getElementById("licenceKeyError");
+  const confirmHostButton = document.getElementById("confirmHostButton") as HTMLButtonElement | null;
+
+  if (!onlineActions || !serverUnavailableMessage || !nameInput || !codeInput || !joinButton || !hostButton
+    || !licenceKeyModalEl || !licenceKeyInput || !licenceKeyError || !confirmHostButton) {
     return;
   }
+
+  const licenceKeyModal = new bootstrap.Modal(licenceKeyModalEl);
 
   const setServerAvailableState = (isAvailable: boolean) => {
     onlineActions.classList.toggle("d-none", !isAvailable);
@@ -112,14 +121,15 @@ window.addEventListener("DOMContentLoaded", () => {
     window.location.href = "main.html";
   };
 
-  const hostGame = async () => {
-    hostButton.disabled = true;
+  const hostGame = async (licenceKey: string) => {
+    confirmHostButton.disabled = true;
     try {
       const response = await fetch("/api/games", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({ licenceKey }),
       });
 
       if (!response.ok) {
@@ -130,6 +140,14 @@ window.addEventListener("DOMContentLoaded", () => {
         } catch {
           // ignore parse errors and fall back to generic message
         }
+
+        if (response.status === 403) {
+          licenceKeyInput.classList.add("is-invalid");
+          licenceKeyError.textContent = serverMessage || "Ungültiger Lizenzschlüssel.";
+          confirmHostButton.disabled = false;
+          return;
+        }
+
         throw new Error(serverMessage || `Server returned ${response.status}`);
       }
 
@@ -144,24 +162,48 @@ window.addEventListener("DOMContentLoaded", () => {
         sessionStorage.setItem("playerName", playerName);
       }
       sessionStorage.setItem("gmGameCode", gameCode);
+      licenceKeyModal.hide();
       window.location.href = "gameMaster.html";
     } catch (error) {
       console.error("Failed to create game session", error);
       const message = error instanceof Error ? error.message : "Neues Spiel konnte nicht gestartet werden.";
       alert(`Neues Spiel konnte nicht gestartet werden.\n${message}`);
     } finally {
-      hostButton.disabled = false;
+      confirmHostButton.disabled = false;
     }
   };
 
   prefillGameCodeFromUrl();
 
+  const submitLicenceKey = () => {
+    const key = licenceKeyInput.value.trim();
+    if (!key) {
+      licenceKeyInput.classList.add("is-invalid");
+      licenceKeyError.textContent = "Bitte gib einen Lizenzschlüssel ein.";
+      return;
+    }
+    void hostGame(key);
+  };
+
   joinButton.addEventListener("click", () => {
     void joinGame();
   });
   hostButton.addEventListener("click", () => {
-    void hostGame();
+    licenceKeyInput.value = "";
+    licenceKeyInput.classList.remove("is-invalid");
+    licenceKeyModal.show();
   });
+  confirmHostButton.addEventListener("click", submitLicenceKey);
+  licenceKeyInput.addEventListener("input", () => {
+    licenceKeyInput.classList.remove("is-invalid");
+  });
+  licenceKeyInput.addEventListener("keydown", (event: KeyboardEvent) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      submitLicenceKey();
+    }
+  });
+
   nameInput.addEventListener("input", () => clearValidity(nameInput));
   codeInput.addEventListener("input", () => clearValidity(codeInput));
 

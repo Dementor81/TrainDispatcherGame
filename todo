@@ -6,7 +6,7 @@ Features:
     ☐ total delays and train misshapens display for the gamemaster
     ☐ add a signal for the wrong line
     ☐ add a Ignore next signal button to the UI that let trains go over the signal
-    ☐ adding a key to start a new game
+    ✔ adding a key to start a new game @done(26-03-22 09:13)
     ✔ improve the networking code to harden it against short disconnects @done(26-03-21 12:55)
     ✔ handle missrouted trains on client side. maybe it should stop at the exitppoint and the player must confirm  backing up to the station @done(26-03-05 12:17)
     ✔ select a train to see different information @done(26-03-03 07:40)
