@@ -39,6 +39,8 @@ function showInvalidSessionModal(): void {
   const returnButton = modalElement.querySelector("#returnToLandingButton") as HTMLButtonElement;
   returnButton.addEventListener("click", () => {
     sessionStorage.removeItem("gameCode");
+    sessionStorage.removeItem("playerGameCode");
+    sessionStorage.removeItem("gmGameCode");
     window.location.href = "index.html";
   });
 
@@ -49,14 +51,13 @@ function showInvalidSessionModal(): void {
   modal.show();
 }
 
-async function hasValidSessionCode(): Promise<boolean> {
-  let gameCode = (sessionStorage.getItem("gameCode") || "").trim();
+async function hasValidSessionCode(storageKey: string): Promise<boolean> {
+  let gameCode = (sessionStorage.getItem(storageKey) || "").trim();
   if (!gameCode) {
-    // Check if the URL parameter 'testing' is set to 'true'. If so, use DEV101 as gameCode.
     const params = new URLSearchParams(window.location.search);
     if (params.get("testing") === "true") {
       gameCode = "DEV101";
-      sessionStorage.setItem("gameCode", gameCode);
+      sessionStorage.setItem(storageKey, gameCode);
     }
     else {
       return false;
@@ -74,6 +75,10 @@ async function hasValidSessionCode(): Promise<boolean> {
       cache: "no-store",
       signal: controller.signal,
     });
+
+    if (response.ok) {
+      sessionStorage.setItem("gameCode", gameCode);
+    }
     return response.ok;
   } catch {
     return false;
@@ -82,8 +87,8 @@ async function hasValidSessionCode(): Promise<boolean> {
   }
 }
 
-export async function ensureValidSessionOrShowModal(): Promise<boolean> {
-  const validSessionCode = await hasValidSessionCode();
+export async function ensureValidSessionOrShowModal(storageKey: string): Promise<boolean> {
+  const validSessionCode = await hasValidSessionCode(storageKey);
   if (!validSessionCode) {
     showInvalidSessionModal();
     return false;

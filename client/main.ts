@@ -20,7 +20,7 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 window.addEventListener("load", async () => {
-  const validSessionCode = await ensureValidSessionOrShowModal();
+  const validSessionCode = await ensureValidSessionOrShowModal("playerGameCode");
   if (!validSessionCode) {
     return;
   }

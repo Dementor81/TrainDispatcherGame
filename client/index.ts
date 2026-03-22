@@ -108,7 +108,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     sessionStorage.setItem("playerName", playerName);
-    sessionStorage.setItem("gameCode", gameCode);
+    sessionStorage.setItem("playerGameCode", gameCode);
     window.location.href = "main.html";
   };
 
@@ -143,7 +143,7 @@ window.addEventListener("DOMContentLoaded", () => {
       if (playerName) {
         sessionStorage.setItem("playerName", playerName);
       }
-      sessionStorage.setItem("gameCode", gameCode);
+      sessionStorage.setItem("gmGameCode", gameCode);
       window.location.href = "gameMaster.html";
     } catch (error) {
       console.error("Failed to create game session", error);

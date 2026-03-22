@@ -16,7 +16,7 @@ import GameCodePanel from "./gameCodePanel";
 import { ensureValidSessionOrShowModal } from "../core/sessionGuard";
 
 window.addEventListener("load", async () => {
-  const validSessionCode = await ensureValidSessionOrShowModal();
+  const validSessionCode = await ensureValidSessionOrShowModal("gmGameCode");
   if (!validSessionCode) {
     return;
   }
