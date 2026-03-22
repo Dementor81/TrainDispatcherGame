@@ -3,8 +3,11 @@ import Track from "../sim/track";
 
 export class Camera {
    private _isDragging = false;
+   private _isPinching = false;
    private _dragStart = { x: 0, y: 0 };
    private _stageStart = { x: 0, y: 0 };
+   private _pinchStartDistance = 0;
+   private _pinchStartZoom = 1;
    private _currentZoom = 1;
    private _minZoom = 0.1;
    private _maxZoom = 5;
@@ -87,6 +90,29 @@ export class Camera {
 
    handleTouchEnd(): void {
       this._isDragging = false;
+      this._isPinching = false;
+   }
+
+   handlePinchStart(distance: number, midX: number, midY: number): void {
+      this._isDragging = false;
+      this._isPinching = true;
+      this._pinchStartDistance = distance;
+      this._pinchStartZoom = this._currentZoom;
+      this._stageStart = { x: this._stage.x, y: this._stage.y };
+      this._dragStart = { x: midX, y: midY };
+   }
+
+   handlePinchMove(distance: number, midX: number, midY: number): void {
+      if (!this._isPinching) return;
+
+      const scale = distance / this._pinchStartDistance;
+      const newZoom = Math.max(this._minZoom, Math.min(this._maxZoom, this._pinchStartZoom * scale));
+
+      const rect = this._canvas.getBoundingClientRect();
+      const cx = midX - rect.left;
+      const cy = midY - rect.top;
+
+      this.zoomAtPoint(cx, cy, newZoom);
    }
 
    zoomToFit(tracks: Track[], canvasWidth: number, canvasHeight: number): void {

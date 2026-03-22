@@ -64,9 +64,8 @@ export class SwitchRenderer {
       SwitchRenderer.drawSwitch(graphics, sw, options);
 
       switchContainer.eventMode = "static";
-      switchContainer.on("click", (event) => {
+      switchContainer.on("pointertap", (event) => {
          console.log("Switch clicked at:", event.global.x, event.global.y);
-         // Emit switch click event
          this._eventManager.emit("switchClicked", sw);
          this.redrawSwitch(sw);
       });

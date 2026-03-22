@@ -63,6 +63,41 @@ export abstract class BasePanel {
     }
   };
 
+  private readonly onTouchStart = (event: TouchEvent): void => {
+    if (event.touches.length !== 1) return;
+    if (this.isInteractiveTarget(event.target)) return;
+
+    const touch = event.touches[0];
+    const rect = this.container.getBoundingClientRect();
+    this.anchorToTopLeft(rect);
+    this.isDragging = true;
+    this.dragOffsetX = touch.clientX - rect.left;
+    this.dragOffsetY = touch.clientY - rect.top;
+    event.preventDefault();
+  };
+
+  private readonly onTouchMove = (event: TouchEvent): void => {
+    if (!this.isDragging || event.touches.length !== 1) return;
+
+    const touch = event.touches[0];
+    const newLeft = touch.clientX - this.dragOffsetX;
+    const newTop = touch.clientY - this.dragOffsetY;
+
+    this.container.style.transform = "none";
+    this.container.style.right = "unset";
+    this.container.style.bottom = "unset";
+    this.container.style.left = `${newLeft}px`;
+    this.container.style.top = `${newTop}px`;
+  };
+
+  private readonly onTouchEnd = (): void => {
+    const wasDragging = this.isDragging;
+    this.isDragging = false;
+    if (wasDragging) {
+      this.savePosition();
+    }
+  };
+
   constructor(application: Application, options: BasePanelOptions = {}) {
     this.application = application;
     this.updateIntervalMs = options.updateIntervalMs ?? null;
@@ -124,12 +159,18 @@ export abstract class BasePanel {
     this.container.addEventListener("mousedown", this.onMouseDown);
     document.addEventListener("mousemove", this.onMouseMove);
     document.addEventListener("mouseup", this.onMouseUp);
+    this.container.addEventListener("touchstart", this.onTouchStart, { passive: false });
+    document.addEventListener("touchmove", this.onTouchMove, { passive: false });
+    document.addEventListener("touchend", this.onTouchEnd);
   }
 
   private removeDragging(): void {
     this.container.removeEventListener("mousedown", this.onMouseDown);
     document.removeEventListener("mousemove", this.onMouseMove);
     document.removeEventListener("mouseup", this.onMouseUp);
+    this.container.removeEventListener("touchstart", this.onTouchStart);
+    document.removeEventListener("touchmove", this.onTouchMove);
+    document.removeEventListener("touchend", this.onTouchEnd);
   }
 
   private isInteractiveTarget(target: EventTarget | null): boolean {
