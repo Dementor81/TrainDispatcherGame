@@ -290,7 +290,7 @@ export class Application {
             'Verbindung unterbrochen',
             () => {
                modal.destroy();
-               this.resetToStartScreen();
+               window.location.href = '/';
             }
          );
       });
