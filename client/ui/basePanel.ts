@@ -8,23 +8,37 @@ export interface BasePanelOptions {
   bottom?: number;
   left?: number;
   right?: number;
+  resizable?: boolean;
 }
 
 export abstract class BasePanel {
   private static readonly NON_DRAGGABLE_SELECTOR = "button, input, select, textarea, a, .no-drag";
   private static readonly POSITION_STORAGE_PREFIX = "panel-position:";
+  private static readonly MIN_PANEL_WIDTH = 180;
+  private static readonly MIN_PANEL_HEIGHT = 100;
 
   protected container: HTMLDivElement;
   protected isVisible = false;
   protected updateIntervalMs: number | null = null;
   protected updateTimerId: number | null = null;
   protected application: Application;
+  private readonly isResizable: boolean;
+  private resizeHandle: HTMLDivElement | null = null;
   private isDragging = false;
   private dragOffsetX = 0;
   private dragOffsetY = 0;
+  private isResizing = false;
+  private resizeStartX = 0;
+  private resizeStartY = 0;
+  private resizeStartWidth = 0;
+  private resizeStartHeight = 0;
 
   private readonly onMouseDown = (event: MouseEvent): void => {
     if (event.button !== 0) {
+      return;
+    }
+
+    if (this.isResizing) {
       return;
     }
 
@@ -41,6 +55,12 @@ export abstract class BasePanel {
   };
 
   private readonly onMouseMove = (event: MouseEvent): void => {
+    if (this.isResizing) {
+      this.resizeToPointer(event.clientX, event.clientY);
+      event.preventDefault();
+      return;
+    }
+
     if (!this.isDragging) {
       return;
     }
@@ -57,14 +77,17 @@ export abstract class BasePanel {
 
   private readonly onMouseUp = (): void => {
     const wasDragging = this.isDragging;
+    const wasResizing = this.isResizing;
     this.isDragging = false;
-    if (wasDragging) {
-      this.savePosition();
+    this.isResizing = false;
+    if (wasDragging || wasResizing) {
+      this.savePanelState();
     }
   };
 
   private readonly onTouchStart = (event: TouchEvent): void => {
     if (event.touches.length !== 1) return;
+    if (this.isResizing) return;
     if (this.isInteractiveTarget(event.target)) return;
 
     const touch = event.touches[0];
@@ -77,6 +100,13 @@ export abstract class BasePanel {
   };
 
   private readonly onTouchMove = (event: TouchEvent): void => {
+    if (this.isResizing && event.touches.length === 1) {
+      const touch = event.touches[0];
+      this.resizeToPointer(touch.clientX, touch.clientY);
+      event.preventDefault();
+      return;
+    }
+
     if (!this.isDragging || event.touches.length !== 1) return;
 
     const touch = event.touches[0];
@@ -92,15 +122,37 @@ export abstract class BasePanel {
 
   private readonly onTouchEnd = (): void => {
     const wasDragging = this.isDragging;
+    const wasResizing = this.isResizing;
     this.isDragging = false;
-    if (wasDragging) {
-      this.savePosition();
+    this.isResizing = false;
+    if (wasDragging || wasResizing) {
+      this.savePanelState();
     }
+  };
+
+  private readonly onResizeMouseDown = (event: MouseEvent): void => {
+    if (!this.isResizable || event.button !== 0) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    this.beginResize(event.clientX, event.clientY);
+  };
+
+  private readonly onResizeTouchStart = (event: TouchEvent): void => {
+    if (!this.isResizable || event.touches.length !== 1) {
+      return;
+    }
+    const touch = event.touches[0];
+    event.preventDefault();
+    event.stopPropagation();
+    this.beginResize(touch.clientX, touch.clientY);
   };
 
   constructor(application: Application, options: BasePanelOptions = {}) {
     this.application = application;
     this.updateIntervalMs = options.updateIntervalMs ?? null;
+    this.isResizable = options.resizable === true;
     this.container = this.createContainer(options);
     this.initialize();
     document.body.appendChild(this.container);
@@ -110,7 +162,10 @@ export abstract class BasePanel {
 
   private initialize(): void {
     this.container.appendChild(this.createContent());
-    this.restorePosition();
+    if (this.isResizable) {
+      this.createResizeHandle();
+    }
+    this.restorePanelState();
     this.setupDragging();
   }
 
@@ -130,6 +185,15 @@ export abstract class BasePanel {
     };
     Object.assign(container.style, containerStyles);
     return container;
+  }
+
+  private createResizeHandle(): void {
+    const handle = document.createElement("div");
+    handle.className = "base-panel-resize-handle no-drag";
+    handle.addEventListener("mousedown", this.onResizeMouseDown);
+    handle.addEventListener("touchstart", this.onResizeTouchStart, { passive: false });
+    this.container.appendChild(handle);
+    this.resizeHandle = handle;
   }
 
   private toPx(value: number | undefined): string | undefined {
@@ -171,6 +235,11 @@ export abstract class BasePanel {
     this.container.removeEventListener("touchstart", this.onTouchStart);
     document.removeEventListener("touchmove", this.onTouchMove);
     document.removeEventListener("touchend", this.onTouchEnd);
+    if (this.resizeHandle) {
+      this.resizeHandle.removeEventListener("mousedown", this.onResizeMouseDown);
+      this.resizeHandle.removeEventListener("touchstart", this.onResizeTouchStart);
+      this.resizeHandle = null;
+    }
   }
 
   private isInteractiveTarget(target: EventTarget | null): boolean {
@@ -202,45 +271,109 @@ export abstract class BasePanel {
     };
   }
 
-  private savePosition(): void {
+  private beginResize(pointerX: number, pointerY: number): void {
+    const rect = this.container.getBoundingClientRect();
+    this.anchorToTopLeft(rect);
+    this.isDragging = false;
+    this.isResizing = true;
+    this.resizeStartX = pointerX;
+    this.resizeStartY = pointerY;
+    this.resizeStartWidth = rect.width;
+    this.resizeStartHeight = rect.height;
+  }
+
+  private clampPanelSize(width: number, height: number): { width: number; height: number } {
+    const rect = this.container.getBoundingClientRect();
+    const maxWidth = Math.max(BasePanel.MIN_PANEL_WIDTH, window.innerWidth - rect.left);
+    const maxHeight = Math.max(BasePanel.MIN_PANEL_HEIGHT, window.innerHeight - rect.top);
+
+    return {
+      width: Math.min(Math.max(BasePanel.MIN_PANEL_WIDTH, width), maxWidth),
+      height: Math.min(Math.max(BasePanel.MIN_PANEL_HEIGHT, height), maxHeight)
+    };
+  }
+
+  private resizeToPointer(pointerX: number, pointerY: number): void {
+    if (!this.isResizable) {
+      return;
+    }
+
+    const deltaX = pointerX - this.resizeStartX;
+    const deltaY = pointerY - this.resizeStartY;
+    const nextWidth = this.resizeStartWidth + deltaX;
+    const nextHeight = this.resizeStartHeight + deltaY;
+    const clamped = this.clampPanelSize(nextWidth, nextHeight);
+    this.container.style.width = `${clamped.width}px`;
+    this.container.style.height = `${clamped.height}px`;
+  }
+
+  private savePanelState(): void {
     const left = this.parsePx(this.container.style.left);
     const top = this.parsePx(this.container.style.top);
-    if (left === null || top === null) {
+    const payload: { left?: number; top?: number; width?: number; height?: number } = {};
+
+    if (left !== null && top !== null) {
+      payload.left = left;
+      payload.top = top;
+    }
+
+    if (this.isResizable) {
+      const rect = this.container.getBoundingClientRect();
+      const clamped = this.clampPanelSize(rect.width, rect.height);
+      payload.width = Math.round(clamped.width);
+      payload.height = Math.round(clamped.height);
+    }
+
+    if (Object.keys(payload).length === 0) {
       return;
     }
 
     try {
-      const payload = JSON.stringify({ left, top });
-      localStorage.setItem(this.getStorageKey(), payload);
+      localStorage.setItem(this.getStorageKey(), JSON.stringify(payload));
     } catch {
       // Ignore storage failures and keep panel draggable.
     }
   }
 
-  private restorePosition(): boolean {
+  private restorePanelState(): boolean {
     try {
       const raw = localStorage.getItem(this.getStorageKey());
       if (!raw) {
         return false;
       }
 
-      const parsed = JSON.parse(raw) as { left?: unknown; top?: unknown };
-      if (typeof parsed.left !== "number" || typeof parsed.top !== "number") {
-        return false;
+      const parsed = JSON.parse(raw) as { left?: unknown; top?: unknown; width?: unknown; height?: unknown };
+      let restored = false;
+
+      if (
+        this.isResizable &&
+        typeof parsed.width === "number" &&
+        typeof parsed.height === "number" &&
+        Number.isFinite(parsed.width) &&
+        Number.isFinite(parsed.height)
+      ) {
+        const clamped = this.clampPanelSize(parsed.width, parsed.height);
+        this.container.style.width = `${clamped.width}px`;
+        this.container.style.height = `${clamped.height}px`;
+        restored = true;
       }
 
-      if (!Number.isFinite(parsed.left) || !Number.isFinite(parsed.top)) {
-        return false;
+      if (
+        typeof parsed.left === "number" &&
+        typeof parsed.top === "number" &&
+        Number.isFinite(parsed.left) &&
+        Number.isFinite(parsed.top)
+      ) {
+        const safePosition = this.clampToViewport(parsed.left, parsed.top);
+        this.container.style.transform = "none";
+        this.container.style.right = "unset";
+        this.container.style.bottom = "unset";
+        this.container.style.left = `${safePosition.left}px`;
+        this.container.style.top = `${safePosition.top}px`;
+        restored = true;
       }
 
-      const safePosition = this.clampToViewport(parsed.left, parsed.top);
-
-      this.container.style.transform = "none";
-      this.container.style.right = "unset";
-      this.container.style.bottom = "unset";
-      this.container.style.left = `${safePosition.left}px`;
-      this.container.style.top = `${safePosition.top}px`;
-      return true;
+      return restored;
     } catch {
       // Ignore malformed payloads and continue with defaults.
       return false;

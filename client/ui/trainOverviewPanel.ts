@@ -14,6 +14,7 @@ export class TrainOverviewPanel extends BasePanel {
       height: 300,
       top: 0,
       right: 0,
+      resizable: true,
     });
     application.eventManager.on('simulationStateChanged', (state: string) => {
       if (state.toLowerCase() === 'running') {
@@ -36,7 +37,7 @@ export class TrainOverviewPanel extends BasePanel {
 
     const trainsList = document.createElement('div');
     trainsList.id = 'trainsList';
-    trainsList.className = 'trains-list';
+    trainsList.className = 'trains-list no-drag';
 
     // Click on a train row opens the train details panel
     trainsList.addEventListener('click', (e: MouseEvent) => {
