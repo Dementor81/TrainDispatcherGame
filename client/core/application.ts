@@ -101,7 +101,8 @@ export class Application {
          this._currentPlayerId = playerId;
          this._currentStationId = layout;
          this._currentGameCode = (sessionStorage.getItem("gameCode") || "").trim();
-         this._trackLayoutManager.loadTrackLayout(layout);
+         await this._trackLayoutManager.loadTrackLayout(layout);
+         this._renderer?.renderTrackLayout();
          this.setMainCanvasVisible(true);
          
          // Show the control panel and train overview panel after successfully joining a station
@@ -160,14 +161,7 @@ export class Application {
          this._renderer = await Renderer.create(canvas, this._trackLayoutManager, this._eventManager, this._trainManager);
          this._trackLayoutManager.setRenderer(this._renderer);
          this.setMainCanvasVisible(false);
-         
-         // Set up callback to render when layout is loaded
-         this._trackLayoutManager.setOnLayoutLoaded(() => {
-            if (this._renderer) {
-               this._renderer.renderTrackLayout();
-            }
-         });
-         
+
          console.log("Renderer initialized");
       } else {
          console.error("Canvas element not found");

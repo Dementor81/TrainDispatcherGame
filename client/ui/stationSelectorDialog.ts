@@ -1,6 +1,12 @@
 import { fetchAvailableStations, fetchControlledStations } from "../network/api";
 import { EventManager } from "../manager/event_manager";
 import { PlayerControlledStationDto } from "../network/dto";
+import { StationPreviewService } from "./stationPreviewService";
+
+type StationPreviewElements = {
+  card: HTMLDivElement;
+  status: HTMLDivElement;
+};
 
 export class stationSelectorDialog {
   private modal: HTMLElement | null = null;
@@ -14,8 +20,7 @@ export class stationSelectorDialog {
   private stationPlayersTableBody: HTMLElement | null = null;
   private onStationSelected: ((layout: string, playerId: string, playerName?: string) => void) | null = null;
   private playerId: string | null = null;
-  private previewCache: Map<string, string> = new Map();
-  private previewLoadingStations: Set<string> = new Set();
+  private readonly stationPreviewService: StationPreviewService;
   private stationOrder: string[] = [];
   private takenStationIds: Set<string> = new Set();
   private playerName: string | null = null;
@@ -28,6 +33,7 @@ export class stationSelectorDialog {
 
   constructor(eventManager: EventManager) {
     this.eventManager = eventManager;
+    this.stationPreviewService = new StationPreviewService();
     this.initializeElements();
     this.setupEventListeners();
   }
@@ -57,6 +63,7 @@ export class stationSelectorDialog {
       });
       this.modal.addEventListener('hidden.bs.modal', () => {
         this.eventManager.off('playerStationChanged', this.onPlayerStationChanged);
+        this.stationPreviewService.clearCache();
       });
     }
 
@@ -90,50 +97,20 @@ export class stationSelectorDialog {
         return;
       }
 
+      const indicatorsFragment = document.createDocumentFragment();
+      const slidesFragment = document.createDocumentFragment();
+
       stations.forEach((station, index) => {
-        const indicator = document.createElement('button');
-        indicator.type = 'button';
-        indicator.setAttribute('data-bs-target', '#stationCarousel');
-        indicator.setAttribute('data-bs-slide-to', index.toString());
-        indicator.setAttribute('aria-label', `Station ${index + 1}`);
-        if (index === 0) {
-          indicator.classList.add('active');
-          indicator.setAttribute('aria-current', 'true');
-        }
-        indicator.dataset.stationId = (station.id || '').toLowerCase();
-        this.carouselIndicators!.appendChild(indicator);
-        this.stationOrder.push((station.id || '').toLowerCase());
-
-        const item = document.createElement('div');
-        item.className = `carousel-item${index === 0 ? ' active' : ''}`;
-        item.dataset.stationId = station.id;
-
-        const card = document.createElement('div');
-        card.className = 'station-carousel-slide d-flex flex-column justify-content-end';
-        card.style.backgroundImage = '';
-
-        const previewStatus = document.createElement('div');
-        previewStatus.className = 'station-preview-status';
-        previewStatus.textContent = 'Vorschau bereit zum Laden';
-
-        const caption = document.createElement('div');
-        caption.className = 'station-carousel-caption text-center';
-
-        const title = document.createElement('h5');
-        title.className = 'mb-2';
-        title.textContent = station.name || station.id;
-
-        const description = document.createElement('p');
-        description.className = 'mb-0';
-        description.textContent = station.description?.trim() || 'Keine Beschreibung verfügbar.';
-
-        caption.appendChild(title);
-        caption.appendChild(description);
-        card.appendChild(previewStatus);
-        card.appendChild(caption);
-        item.appendChild(card);
-        this.carouselInner!.appendChild(item);
+        const stationId = station.id || '';
+        const indicator = this.createCarouselIndicator(index, stationId);
+        const slide = this.createStationSlide(station.id, station.name, station.description, index === 0);
+        indicatorsFragment.appendChild(indicator);
+        slidesFragment.appendChild(slide);
+        this.stationOrder.push(stationId);
       });
+
+      this.carouselIndicators.appendChild(indicatorsFragment);
+      this.carouselInner.appendChild(slidesFragment);
 
       this.updateStationIndicators(controlledStations);
       this.updateStartButtonForCurrentSelection();
@@ -289,14 +266,14 @@ export class stationSelectorDialog {
 
     const takenStations = new Set(
       controlledStations
-        .map((entry) => (entry.stationId || '').toLowerCase())
+        .map((entry) => entry.stationId || '')
         .filter((stationId) => stationId.length > 0)
     );
     this.takenStationIds = takenStations;
 
     const indicators = Array.from(this.carouselIndicators.querySelectorAll('button[data-bs-slide-to]')) as HTMLButtonElement[];
     indicators.forEach((indicator, index) => {
-      const stationId = (this.stationOrder[index] || indicator.dataset.stationId || '').toLowerCase();
+      const stationId = this.stationOrder[index] || indicator.dataset.stationId || '';
       const isTaken = stationId.length > 0 && takenStations.has(stationId);
       indicator.classList.toggle('station-indicator-taken', isTaken);
       indicator.classList.toggle('station-indicator-available', !isTaken);
@@ -310,13 +287,12 @@ export class stationSelectorDialog {
   }
 
   private updateStartButtonForStation(stationId: string): void {
-    const normalizedStationId = (stationId || '').toLowerCase();
-    if (!normalizedStationId) {
+    if (!stationId) {
       this.setStartEnabled(false);
       return;
     }
 
-    this.setStartEnabled(!this.takenStationIds.has(normalizedStationId));
+    this.setStartEnabled(!this.takenStationIds.has(stationId));
   }
 
 
@@ -324,72 +300,104 @@ export class stationSelectorDialog {
 
 
   private async loadPreviewForSlideItem(slideItem: HTMLElement): Promise<void> {
-    const stationId = slideItem.dataset.stationId?.trim() ?? '';
+    const stationId = slideItem.dataset.stationId ?? '';
     if (!stationId) {
       return;
     }
 
-    const previewCard = slideItem.querySelector('.station-carousel-slide') as HTMLDivElement | null;
-    const previewStatus = slideItem.querySelector('.station-preview-status') as HTMLDivElement | null;
-    if (!previewCard || !previewStatus) {
+    const preview = this.getPreviewElements(slideItem);
+    if (!preview) {
       return;
     }
 
-    const cachedPreview = this.previewCache.get(stationId);
-    if (cachedPreview) {
-      this.showPreviewImage(previewCard, previewStatus, cachedPreview);
+    if (this.hasRenderedPreview(preview)) {
       return;
     }
 
-    if (this.previewLoadingStations.has(stationId)) {
-      this.showPreviewLoading(previewStatus, 'Vorschau wird geladen...');
-      return;
-    }
-
-    this.previewLoadingStations.add(stationId);
-    this.showPreviewLoading(previewStatus, 'Vorschau wird geladen...');
+    this.showPreviewLoading(preview, 'Vorschau wird geladen...');
     try {
-      const previewUrl = await this.generateStationPreview(stationId);
-      this.previewCache.set(stationId, previewUrl);
-      this.showPreviewImage(previewCard, previewStatus, previewUrl);
+      const previewUrl = await this.stationPreviewService.loadPreview(stationId);
+      this.showPreviewImage(preview, previewUrl);
     } catch (error) {
       console.error(`Failed to generate preview for station ${stationId}:`, error);
-      this.showPreviewError(previewCard, previewStatus, 'Vorschau konnte nicht geladen werden');
-    } finally {
-      this.previewLoadingStations.delete(stationId);
+      this.showPreviewError(preview, 'Vorschau konnte nicht geladen werden');
     }
   }
 
-  private showPreviewLoading(previewStatus: HTMLDivElement, text: string): void {
-    previewStatus.classList.remove('d-none');
-    previewStatus.textContent = text;
-  }
-
-  private showPreviewImage(previewCard: HTMLDivElement, previewStatus: HTMLDivElement, imageUrl: string): void {
-    previewCard.style.backgroundImage = `url("${imageUrl}")`;
-    previewStatus.classList.add('d-none');
-  }
-
-  private showPreviewError(previewCard: HTMLDivElement, previewStatus: HTMLDivElement, text: string): void {
-    previewCard.style.backgroundImage = '';
-    previewStatus.classList.remove('d-none');
-    previewStatus.textContent = text;
-  }
-
-  private async generateStationPreview(stationId: string): Promise<string> {
-    const app = (window as any).app as any;
-    if (!app?.trackLayoutManager || !app?.renderer) {
-      throw new Error('Preview renderer is not ready');
+  private getPreviewElements(slideItem: HTMLElement): StationPreviewElements | null {
+    const card = slideItem.querySelector('.station-carousel-slide') as HTMLDivElement | null;
+    const status = slideItem.querySelector('.station-preview-status') as HTMLDivElement | null;
+    if (!card || !status) {
+      return null;
     }
 
-    await app.trackLayoutManager.loadTrackLayout(stationId);
-    await this.waitForNextFrame();
-    return app.renderer.capturePreview();
+    return { card, status };
   }
 
-  private waitForNextFrame(): Promise<void> {
-    return new Promise((resolve) => {
-      requestAnimationFrame(() => resolve());
-    });
+  private showPreviewLoading(preview: StationPreviewElements, text: string): void {
+    preview.status.classList.remove('d-none');
+    preview.status.textContent = text;
   }
-} 
+
+  private showPreviewImage(preview: StationPreviewElements, imageUrl: string): void {
+    preview.card.style.backgroundImage = `url("${imageUrl}")`;
+    preview.status.classList.add('d-none');
+  }
+
+  private showPreviewError(preview: StationPreviewElements, text: string): void {
+    preview.card.style.backgroundImage = '';
+    preview.status.classList.remove('d-none');
+    preview.status.textContent = text;
+  }
+
+  private hasRenderedPreview(preview: StationPreviewElements): boolean {
+    return preview.card.style.backgroundImage.length > 0;
+  }
+
+  private createCarouselIndicator(index: number, stationId: string): HTMLButtonElement {
+    const indicator = document.createElement('button');
+    indicator.type = 'button';
+    indicator.setAttribute('data-bs-target', '#stationCarousel');
+    indicator.setAttribute('data-bs-slide-to', index.toString());
+    indicator.setAttribute('aria-label', `Station ${index + 1}`);
+    if (index === 0) {
+      indicator.classList.add('active');
+      indicator.setAttribute('aria-current', 'true');
+    }
+    indicator.dataset.stationId = stationId;
+    return indicator;
+  }
+
+  private createStationSlide(stationId: string, stationName: string | undefined, stationDescription: string | undefined, isActive: boolean): HTMLDivElement {
+    const item = document.createElement('div');
+    item.className = `carousel-item${isActive ? ' active' : ''}`;
+    item.dataset.stationId = stationId;
+
+    const card = document.createElement('div');
+    card.className = 'station-carousel-slide d-flex flex-column justify-content-end';
+    card.style.backgroundImage = '';
+
+    const previewStatus = document.createElement('div');
+    previewStatus.className = 'station-preview-status';
+    previewStatus.textContent = 'Vorschau bereit zum Laden';
+
+    const caption = document.createElement('div');
+    caption.className = 'station-carousel-caption text-center';
+
+    const title = document.createElement('h5');
+    title.className = 'mb-2';
+    title.textContent = stationName || stationId;
+
+    const description = document.createElement('p');
+    description.className = 'mb-0';
+    description.textContent = stationDescription?.trim() || 'Keine Beschreibung verfügbar.';
+
+    caption.appendChild(title);
+    caption.appendChild(description);
+    card.appendChild(previewStatus);
+    card.appendChild(caption);
+    item.appendChild(card);
+
+    return item;
+  }
+}

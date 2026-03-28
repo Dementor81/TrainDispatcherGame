@@ -141,6 +141,14 @@ body {
     color: #f8f9fa;
 }
 
+#stationSelectModal .modal-body {
+    padding: 0;
+}
+
+#stationSelectModal .player-list {
+    padding: 0 1rem 0rem 1rem;
+}
+
 #stationCarousel {
     overflow: hidden;
     padding-bottom: 2.25rem; /* for the carousel indicators */
@@ -148,16 +156,17 @@ body {
 
 .carousel-control-prev-icon, .carousel-control-next-icon {
     background-size: 200% 200%;
+    margin-bottom: 3rem;
 }
 
 .station-carousel-slide {
-    min-height: 400px;
+    min-height: clamp(180px, 40vh, 400px);
     color: #f8f9fa;
     position: relative;
     padding: 1rem;
     overflow: hidden;
-    background-size: cover;
-    background-position: center;
+    background-size: 120% auto;
+    background-position: center center;
     background-repeat: no-repeat;
 }
 
@@ -171,7 +180,6 @@ body {
     text-align: center;
     color: rgba(248, 249, 250, 0.9);
     font-size: 0.9rem;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35));
 }
 
 .station-carousel-caption {
@@ -196,7 +204,7 @@ body {
 #stationCarousel .carousel-control-prev,
 #stationCarousel .carousel-control-next {
     width: 50px;
-    opacity: 1;
+    align-items: end;
 }
 
 #stationCarousel .carousel-indicators [data-bs-target] {
@@ -254,7 +262,7 @@ body {
 
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
     #controlPanel {
         min-width: 280px !important;
         max-width: 350px !important;
@@ -270,17 +278,21 @@ body {
         max-width: 350px !important;
     }
 
-    .station-carousel-slide {
-        min-height: 280px;
-        padding: 0.75rem;
+    .station-select-modal-dialog {
+        margin: 1rem;
     }
 
-    .station-preview-status {
-        font-size: 0.8rem;
+
+
+}
+
+@media (max-height: 800px) {
+
+    .modal-title {
+        font-size: clamp(0.5rem, 1.25rem, 2vh);
     }
 
-    .station-player-table .table-responsive {
-        max-height: 140px;
+    .modal-header {
+        padding: 0.1rem;
     }
-
 }

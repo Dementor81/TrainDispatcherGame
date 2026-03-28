@@ -6,6 +6,7 @@ Features:
     ☐ total delays and train misshapens display for the gamemaster
     ☐ add a signal for the wrong line
     ☐ add a Ignore next signal button to the UI that let trains go over the signal
+    ☐ reduce the amount of requests to the server (upcoming trains and status are requested too often)
     ✔ adding a key to start a new game @done(26-03-22 09:13)
     ✔ improve the networking code to harden it against short disconnects @done(26-03-21 12:55)
     ✔ handle missrouted trains on client side. maybe it should stop at the exitppoint and the player must confirm  backing up to the station @done(26-03-05 12:17)
@@ -24,6 +25,7 @@ Bugs:
 
     ☐ some random delays of trains at the server side
     ☐ the server dispatch does not calculate travel times within stations, from spawnpoint to stoppingpoint
+    ☐ fix UI on tablet
     ✔ traindetails panel does stay open when the train is exited @done(26-03-21 12:50)
     
 

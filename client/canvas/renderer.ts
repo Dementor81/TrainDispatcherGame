@@ -135,7 +135,7 @@ export class Renderer {
    private handleWebGLContextLost = (e: Event): void => {
       try {
          (e as any).preventDefault?.();
-      } catch {}
+      } catch { }
       console.warn("Renderer: WebGL context lost. Preventing default and awaiting restore.");
    };
 
@@ -147,7 +147,7 @@ export class Renderer {
       this.renderTrains();
    };
 
-   public renderTrackLayout(): void {
+   public renderTrackLayout(preview: boolean = false): void {
       // Clear previous content
       this.clear();
 
@@ -155,8 +155,10 @@ export class Renderer {
       const switches = this._trackLayoutManager.switches;
       const platforms = this._trackLayoutManager.platforms;
 
-      // Render station name
-      this._stationRenderer.renderStationName();
+      // Render station name for normal gameplay rendering.
+      if (!preview) {
+         this._stationRenderer.renderStationName();
+      }
 
       // Render tracks
       this._trackRenderer.renderAll(tracks);
@@ -164,9 +166,10 @@ export class Renderer {
       // Render platforms (on top of tracks, below switches/signals)
       this._platformRenderer.renderAll(platforms);
 
-      // Render switches
-      this._switchRenderer.renderAll(switches);
-
+      if (!preview) {
+         // Render switches
+         this._switchRenderer.renderAll(switches);
+      }
       // Render signals
       this._signalRenderer.renderAll(tracks);
 
@@ -210,55 +213,20 @@ export class Renderer {
       this._camera.setZoom(zoom);
    }
 
-   public capturePreview(): string {
-      this.renderTrackLayout();
+   public async capturePreview(): Promise<string> {
+      this.renderTrackLayout(true);
+      await this.waitForNextFrame();
+      const extract = (this._pixiApp.renderer as any)?.extract;
 
-      const sourceCanvas = this._pixiApp.canvas;
-      const sourceWidth = sourceCanvas.width;
-      const sourceHeight = sourceCanvas.height;
+      return await extract.base64({
+         target: this._pixiApp.stage,
+         format: 'png',
+      });
+   }
 
-      if (sourceWidth <= 0 || sourceHeight <= 0) {
-         throw new Error("Canvas has invalid size");
-      }
-
-      const targetWidth = 1280;
-      const targetHeight = 300;
-      const sourceAspect = sourceWidth / sourceHeight;
-      const targetAspect = targetWidth / targetHeight;
-
-      let cropWidth = sourceWidth;
-      let cropHeight = sourceHeight;
-      let cropX = 0;
-      let cropY = 0;
-
-      if (sourceAspect > targetAspect) {
-         cropWidth = sourceHeight * targetAspect;
-         cropX = (sourceWidth - cropWidth) / 2;
-      } else if (sourceAspect < targetAspect) {
-         cropHeight = sourceWidth / targetAspect;
-         cropY = (sourceHeight - cropHeight) / 2;
-      }
-
-      const previewCanvas = document.createElement('canvas');
-      previewCanvas.width = targetWidth;
-      previewCanvas.height = targetHeight;
-      const context = previewCanvas.getContext('2d');
-      if (!context) {
-         throw new Error("Failed to create preview context");
-      }
-
-      context.drawImage(
-         sourceCanvas,
-         cropX,
-         cropY,
-         cropWidth,
-         cropHeight,
-         0,
-         0,
-         targetWidth,
-         targetHeight
-      );
-
-      return previewCanvas.toDataURL('image/png');
+   private waitForNextFrame(): Promise<void> {
+      return new Promise((resolve) => {
+         requestAnimationFrame(() => resolve());
+      });
    }
 }

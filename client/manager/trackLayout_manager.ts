@@ -25,7 +25,6 @@ export class TrackLayoutManager {
    private _platforms: PlatformDto[] = [];
    private _layoutId: string = "";
    private _renderer: Renderer | null = null;
-   private _onLayoutLoaded: (() => void) | null = null;
    private _application: Application;
    private _connections: NetworkConnectionDto[] = [];
 
@@ -67,10 +66,6 @@ export class TrackLayoutManager {
             
          }
       });
-   }
-
-   setOnLayoutLoaded(callback: () => void): void {
-      this._onLayoutLoaded = callback;
    }
 
    get tracks(): Track[] {
@@ -189,10 +184,6 @@ export class TrackLayoutManager {
       // Assign connections to exit points
       this.assignConnectionsToExits();
 
-      // Notify that layout is loaded
-      if (this._onLayoutLoaded) {
-         this._onLayoutLoaded();
-      }
       } catch (error) {
          console.error("Failed to load track layout:", error);
       }
