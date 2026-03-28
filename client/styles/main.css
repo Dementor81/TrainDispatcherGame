@@ -309,9 +309,8 @@ body {
         padding: 0.25rem 0.5rem;
     }
 
-    #trainOverviewPanel {
-        min-width: 280px !important;
-        max-width: 350px !important;
+    #TrainOverviewPanel table {
+        font-size: small;
     }
 
     .station-select-modal-dialog {
