@@ -107,7 +107,7 @@ namespace TrainDispatcherGame.Server.Services
                             var model = new TrackLayout
                             {
                                 Id = stationId,  // Use stationId from network file, not dto.Id
-                                Name = string.IsNullOrWhiteSpace(station.Name) ? stationId : station.Name.Trim(),
+                                Name = stationId,
                                 Description = station.Description?.Trim() ?? string.Empty,
                                 Tracks = dto.Tracks ?? new List<TrackDto>(),
                                 Switches = dto.Switches ?? new List<SwitchDto>(),
@@ -213,7 +213,6 @@ namespace TrainDispatcherGame.Server.Services
                             requiredStations.Add(new NetworkStationDto
                             {
                                 Id = normalizedStationId,
-                                Name = string.IsNullOrWhiteSpace(station.Name) ? normalizedStationId : station.Name.Trim(),
                                 Description = station.Description?.Trim() ?? string.Empty
                             });
                         }

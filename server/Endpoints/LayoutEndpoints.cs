@@ -39,7 +39,7 @@ namespace TrainDispatcherGame.Server.Endpoints
                 var stations = layouts.Select(layout => new
                 {
                     id = layout.Id,
-                    name = string.IsNullOrWhiteSpace(layout.Name) ? layout.Id : layout.Name,
+                    name = layout.Id,
                     description = layout.Description ?? string.Empty
                 }).ToList();
 
