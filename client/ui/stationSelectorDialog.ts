@@ -93,7 +93,7 @@ export class stationSelectorDialog {
       const controlledStations = await this.refreshControlledStations();
 
       if (stations.length === 0) {
-        this.renderStatusSlide('Fehler.', 'Beim Laden der Bahnhöfe ist ein Fehler aufgetreten.');
+        this.ShowError();
         return;
       }
 
@@ -120,7 +120,7 @@ export class stationSelectorDialog {
       }
     } catch (error) {
       console.error('Failed to load stations:', error);
-      this.renderStatusSlide('Fehler.', 'Beim Laden der Bahnhöfe ist ein Fehler aufgetreten.');
+      this.ShowError();
     }
   }
 
@@ -175,34 +175,12 @@ export class stationSelectorDialog {
     return activeItem?.dataset.stationId ?? '';
   }
 
-  private renderStatusSlide(title: string, description: string): void {
+  private ShowError(): void {
     if (!this.carouselInner) {
       return;
     }
-
-    const item = document.createElement('div');
-    item.className = 'carousel-item active';
-
-    const card = document.createElement('div');
-    card.className = 'station-carousel-slide d-flex flex-column justify-content-center';
-
-    const caption = document.createElement('div');
-    caption.className = 'station-carousel-caption text-center';
-
-    const heading = document.createElement('h5');
-    heading.className = 'mb-2';
-    heading.textContent = title;
-
-    const message = document.createElement('p');
-    message.className = 'mb-0';
-    message.textContent = description;
-
-    caption.appendChild(heading);
-    caption.appendChild(message);
-    card.appendChild(caption);
-    item.appendChild(card);
-    this.carouselInner.innerHTML = '';
-    this.carouselInner.appendChild(item);
+    this.carouselInner.innerHTML = 'Beim Laden der Bahnhöfe ist ein Fehler aufgetreten.';
+    
     this.setStartEnabled(false);
   }
 
@@ -374,8 +352,7 @@ export class stationSelectorDialog {
     item.dataset.stationId = stationId;
 
     const card = document.createElement('div');
-    card.className = 'station-carousel-slide d-flex flex-column justify-content-end';
-    card.style.backgroundImage = '';
+    card.className = 'station-carousel-slide';
 
     const previewStatus = document.createElement('div');
     previewStatus.className = 'station-preview-status';
