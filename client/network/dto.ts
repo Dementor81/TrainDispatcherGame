@@ -103,6 +103,7 @@ export interface TrainDetailsDto {
   type: TrainType | string;
   cars: number;
   speedMax: number; // m/s
+  followingTrainNumber?: string | null;
 }
 
 export enum LogLevel {

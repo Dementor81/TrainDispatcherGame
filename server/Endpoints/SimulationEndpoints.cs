@@ -269,7 +269,8 @@ namespace TrainDispatcherGame.Server.Endpoints
                     Category = train.Category,
                     Type = train.Type.ToString(),
                     Cars = train.Cars,
-                    SpeedMax = train.Speed
+                    SpeedMax = train.Speed,
+                    FollowingTrainNumber = train.FollowingTrainNumber
                 });
             });
 

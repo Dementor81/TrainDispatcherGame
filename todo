@@ -1,11 +1,11 @@
 Features:
     
-    ☐ if a train becomes another train, display the new train number in the UI
     ☐ MultipleUnit trains for s_bahn and ice trains
     ☐ total delays and train misshapens display for the gamemaster
     ☐ add a signal for the wrong line
     ☐ add a Ignore next signal button to the UI that let trains go over the signal
     ☐ reduce the amount of requests to the server (upcoming trains and status are requested too often)
+    ✔ if a train becomes another train, display the new train number in the UI @done(26-03-29 13:07)
     ✔ touchsupport @done(26-03-28 19:04)
     ✔ adding a key to start a new game @done(26-03-22 09:13)
     ✔ improve the networking code to harden it against short disconnects @done(26-03-21 12:55)

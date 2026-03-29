@@ -240,6 +240,7 @@ export class TrainDetailsPanel extends BasePanel {
       table.appendChild(tbody);
 
       timetableContainer.appendChild(table);
+      this.renderTurnaroundHint(timetableContainer, trainDetails.followingTrainNumber);
       this._timetableLoadedForTrainNumber = requestedTrainNumber;
 
     } catch (error) {
@@ -359,6 +360,18 @@ export class TrainDetailsPanel extends BasePanel {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  private renderTurnaroundHint(
+    container: HTMLDivElement,
+    followingTrainNumber: string | null | undefined
+  ): void {
+    if (!followingTrainNumber) return;
+
+    const hint = document.createElement('div');
+    hint.className = 'small text-secondary mt-1';
+    hint.textContent = `Wendet auf ${followingTrainNumber}`;
+    container.appendChild(hint);
   }
 
   private formatTrainSpeed(speedMetersPerSecond: number | null | undefined): string {
