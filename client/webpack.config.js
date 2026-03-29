@@ -1,9 +1,12 @@
 const path = require("path");
+const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const packageJson = require("./package.json");
 
 module.exports = (env, argv) => {
    const isProduction = argv.mode === "production";
    const apiProxyTarget = process.env.API_PROXY_TARGET || "http://localhost:5070";
+   const appVersion = packageJson.version || "0.0.0";
 
    return {
       entry: {
@@ -53,6 +56,9 @@ module.exports = (env, argv) => {
          ],
       },
       plugins: [
+         new webpack.DefinePlugin({
+            __APP_VERSION__: JSON.stringify(appVersion),
+         }),
          new HtmlWebpackPlugin({
             template: "index.html",
             filename: "index.html",

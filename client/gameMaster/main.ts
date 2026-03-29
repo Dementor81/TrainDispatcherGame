@@ -14,8 +14,11 @@ import LogsPanel from "./logsPanel";
 import PlayersPanel from "./playersPanel";
 import GameCodePanel from "./gameCodePanel";
 import { ensureValidSessionOrShowModal } from "../core/sessionGuard";
+import { renderAppVersionBadge } from "../ui/appVersionBadge";
 
 window.addEventListener("load", async () => {
+  void renderAppVersionBadge();
+
   const validSessionCode = await ensureValidSessionOrShowModal("gmGameCode");
   if (!validSessionCode) {
     return;

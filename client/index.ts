@@ -1,8 +1,11 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import * as bootstrap from "bootstrap";
 import "./styles/landing.css";
+import { renderAppVersionBadge } from "./ui/appVersionBadge";
 
 window.addEventListener("DOMContentLoaded", () => {
+  void renderAppVersionBadge();
+
   const onlineActions = document.getElementById("onlineActions");
   const serverUnavailableMessage = document.getElementById("serverUnavailableMessage");
   const nameInput = document.getElementById("joinNameInput") as HTMLInputElement | null;

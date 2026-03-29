@@ -65,6 +65,7 @@ app.MapLayoutEndpoints();
 app.MapLogsEndpoints();
 app.MapSimulationEndpoints();
 app.MapScenarioEndpoints();
+app.MapVersionEndpoints();
 
 if (app.Environment.IsDevelopment())
 {

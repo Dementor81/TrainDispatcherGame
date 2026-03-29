@@ -2,6 +2,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/main.css";
 import Application from "./core/application";
 import { ensureValidSessionOrShowModal } from "./core/sessionGuard";
+import { renderAppVersionBadge } from "./ui/appVersionBadge";
 
 // Import Bootstrap JavaScript
 import * as bootstrap from 'bootstrap';
@@ -20,6 +21,8 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 window.addEventListener("load", async () => {
+  void renderAppVersionBadge();
+
   const validSessionCode = await ensureValidSessionOrShowModal("playerGameCode");
   if (!validSessionCode) {
     return;
