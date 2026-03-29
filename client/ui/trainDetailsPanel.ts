@@ -78,7 +78,7 @@ export class TrainDetailsPanel extends BasePanel {
     const manualToggleBtn = UI.createButton('btn-sm btn-outline-info', 'Rangieren', () => this.handleToggleManualMode());
     manualToggleBtn.id = 'trainManualModeToggle';
     controls.appendChild(manualToggleBtn);
-    controls.appendChild(UI.createButton('btn-sm btn-outline-danger', 'Remove', () => void this.handleRemove()));
+    controls.appendChild(UI.createButton('btn-sm btn-outline-danger', 'Entfernen', () => void this.handleRemove()));
 
     const manualDriveControls = document.createElement('div');
     manualDriveControls.id = 'trainManualDriveControls';

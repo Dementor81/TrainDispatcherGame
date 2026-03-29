@@ -311,19 +311,32 @@ export class TrainManager {
    private getDirectionTowardExit(train: Train, waypoints: TrainWayPointDto[]): number | null {
       if (waypoints.length < 1) throw new Error(`Train ${train.number} has no waypoints`);
 
-      const secondWaypoint = waypoints.length > 1 ? waypoints[1] : null;
-      if (secondWaypoint) {
-         const exit = this._trackLayoutManager.findExitToStation(secondWaypoint.station);
+      const currentStation = this._trackLayoutManager.layoutId;
+      const currentIndex = waypoints.findIndex((wp) => wp.station === currentStation);
+      let new_direction = train.movingDirection;
+      if (currentIndex === waypoints.length - 1) {
+         //the current station is the last station, so we need to find the exit to the previous station and return the opposite direction of that exit
+         const previousStation = waypoints[currentIndex - 1].station;
+         const exit = this._trackLayoutManager.findExitToStation(previousStation);
          if (exit) {
-            const exitSpawnDirection = this._trackLayoutManager.getExitPointDirection(exit.id);
-            return -exitSpawnDirection;
+            new_direction = this._trackLayoutManager.getExitPointDirection(exit.id);
          } else {
-            console.warn(`No exit found to station ${secondWaypoint.station}, keeping current direction`);
+            console.warn(`No exit found to station ${previousStation}, keeping current direction`);
          }
       } else {
-         throw new Error(`Train ${train.number} has only one waypoint, cannot determine direction`);
+         const nextWaypoint = waypoints[currentIndex + 1];
+         if (nextWaypoint) {
+            const exit = this._trackLayoutManager.findExitToStation(nextWaypoint.station);
+            if (exit) {
+               new_direction = -this._trackLayoutManager.getExitPointDirection(exit.id);
+            } else {
+               console.warn(`No exit found to station ${nextWaypoint.station}, keeping current direction`);
+            }
+         } else {
+            throw new Error(`Train ${train.number} has only one waypoint, cannot determine direction`);
+         }
       }
-      return null;
+      return new_direction;
    }
 }
 
