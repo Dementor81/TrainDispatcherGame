@@ -14,7 +14,7 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:00:00"
+          "departure": "00:02:00"
         },
         {
           "station": "weststadt",
@@ -54,7 +54,7 @@
         {
           "station": "meßbach",
           "arrival": "",
-          "departure": "00:04:35"
+          "departure": "00:01:35"
         },
         {
           "station": "weststadt",
