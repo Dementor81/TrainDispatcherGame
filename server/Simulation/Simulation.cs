@@ -27,6 +27,8 @@ namespace TrainDispatcherGame.Server.Simulation
         private readonly OpenLineTrackRegistry _openLineTracks;
         private readonly TrainEventProcessor _eventProcessor;
         private readonly StationTimetableService _timetableService;
+        private readonly HashSet<(string stationId, int exitId)> _blockedExits = new();
+        private readonly object _blockedExitsLock = new object();
         private readonly object _simulationLock = new object(); // Thread synchronization object
         private DateTime _simulationStartTime;
         private string _scenarioId;
@@ -49,7 +51,7 @@ namespace TrainDispatcherGame.Server.Simulation
             _scenarioId = scenarioId;
             _sessionId = sessionId;
             _openLineTracks = new OpenLineTrackRegistry(_trackLayoutService, _sessionId);
-            _eventProcessor = new TrainEventProcessor(_notificationManager, _playerManager, _trackLayoutService, _openLineTracks, _sessionId);
+            _eventProcessor = new TrainEventProcessor(_notificationManager, _playerManager, _trackLayoutService, _openLineTracks, IsExitBlocked, _sessionId);
             _timetableService = new StationTimetableService();
             ServerLogger.Instance.SetSimulationTimeProvider(() => SimulationTime);
             this.Reset();
@@ -70,6 +72,10 @@ namespace TrainDispatcherGame.Server.Simulation
             }
             _trains = scenario.Trains;
             _simulationStartTime = scenario.StartTime;
+            lock (_blockedExitsLock)
+            {
+                _blockedExits.Clear();
+            }
 
             _openLineTracks.Initialize();
             this.CreateInitialStartEvents();
@@ -546,6 +552,15 @@ namespace TrainDispatcherGame.Server.Simulation
             return result;
         }
 
+        public bool IsExitBlocked(string stationId, int exitId)
+        {
+            var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+            lock (_blockedExitsLock)
+            {
+                return _blockedExits.Contains((normalizedStationId, exitId));
+            }
+        }
+
         /// <summary>
         /// Handles the report of a station exit being blocked or unblocked by a train route.
         /// It will notify the neighboring station so it can extend the train route to the other station.
@@ -566,6 +581,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 }
 
                 var stationId = player.StationId;
+                var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
 
                 // Get the connection for this exit
                 var connection = _trackLayoutService.GetConnection(stationId, exitId, out bool isReversed);
@@ -578,8 +594,19 @@ namespace TrainDispatcherGame.Server.Simulation
                 // Remove train from open-line track when exit is unblocked
                 if (!blocked)
                 {
+                    lock (_blockedExitsLock)
+                    {
+                        _blockedExits.Remove((normalizedStationId, exitId));
+                    }
                     _openLineTracks.RemoveTrain(connection);
                     ServerLogger.Instance.LogDebug(Ctx(stationId), $"Train removed from open-line track {connection.FromStation} -> {connection.ToStation}");
+                }
+                else
+                {
+                    lock (_blockedExitsLock)
+                    {
+                        _blockedExits.Add((normalizedStationId, exitId));
+                    }
                 }
 
                 // Determine the other side of the connection

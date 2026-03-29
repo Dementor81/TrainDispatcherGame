@@ -13,18 +13,21 @@ namespace TrainDispatcherGame.Server.Simulation
         private readonly PlayerManager _playerManager;
         private readonly TrackLayoutService _trackLayoutService;
         private readonly OpenLineTrackRegistry _openLineTracks;
+        private readonly Func<string, int, bool> _isExitBlocked;
         private readonly string _sessionId;
 
         public TrainEventProcessor(NotificationManager notificationManager,
                                    PlayerManager playerManager,
                                    TrackLayoutService trackLayoutService,
                                    OpenLineTrackRegistry trackRegistry,
+                                   Func<string, int, bool> isExitBlocked,
                                    string sessionId)
         {
             _notificationManager = notificationManager;
             _playerManager = playerManager;
             _trackLayoutService = trackLayoutService;
             _openLineTracks = trackRegistry;
+            _isExitBlocked = isExitBlocked;
             _sessionId = sessionId;
         }
 
@@ -150,6 +153,16 @@ namespace TrainDispatcherGame.Server.Simulation
             }
             // Check if the connection to the next station is blocked
             var connection = _trackLayoutService.GetRegularConnectionToStation(currentWaypoint.Station, nextWaypoint.Station, out bool isReversed);
+            if (connection != null)
+            {
+                var destinationExitId = isReversed ? connection.FromExitId : connection.ToExitId;
+                if (_isExitBlocked(nextWaypoint.Station, destinationExitId))
+                {
+                    sendApprovalEvent.ScheduledTime = SimulationTime.AddSeconds(20);
+                    ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train {train.Number} approval delayed until {sendApprovalEvent.ScheduledTime:HH:mm:ss} - destination exit {destinationExitId} at {nextWaypoint.Station} is blocked");
+                    return;
+                }
+            }
             if (connection != null && _openLineTracks.TryGet(connection, out var track))
             {
                 if (track.TrainOnTrack != null)
