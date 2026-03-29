@@ -23,4 +23,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: marcus360/train_dispatcher_game:test
+          tags: marcus360/train_dispatcher_game:latest
