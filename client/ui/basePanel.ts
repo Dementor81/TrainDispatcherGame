@@ -25,6 +25,7 @@ export abstract class BasePanel {
   protected application: Application;
   private readonly isResizable: boolean;
   private readonly panelTitle: string | null;
+  private dragHandle: HTMLDivElement | null = null;
   private resizeHandle: HTMLDivElement | null = null;
   private isDragging = false;
   private dragOffsetX = 0;
@@ -167,6 +168,9 @@ export abstract class BasePanel {
     if (this.panelTitle) {
       const titleNotch = this.createTitleNotch();
       this.container.appendChild(titleNotch);
+      this.dragHandle = titleNotch;
+    } else {
+      this.dragHandle = null;
     }
 
     const content = this.createContent();
@@ -245,19 +249,25 @@ export abstract class BasePanel {
   }
 
   private setupDragging(): void {
-    this.container.addEventListener("mousedown", this.onMouseDown);
+    if (!this.dragHandle) {
+      return;
+    }
+    this.dragHandle.addEventListener("mousedown", this.onMouseDown);
     document.addEventListener("mousemove", this.onMouseMove);
     document.addEventListener("mouseup", this.onMouseUp);
-    this.container.addEventListener("touchstart", this.onTouchStart, { passive: false });
+    this.dragHandle.addEventListener("touchstart", this.onTouchStart, { passive: false });
     document.addEventListener("touchmove", this.onTouchMove, { passive: false });
     document.addEventListener("touchend", this.onTouchEnd);
   }
 
   private removeDragging(): void {
-    this.container.removeEventListener("mousedown", this.onMouseDown);
+    if (this.dragHandle) {
+      this.dragHandle.removeEventListener("mousedown", this.onMouseDown);
+      this.dragHandle.removeEventListener("touchstart", this.onTouchStart);
+      this.dragHandle = null;
+    }
     document.removeEventListener("mousemove", this.onMouseMove);
     document.removeEventListener("mouseup", this.onMouseUp);
-    this.container.removeEventListener("touchstart", this.onTouchStart);
     document.removeEventListener("touchmove", this.onTouchMove);
     document.removeEventListener("touchend", this.onTouchEnd);
     if (this.resizeHandle) {
