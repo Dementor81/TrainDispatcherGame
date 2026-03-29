@@ -1,4 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
+import "../styles/basePanel.css";
 import "./main.css";
 // Import Bootstrap JS and expose globally for components using window.bootstrap
 import * as bootstrap from "bootstrap";

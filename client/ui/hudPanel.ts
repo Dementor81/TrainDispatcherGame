@@ -34,7 +34,7 @@ export class HUDPanel extends BasePanel {
     protected createContainer(options: BasePanelOptions): HTMLDivElement {
         const container = super.createContainer(options);
         container.id = "hud";
-        container.className = "position-fixed m-3 p-2 base-panel text-light rounded shadow-lg";
+        container.className = "position-fixed p-2 base-panel text-light";
         container.style.minWidth = "200px";
         container.style.top = "0";
         container.style.left = "0";

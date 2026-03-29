@@ -1,0 +1,75 @@
+.base-panel {
+    background-color: transparent;
+    overflow: visible;
+}
+
+.base-panel-title-notch {
+    display: inline-flex;
+    align-items: center;
+    max-width: calc(100% - 6px);
+    height: 27px;
+    margin: 0 0 -5px 0;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 8px 8px 0 0;
+    background: linear-gradient(180deg, rgba(56, 58, 63, 0.95), rgba(43, 45, 49, 0.95));
+    color: rgba(233, 236, 239, 0.95);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    user-select: none;
+    cursor: grab;
+}
+
+.base-panel:active .base-panel-title-notch {
+    cursor: grabbing;
+}
+
+.base-panel-content {
+    height: auto;
+    background-color: #2a2b2e;
+    border-radius: 5px;
+    overflow-y: auto;
+    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+    padding: 0.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.base-panel-resizable .base-panel-content {
+    height: calc(100% - 28px);
+}
+
+.base-panel-resize-handle {
+    position: absolute;
+    right: 4px;
+    bottom: 8px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-bottom: 10px solid rgba(255, 255, 255, 0.45);
+    cursor: nwse-resize;
+    z-index: 2;
+}
+
+.base-panel-resize-handle:hover {
+    border-bottom-color: rgba(255, 255, 255, 0.7);
+}
+
+#controlPanel > .base-panel-content {
+    backdrop-filter: blur(10px);
+    background-color: rgba(33, 37, 41, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+#trainOverviewPanel > .base-panel-content {
+    backdrop-filter: blur(10px);
+    background-color: rgba(33, 37, 41, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}

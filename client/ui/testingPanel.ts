@@ -7,6 +7,7 @@ export class TestingPanel extends BasePanel {
     super(application, {
       bottom: 0,
       left: 0,
+      title: 'Testing',
     });
   }
 
@@ -16,9 +17,7 @@ export class TestingPanel extends BasePanel {
   protected createContent(): HTMLDivElement {
     const container = document.createElement('div');
 
-    const title = document.createElement('h6');
-    title.className = 'mb-2 text-warning';
-    title.textContent = 'Testing';
+    
 
     const hint = document.createElement('div');
     hint.className = 'small text-secondary mb-2';
@@ -40,7 +39,6 @@ export class TestingPanel extends BasePanel {
 
     buttonGroup.appendChild(addTrainBtn);
 
-    container.appendChild(title);
     container.appendChild(hint);
     container.appendChild(buttonGroup);
     return container;

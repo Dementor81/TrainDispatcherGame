@@ -15,6 +15,7 @@ export class TrainOverviewPanel extends BasePanel {
       top: 0,
       right: 0,
       resizable: true,
+      title: 'Alle Züge',
     });
     application.eventManager.on('simulationStateChanged', (state: string) => {
       if (state.toLowerCase() === 'running') {

@@ -12,29 +12,6 @@ body {
 }
 
 
-.base-panel {
-    background-color: #2a2b2e;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
-    overflow-y: auto;
-}
-
-.base-panel-resize-handle {
-    position: absolute;
-    right: 2px;
-    bottom: 2px;
-    width: 0;
-    height: 0;
-    border-left: 10px solid transparent;
-    border-bottom: 10px solid rgba(255, 255, 255, 0.45);
-    cursor: nwse-resize;
-    z-index: 2;
-}
-
-.base-panel-resize-handle:hover {
-    border-bottom-color: rgba(255, 255, 255, 0.7);
-}
-
 .container-fluid {
     padding: 0;
     margin: 0;
@@ -57,13 +34,6 @@ body {
 
 
 /* Control Panel Styles */
-#controlPanel {
-    backdrop-filter: blur(10px);
-    background-color: rgba(33, 37, 41, 0.95) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
 #controlPanel .btn {
     transition: all 0.2s ease-in-out;
 }
@@ -78,13 +48,6 @@ body {
 }
 
 /* Train Overview Panel Styles */
-#trainOverviewPanel {
-    backdrop-filter: blur(10px);
-    background-color: rgba(33, 37, 41, 0.95) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
 .trains-list {
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.3) transparent;

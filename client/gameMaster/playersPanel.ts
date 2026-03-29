@@ -3,7 +3,7 @@ import { BasePanel } from "../ui/basePanel";
 
 export class PlayersPanel extends BasePanel {
   constructor() {
-    super(null as any, { width: 620, height: 260, right: 0, top: 0, updateIntervalMs: 2000 });
+    super(null as any, { width: 620, height: 260, right: 0, top: 0, updateIntervalMs: 2000, title: 'Alle Spieler', resizable: true });
 
     this.show();
   }

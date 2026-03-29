@@ -3,7 +3,7 @@ import { BasePanel } from "../ui/basePanel";
 
 export class TrainsPanel extends BasePanel {
   constructor() {
-    super(null as any, { width: 620, height: 720, updateIntervalMs: 2000, left: 0, top: 60 });
+    super(null as any, { width: 620, height: 720, updateIntervalMs: 2000, left: 0, top: 60, title: 'Alle Züge',resizable: true });
 
     this.show();
   }

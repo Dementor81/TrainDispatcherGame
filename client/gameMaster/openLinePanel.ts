@@ -3,7 +3,7 @@ import { BasePanel } from "../ui/basePanel";
 
 export class OpenLinePanel extends BasePanel {
   constructor() {
-    super(null as any, { width: 620, height: 400, top: 0, left: 630, updateIntervalMs: 2000 });
+    super(null as any, { width: 620, height: 400, top: 0, left: 630, updateIntervalMs: 2000, title: 'Offene Strecken', resizable: true });
 
     this.show();
   }

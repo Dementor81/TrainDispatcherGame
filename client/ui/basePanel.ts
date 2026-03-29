@@ -2,6 +2,7 @@ import { Application } from "../core/application";
 
 export interface BasePanelOptions {
   updateIntervalMs?: number | null;
+  title?: string;
   width?: number;
   height?: number;
   top?: number;
@@ -23,6 +24,7 @@ export abstract class BasePanel {
   protected updateTimerId: number | null = null;
   protected application: Application;
   private readonly isResizable: boolean;
+  private readonly panelTitle: string | null;
   private resizeHandle: HTMLDivElement | null = null;
   private isDragging = false;
   private dragOffsetX = 0;
@@ -153,6 +155,7 @@ export abstract class BasePanel {
     this.application = application;
     this.updateIntervalMs = options.updateIntervalMs ?? null;
     this.isResizable = options.resizable === true;
+    this.panelTitle = options.title?.trim() || null;
     this.container = this.createContainer(options);
     this.initialize();
     document.body.appendChild(this.container);
@@ -161,18 +164,40 @@ export abstract class BasePanel {
   protected abstract createContent(): HTMLDivElement;
 
   private initialize(): void {
-    this.container.appendChild(this.createContent());
+    if (this.panelTitle) {
+      const titleNotch = this.createTitleNotch();
+      this.container.appendChild(titleNotch);
+    }
+
+    const content = this.createContent();
+    const scrollContent = document.createElement("div");
+    scrollContent.className = "base-panel-content";
+    scrollContent.appendChild(content);
+    this.container.appendChild(scrollContent);
+
     if (this.isResizable) {
+      this.container.style.overflow = "hidden";
+      this.container.classList.add("base-panel-resizable");
       this.createResizeHandle();
     }
     this.restorePanelState();
-    this.setupDragging();
+    if (this.panelTitle) {
+      this.setupDragging();
+    }
+  }
+
+  private createTitleNotch(): HTMLDivElement {
+    const titleNotch = document.createElement("div");
+    titleNotch.className = "base-panel-title-notch";
+    titleNotch.textContent = this.panelTitle ?? "";
+    titleNotch.title = this.panelTitle ?? "";
+    return titleNotch;
   }
 
   protected createContainer(options: BasePanelOptions): HTMLDivElement {
     const container = document.createElement("div");
     container.id = this.constructor.name;
-    container.className = "position-absolute m-3 p-1 base-panel text-light rounded shadow-lg";
+    container.className = "position-absolute p-1 base-panel text-light rounded shadow-lg";
     const containerStyles: Partial<CSSStyleDeclaration> = {
       zIndex: "1000",
       display: "none",

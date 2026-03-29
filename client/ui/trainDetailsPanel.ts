@@ -18,6 +18,7 @@ export class TrainDetailsPanel extends BasePanel {
       bottom: 0,
       left: 0,
       width: 280,
+      title: 'Zugdetails',
     });
 
     // Listen for train transformations to update panel if showing that train

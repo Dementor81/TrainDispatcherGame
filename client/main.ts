@@ -1,4 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./styles/basePanel.css";
 import "./styles/main.css";
 import Application from "./core/application";
 import { ensureValidSessionOrShowModal } from "./core/sessionGuard";
