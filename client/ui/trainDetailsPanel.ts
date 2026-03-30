@@ -42,24 +42,14 @@ export class TrainDetailsPanel extends BasePanel {
 
 
   protected createContent(): HTMLDivElement {
-    const root = document.createElement('div');
-
-    const header = document.createElement('div');
-    header.className = 'd-flex justify-content-between align-items-center mb-2';
-
-    const title = document.createElement('div');
-    title.className = 'fw-bold';
-    title.id = 'trainDetailsTitle';
-    title.textContent = `${this._train?.category} ${this._trainNumber}`;
+    const root = document.createElement('div');   
 
     const closeBtn = document.createElement('button');
+    closeBtn.style.float = 'right';
     closeBtn.className = 'btn-close btn-close-white';
     closeBtn.type = 'button';
-    closeBtn.setAttribute('aria-label', 'Close');
+    closeBtn.setAttribute('aria-label', 'Schliessen');
     closeBtn.addEventListener('click', () => this.hide());
-
-    header.appendChild(title);
-    header.appendChild(closeBtn);
 
     const controls = document.createElement('div');
     controls.className = 'd-flex gap-2 mb-3';
@@ -104,7 +94,7 @@ export class TrainDetailsPanel extends BasePanel {
       stopReasonText: '-',
     });
 
-    root.appendChild(header);
+    root.appendChild(closeBtn);
     root.appendChild(controls);
     root.appendChild(manualDriveControls);
     root.appendChild(trainMeta);
@@ -115,6 +105,7 @@ export class TrainDetailsPanel extends BasePanel {
   public setTrainNumber(trainNumber: string): void {
     this._trainNumber = trainNumber;
     this._train = this.application.trainManager.getTrain(trainNumber) ?? null;
+
     this._trainDetails = null;
     this._timetableLoadedForTrainNumber = null;
     this._loadingTrainDataFor = null;
@@ -122,11 +113,6 @@ export class TrainDetailsPanel extends BasePanel {
   }
 
   protected async Updates(): Promise<void> {
-    const titleEl = this.container.querySelector('#trainDetailsTitle') as HTMLDivElement | null;
-    if (!titleEl) return;
-    const titleCategory = this._train?.category ?? this._trainDetails?.category ?? '';
-    titleEl.textContent = `${titleCategory} ${this._trainNumber ?? ''}`.trim();
-
     const train = this._train;
 
     const controlsEl = this.container.querySelector('#trainControls') as HTMLDivElement | null;
@@ -301,7 +287,7 @@ export class TrainDetailsPanel extends BasePanel {
     const train = this.application.trainManager.getTrain(this._trainNumber);
     if (!train) return;
 
-    void this.application.trainManager.continueTrainAfterManualControl(train);    
+    void this.application.trainManager.continueTrainAfterManualControl(train);
     this.application.eventManager.emit('trainsUpdated');
     void this.Updates();
   }
@@ -410,6 +396,7 @@ export class TrainDetailsPanel extends BasePanel {
       maxSpeedText: this.formatTrainSpeed(maxSpeed),
       stopReasonText: train ? this.formatState(train.state) : '-',
     });
+    this.setTitle(`${details?.category ?? ''} ${details?.trainNumber ?? ''}`);
   }
 
   private formatState(state: TrainState): string {

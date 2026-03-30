@@ -1,6 +1,9 @@
 import { BasePanel } from "../ui/basePanel";
+import { UI } from "../utils/ui";
 
 export class GameCodePanel extends BasePanel {
+  private static readonly QR_POPUP_NAME = "game-code-qr";
+
   constructor() {
     super(null as any, { width: 280, height: 88, top: 600, right: 850 });
     this.show();
@@ -23,16 +26,19 @@ export class GameCodePanel extends BasePanel {
     code.id = "adminGameCodeValue";
     code.textContent = this.resolveGameCode();
 
-    const copyButton = document.createElement("button");
-    copyButton.type = "button";
-    copyButton.className = "btn btn-sm btn-outline-light no-drag";
-    copyButton.textContent = "Kopieren";
-    copyButton.addEventListener("click", () => {
+    const copyButton = UI.createButton("btn-sm btn-outline-light no-drag", "Kopieren", () => {
       void this.copyToClipboard(code.textContent ?? "");
     });
+    copyButton.innerHTML = '<i class="bi bi-clipboard"></i>';
+
+    const qrButton = UI.createButton("btn-sm btn-outline-light no-drag", '', () => {
+      this.openQrCodePopup(code.textContent ?? "");
+    });
+    qrButton.innerHTML = '<i class="bi bi-qr-code"></i>';
 
     row.appendChild(code);
     row.appendChild(copyButton);
+    row.appendChild(qrButton);
     section.appendChild(title);
     section.appendChild(row);
     return section;
@@ -53,6 +59,42 @@ export class GameCodePanel extends BasePanel {
     } catch (error) {
       console.error("Failed to copy game code", error);
     }
+  }
+
+  private openQrCodePopup(gameCode: string): void {
+    if (!gameCode || gameCode === "-") {
+      return;
+    }
+
+    const landingUrl = new URL("../index.html", window.location.href);
+    landingUrl.searchParams.set("gamecode", gameCode);
+    const targetUrl = landingUrl.toString();
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(targetUrl)}`;
+    const features = "popup=yes,width=420,height=520,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=no";
+    const popup = window.open("", GameCodePanel.QR_POPUP_NAME, features);
+    if (!popup) {
+      return;
+    }
+
+    popup.document.title = `Game-Code ${gameCode}`;
+    popup.document.body.style.backgroundColor = '#000';
+    popup.document.body.innerHTML = `
+      <main style="margin:0;height:100%;display:flex;align-items:center;justify-content:center;background:#111;color:#eee;font-family:Arial,sans-serif;">
+        <div style="display:flex;flex-direction:column;gap:10px;align-items:center;padding:18px;">
+          <img src="${qrUrl}" alt="QR code for game code ${this.escapeHtml(gameCode)}" width="320" height="320" style="background:#fff;border-radius:6px;padding:6px;" />
+        </div>
+      </main>
+    `;
+    popup.focus();
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 }
 

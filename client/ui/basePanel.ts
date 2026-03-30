@@ -24,7 +24,8 @@ export abstract class BasePanel {
   protected updateTimerId: number | null = null;
   protected application: Application;
   private readonly isResizable: boolean;
-  private readonly panelTitle: string | null;
+  private panelTitle: string | null;
+  private titleNotch: HTMLDivElement | null = null;
   private dragHandle: HTMLDivElement | null = null;
   private resizeHandle: HTMLDivElement | null = null;
   private isDragging = false;
@@ -168,8 +169,10 @@ export abstract class BasePanel {
     if (this.panelTitle) {
       const titleNotch = this.createTitleNotch();
       this.container.appendChild(titleNotch);
+      this.titleNotch = titleNotch;
       this.dragHandle = titleNotch;
     } else {
+      this.titleNotch = null;
       this.dragHandle = null;
     }
 
@@ -196,6 +199,16 @@ export abstract class BasePanel {
     titleNotch.textContent = this.panelTitle ?? "";
     titleNotch.title = this.panelTitle ?? "";
     return titleNotch;
+  }
+
+  public setTitle(title: string): void {
+    const trimmedTitle = title.trim();
+    this.panelTitle = trimmedTitle.length > 0 ? trimmedTitle : null;
+    if (!this.titleNotch) {
+      return;
+    }
+    this.titleNotch.textContent = this.panelTitle ?? "";
+    this.titleNotch.title = this.panelTitle ?? "";
   }
 
   protected createContainer(options: BasePanelOptions): HTMLDivElement {
