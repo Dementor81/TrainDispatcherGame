@@ -4,7 +4,9 @@ Features:
     ☐ total delays and train misshapens display for the gamemaster
     ☐ add a signal for the wrong line
     ☐ add a Ignore next signal button to the UI that let trains go over the signal
+    ☐ improve how all games are handled, add a simple way to quit a game
     ☐ reduce the amount of requests to the server (upcoming trains and status are requested too often)
+    ☐ check all client side events and if they are still used and needed
     ✔ if a train becomes another train, display the new train number in the UI @done(26-03-29 13:07)
     ✔ touchsupport @done(26-03-28 19:04)
     ✔ adding a key to start a new game @done(26-03-22 09:13)
@@ -16,6 +18,7 @@ Big Features:
     
     ☐ coupling and decoupling
     ☐ slow down trains if the train is on a router with switches set to the branch
+    ☐ add a admin page that allows to see all games and players
     ✔ acceleration and deceleration @done(26-03-03 07:40)
     ✔ shunting @done(26-03-03 07:40)
     ✔ add game logic to the server to handle multiple game sessions simultaniously @done(26-02-22 18:22)
