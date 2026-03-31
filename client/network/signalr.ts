@@ -2,7 +2,7 @@ import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } fro
 import Train from '../sim/train';
 import Switch from '../sim/switch';
 import { EventManager } from '../manager/event_manager';
-import { SimulationState } from './dto';
+import { SimulationState, TrainDelayUpdatedNotificationDto, TrainRemovedNotificationDto } from './dto';
 
 export class JoinRejectedError extends Error {
     public readonly reason: string;
@@ -147,6 +147,14 @@ export class SignalRManager {
 
         this.connection.on('SimulationStateChanged', (data) => {            
             this.handleSimulationStateChanged(data);
+        });
+
+        this.connection.on('TrainDelayUpdated', (data) => {
+            this.handleTrainDelayUpdated(data);
+        });
+
+        this.connection.on('TrainRemoved', (data) => {
+            this.handleTrainRemoved(data);
         });
 
         this.connection.on('ApprovalRequested', (data) => {
@@ -474,6 +482,14 @@ export class SignalRManager {
 
     private handleExitBlockStatusChanged(data: any): void {        
         this.eventManager.emit('exitBlockStatusChanged', data.exitId, data.blocked);
+    }
+
+    private handleTrainDelayUpdated(data: TrainDelayUpdatedNotificationDto): void {
+        this.eventManager.emit('trainDelayUpdated', data);
+    }
+
+    private handleTrainRemoved(data: TrainRemovedNotificationDto): void {
+        this.eventManager.emit('trainRemoved', data);
     }
 
     public get connectionState(): string {

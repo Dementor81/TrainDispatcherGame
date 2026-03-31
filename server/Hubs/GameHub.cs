@@ -613,6 +613,7 @@ namespace TrainDispatcherGame.Server.Hubs
 
                 train.completed = true;
                 train.controlledByPlayer = false;
+                session.Simulation.NotifyTrainRemoved(train);
             }
             catch (Exception ex)
             {

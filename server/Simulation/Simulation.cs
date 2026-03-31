@@ -402,6 +402,7 @@ namespace TrainDispatcherGame.Server.Simulation
         {
             try
             {
+                var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
                 var currentWaypoint = train.GetCurrentWayPoint();
                 if (currentWaypoint == null)
                 {
@@ -409,27 +410,30 @@ namespace TrainDispatcherGame.Server.Simulation
                     return;
                 }
 
-                if (currentWaypoint.Station != stationId)
+                if (currentWaypoint.Station != normalizedStationId)
                 {
-                    ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train {train.Number} reported stopped at {stationId} but current event is for station {currentWaypoint.Station}");
+                    ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train {train.Number} reported stopped at {normalizedStationId} but current event is for station {currentWaypoint.Station}");
                     return;
                 }
 
                 if (currentWaypoint.Processed)
                 {
-                    ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train {train.Number} station event at {stationId} is already processed");
+                    ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train {train.Number} station event at {normalizedStationId} is already processed");
                     return;
                 }
 
                 // Mark the current station event as processed
                 currentWaypoint.Processed = true;
                 train.delay = (int)(SimulationTime - currentWaypoint.ArrivalTime).TotalSeconds;
-                ServerLogger.Instance.LogDebug(Ctx(train.Number), $"Train {train.Number} successfully stopped at station {stationId} with delay {train.delay} seconds");
+                ServerLogger.Instance.LogDebug(Ctx(train.Number), $"Train {train.Number} successfully stopped at station {normalizedStationId} with delay {train.delay} seconds");
                 if (currentWaypoint.IsLast)
                 {
                     ServerLogger.Instance.LogDebug(Ctx(train.Number), $"Train {train.Number} has completed all events");
                     train.completed = true;
+                    return;
                 }
+
+                NotifyTrainDelayUpdated(train);
             }
             catch (Exception ex)
             {
@@ -441,6 +445,7 @@ namespace TrainDispatcherGame.Server.Simulation
         {
             try
             {
+                var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
                 var currentEvent = train.GetCurrentWayPoint();
                 if (currentEvent == null)
                 {
@@ -448,22 +453,23 @@ namespace TrainDispatcherGame.Server.Simulation
                     return false;
                 }
 
-                if (currentEvent.Station != stationId)
+                if (currentEvent.Station != normalizedStationId)
                 {
-                    ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train {train.Number} reported departed from {stationId} but current event is for station {currentEvent.Station}");
+                    ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train {train.Number} reported departed from {normalizedStationId} but current event is for station {currentEvent.Station}");
                     return false;
                 }
 
                 if (!currentEvent.Processed)
                 {
-                    ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train {train.Number} station event at {stationId} is not yet processed (must stop before departing)");
+                    ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train {train.Number} station event at {normalizedStationId} is not yet processed (must stop before departing)");
                     return false;
                 }
 
 
                 train.delay = (int)(SimulationTime - currentEvent.DepartureTime).TotalSeconds;
 
-                ServerLogger.Instance.LogDebug(Ctx(train.Number), $"Train {train.Number} successfully departed from station {stationId} with delay {train.delay} seconds");
+                ServerLogger.Instance.LogDebug(Ctx(train.Number), $"Train {train.Number} successfully departed from station {normalizedStationId} with delay {train.delay} seconds");
+                NotifyTrainDelayUpdated(train);
                 return true;
             }
             catch (Exception ex)
@@ -481,6 +487,8 @@ namespace TrainDispatcherGame.Server.Simulation
                 ServerLogger.Instance.LogWarning(Ctx(trainA.Number), $"Collision: trains {trainA.Number} and {trainB.Number} by client report");
                 trainA.damaged = true;
                 trainB.damaged = true;
+                trainA.completed = true;
+                trainB.completed = true;
             }
             catch (Exception ex)
             {
@@ -493,14 +501,38 @@ namespace TrainDispatcherGame.Server.Simulation
         {
             try
             {
+                var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
                 train.damaged = true;
+                train.completed = true;
                 var switchInfo = switchId.HasValue ? $" at switch {switchId.Value}" : string.Empty;
-                ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Derailment: train {train.Number} removed by client report at station {stationId}{switchInfo}");
+                ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Derailment: train {train.Number} removed by client report at station {normalizedStationId}{switchInfo}");
+            
             }
             catch (Exception ex)
             {
                 ServerLogger.Instance.LogError(Ctx(train.Number), $"Error handling derailment: {ex.Message}");
             }
+        }
+
+        private void NotifyTrainDelayUpdated(Train train)
+        {
+            var payload = new TrainDelayUpdatedNotification
+            {
+                TrainNumber = train.Number,
+                CurrentDelay = train.delay
+            };
+
+            _ = _notificationManager.SendTrainDelayUpdated(payload);
+        }
+
+        public void NotifyTrainRemoved(Train train)
+        {
+            var payload = new TrainRemovedNotification
+            {
+                TrainNumber = train.Number
+            };
+
+            _ = _notificationManager.SendTrainRemoved(payload);
         }
 
         public List<StationTimetableEvent> GetStationTimetableEvents(string stationId)

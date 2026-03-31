@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
 using TrainDispatcherGame.Server.Models;
+using TrainDispatcherGame.Server.Models.DTOs;
 using TrainDispatcherGame.Server.Hubs;
 using TrainDispatcherGame.Server.Logging;
 
@@ -165,6 +166,25 @@ namespace TrainDispatcherGame.Server.Managers
             ServerLogger.Instance.LogDebug(Ctx(normalizedStationId), $"Exit {exitId} at station {normalizedStationId} is now {(blocked ? "blocked" : "unblocked")}");
         }
 
-        
+        public async Task SendTrainDelayUpdated(TrainDelayUpdatedNotification payload)
+        {
+            if (string.IsNullOrWhiteSpace(payload.TrainNumber))
+            {
+                return;
+            }
+
+            await _hubContext.Clients.Group(SessionGroup()).SendAsync("TrainDelayUpdated", payload);
+        }
+
+        public async Task SendTrainRemoved(TrainRemovedNotification payload)
+        {
+            if (string.IsNullOrWhiteSpace(payload.TrainNumber))
+            {
+                return;
+            }
+
+            await _hubContext.Clients.Group(SessionGroup()).SendAsync("TrainRemoved", payload);
+        }
+
     }
-} 
+}

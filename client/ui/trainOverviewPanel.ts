@@ -1,15 +1,16 @@
 import { getUpcomingTrains } from '../network/api';
-import { StationTimetableEventDto } from '../network/dto';
+import { StationTimetableEventDto, TrainDelayUpdatedNotificationDto, TrainRemovedNotificationDto } from '../network/dto';
 import { Application } from '../core/application';
 import { BasePanel } from './basePanel';
+import { TrainState } from '../sim/train';
 
 export class TrainOverviewPanel extends BasePanel {
-  private _updating: boolean = false;
 
+  private _loading: boolean = false;
 
   constructor(application: Application) {
     super(application, {
-      updateIntervalMs: 1000,
+      updateIntervalMs: null,
       width: 630,
       height: 300,
       top: 0,
@@ -20,6 +21,20 @@ export class TrainOverviewPanel extends BasePanel {
     application.eventManager.on('simulationStateChanged', (state: string) => {
       if (state.toLowerCase() === 'running') {
         this.clearTrains();
+        if (this.isVisible) {
+          void this.ensureCurrentStationLoaded();
+        }
+      }
+    });
+    application.eventManager.on('trainDelayUpdated', (payload: TrainDelayUpdatedNotificationDto) => {
+      this.applyTrainDelayUpdate(payload);
+    });
+    application.eventManager.on('trainRemoved', (payload: TrainRemovedNotificationDto) => {
+      this.applyTrainRemoved(payload);
+    });
+    application.eventManager.on('trainStateChanged', (train: any, _previousState: TrainState, nextState: TrainState) => {
+      if ((nextState === TrainState.EXITING || nextState === TrainState.ENDED) && typeof train?.number === 'string') {
+        this.removeTrainByNumber(train.number);
       }
     });
   }
@@ -54,25 +69,85 @@ export class TrainOverviewPanel extends BasePanel {
   }
 
   protected async Updates(): Promise<void> {
-    await this.updateTrains();
+    await this.ensureCurrentStationLoaded();
   }
 
-  private async updateTrains(): Promise<void> {
-    if (this._updating) return;
-    this._updating = true;
+  private async ensureCurrentStationLoaded(): Promise<void> {
+    const currentStationId = this.application.currentStationId?.toLowerCase();
+    if (!currentStationId) {
+      this.clearTrains();
+      return;
+    }
+
+    if (this._loading ) {
+      return;
+    }
+
+    this._loading = true;
     try {
-
+      const trains = await getUpcomingTrains(currentStationId);
       const getSortTime = (train: StationTimetableEventDto) => train.departureSeconds ?? train.arrivalSeconds ?? 0;
-
-      const trains = await getUpcomingTrains(this.application.currentStationId!);
       trains.sort((a, b) => getSortTime(a) - getSortTime(b));
       this.renderTrains(trains);
     } catch (error) {
-      console.error('Failed to update trains:', error);
+      console.error('Failed to load initial trains:', error);
+    } finally {
+      this._loading = false;
     }
-    finally {
-      this._updating = false;
+  }
+
+  private applyTrainDelayUpdate(payload: TrainDelayUpdatedNotificationDto): void {
+    if (!payload || typeof payload.trainNumber !== 'string' || typeof payload.currentDelay !== 'number') {
+      return;
     }
+
+    this.updateTrainDelayRow(payload.trainNumber, payload.currentDelay);
+  }
+
+  private applyTrainRemoved(payload: TrainRemovedNotificationDto): void {
+    if (!payload || typeof payload.trainNumber !== 'string') {
+      return;
+    }
+
+    this.removeTrainByNumber(payload.trainNumber);
+  }
+
+  private removeTrainByNumber(trainNumber: string): void {
+    this.removeTrainRow(trainNumber);
+  }
+
+  private removeTrainRow(trainNumber: string): void {
+    const trainsList = document.getElementById('trainsList');
+    if (!trainsList) return;
+
+    const tbody = trainsList.querySelector<HTMLTableSectionElement>('tbody');
+    if (!tbody) return;
+
+    const row = Array.from(tbody.querySelectorAll<HTMLTableRowElement>('tr[data-train-number]'))
+      .find((candidate) => candidate.dataset.trainNumber === trainNumber);
+
+    if (!row) return;
+    row.remove();
+
+    if (tbody.querySelectorAll('tr[data-train-number]').length === 0) {
+      trainsList.innerHTML = '<div class="text-muted text-center py-3">keine Züge vorhanden</div>';
+    }
+  }
+
+  private updateTrainDelayRow(trainNumber: string, delaySeconds: number): void {
+    const trainsList = document.getElementById('trainsList');
+    if (!trainsList) return;
+
+    const row = Array.from(trainsList.querySelectorAll<HTMLTableRowElement>('tr[data-train-number]'))
+      .find((candidate) => candidate.dataset.trainNumber === trainNumber);
+    if (!row) return;
+
+    const delayBadge = row.querySelector<HTMLElement>('[data-delay-badge="true"]');
+    if (!delayBadge) return;
+
+    const delayInfo = this.formatDelay(delaySeconds);
+    delayBadge.className = `badge ${delayInfo.class}`;
+    delayBadge.textContent = delayInfo.text;
   }
 
   private renderTrains(trains: StationTimetableEventDto[]): void {
@@ -160,14 +235,14 @@ export class TrainOverviewPanel extends BasePanel {
       <td class="small">${hasArrival ? this.formatSeconds(train.arrivalSeconds) : '---'
       }</td>
       <td class="small">${this.formatSeconds(train.departureSeconds)}</td>
-      <td><span class="badge ${delayInfo.class}">${delayInfo.text}</span></td>
+      <td><span data-delay-badge="true" class="badge ${delayInfo.class}">${delayInfo.text}</span></td>
     `;
   }
 
   private formatDelay(delaySeconds: number): { class: string; text: string } {
     // Ignore delays below 60 seconds
     if (delaySeconds < 60) {
-      return { class: 'text-success', text: 'On time' };
+      return { class: 'text-success', text: '+0min' };
     }
 
     // Convert seconds to minutes

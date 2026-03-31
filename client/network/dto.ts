@@ -87,6 +87,15 @@ export interface StationTimetableEventDto {
   nextStation: string;
 }
 
+export interface TrainDelayUpdatedNotificationDto {
+  trainNumber: string;
+  currentDelay: number;
+}
+
+export interface TrainRemovedNotificationDto {
+  trainNumber: string;
+}
+
 export interface TrainWayPointDto {
   station: string;
   arrivalTime: string;
