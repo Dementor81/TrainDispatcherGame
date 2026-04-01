@@ -6,6 +6,8 @@
 .base-panel-title-notch {
     display: inline-flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     max-width: calc(100% - 6px);
     height: 27px;
     margin: 0 0 -5px 0;
@@ -17,11 +19,33 @@
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.02em;
+    user-select: none;
+    cursor: grab;
+}
+
+.base-panel-title-text {
+    min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    user-select: none;
-    cursor: grab;
+}
+
+.base-panel-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: #fcfcfc;
+    padding: 0;
+    line-height: 1;
+    font-size: 0.9rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.base-panel-close-btn:hover {
+    color: #e35d6a;
 }
 
 .base-panel:active .base-panel-title-notch {

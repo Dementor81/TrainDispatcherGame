@@ -1,4 +1,5 @@
 import { Application } from "../core/application";
+import { UI } from "../utils/ui";
 
 export interface BasePanelOptions {
   updateIntervalMs?: number | null;
@@ -10,6 +11,7 @@ export interface BasePanelOptions {
   left?: number;
   right?: number;
   resizable?: boolean;
+  closeable?: boolean;
 }
 
 export abstract class BasePanel {
@@ -24,8 +26,10 @@ export abstract class BasePanel {
   protected updateTimerId: number | null = null;
   protected application: Application;
   private readonly isResizable: boolean;
+  private readonly isCloseable: boolean;
   private panelTitle: string | null;
   private titleNotch: HTMLDivElement | null = null;
+  private titleTextElement: HTMLSpanElement | null = null;
   private dragHandle: HTMLDivElement | null = null;
   private resizeHandle: HTMLDivElement | null = null;
   private isDragging = false;
@@ -157,6 +161,7 @@ export abstract class BasePanel {
     this.application = application;
     this.updateIntervalMs = options.updateIntervalMs ?? null;
     this.isResizable = options.resizable === true;
+    this.isCloseable = options.closeable === true;
     this.panelTitle = options.title?.trim() || null;
     this.container = this.createContainer(options);
     this.initialize();
@@ -196,18 +201,29 @@ export abstract class BasePanel {
   private createTitleNotch(): HTMLDivElement {
     const titleNotch = document.createElement("div");
     titleNotch.className = "base-panel-title-notch";
-    titleNotch.textContent = this.panelTitle ?? "";
     titleNotch.title = this.panelTitle ?? "";
+
+    this.titleTextElement = UI.createSpan("base-panel-title-text",this.panelTitle);
+    titleNotch.appendChild(this.titleTextElement);
+
+    if (this.isCloseable) {
+      const closeButton = UI.createButton("base-panel-close-btn no-drag", null, () => this.hide());
+      closeButton.title = "Schliessen";
+      closeButton.setAttribute("aria-label", "Schliessen");
+      closeButton.innerHTML = '<i class="bi bi-x-square-fill"></i>';
+      titleNotch.appendChild(closeButton);
+    }
+
     return titleNotch;
   }
 
   public setTitle(title: string): void {
     const trimmedTitle = title.trim();
     this.panelTitle = trimmedTitle.length > 0 ? trimmedTitle : null;
-    if (!this.titleNotch) {
+    if (!this.titleNotch || !this.titleTextElement) {
       return;
     }
-    this.titleNotch.textContent = this.panelTitle ?? "";
+    this.titleTextElement.textContent = this.panelTitle ?? "";
     this.titleNotch.title = this.panelTitle ?? "";
   }
 

@@ -3,6 +3,7 @@ import { StationTimetableEventDto, TrainDelayUpdatedNotificationDto, TrainRemove
 import { Application } from '../core/application';
 import { BasePanel } from './basePanel';
 import { TrainState } from '../sim/train';
+import { formatTimeFromSeconds, UNSET_TIME_PLACEHOLDER } from '../utils/time';
 
 export class TrainOverviewPanel extends BasePanel {
 
@@ -232,9 +233,9 @@ export class TrainOverviewPanel extends BasePanel {
       <td class="small fw-bold ${isStoppedBySignal ? 'text-danger' : ''}">${train.category} ${train.trainNumber}</td>
       <td class="small">${train.fromStation}</td>
       <td class="small">${train.nextStation}</td>
-      <td class="small">${hasArrival ? this.formatSeconds(train.arrivalSeconds) : '---'
+      <td class="small">${hasArrival ? formatTimeFromSeconds(train.arrivalSeconds, UNSET_TIME_PLACEHOLDER) : UNSET_TIME_PLACEHOLDER
       }</td>
-      <td class="small">${this.formatSeconds(train.departureSeconds)}</td>
+      <td class="small">${formatTimeFromSeconds(train.departureSeconds, UNSET_TIME_PLACEHOLDER)}</td>
       <td><span data-delay-badge="true" class="badge ${delayInfo.class}">${delayInfo.text}</span></td>
     `;
   }
@@ -254,20 +255,5 @@ export class TrainOverviewPanel extends BasePanel {
       return { class: 'text-warning', text: `+${delayMinutes}min` };
     }
   }
-
-  private formatSeconds(seconds?: number | null): string {
-    if (seconds === null || seconds === undefined) {
-      return '';
-    }
-    const clamped = Math.max(0, seconds);
-    const hours = Math.floor(clamped / 3600) % 24;
-    const minutes = Math.floor((clamped % 3600) / 60);
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-  }
-
-
-
-
-
 
 }

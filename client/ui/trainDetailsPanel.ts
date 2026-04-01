@@ -4,14 +4,15 @@ import { TrainState } from '../sim/train';
 import { getTrainDetails, getTrainWaypoints } from '../network/api';
 import { Train } from '../sim/train';
 import { UI } from '../utils/ui';
-import { TrainDetailsDto } from '../network/dto';
+import { formatTimeFromIso, UNSET_TIME_PLACEHOLDER } from '../utils/time';
+import { TrainDetailsDto, TrainWayPointDto } from '../network/dto';
 
 export class TrainDetailsPanel extends BasePanel {
-  private _trainNumber: string | null = null;
-  private _train: Train | null = null;
+  
+
+  private _trainNumber: string | null = null; 
+  private _train: Train | null = null; //only available if train is spawned
   private _trainDetails: TrainDetailsDto | null = null;
-  private _timetableLoadedForTrainNumber: string | null = null;
-  private _loadingTrainDataFor: string | null = null;
 
   constructor(application: Application) {
     super(application, {
@@ -19,14 +20,13 @@ export class TrainDetailsPanel extends BasePanel {
       left: 0,
       width: 280,
       title: 'Zugdetails',
+      closeable: true,
     });
 
     // Listen for train transformations to update panel if showing that train
     this.application.eventManager.on('trainTransformed', (train: any, oldNumber: string, newNumber: string) => {
       if (this._trainNumber === oldNumber) {
-        this._train = train;
-        this._trainNumber = newNumber;
-        void this.Updates();
+        this.selectTrain(newNumber, train);
       }
     });
 
@@ -42,18 +42,10 @@ export class TrainDetailsPanel extends BasePanel {
 
 
   protected createContent(): HTMLDivElement {
-    const root = document.createElement('div');   
+    const root = UI.createDiv(null, null);   
 
-    const closeBtn = document.createElement('button');
-    closeBtn.style.float = 'right';
-    closeBtn.className = 'btn-close btn-close-white';
-    closeBtn.type = 'button';
-    closeBtn.setAttribute('aria-label', 'Schliessen');
-    closeBtn.addEventListener('click', () => this.hide());
 
-    const controls = document.createElement('div');
-    controls.className = 'd-flex gap-2 mb-3';
-    controls.id = 'trainControls';
+    const controls = UI.createDiv('d-flex gap-2 mb-3', 'trainControls');
 
     const emergencyStopBtn = UI.createButton('btn-sm btn-danger', 'Nothalt', () => this.handleEmergencyStop());
     emergencyStopBtn.id = 'trainEmergencyStopButton';
@@ -70,20 +62,14 @@ export class TrainDetailsPanel extends BasePanel {
     controls.appendChild(manualToggleBtn);
     controls.appendChild(UI.createButton('btn-sm btn-outline-danger', 'Entfernen', () => void this.handleRemove()));
 
-    const manualDriveControls = document.createElement('div');
-    manualDriveControls.id = 'trainManualDriveControls';
-    manualDriveControls.className = 'd-none gap-2 mb-3';
+    const manualDriveControls = UI.createDiv('d-none gap-2 mb-3', 'trainManualDriveControls');
     manualDriveControls.appendChild(UI.createButton('btn-sm btn-outline-success', '\u25C0', () => this.handleManualDrive(-1)));
     manualDriveControls.appendChild(UI.createButton('btn-sm btn-outline-warning', 'Stop', () => this.handleManualDriveStop()));
     manualDriveControls.appendChild(UI.createButton('btn-sm btn-outline-success', '\u25B6', () => this.handleManualDrive(1)));
 
-    const timetableContainer = document.createElement('div');
-    timetableContainer.id = 'trainTimetable';
-    timetableContainer.className = 'mt-2';
+    const timetableContainer = UI.createDiv('mt-2', 'trainTimetable');
 
-    const trainMeta = document.createElement('div');
-    trainMeta.id = 'trainDetailsMeta';
-    trainMeta.className = 'text-secondary mb-2 d-grid';
+    const trainMeta = UI.createDiv('text-secondary mb-2 d-grid', 'trainDetailsMeta');
     trainMeta.style.gridTemplateColumns = '1fr 1fr';
     trainMeta.style.columnGap = '12px';
     trainMeta.style.rowGap = '2px';
@@ -94,7 +80,6 @@ export class TrainDetailsPanel extends BasePanel {
       stopReasonText: '-',
     });
 
-    root.appendChild(closeBtn);
     root.appendChild(controls);
     root.appendChild(manualDriveControls);
     root.appendChild(trainMeta);
@@ -103,20 +88,24 @@ export class TrainDetailsPanel extends BasePanel {
   }
 
   public setTrainNumber(trainNumber: string): void {
-    this._trainNumber = trainNumber;
-    this._train = this.application.trainManager.getTrain(trainNumber) ?? null;
+    this.selectTrain(trainNumber);
+  }
 
+  private selectTrain(trainNumber: string, train?: Train | null): void {
+    this._trainNumber = trainNumber;
+    this._train = train ?? this.application.trainManager.getTrain(trainNumber) ?? null;
     this._trainDetails = null;
-    this._timetableLoadedForTrainNumber = null;
-    this._loadingTrainDataFor = null;
-    this.Updates();
+    this.updateTrainMeta();
+    this.renderTimetable([], null);
+    void this.Updates();
+    void this.loadTrainData(trainNumber);
   }
 
   protected async Updates(): Promise<void> {
     const train = this._train;
 
     const controlsEl = this.container.querySelector('#trainControls') as HTMLDivElement | null;
-    if (controlsEl && this._trainNumber) {
+    if (controlsEl) {
       const isSpawned = train && train.position !== null;
 
       if (isSpawned) {
@@ -153,102 +142,84 @@ export class TrainDetailsPanel extends BasePanel {
     }
 
     this.updateTrainMeta();
-    await this.updateTimetable();
   }
 
-  private async updateTimetable(): Promise<void> {
-    const timetableContainer = this.container.querySelector('#trainTimetable') as HTMLDivElement | null;
-    if (!timetableContainer || !this._trainNumber) return;
-
-    const requestedTrainNumber = this._trainNumber;
-    if (this._timetableLoadedForTrainNumber === requestedTrainNumber) {
-      return;
-    }
-    if (this._loadingTrainDataFor === requestedTrainNumber) {
-      return;
-    }
-    this._loadingTrainDataFor = requestedTrainNumber;
-
+  private async loadTrainData(trainNumber: string): Promise<void> {
     try {
       const [trainDetails, waypoints] = await Promise.all([
-        getTrainDetails(requestedTrainNumber),
-        getTrainWaypoints(requestedTrainNumber),
+        getTrainDetails(trainNumber),
+        getTrainWaypoints(trainNumber),
       ]);
 
-      if (this._trainNumber !== requestedTrainNumber) return;
+      if (this._trainNumber !== trainNumber) return;
       this._trainDetails = trainDetails;
 
-      const currentTrain = this.application.trainManager.getTrain(requestedTrainNumber);
+      const currentTrain = this.application.trainManager.getTrain(trainNumber);
       if (currentTrain) {
         currentTrain.category = trainDetails.category ?? null;
       }
+      this.renderTimetable(waypoints, trainDetails.followingTrainNumber);
       this.updateTrainMeta();
-
-      timetableContainer.innerHTML = '';
-
-      if (waypoints.length === 0) {
-        timetableContainer.textContent = 'No timetable available';
-        return;
-      }
-
-      const table = document.createElement('table');
-      table.className = 'table table-sm table-dark table-striped';
-      table.style.fontSize = 'small';
-
-      const thead = document.createElement('thead');
-      thead.innerHTML = `
-        <tr>
-          <th>Station</th>
-          <th>Ankunft</th>
-          <th>Abfahrt</th>
-        </tr>
-      `;
-
-      const tbody = document.createElement('tbody');
-      waypoints.forEach(wp => {
-        const row = document.createElement('tr');
-        if (wp.processed) {
-          row.className = 'text-muted';
-        }
-
-        const arrivalTime = this.formatWaypointTime(wp.arrivalTime);
-        const departureTime = this.formatWaypointTime(wp.departureTime);
-
-        row.innerHTML = `
-          <td>${wp.station}</td>
-          <td>${arrivalTime}</td>
-          <td>${departureTime}</td>
-        `;
-
-        tbody.appendChild(row);
-      });
-
-      table.appendChild(thead);
-      table.appendChild(tbody);
-
-      timetableContainer.appendChild(table);
-      this.renderTurnaroundHint(timetableContainer, trainDetails.followingTrainNumber);
-      this._timetableLoadedForTrainNumber = requestedTrainNumber;
-
     } catch (error) {
       console.error('Failed to fetch train details or waypoints:', error);
-      timetableContainer.textContent = 'Fehler beim Laden des Fahrplans';
-    } finally {
-      if (this._loadingTrainDataFor === requestedTrainNumber) {
-        this._loadingTrainDataFor = null;
+      if (this._trainNumber !== trainNumber) return;
+      const timetableContainer = this.container.querySelector('#trainTimetable') as HTMLDivElement | null;
+      if (timetableContainer) {
+        timetableContainer.textContent = 'Fehler beim Laden des Fahrplans';
       }
     }
+  }
+
+  private renderTimetable(
+    waypoints: TrainWayPointDto[],
+    followingTrainNumber: string | null | undefined
+  ): void {
+    const timetableContainer = this.container.querySelector('#trainTimetable') as HTMLDivElement | null;
+    if (!timetableContainer) return;
+
+    timetableContainer.innerHTML = '';
+
+    if (waypoints.length === 0) {
+      timetableContainer.textContent = 'No timetable available';
+      return;
+    }
+
+    const table = document.createElement('table');
+    table.className = 'table table-sm table-dark table-striped';
+    table.style.fontSize = 'small';
+
+    const tbody = document.createElement('tbody');
+    for (const wp of waypoints) {
+      const row = document.createElement('tr');
+      if (wp.processed) {
+        row.className = 'text-muted';
+      }
+
+      const arrivalTime = formatTimeFromIso(wp.arrivalTime, UNSET_TIME_PLACEHOLDER);
+      const departureTime = formatTimeFromIso(wp.departureTime, UNSET_TIME_PLACEHOLDER);
+
+      row.innerHTML = `
+        <td>${wp.station}</td>
+        <td>${arrivalTime}</td>
+        <td>${departureTime}</td>
+      `;
+
+      tbody.appendChild(row);
+    }
+
+    table.appendChild(tbody);
+
+    timetableContainer.appendChild(table);
+    this.renderTurnaroundHint(timetableContainer, followingTrainNumber);
   }
 
   private handleEmergencyStop(): void {
     if (!this._trainNumber) return;
-    const train = this.application.trainManager.getTrain(this._trainNumber);
-    if (!train) return;
 
-    if (train.speedCurrent <= 0.05) {
-      train.setState(TrainState.EMERGENCY_STOP, 0);
+    if (this._train!.speedCurrent <= 0.05) {
+      this._train!.setState(TrainState.EMERGENCY_STOP, 0);
     } else {
-      train.setState(TrainState.EMERGENCY_BRAKING);
+      this._train!.setState(TrainState.EMERGENCY_BRAKING);
     }
     // Trigger immediate redraw/update in addition to the normal tick-based updates
     this.application.eventManager.emit('trainsUpdated');
@@ -256,97 +227,55 @@ export class TrainDetailsPanel extends BasePanel {
   }
 
   private handleResume(): void {
-    if (!this._trainNumber) return;
-    const train = this.application.trainManager.getTrain(this._trainNumber);
-    if (!train) return;
-
-    train.setStoppedBySignal(null); // clears internal stopped-by-signal state
-    train.setState(TrainState.RUNNING);
+    this._train!.setStoppedBySignal(null); // clears internal stopped-by-signal state
+    this._train!.setState(TrainState.RUNNING);
     this.application.eventManager.emit('trainsUpdated');
     void this.Updates();
   }
 
   private handleToggleManualMode(): void {
-    if (!this._trainNumber) return;
-    const train = this.application.trainManager.getTrain(this._trainNumber);
-    if (!train) return;
-    if (!this.canToggleManualMode(train)) return;
+    if (!this.canToggleManualMode(this._train!)) return;
 
-    const enableManual = !train.isManualControl;
+    const enableManual = !this._train!.isManualControl;
     if (!enableManual) {
       void this.exitManualModeAndRecalcDirection();
       return;
     }
-    train.setManualControlMode(true);
+    this._train!.setManualControlMode(true);
     this.application.eventManager.emit('trainsUpdated');
     void this.Updates();
   }
 
   private async exitManualModeAndRecalcDirection(): Promise<void> {
-    if (!this._trainNumber) return;
-    const train = this.application.trainManager.getTrain(this._trainNumber);
-    if (!train) return;
-
-    void this.application.trainManager.continueTrainAfterManualControl(train);
+    void this.application.trainManager.continueTrainAfterManualControl(this._train!);
     this.application.eventManager.emit('trainsUpdated');
     void this.Updates();
   }
 
   private handleManualDrive(direction: 1 | -1): void {
-    if (!this._trainNumber) return;
-    const train = this.application.trainManager.getTrain(this._trainNumber);
-    if (!train) return;
-
-    train.setManualControlMode(true);
-    if (train.movingDirection !== direction) {
-      const reversed = this.application.trainManager.reverseTrain(this._trainNumber);
+    this._train!.setManualControlMode(true);
+    if (this._train!.movingDirection !== direction) {
+      const reversed = this.application.trainManager.reverseTrain(this._trainNumber!);
       if (!reversed) return;
     }
-    train.setStoppedBySignal(null);
-    train.setState(TrainState.MANUAL_CONTROL);
-    train.speedAimed = train.maxAllowedSpeed;
+    this._train!.setStoppedBySignal(null);
+    this._train!.setState(TrainState.MANUAL_CONTROL);
+    this._train!.speedAimed = this._train!.maxAllowedSpeed;
     this.application.eventManager.emit('trainsUpdated');
     void this.Updates();
   }
 
   private handleManualDriveStop(): void {
-    if (!this._trainNumber) return;
-    const train = this.application.trainManager.getTrain(this._trainNumber);
-    if (!train) return;
-
-    train.setManualControlMode(true);
-    train.setState(TrainState.MANUAL_CONTROL);
-    train.speedAimed = 0;
+    this._train!.setManualControlMode(true);
+    this._train!.setState(TrainState.MANUAL_CONTROL);
+    this._train!.speedAimed = 0;
     this.application.eventManager.emit('trainsUpdated');
     void this.Updates();
   }
 
   private async handleRemove(): Promise<void> {
-    if (!this._trainNumber) return;
-    const trainNumber = this._trainNumber;
-    await this.application.removeTrainAndReport(trainNumber);
+    await this.application.removeTrainAndReport(this._trainNumber!);
     this.hide();
-  }
-
-  private formatWaypointTime(time: string | null | undefined): string {
-    if (!time) {
-      return '';
-    }
-
-    const parsed = new Date(time);
-    if (Number.isNaN(parsed.getTime())) {
-      return '';
-    }
-
-    // DateTime.MinValue from backend means "not set".
-    if (parsed.getUTCFullYear() <= 1) {
-      return '';
-    }
-
-    return parsed.toLocaleTimeString('de-DE', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
   }
 
   private renderTurnaroundHint(
@@ -354,11 +283,7 @@ export class TrainDetailsPanel extends BasePanel {
     followingTrainNumber: string | null | undefined
   ): void {
     if (!followingTrainNumber) return;
-
-    const hint = document.createElement('div');
-    hint.className = 'small text-secondary mt-1';
-    hint.textContent = `Wendet auf ${followingTrainNumber}`;
-    container.appendChild(hint);
+    container.appendChild(UI.createSpan('small text-secondary mt-1', `Wendet auf ${followingTrainNumber}`));
   }
 
   private formatTrainSpeed(speedMetersPerSecond: number | null | undefined): string {
@@ -383,15 +308,14 @@ export class TrainDetailsPanel extends BasePanel {
   }
 
   private updateTrainMeta(): void {
-    const metaEl = this.container.querySelector('#trainDetailsMeta') as HTMLDivElement | null;
-    if (!metaEl) return;
+    const metaEl = this.container.querySelector('#trainDetailsMeta') as HTMLDivElement;
 
     const train = this._train;
     const details = this._trainDetails;
     const maxSpeed = details?.speedMax ?? train?.speedMax;
 
-    this.renderTrainMeta(metaEl, {
-      typeText: details ? UI.translateTrainType(details.type) : (train ? UI.translateTrainType(train.type) : '-'),
+    this.renderTrainMeta(metaEl!, {
+      typeText: details ? this.formatTrainType(details.type) : (train ? this.formatTrainType(train.type) : '-'),
       carsText: details ? String(details.cars) : (train ? String(train.cars) : '-'),
       maxSpeedText: this.formatTrainSpeed(maxSpeed),
       stopReasonText: train ? this.formatState(train.state) : '-',
@@ -418,6 +342,23 @@ export class TrainDetailsPanel extends BasePanel {
     }
   }
 
+  private formatTrainType(type: string | null | undefined): string {
+    if (!type) {
+      return '-';
+    }
+
+    switch (type) {
+      case 'Passenger':
+        return 'Personenzug';
+      case 'Freight':
+        return 'Güterzug';
+      case 'MultipleUnit':
+        return 'Triebzug';
+      default:
+        return type;
+    }
+  }
+
   private renderTrainMeta(
     metaEl: HTMLDivElement,
     values: {
@@ -440,12 +381,8 @@ export class TrainDetailsPanel extends BasePanel {
       if (item.label === 'Status') {
         cell.style.gridColumn = '1 / -1';
       }
-      const label = document.createElement('span');
-      label.className = 'text-secondary';
-      label.textContent = `${item.label}: `;
-      const value = document.createElement('span');
-      value.className = 'text-light';
-      value.textContent = item.value;
+      const label = UI.createSpan('text-secondary', `${item.label}: `);
+      const value = UI.createSpan('text-light', item.value);
       cell.appendChild(label);
       cell.appendChild(value);
       metaEl.appendChild(cell);
