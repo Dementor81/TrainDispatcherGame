@@ -66,7 +66,6 @@ export class TrainManager {
       }
 
       if (Train.isHardStoppedState(train.state)) return;
-      if (train.state === TrainState.EMERGENCY_STOP) return;
 
       const isEmergencyBraking = train.state === TrainState.EMERGENCY_BRAKING;
       if (!isEmergencyBraking) {
@@ -129,7 +128,7 @@ export class TrainManager {
             const boundaryKm = train.movingDirection > 0 ? train.position.track.length : 0;
             train.setPosition(train.position.track, boundaryKm);
             this._movementHandler.updateTailPosition(train);
-            if (train.isManualControl) {
+            if (train.state === TrainState.MANUAL_CONTROL) {
                train.setState(TrainState.END_OF_TRACK, 0);
                return;
             }
@@ -208,7 +207,7 @@ export class TrainManager {
       }
 
       const trainNumber = this.generateUniqueTestTrainNumber();
-      const train = new Train(this._eventManager, trainNumber, 3, 30);
+      const train = new Train(this._eventManager, trainNumber, 3, 30, 'Passenger');
       train.speedCurrent = 0;
       const direction = 1;
       train.setDrawingDirection(direction);
@@ -253,18 +252,14 @@ export class TrainManager {
          this.reverseTrain(train.number);
       }
 
-      train.setManualControlMode(false);
+      train.endManualControl();
    }
 
    public reverseTrain(trainNumber: string): boolean {
       const train = this.getTrain(trainNumber);
       if (!train || !train.position || !train.tailPosition) return false;
 
-      const tempTrack = train.position.track;
-      const tempKm = train.position.km;
-      train.setPosition(train.tailPosition.track, train.tailPosition.km);
-      train.setTailPosition(tempTrack, tempKm);
-      train.setMovingDirection(train.movingDirection * -1);
+      train.reverse();
       return true;
    }
 

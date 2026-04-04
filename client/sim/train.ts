@@ -37,15 +37,15 @@ export class Train {
     private _number: string;
     private _type: TrainType;
     private _category: string | null;
-    private _position: RailPosition|null = null; 
-    private _tailPosition: RailPosition|null = null; 
+    private _position: RailPosition | null = null;
+    private _tailPosition: RailPosition | null = null;
     private _cars: number;
     private _speedMax: number; // m/s
     private _speedCurrent: number; // m/s, current speed on client
     private _speedAimed: number; // m/s, target speed on client
     private _drawingDirection: number; // 1 = locomotive on right, -1 = locomotive on left
     private _movingDirection: number; // 1 = moving forward (increasing km), -1 = moving backward (decreasing km)
-    private _stoppedBySignal: Signal | null; // Signal that currently stops this train
+    private _stoppedBySignal: Signal | null = null; // Signal that currently stops this train
     private _action: TrainWayPointActionType = 'PassThrough'; // How the train acts at the current station
     private _arrivalTime: Date | null = null; // Scheduled arrival time at current station
     private _departureTime: Date | null = null; // Scheduled departure time at current station
@@ -55,7 +55,6 @@ export class Train {
     private _waitingProgress: number = 0; // 0..1 progress while waiting at station
     private _followingTrainNumber: string | null = null; // following train number that will use this vehicle, after this train has completed its journey
     private _exitState: TrainExitState | null = null;
-    private _isManualControl: boolean = false;
 
     constructor(
         eventManager: EventManager,
@@ -63,7 +62,8 @@ export class Train {
         cars: number,
         speedMax: number,
         type: TrainType = 'Passenger',
-        category: string | null = null
+        category: string | null = "",
+
     ) {
         this._eventManager = eventManager;
         this._number = number;
@@ -75,25 +75,19 @@ export class Train {
         this._speedAimed = speedMax;
         this._drawingDirection = 1;
         this._movingDirection = 1;
-        this._stoppedBySignal = null; 
     }
 
     // Static factory method to create a train from server data
     static fromServerData(data: any, eventManager: EventManager): Train {
         const category = data.category ?? data.catagory ?? null;
         const train = new Train(eventManager, data.trainNumber, data.cars, data.speed, data.trainType || 'Passenger', category);
-        
+
         // Set schedule times if provided
         if (data.departureTime) {
             train.setScheduleTimes(data.arrivalTime ? new Date(data.arrivalTime) : null, new Date(data.departureTime));
             train.action = data.action || 'PassThrough';
         }
-        
-        // Set following train number if provided
-        if (data.followingTrainNumber) {
-            train.followingTrainNumber = data.followingTrainNumber;
-        }
-        
+        train._followingTrainNumber = data.followingTrainNumber ?? null;
         return train;
     }
 
@@ -114,10 +108,6 @@ export class Train {
         return this._category;
     }
 
-    set category(value: string | null) {
-        this._category = value;
-    }
-
     get position(): RailPosition | null {
         return this._position;
     }
@@ -135,7 +125,7 @@ export class Train {
     }
 
     get maxAllowedSpeed(): number {
-        return this._isManualControl ? Math.min(this._speedMax, MANUAL_MODE_SPEED_LIMIT_MPS) : this._speedMax;
+        return this._state === TrainState.MANUAL_CONTROL ? Math.min(this._speedMax, MANUAL_MODE_SPEED_LIMIT_MPS) : this._speedMax;
     }
 
     get speedCurrent(): number {
@@ -218,10 +208,6 @@ export class Train {
         return this._followingTrainNumber;
     }
 
-    set followingTrainNumber(trainNumber: string | null) {
-        this._followingTrainNumber = trainNumber;
-    }
-
     get isExiting(): boolean {
         return this._exitState !== null;
     }
@@ -238,9 +224,7 @@ export class Train {
         return this._exitState?.boundaryKm ?? null;
     }
 
-    get isManualControl(): boolean {
-        return this._isManualControl;
-    }
+
 
     get length(): number {
         return this._cars * RendererConfig.carWidth + ((this._cars - 1) * RendererConfig.trainCarSpacing);
@@ -260,24 +244,31 @@ export class Train {
         if (track === null) this._tailPosition = null;
         else this._tailPosition = new RailPosition(track, km);
     }
-    
+
+    reverse(): void {
+        const tempTrack = this.position!.track;
+        const tempKm = this.position!.km;
+        this.setPosition(this.tailPosition!.track, this.tailPosition!.km);
+        this.setTailPosition(tempTrack, tempKm);
+        this.setMovingDirection(this.movingDirection * -1);
+    }
 
     // Calculate the actual length of the train based on configured car width and spacing
     getLength(): number {
         if (this._cars === 0) {
             return 0;
         }
-        
+
         // All cars (including locomotive) use the same width
         const totalLength = (this._cars * RendererConfig.carWidth) + ((this._cars - 1) * RendererConfig.trainCarSpacing);
-        
+
         return totalLength;
     }
 
     // Set the train's position
     setPosition(track: Track, km: number): void {
-       this._position = new RailPosition(track, km);
-    }   
+        this._position = new RailPosition(track, km);
+    }
 
     // Set the train's drawing direction (locomotive orientation)
     setDrawingDirection(direction: number): void {
@@ -293,14 +284,14 @@ export class Train {
     // Set the signal that is currently stopping this train
     setStoppedBySignal(signal: Signal | null, distanceToStop: number | null = null): void {
         this._stoppedBySignal = signal;
-        if (signal) {            
+        if (signal) {
             this.setState(TrainState.BRAKING_FOR_SIGNAL, distanceToStop);
-        } else {            
-            if (this._state != TrainState.MANUAL_CONTROL ) this.setState(TrainState.RUNNING);            
+        } else {
+            if (this._state != TrainState.MANUAL_CONTROL) this.setState(TrainState.RUNNING);
         }
     }
 
-    
+
 
     // Set the scheduled arrival and departure times for the current station
     setScheduleTimes(arrivalTime: Date | null, departureTime: Date | null): void {
@@ -324,7 +315,7 @@ export class Train {
     }
 
     static isHardStoppedState(state: TrainState): boolean {
-        return Tools.is(state, [TrainState.COLLISION, TrainState.DERAILEMENT, TrainState.END_OF_TRACK, TrainState.ENDED, TrainState.MISROUTED]);
+        return Tools.is(state, [TrainState.COLLISION, TrainState.DERAILEMENT, TrainState.END_OF_TRACK, TrainState.ENDED, TrainState.MISROUTED, TrainState.EMERGENCY_STOP]);
     }
 
     setState(nextState: TrainState, distanceToStop: number | null = null): void {
@@ -336,9 +327,8 @@ export class Train {
             ? null
             : Math.max(0, distanceToStop);
         this._speedAimed = nextState === TrainState.RUNNING ? this.maxAllowedSpeed : 0;
-        if(Train.isHardStoppedState(nextState)) {
-            this._speedCurrent = 0;
-        }
+        if (Train.isHardStoppedState(nextState)) this._speedCurrent = 0;
+
         if (previousState !== nextState) {
             this._eventManager.emit("trainStateChanged", this, previousState, nextState);
         }
@@ -349,16 +339,23 @@ export class Train {
         this._distanceToStop = Math.max(0, this._distanceToStop - Math.max(0, distance));
     }
 
-    setManualControlMode(isManual: boolean): void {
-        if(this._isManualControl === isManual) return;
+    startManualControl(): void {
+        if (this.speedCurrent > 0.1) return;
+        this.setState(TrainState.MANUAL_CONTROL);
+    }
 
-        this._isManualControl = isManual;
+    endManualControl(): void {
+        if (this.state !== TrainState.MANUAL_CONTROL) return;
+        this.setState(TrainState.RUNNING);
+    }
 
-        if(isManual) {
-            this.setState(TrainState.MANUAL_CONTROL);
-        } else {
-            this.setState(TrainState.RUNNING);
-        }
+    goManualControl(direction: 1 | -1): void {
+        if (this.state !== TrainState.MANUAL_CONTROL) return;
+
+        if (this.movingDirection !== direction) this.reverse();
+
+        this.setStoppedBySignal(null);
+        this.speedAimed = this.maxAllowedSpeed;
     }
 
     // Update train position based on current speed and moving direction
@@ -374,17 +371,17 @@ export class Train {
     // Method to get train info for debugging/logging
     getInfo(): string {
         let info = `Train ${this._number}`;
-        
+
         if (this._position) {
             info += ` on track ${this._position.track.id} at km ${this._position.km}`;
         } else {
             info += ` (not positioned)`;
         }
-        
+
         if (this._arrivalTime) {
             info += `, arrival: ${this._arrivalTime.toLocaleTimeString()}`;
         }
-        
+
         if (this._departureTime) {
             info += `, departure: ${this._departureTime.toLocaleTimeString()}`;
         }
@@ -392,7 +389,7 @@ export class Train {
         if (this._state !== TrainState.RUNNING) {
             info += `, state: ${this._state}`;
         }
-        
+
         return info;
     }
 }

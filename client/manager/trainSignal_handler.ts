@@ -17,7 +17,7 @@ export class TrainSignalHandler {
    }
 
    checkTrainStoppedBySignal(train: Train): void {
-      if (train.isManualControl) return;
+      if (train.state === TrainState.MANUAL_CONTROL) return;
 
       if (train.stoppedBySignal !== null) {
          if (train.stoppedBySignal.isTrainAllowedToGo()) {

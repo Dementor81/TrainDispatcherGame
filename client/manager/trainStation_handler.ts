@@ -33,7 +33,7 @@ export class TrainStationHandler {
       const isFreightPassThrough = train.type === 'Freight' && train.action !== 'End';
       const currentTrack = train.position!.track;
 
-      if (!train.shouldStopAtCurrentStation || !currentTrack.halt || train.isManualControl || isFreightPassThrough || train.waitingProgress === 1) return false;
+      if (!train.shouldStopAtCurrentStation || !currentTrack.halt || train.state === TrainState.MANUAL_CONTROL || isFreightPassThrough || train.waitingProgress === 1) return false;
 
       const currentSimulationTime = this._clientSimulation.currentSimulationTime!;
       const stoppingPoint = currentTrack.length / 2 + train.length / 2 * train.movingDirection;
@@ -71,14 +71,14 @@ export class TrainStationHandler {
 
          if (train.departureTime && currentSimulationTime >= train.departureTime) {
             train.setWaitingProgress(1);
-            if (!train.isManualControl) {
-               const nextSignal = this._trackLayoutManager.getNextSignal(train.position!.track, train.position!.km, train.movingDirection);
-               if (nextSignal && !nextSignal.isTrainAllowedToGo()) {
-                  train.setStoppedBySignal(nextSignal, 0);
-                  this._eventManager.emit("trainStoppedBySignal", train, nextSignal);
-                  return true;
-               }
+
+            const nextSignal = this._trackLayoutManager.getNextSignal(train.position!.track, train.position!.km, train.movingDirection);
+            if (nextSignal && !nextSignal.isTrainAllowedToGo()) {
+               train.setStoppedBySignal(nextSignal, 0);
+               this._eventManager.emit("trainStoppedBySignal", train, nextSignal);
+               return true;
             }
+
 
             train.setState(TrainState.RUNNING);
             this._eventManager.emit("trainDepartedFromStation", train);
