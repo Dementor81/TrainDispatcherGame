@@ -21,8 +21,9 @@ import TrainRoute from "../sim/trainRoute";
 import Exit from "../sim/exit";
 import SoundsManager from "../manager/sounds_manager";
 import Tools from "./utils";
+import type { ApplicationContext } from "./applicationContext";
 
-export class Application {
+export class Application implements ApplicationContext {
    private _uiManager: UIManager;
    private _eventManager: EventManager;
    private _trackLayoutManager: TrackLayoutManager;
@@ -39,17 +40,12 @@ export class Application {
 
    constructor() {
       this._eventManager = new EventManager();
-      this._signalRManager = new SignalRManager(this._eventManager);
+      this._signalRManager = new SignalRManager(this);
       this._soundsManager = new SoundsManager(this._eventManager);
       this._uiManager = new UIManager(this, this._eventManager);
       this._trackLayoutManager = new TrackLayoutManager(this);
       this._clientSimulation = new ClientSimulation(this._eventManager);
-      this._trainManager = new TrainManager(
-         this._eventManager, 
-         this._trackLayoutManager, 
-         this._signalRManager,
-         this._clientSimulation
-      );
+      this._trainManager = new TrainManager(this);
       this._trainRouteManager = new TrainRouteManager(this._trackLayoutManager, this._eventManager);
 
       // Set up the simulation tick callback
@@ -249,12 +245,7 @@ export class Application {
          this._renderer.renderTrainRoutes(this._trainRouteManager.routes);
       });
 
-      // Simulation speed change events (from server)
-      this._eventManager.on('simulationSpeedChanged', (speed: number) => {
-         if (typeof speed === 'number' && !isNaN(speed)) {
-            SimulationConfig.simulationSpeed = Math.max(0.1, Math.min(100, speed));
-         }
-      });
+      
 
       this._eventManager.on('routeEndedAtExit', (route: TrainRoute, exit: Exit) => {
          this._signalRManager.setExitBlockStatus(exit.id, true);

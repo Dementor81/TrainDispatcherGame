@@ -5,6 +5,8 @@ import RailPosition from "./railPosition";
 import { TrainType, TrainWayPointActionType } from "../network/dto";
 import { EventManager } from "../manager/event_manager";
 import Tools from "../core/utils";
+import { ClientSimulation } from "@core/clientSimulation";
+import type { ApplicationContext } from "@core/applicationContext";
 
 // Explicit finite state machine state for a train
 export enum TrainState {
@@ -34,6 +36,7 @@ const MANUAL_MODE_SPEED_LIMIT_MPS = 20 / 3.6;
 
 export class Train {
     private _eventManager: EventManager;
+    private _clientSimulation: ClientSimulation;
     private _number: string;
     private _type: TrainType;
     private _category: string | null;
@@ -57,7 +60,7 @@ export class Train {
     private _exitState: TrainExitState | null = null;
 
     constructor(
-        eventManager: EventManager,
+        application: ApplicationContext,
         number: string,
         cars: number,
         speedMax: number,
@@ -65,7 +68,8 @@ export class Train {
         category: string | null = "",
 
     ) {
-        this._eventManager = eventManager;
+        this._eventManager = application.eventManager;
+        this._clientSimulation = application.clientSimulation;
         this._number = number;
         this._type = type;
         this._category = category;
@@ -78,9 +82,9 @@ export class Train {
     }
 
     // Static factory method to create a train from server data
-    static fromServerData(data: any, eventManager: EventManager): Train {
+    static fromServerData(data: any, application: ApplicationContext): Train {
         const category = data.category ?? data.catagory ?? null;
-        const train = new Train(eventManager, data.trainNumber, data.cars, data.speed, data.trainType || 'Passenger', category);
+        const train = new Train(application, data.trainNumber, data.cars, data.speed, data.trainType || 'Passenger', category);
 
         // Set schedule times if provided
         if (data.departureTime) {
@@ -363,7 +367,7 @@ export class Train {
     // speed is in m/s
     getMovementDistance(): number {
 
-        const timeElapsedSeconds = SimulationConfig.simulationIntervalSeconds * SimulationConfig.simulationSpeed;
+        const timeElapsedSeconds = SimulationConfig.simulationIntervalSeconds * this._clientSimulation.speed;
         const currentSpeed = Math.max(0, Math.min(this._speedCurrent, this.maxAllowedSpeed));
         return currentSpeed * timeElapsedSeconds * this._movingDirection;
     }

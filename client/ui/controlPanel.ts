@@ -7,32 +7,42 @@ import {
    advanceSimulationOneMinute,
    setSimulationSpeed,
 } from "../network/api";
-import { SimulationStatusDto } from "../network/dto";
+import { SimulationState, SimulationStatusDto } from "../network/dto";
 import { BasePanel } from "./basePanel";
 import { Application } from "../core/application";
 import { UI } from "../utils/ui";
+import EventManager from "manager/event_manager";
 
 export class ControlPanel extends BasePanel {
-   private controlsContainer: HTMLDivElement;
 
    constructor(application: Application) {
       super(application, {
-         updateIntervalMs: 1000,
          width: 550,
          bottom: 0,
          left: 0,
       });
-      this.controlsContainer = this.createControlsContainer();
-      this.container.appendChild(this.controlsContainer);
+
+      this.subscribeToEvents(application.eventManager);
+
+      this.handleSimulationStateChanged(application.clientSimulation.simulationState);
+      this.handleSimulationSpeedChanged(application.clientSimulation.speed);
+   }
+
+   private subscribeToEvents(eventManager: EventManager): void {
+      eventManager.on('simulationStateChanged', (state: SimulationState) => {
+         this.handleSimulationStateChanged(state);
+      });
+
+      eventManager.on('simulationSpeedChanged', (speed: number) => {
+         this.handleSimulationSpeedChanged(speed);
+      });
+   }
+
+   private handleSimulationStateChanged(state: SimulationState): void {
+      this.updateButtonStates(state);
    }
 
    protected createContent(): HTMLDivElement {
-      // This is not used in ControlPanel as we manually add status and controls containers
-      const content = document.createElement("div");
-      return content;
-   }
-
-   private createControlsContainer(): HTMLDivElement {
       const controlsContainer = document.createElement("div");
 
       const buttonGroup = document.createElement("div");
@@ -83,27 +93,16 @@ export class ControlPanel extends BasePanel {
       return controlsContainer;
    }
 
-   protected async Updates(): Promise<void> {
-      await this.updateStatus();
+   private async handleSimulationSpeedChanged(speed: number) {
+      const speedInput = document.getElementById("speedInput") as HTMLInputElement;        
+      speedInput.value = String(speed);
    }
 
-   private async updateStatus(): Promise<void> {
-      try {
-         const [status] = await Promise.all([getSimulationStatus()]);
-
-         // Update button states
-         this.updateButtonStates(status);
-         this.updateSpeedInput(status);
-      } catch (error) {
-         console.error("Failed to update status:", error);
-      }
-   }
-
-   private updateButtonStates(status: SimulationStatusDto): void {
+   private updateButtonStates(state: SimulationState): void {
       const startResumeBtn = document.getElementById("startResumeBtn") as HTMLButtonElement;
       const pauseBtn = document.getElementById("pauseBtn") as HTMLButtonElement;
 
-      switch (status.state) {
+      switch (state) {
          case "Error":
          case "Stopped":
             startResumeBtn.innerHTML = '<i class="bi bi-play-fill"></i> Start';
@@ -140,9 +139,7 @@ export class ControlPanel extends BasePanel {
          // Start server simulation
          // The server will notify all clients via SignalR about the state change
          // and the Application's event handler will update the clientSimulation
-         await startSimulation();
-
-         this.updateStatus();
+         startSimulation();
       } catch (error) {
          console.error("Failed to start simulation:", error);
          alert("Failed to start simulation");
@@ -154,9 +151,7 @@ export class ControlPanel extends BasePanel {
          // Stop server simulation
          // The server will notify all clients via SignalR about the state change
          // and the Application's event handler will update the clientSimulation
-         await stopSimulation();
-
-         this.updateStatus();
+         stopSimulation();
       } catch (error) {
          console.error("Failed to stop simulation:", error);
          alert("Failed to stop simulation");
@@ -168,9 +163,7 @@ export class ControlPanel extends BasePanel {
          // Pause server simulation
          // The server will notify all clients via SignalR about the state change
          // and the Application's event handler will update the clientSimulation
-         await pauseSimulation();
-
-         this.updateStatus();
+         pauseSimulation();
       } catch (error) {
          console.error("Failed to pause simulation:", error);
          alert("Failed to pause simulation");
@@ -182,9 +175,7 @@ export class ControlPanel extends BasePanel {
          // Resume server simulation
          // The server will notify all clients via SignalR about the state change
          // and the Application's event handler will update the clientSimulation
-         await resumeSimulation();
-
-         this.updateStatus();
+         resumeSimulation();
       } catch (error) {
          console.error("Failed to resume simulation:", error);
          alert("Failed to resume simulation");
@@ -193,21 +184,10 @@ export class ControlPanel extends BasePanel {
 
    private async handleAdvanceMinute(): Promise<void> {
       try {
-         await advanceSimulationOneMinute();
-         await this.updateStatus();
+          advanceSimulationOneMinute();
       } catch (error) {
          console.error("Failed to advance simulation:", error);
          alert("Failed to advance simulation time");
-      }
-   }
-
-   private updateSpeedInput(status: SimulationStatusDto): void {
-      const speedInput = document.getElementById("speedInput") as HTMLInputElement | null;
-      if (!speedInput || typeof status.speed !== "number") return;
-      const newValue = String(status.speed);
-      const isFocused = document.activeElement === speedInput;
-      if (!isFocused && speedInput.value !== newValue) {
-         speedInput.value = newValue;
       }
    }
 
@@ -215,8 +195,7 @@ export class ControlPanel extends BasePanel {
       const value = parseInt(input.value, 10);
       if (!isNaN(value)) {
          try {
-            await setSimulationSpeed(value);
-            await this.updateStatus();
+            setSimulationSpeed(value);
          } catch (error) {
             console.error("Failed to set simulation speed:", error);
             alert("Failed to set simulation speed");

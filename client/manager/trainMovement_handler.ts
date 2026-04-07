@@ -7,6 +7,8 @@ import { TrackLayoutManager } from "./trackLayout_manager";
 import { SignalRManager } from "../network/signalr";
 import { SimulationConfig } from "../core/config";
 import { TrainSignalHandler } from "./trainSignal_handler";
+import Application from "@core/application";
+import { ClientSimulation } from "@core/clientSimulation";
 
 export interface TrainMovementCallbacks {
    removeTrain(trainNumber: string): boolean;
@@ -14,28 +16,27 @@ export interface TrainMovementCallbacks {
 
 export class TrainMovementHandler {
    private _trackLayoutManager: TrackLayoutManager;
+   private _clientSimulation: ClientSimulation;
    private _eventManager: EventManager;
    private _signalRManager: SignalRManager;
    private _signalHandler: TrainSignalHandler;
    private _callbacks: TrainMovementCallbacks;
 
-   constructor(
-      trackLayoutManager: TrackLayoutManager,
-      eventManager: EventManager,
-      signalRManager: SignalRManager,
+   constructor(application:Application,
       signalHandler: TrainSignalHandler,
       callbacks: TrainMovementCallbacks
    ) {
-      this._trackLayoutManager = trackLayoutManager;
-      this._eventManager = eventManager;
-      this._signalRManager = signalRManager;
+      this._trackLayoutManager = application.trackLayoutManager;
+      this._clientSimulation = application.clientSimulation;
+      this._eventManager = application.eventManager;
+      this._signalRManager = application.signalRManager;
       this._signalHandler = signalHandler;
       this._callbacks = callbacks;
    }
 
    updateTrainSpeed(train: Train): void {
       const aimedSpeed = Math.max(0, Math.min(train.speedAimed, train.maxAllowedSpeed));
-      const dtSeconds = SimulationConfig.simulationIntervalSeconds * SimulationConfig.simulationSpeed;
+      const dtSeconds = SimulationConfig.simulationIntervalSeconds * this._clientSimulation.speed;
 
       if (train.speedCurrent < aimedSpeed) {
          const accelerationStep = SimulationConfig.trainAcceleration * dtSeconds;

@@ -58,7 +58,6 @@ export class RendererConfig {
 }
 
 export class SimulationConfig {
-    static simulationSpeed = 1.0;
     static readonly simulationIntervalSeconds = 0.020;
     static readonly simulationScale = 1000;
     static readonly simulationTimeUpdateIntervalSeconds = 10;

@@ -1,15 +1,16 @@
+import type { ApplicationContext } from "../core/applicationContext";
 import { ClientSimulation } from "../core/clientSimulation";
 import { EventManager } from "../manager/event_manager";
 import { SignalRManager } from "../network/signalr";
 
-export class GameMasterApplication {
+export class GameMasterApplication implements ApplicationContext {
   public eventManager: EventManager;
   public signalRManager: SignalRManager;
   public clientSimulation: ClientSimulation;
 
   constructor() {
     this.eventManager = new EventManager();
-    this.signalRManager = new SignalRManager(this.eventManager);
+    this.signalRManager = new SignalRManager(this);
     this.clientSimulation = new ClientSimulation(this.eventManager);
 
     // Connect to SignalR to receive server broadcasts

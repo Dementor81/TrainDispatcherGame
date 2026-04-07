@@ -21,6 +21,9 @@ export class ClientSimulation {
    
    // Simulation state tracking
    private _simulationState: SimulationState = 'Stopped';
+
+   // Simulation speed tracking
+   private _simulationSpeed: number = 1.0;
    
    // Callback to invoke on each simulation tick
    private _onTick: (() => void) | null = null;
@@ -31,6 +34,14 @@ export class ClientSimulation {
 
    public get isRunning(): boolean {
       return this._isSimulationRunning;
+   }
+
+   public get speed(): number {
+      return this._simulationSpeed;
+   }
+
+   public set speed(value: number) {
+      this._simulationSpeed = value;
    }
    
    public get simulationState(): SimulationState {
@@ -43,6 +54,11 @@ export class ClientSimulation {
       // Subscribe to simulation state changes from server
       this._eventManager.on('simulationStateChanged', (state: SimulationState) => {
          this.handleSimulationStateChanged(state);
+      });
+
+      // Simulation speed change events (from server)
+      this._eventManager.on('simulationSpeedChanged', (speed: number) => {
+         this.speed = speed;
       });
       
       // Initialize with server state on startup
@@ -69,8 +85,8 @@ export class ClientSimulation {
          
          // Synchronize simulation speed
          if (typeof status.speed === 'number') {
-            SimulationConfig.simulationSpeed = Math.max(0.1, Math.min(100, status.speed));
-            this._eventManager.emit('simulationSpeedChanged', status.speed);
+            this._simulationSpeed = Math.max(0.1, Math.min(100, status.speed));
+            this._eventManager.emit('simulationSpeedChanged', this._simulationSpeed);
          }
          
          console.log(`ClientSimulation: Initialized with server state: ${status.state}, time: ${status.currentTime}, speed: ${status.speed}`);

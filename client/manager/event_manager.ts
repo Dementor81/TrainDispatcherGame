@@ -1,5 +1,3 @@
-import { Application } from "../core/application";
-
 type EventCallback = (...args: any[]) => void;
 
 export class CancellableEvent {

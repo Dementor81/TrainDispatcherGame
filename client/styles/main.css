@@ -254,7 +254,7 @@ body {
     width: 200px;
 }
 
-#trainDetailsMeta {
+.base-panel-content {
     font-size: small;
 }
 

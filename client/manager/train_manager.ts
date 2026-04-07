@@ -12,9 +12,11 @@ import { TrainWayPointDto } from "network/dto";
 import { TrainSignalHandler } from "./trainSignal_handler";
 import { TrainStationHandler } from "./trainStation_handler";
 import { TrainMovementHandler } from "./trainMovement_handler";
+import Application from "@core/application";
 
 export class TrainManager {
    private _trains: Train[] = [];
+   private _application: Application;
    private _eventManager: EventManager;
    private _trackLayoutManager: TrackLayoutManager;
    private _signalHandler: TrainSignalHandler;
@@ -22,23 +24,20 @@ export class TrainManager {
    private _movementHandler: TrainMovementHandler;
 
    constructor(
-      eventManager: EventManager,
-      trackLayoutManager: TrackLayoutManager,
-      signalRManager: SignalRManager,
-      clientSimulation: ClientSimulation
+      application: Application
    ) {
-      this._eventManager = eventManager;
-      this._trackLayoutManager = trackLayoutManager;
+      this._application = application;
+      this._eventManager = application.eventManager;
+      this._trackLayoutManager = application.trackLayoutManager;
 
-      this._signalHandler = new TrainSignalHandler(trackLayoutManager, eventManager);
-      this._stationHandler = new TrainStationHandler(eventManager, clientSimulation, trackLayoutManager, {
+      this._signalHandler = new TrainSignalHandler(this._trackLayoutManager, this._eventManager);
+      this._stationHandler = new TrainStationHandler(this._eventManager, this._application.clientSimulation, this._trackLayoutManager, {
          getDirectionTowardExit: (train, waypoints) => this.getDirectionTowardExit(train, waypoints),
          reverseTrain: (trainNumber) => this.reverseTrain(trainNumber),
-      });
-      this._movementHandler = new TrainMovementHandler(trackLayoutManager, eventManager, signalRManager, this._signalHandler, {
+      });     
+      this._movementHandler = new TrainMovementHandler(this._application, this._signalHandler, {
          removeTrain: (trainNumber) => this.removeTrain(trainNumber),
       });
-
       this._eventManager.on("trainCreated", (train: Train, exitPointId: number) => {
          this.handleTrainCreated(train, exitPointId);
       });
@@ -207,7 +206,7 @@ export class TrainManager {
       }
 
       const trainNumber = this.generateUniqueTestTrainNumber();
-      const train = new Train(this._eventManager, trainNumber, 3, 30, 'Passenger');
+      const train = new Train(this._application, trainNumber, 3, 30, 'Passenger');
       train.speedCurrent = 0;
       const direction = 1;
       train.setDrawingDirection(direction);

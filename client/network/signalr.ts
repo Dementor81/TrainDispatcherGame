@@ -3,6 +3,7 @@ import Train from '../sim/train';
 import Switch from '../sim/switch';
 import { EventManager } from '../manager/event_manager';
 import { SimulationState, TrainDelayUpdatedNotificationDto, TrainRemovedNotificationDto } from './dto';
+import type { ApplicationContext } from '@core/applicationContext';
 
 export class JoinRejectedError extends Error {
     public readonly reason: string;
@@ -16,14 +17,16 @@ export class JoinRejectedError extends Error {
 
 export class SignalRManager {
     private connection: HubConnection | null = null;
-    private eventManager: EventManager;
+    private _eventManager: EventManager;
+    private _application: ApplicationContext;
     private playerId: string | null = null;
     private stationId: string | null = null;
     private gameCode: string | null = null;
     private playerName: string | null = null;
 
-    constructor(eventManager: EventManager) {
-        this.eventManager = eventManager;
+    constructor(application: ApplicationContext) {
+        this._application = application;
+        this._eventManager = application.eventManager;
         this.initializeConnection();
     }
 
@@ -45,25 +48,25 @@ export class SignalRManager {
     }
 
     private setupLocalEventHandlers(): void {
-        this.eventManager.on("trainStoppedAtStation", (train: Train) => {
+        this._eventManager.on("trainStoppedAtStation", (train: Train) => {
             if (this.stationId) {
                 this.reportTrainStopped(train.number, this.stationId);
             }
         });
 
-        this.eventManager.on("trainDepartedFromStation", (train: Train) => {
+        this._eventManager.on("trainDepartedFromStation", (train: Train) => {
             if (this.stationId) {
                 this.reportTrainDeparted(train.number, this.stationId);
             }
         });
 
-        this.eventManager.on("trainCollision", (trainA: Train, trainB: Train) => {
+        this._eventManager.on("trainCollision", (trainA: Train, trainB: Train) => {
             if (this.stationId) {
                 this.reportTrainCollision(trainA.number, trainB.number, this.stationId);
             }
         });
 
-        this.eventManager.on("trainDerailed", (train: Train, sw?: Switch) => {
+        this._eventManager.on("trainDerailed", (train: Train, sw?: Switch) => {
             if (this.stationId) {
                 this.reportTrainDerailed(train.number, this.stationId, sw?.id);
             }
@@ -92,7 +95,7 @@ export class SignalRManager {
             this.notifyConnectionStatusChange();
             // All automatic reconnect attempts exhausted while a station was active.
             if (this.stationId) {
-                this.eventManager.emit('connectionPermanentlyLost');
+                this._eventManager.emit('connectionPermanentlyLost');
             }
         });
 
@@ -118,12 +121,12 @@ export class SignalRManager {
 
         this.connection.on('PlayerJoinedStation', (data) => {
             console.log('Player joined station:', data);
-            this.eventManager.emit('playerStationChanged', data);
+            this._eventManager.emit('playerStationChanged', data);
         });
 
         this.connection.on('PlayerLeftStation', (data) => {
             console.log('Player left station:', data);
-            this.eventManager.emit('playerStationChanged', data);
+            this._eventManager.emit('playerStationChanged', data);
         });
 
         this.connection.on('TrainArriving', (data) => {
@@ -159,7 +162,7 @@ export class SignalRManager {
 
         this.connection.on('ApprovalRequested', (data) => {
             console.log('Approval requested:', data);
-            this.eventManager.emit('approvalRequested', data);
+            this._eventManager.emit('approvalRequested', data);
         });
 
         this.connection.on('ExitBlockStatusChanged', (data) => {
@@ -435,7 +438,7 @@ export class SignalRManager {
         // On a full rejoin (not a grace-period reconnect), the client's local train
         // state is stale — notify the application so it can clear it.
         if (data.success && !data.isReconnect) {
-            this.eventManager.emit('stationJoinedFull');
+            this._eventManager.emit('stationJoinedFull');
         }
     }
 
@@ -462,10 +465,10 @@ export class SignalRManager {
     private handleTrainSent(data: any): void {
         console.log(`Train ${data.trainNumber} recieved from server, exit point ${data.exitPointId}, action: ${data.action}`);
         // Create a new Train instance from the server data
-        const train = Train.fromServerData(data, this.eventManager);             
+        const train = Train.fromServerData(data, this._application);             
         
         // Emit the train created event through the EventManager
-        this.eventManager.emit('trainCreated', train, data.exitPointId);
+        this._eventManager.emit('trainCreated', train, data.exitPointId);
     }
 
     private handleSimulationStateChanged(data: any): void {
@@ -474,22 +477,22 @@ export class SignalRManager {
         // Convert data.state to SimulationState type
         const state: SimulationState = data.state as SimulationState;
         // Emit the simulation state change event through the EventManager
-        this.eventManager.emit('simulationStateChanged', state);
+        this._eventManager.emit('simulationStateChanged', state);
         if (typeof data.speed === 'number') {
-            this.eventManager.emit('simulationSpeedChanged', data.speed);
+            this._eventManager.emit('simulationSpeedChanged', data.speed);
         }
     }
 
     private handleExitBlockStatusChanged(data: any): void {        
-        this.eventManager.emit('exitBlockStatusChanged', data.exitId, data.blocked);
+        this._eventManager.emit('exitBlockStatusChanged', data.exitId, data.blocked);
     }
 
     private handleTrainDelayUpdated(data: TrainDelayUpdatedNotificationDto): void {
-        this.eventManager.emit('trainDelayUpdated', data);
+        this._eventManager.emit('trainDelayUpdated', data);
     }
 
     private handleTrainRemoved(data: TrainRemovedNotificationDto): void {
-        this.eventManager.emit('trainRemoved', data);
+        this._eventManager.emit('trainRemoved', data);
     }
 
     public get connectionState(): string {
@@ -511,7 +514,7 @@ export class SignalRManager {
     }
 
     private notifyConnectionStatusChange(): void {
-        this.eventManager.emit('connectionStatusChanged', this.connectionState);
+        this._eventManager.emit('connectionStatusChanged', this.connectionState);
     }
 
 
