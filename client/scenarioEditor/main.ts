@@ -1,4 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
+import "../styles/basePanel.css";
 import SzenariosApplication from "./application";
 import { renderAppVersionBadge } from "../ui/appVersionBadge";
 

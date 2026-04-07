@@ -4,27 +4,39 @@ import type { ScenarioDto, NetworkDto } from "../network/dto";
 import { toMinutes, minutesToString } from "./utils/timeUtils";
 import { precomputeExitSpans, getDistanceMeters, isSingleTrackSection, deriveOrderedStations } from "./utils/railNetworkUtils";
 import { getCategoryColor } from "./utils/constants";
-import { EditTrainDialog } from "./editTrainDialog";
+import { TrainEditorPanel } from "./trainEditorPanel";
 import { detectCollisions } from "./utils/collisionDetection";
 
 type DirectionFilter = 'both' | 'leftToRight' | 'rightToLeft';
+type TimetableSnapshot = { arrivals: (number | null)[]; departures: (number | null)[] };
+type ViewMetrics = {
+   padding: number;
+   width: number;
+   height: number;
+   viewStart: number;
+   viewEnd: number;
+   xForStation: (station: string) => number;
+   yForMinutes: (minutes: number) => number;
+   yForTime: (time: string) => number;
+};
 
 export default class SzenariosApplication {
    private readonly container: HTMLElement;
+   private readonly fontFamily = "Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif";
+   private readonly trainEditorPanel = new TrainEditorPanel();
    private app!: PIXI.Application;
    private currentScenarioId: string = "timetable";
    private currentLayoutId: string = "";
    private isDraggingTrain: boolean = false;
    private draggingTrainIdx: number | null = null;
    private dragStartPointerY: number = 0;
-   private dragSnapshot?: { arrivals: (number | null)[]; departures: (number | null)[] };
+   private dragSnapshot?: TimetableSnapshot;
    private isDraggingHandle: boolean = false;
    private handleTrainIdx: number | null = null;
    private handleEntryIdx: number | null = null;
-   private handleField: "arrival" | "departure" | null = null;
    private handleStartPointerY: number = 0;
    private handleStartMinutes: number = 0;
-   private handleSnapshot?: { arrivals: (number | null)[]; departures: (number | null)[] };
+   private handleSnapshot?: TimetableSnapshot;
    private scenario?: ScenarioDto;
    private network?: NetworkDto;
    private stationOrder: string[] = [];
@@ -48,8 +60,9 @@ export default class SzenariosApplication {
    private isPanning: boolean = false;
    private lastPointerY: number = 0;
    private selectedTrainIdx: number | null = null;
-   private modalSubmit?: (ev: Event) => void;
+   private lastTrainLabelTap?: { trainIdx: number; atMs: number };
    private directionFilter: DirectionFilter = 'both';
+   private interactionsBound: boolean = false;
 
    constructor(container: HTMLElement) {
       this.container = container;
@@ -65,27 +78,30 @@ export default class SzenariosApplication {
       this.container.appendChild(this.app.canvas);
 
       // Choose scenario by URL (?scenario=ID) or first in list; fallback 'timetable'
-      let scenarioId = "timetable";
       let list: Array<{ id: string }> = [];
       try {
          list = await fetchScenarios();
       } catch {}
-      const urlScenario = new URLSearchParams(window.location.search).get("scenario");
-      if (urlScenario) {
-         scenarioId = urlScenario;
-      } else if (list && list.length > 0) {
-         scenarioId = list[0].id;
-      }
-      console.log("[Graph] Using scenario:", scenarioId);
-
-      this.currentScenarioId = scenarioId;
-      const scenario = await fetchScenario(this.currentScenarioId);
-      this.currentLayoutId = scenario.layout || "";
-      const network = await fetchNetwork(this.currentLayoutId);
+      this.currentScenarioId = this.resolveInitialScenarioId(list);
+      const { scenario, network } = await this.loadScenarioBundle(this.currentScenarioId);
       await this.renderScenario(scenario, network);
-
-      // populate selector and hook change
       this.setupScenarioSelector(list, this.currentScenarioId);
+   }
+
+   private resolveInitialScenarioId(list: Array<{ id: string }>): string {
+      return new URLSearchParams(window.location.search).get("scenario") || list[0]?.id || "timetable";
+   }
+
+   private async loadScenarioBundle(id: string): Promise<{ scenario: ScenarioDto; network: NetworkDto; layoutChanged: boolean }> {
+      const scenario = await fetchScenario(id);
+      const layoutId = scenario.layout || "";
+      const layoutChanged = !this.network || layoutId !== this.currentLayoutId;
+      this.currentLayoutId = layoutId;
+      return {
+         scenario,
+         network: layoutChanged ? await fetchNetwork(layoutId) : this.network!,
+         layoutChanged,
+      };
    }
 
    /**
@@ -237,78 +253,12 @@ export default class SzenariosApplication {
       this.network = network;
       this.viewStartMinutes = toMinutes(scenario.start_time);
       this.viewDurationMinutes = 60;
-
-      // Find all valid routes through the network
       this.availableRoutes = this.findAllRoutes(network);
-      console.log(`[Routes] Found ${this.availableRoutes.length} valid routes:`);
-      this.availableRoutes.forEach((route, idx) => {
-         console.log(`  Route ${idx + 1}: ${route.join(' -> ')}`);
-      });
-
-      // If no route is selected yet and we have routes, select the first one
       if (!this.selectedRoute && this.availableRoutes.length > 0) {
          this.selectedRoute = this.availableRoutes[0];
       }
-
-      // Compute station order and index (use selected route if available)
-      if (this.selectedRoute && this.selectedRoute.length > 0) {
-         this.stationOrder = this.selectedRoute;
-      } else {
-         this.stationOrder = deriveOrderedStations(network);
-         if (this.stationOrder.length === 0) {
-            this.stationOrder = network.stations && network.stations.length > 0 ? network.stations.slice() : [];
-         }
-         if (this.stationOrder.length === 0) {
-            const set = new Set<string>();
-            for (const t of scenario.trains) for (const s of t.timetable || []) set.add(s.station);
-            this.stationOrder = Array.from(set);
-         }
-      }
-      this.stationIndex = new Map(this.stationOrder.map((s, i) => [s, i] as [string, number]));
-
-      // Create layers
-      this.singleTrackBg = new PIXI.Graphics();
-      this.conflictBg = new PIXI.Graphics();
-      this.grid = new PIXI.Graphics();
-      this.lines = new PIXI.Graphics();
-      this.labels = new PIXI.Container();
-      this.trainLabels = new PIXI.Container();
-      this.timeHandles = new PIXI.Container();
-      this.app.stage.addChild(this.singleTrackBg);
-      this.app.stage.addChild(this.conflictBg);
-      this.app.stage.addChild(this.grid);
-      this.app.stage.addChild(this.lines);
-      this.app.stage.addChild(this.labels);
-      this.app.stage.addChild(this.trainLabels);
-      this.app.stage.addChild(this.timeHandles);
-      // Hover overlay (dashed line + edge minute labels)
-      this.hoverOverlay = new PIXI.Graphics();
-      this.hoverLeftLabel = new PIXI.Text({
-         text: "",
-         style: {
-            fontSize: 11,
-            fill: 0x8b93a1,
-            align: "right",
-            fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
-         },
-      });
-      this.hoverRightLabel = new PIXI.Text({
-         text: "",
-         style: {
-            fontSize: 11,
-            fill: 0x8b93a1,
-            align: "left",
-            fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
-         },
-      });
-      this.hoverLeftLabel.anchor.set(1, 0.5);
-      this.hoverRightLabel.anchor.set(0, 0.5);
-      this.app.stage.addChild(this.hoverOverlay);
-      this.app.stage.addChild(this.hoverLeftLabel);
-      this.app.stage.addChild(this.hoverRightLabel);
-      this.hideHover();
-
-      // Precompute station exit spans from server-provided MaxExitDistance
+      this.updateStationOrder(scenario, network);
+      this.createSceneLayers();
       await precomputeExitSpans(network);
       this.setupRouteSelector();
       this.updateDirectionFilterButton();
@@ -316,468 +266,380 @@ export default class SzenariosApplication {
       this.setupInteractions();
    }
 
+   private updateStationOrder(scenario: ScenarioDto, network: NetworkDto) {
+      const derived = this.selectedRoute?.length ? this.selectedRoute : deriveOrderedStations(network);
+      this.stationOrder = derived.length
+         ? derived
+         : network.stations?.length
+            ? [...network.stations]
+            : Array.from(new Set(scenario.trains.flatMap((train) => (train.timetable || []).map((entry) => entry.station))));
+      this.stationIndex = new Map(this.stationOrder.map((station, index) => [station, index] as [string, number]));
+   }
+
+   private createSceneLayers() {
+      this.singleTrackBg = new PIXI.Graphics();
+      this.conflictBg = new PIXI.Graphics();
+      this.grid = new PIXI.Graphics();
+      this.lines = new PIXI.Graphics();
+      this.labels = new PIXI.Container();
+      this.trainLabels = new PIXI.Container();
+      this.timeHandles = new PIXI.Container();
+      this.hoverOverlay = new PIXI.Graphics();
+      this.hoverLeftLabel = this.createText("", 11, 0x8b93a1, "right");
+      this.hoverRightLabel = this.createText("", 11, 0x8b93a1, "left");
+      this.hoverLeftLabel.anchor.set(1, 0.5);
+      this.hoverRightLabel.anchor.set(0, 0.5);
+      this.app.stage.addChild(
+         this.singleTrackBg,
+         this.conflictBg,
+         this.grid,
+         this.lines,
+         this.labels,
+         this.trainLabels,
+         this.timeHandles,
+         this.hoverOverlay,
+         this.hoverLeftLabel,
+         this.hoverRightLabel
+      );
+      this.hideHover();
+   }
+
    private setupRouteSelector() {
       const select = document.getElementById("route-select") as HTMLSelectElement | null;
       if (!select) return;
-
-      // Clear existing options
       select.innerHTML = '';
-
-      // Add route options
       this.availableRoutes.forEach((route, idx) => {
          const opt = document.createElement("option");
          opt.value = String(idx);
          opt.textContent = route.join(' → ');
          select.appendChild(opt);
       });
-
-      // Set selected value if we have a selected route, otherwise select first route
-      let selectedIdx = 0;
-      if (this.selectedRoute) {
-         const idx = this.availableRoutes.findIndex(route => 
-            route.length === this.selectedRoute!.length && 
-            route.every((station, i) => station === this.selectedRoute![i])
-         );
-         if (idx >= 0) {
-            selectedIdx = idx;
-         }
-      }
-      
-      // Select the route (first by default)
+      const selectedIdx = this.selectedRoute
+         ? Math.max(0, this.availableRoutes.findIndex((route) => this.routesMatch(route, this.selectedRoute!)))
+         : 0;
       if (this.availableRoutes.length > 0) {
          select.value = String(selectedIdx);
          this.selectedRoute = this.availableRoutes[selectedIdx];
       }
-
-      // Handle route selection changes
       select.onchange = () => {
-         const value = select.value;
-         const idx = parseInt(value, 10);
+         const idx = parseInt(select.value, 10);
          if (idx >= 0 && idx < this.availableRoutes.length) {
             this.selectedRoute = this.availableRoutes[idx];
-            this.stationOrder = this.selectedRoute;
-            this.stationIndex = new Map(this.stationOrder.map((s, i) => [s, i] as [string, number]));
+            this.updateStationOrder(this.scenario!, this.network!);
             this.drawScene();
          }
       };
    }
 
-   private drawScene() {
-      if (!this.scenario || !this.network || !this.grid || !this.lines || !this.labels || !this.trainLabels) return;
+   private routesMatch(a: string[], b: string[]) {
+      return a.length === b.length && a.every((station, index) => station === b[index]);
+   }
+
+   private get viewEndMinutes(): number {
+      return this.viewStartMinutes + this.viewDurationMinutes;
+   }
+
+   private getViewMetrics(): ViewMetrics {
       const padding = this.padding;
       const width = this.app.renderer.width - padding * 2;
       const height = this.app.renderer.height - padding * 2;
       const denom = Math.max(1, this.stationOrder.length - 1);
-      const xForStation = (station: string): number => {
-         const idx = this.stationIndex.get(station) ?? 0;
-         return padding + (idx / denom) * width;
+      return {
+         padding,
+         width,
+         height,
+         viewStart: this.viewStartMinutes,
+         viewEnd: this.viewEndMinutes,
+         xForStation: (station: string) => padding + ((this.stationIndex.get(station) ?? 0) / denom) * width,
+         yForMinutes: (minutes: number) => padding + ((minutes - this.viewStartMinutes) / this.viewDurationMinutes) * height,
+         yForTime: (time: string) => padding + ((toMinutes(time) - this.viewStartMinutes) / this.viewDurationMinutes) * height,
       };
-      const yForMinutes = (m: number): number => {
-         return padding + ((m - this.viewStartMinutes) / this.viewDurationMinutes) * height;
+   }
+
+   private createText(text: string, fontSize: number, fill: number, align: "left" | "right" | "center" = "left") {
+      return new PIXI.Text({
+         text,
+         style: { fontSize, fill, align, fontFamily: this.fontFamily },
+      });
+   }
+
+   private resetSceneLayers() {
+      this.singleTrackBg?.clear();
+      this.conflictBg?.clear();
+      this.grid?.clear();
+      this.lines?.clear();
+      this.labels?.removeChildren();
+      this.trainLabels?.removeChildren();
+      this.timeHandles?.removeChildren();
+   }
+
+   private forEachTimeTick(metrics: ViewMetrics, step: number, cb: (minutes: number) => void) {
+      for (let tick = Math.floor(metrics.viewStart / step) * step; tick <= metrics.viewEnd; tick += step) cb(tick);
+   }
+
+   private clipToView(start: number, end: number) {
+      if (end < this.viewStartMinutes || start > this.viewEndMinutes) return null;
+      return {
+         start: Math.max(start, this.viewStartMinutes),
+         end: Math.min(end, this.viewEndMinutes),
       };
-      const yForTime = (timeStr: string): number => yForMinutes(toMinutes(timeStr));
+   }
 
-      if (this.singleTrackBg) this.singleTrackBg.clear();
-      if (this.conflictBg) this.conflictBg.clear();
-      this.grid.clear();
-      this.labels.removeChildren();
-      this.lines.clear();
-      this.trainLabels.removeChildren();
-      if (this.timeHandles) this.timeHandles.removeChildren();
+   private getTravelMinutes(fromStation: string, toStation: string, speed: number) {
+      return (getDistanceMeters(this.network!, fromStation, toStation) * 60) / (1000 * Math.max(1, speed || 1));
+   }
 
-      // time labels every 10 minutes at left and right edges
-      {
-         const viewStart = this.viewStartMinutes;
-         const viewEnd = this.viewStartMinutes + this.viewDurationMinutes;
-         const step = 10; // minutes
-         let t = Math.floor(viewStart / step) * step;
-         while (t <= viewEnd) {
-            const y = yForMinutes(t);
-            const minutesOnly = Math.floor(t) % 60;
-            const label = String(minutesOnly).padStart(2, "0");
-            const leftText = new PIXI.Text({
-               text: label,
-               style: {
-                  fontSize: 11,
-                  fill: 0x8b93a1,
-                  align: "right",
-                  fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
-               },
-            });
-            leftText.anchor.set(1, 0.5);
-            leftText.x = padding - 8;
-            leftText.y = y;
-            this.labels.addChild(leftText);
+   private buildTimetableSnapshot(entries: Array<{ arrival?: string; departure?: string }>): TimetableSnapshot {
+      return {
+         arrivals: entries.map((entry) => entry.arrival ? toMinutes(entry.arrival) : null),
+         departures: entries.map((entry) => entry.departure ? toMinutes(entry.departure) : null),
+      };
+   }
 
-            const rightText = new PIXI.Text({
-               text: label,
-               style: {
-                  fontSize: 11,
-                  fill: 0x8b93a1,
-                  align: "left",
-                  fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
-               },
-            });
-            rightText.anchor.set(0, 0.5);
-            rightText.x = padding + width + 8;
-            rightText.y = y;
-            this.labels.addChild(rightText);
+   private normalizeTimetableEntry(entry: { arrival?: string; departure?: string }) {
+      if (!entry.arrival || !entry.departure) return;
+      const arrival = toMinutes(entry.arrival);
+      const departure = toMinutes(entry.departure);
+      if (departure < arrival) entry.departure = minutesToString(arrival);
+   }
 
-            t += step;
-         }
-      }
-
-      // single-track background bands
-      if (this.singleTrackBg && this.network && this.stationOrder.length > 1) {
-         for (let i = 0; i < this.stationOrder.length - 1; i++) {
-            const s1 = this.stationOrder[i];
-            const s2 = this.stationOrder[i + 1];
-            if (isSingleTrackSection(this.network, s1, s2)) {
-               const x1 = xForStation(s1);
-               const x2 = xForStation(s2);
-               const left = Math.min(x1, x2);
-               const w = Math.max(2, Math.abs(x2 - x1));
-               this.singleTrackBg
-                  .rect(left, padding, w, height)
-                  .fill({ color: 0x4c0d0d, alpha: 0.18 });
-            }
-         }
-      }
-
-      // collision/conflict regions
-      if (this.conflictBg && this.scenario && this.network) {
-         const conflicts = detectCollisions(this.scenario.trains, this.network);
-         for (const conflict of conflicts) {
-            // Skip if either station is not in the current route
-            if (!this.stationIndex.has(conflict.fromStation) || !this.stationIndex.has(conflict.toStation)) {
-               continue;
-            }
-            
-            const viewStart = this.viewStartMinutes;
-            const viewEnd = this.viewStartMinutes + this.viewDurationMinutes;
-            
-            // Skip if conflict is completely outside the current time view
-            if (conflict.endTimeMinutes < viewStart || conflict.startTimeMinutes > viewEnd) {
-               continue;
-            }
-            
-            // Clip conflict time to current view
-            const conflictStart = Math.max(conflict.startTimeMinutes, viewStart);
-            const conflictEnd = Math.min(conflict.endTimeMinutes, viewEnd);
-            
-            // Calculate coordinates for the conflict region
-            const x1 = xForStation(conflict.fromStation);
-            const x2 = xForStation(conflict.toStation);
-            const y1 = yForMinutes(conflictStart);
-            const y2 = yForMinutes(conflictEnd);
-            
-            // Draw filled polygon (quadrilateral) for the conflict region
-            this.conflictBg
-               .poly([
-                  x1, y1,  // top-left
-                  x2, y1,  // top-right
-                  x2, y2,  // bottom-right
-                  x1, y2   // bottom-left
-               ])
-               .fill({ color: 0xff0000, alpha: 0.35 });
-         }
-      }
-
-      // horizontal time grid aligned to time ticks
-      {
-         const viewStart = this.viewStartMinutes;
-         const viewEnd = this.viewStartMinutes + this.viewDurationMinutes;
-         const step = 10; // minutes
-         let t = Math.floor(viewStart / step) * step;
-         while (t <= viewEnd) {
-            const y = yForMinutes(t);
-            this.grid
-               .moveTo(padding, y)
-               .lineTo(padding + width, y)
-               .stroke({ width: 1, color: 0x2a2f36, alpha: 1, cap: "butt" });
-            t += step;
-         }
-      }
-      // vertical station lines + labels
-      for (const station of this.stationOrder) {
-         const x = xForStation(station);
-         this.grid
-            .moveTo(x, padding)
-            .lineTo(x, padding + height)
-            .stroke({ width: 1, color: 0x394049, alpha: 1, cap: "butt" });
-         const text = new PIXI.Text({
-            text: station,
-            style: {
-               fontSize: 12,
-               fill: 0xb0b8c0,
-               align: "center",
-               fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
-            },
-         });
-         text.anchor.set(0.5, 1);
-         text.x = x;
-         text.y = padding - 6;
-         this.labels.addChild(text);
-      }
-
-      // Draw trains
-      for (let idx = 0; idx < this.scenario.trains.length; idx++) {
-         const train = this.scenario.trains[idx];
-         
-         // Apply direction filter
-         if (!this.shouldShowTrain(train)) continue;
-         
-         const color = getCategoryColor((train as any).category, (train as any).type);
-         const entries = train.timetable;
-         if (!entries || entries.length === 0) continue;
-         
-         // Check if this train is selected for thicker line
-         const isSelected = idx === this.selectedTrainIdx;
-         const lineWidth = isSelected ? 4 : 2;
-         
-         for (let i = 0; i < entries.length - 1; i++) {
-            const a = entries[i];
-            const b = entries[i + 1];
-            
-            // Skip if either station is not in the current route
-            if (!this.stationIndex.has(a.station) || !this.stationIndex.has(b.station)) {
-               continue;
-            }
-            
-            const depA = a.departure ? toMinutes(a.departure) : null;
-            const arrB = b.arrival ? toMinutes(b.arrival) : null;
-            const distMeters = getDistanceMeters(this.network, a.station, b.station);
-            const speedKmh = Math.max(1, train.speedMax || 1);
-            const travelMinutes = (distMeters * 60) / (1000 * speedKmh);
-            let depMinutes = depA;
-            let arrMinutes = arrB;
-            if (depMinutes == null && arrMinutes != null) depMinutes = arrMinutes - travelMinutes;
-            else if (depMinutes != null && arrMinutes == null) arrMinutes = depMinutes + travelMinutes;
-            if (depMinutes != null && arrMinutes != null) {
-               const viewStart = this.viewStartMinutes;
-               const viewEnd = this.viewStartMinutes + this.viewDurationMinutes;
-               if (arrMinutes < viewStart || depMinutes > viewEnd) {
-                  // completely outside, skip
-               } else {
-                  // clip to current view on time axis
-                  const x1 = xForStation(a.station);
-                  const x2 = xForStation(b.station);
-                  const t1 = depMinutes;
-                  const t2 = arrMinutes;
-                  const tt1 = Math.max(t1, viewStart);
-                  const tt2 = Math.min(t2, viewEnd);
-                  const denomSeg = t2 - t1 || 1e-6;
-                  const f1 = (tt1 - t1) / denomSeg;
-                  const f2 = (tt2 - t1) / denomSeg;
-                  const dxFull = x2 - x1;
-                  const x1c = x1 + dxFull * f1;
-                  const x2c = x1 + dxFull * f2;
-                  const y1c = yForMinutes(tt1);
-                  const y2c = yForMinutes(tt2);
-                  this.lines.moveTo(x1c, y1c).lineTo(x2c, y2c);
-
-                  const ddx = x2c - x1c;
-                  const ddy = y2c - y1c;
-                  const segLen = Math.hypot(ddx, ddy);
-                  if (segLen > 4) {
-                     const midx = x1c + ddx * 0.5;
-                     const midy = y1c + ddy * 0.5;
-                     const angle = Math.atan2(ddy, ddx);
-                     const nx = -ddy / segLen;
-                     const ny = ddx / segLen;
-                     const off = 6;
-                     // Add a deterministic ±50px along-segment offset to reduce clutter
-                     const sign = ((idx + i) % 2 === 0) ? 1 : -1;
-                     const ux = ddx / segLen;
-                     const uy = ddy / segLen;
-                     const along = 50 * sign;
-                     const lx = midx + nx * off + ux * along;
-                     const ly = midy + ny * off + uy * along;
-                     const label = new PIXI.Text({
-                        text: train.category ? train.category + " " + train.number : train.number,
-                        style: {
-                           fontSize: 11,
-                           fill: color,
-                           align: "center",
-                           fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
-                        },
-                     });
-                     label.anchor.set(0.5);
-                     let rotation = angle;
-                     if (rotation > Math.PI / 2 || rotation < -Math.PI / 2) rotation += Math.PI;
-                     label.rotation = rotation;
-                     label.x = lx;
-                     label.y = ly;
-                     this.trainLabels.addChild(label);
-                     label.on("pointertap", (ev: PIXI.FederatedPointerEvent) => {
-                        this.setSelectedTrain(idx);
-                        const anyEv: any = ev as any;
-                        // Prefer native double-click detail when available
-                        if (typeof anyEv?.detail === "number" && anyEv.detail >= 2) {
-                           this.editSelectedTrain();
-                           return;
-                        }
-                        // Fallback: detect double tap by time threshold
-                        const now = (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
-                        const last = (label as any)._lastTapTime || 0;
-                        (label as any)._lastTapTime = now;
-                        if (now - last < 300) {
-                           this.editSelectedTrain();
-                        }
-                     });
-                     // pointer handlers to drag whole train
-                     label.eventMode = "static";
-                     (label as any).cursor = "grab";
-                     label.on("pointerdown", (ev: PIXI.FederatedPointerEvent) => {
-                        (label as any).cursor = "grabbing";
-                        this.beginTrainDrag(idx, ev.clientY);
-                     });
-                     label.on("pointerup", () => {
-                        (label as any).cursor = "grab";
-                        this.endTrainDrag();
-                     });
-                     label.on("pointerupoutside", () => {
-                        (label as any).cursor = "grab";
-                        this.endTrainDrag();
-                     });
-                  }
-               }
-            }
-         }
-         // dwell
-         for (let i = 0; i < entries.length; i++) {
-            const e = entries[i];
-            
-            // Skip if station is not in the current route
-            if (!this.stationIndex.has(e.station)) {
-               continue;
-            }
-            
-            const x = xForStation(e.station);
-            // dwell if both times present
-            if (e.arrival && e.departure) {
-               const viewStart = this.viewStartMinutes;
-               const viewEnd = this.viewStartMinutes + this.viewDurationMinutes;
-               let t1 = toMinutes(e.arrival);
-               let t2 = toMinutes(e.departure);
-               if (!(t2 < viewStart || t1 > viewEnd)) {
-                  const tt1 = Math.max(t1, viewStart);
-                  const tt2 = Math.min(t2, viewEnd);
-                  const yA = yForMinutes(tt1);
-                  const yD = yForMinutes(tt2);
-                  this.lines.moveTo(x, yA).lineTo(x, yD);
-               }
-            }
-            // handle only for departure (arrival adjustment is not needed)
-            this.drawTimeHandle(train, idx, i, "departure", e.departure, x, yForTime);
-         }
-         // Stroke each train individually with appropriate line width
-         this.lines.stroke({ width: lineWidth, color, alpha: 1, cap: "round" });
-      }
-      // Keep hover overlay in sync with new transforms
-      if (this.lastHoverClientY !== null) {
-         this.updateHoverFromClientY(this.lastHoverClientY);
+   private applySnapshotDelta(entries: Array<{ arrival?: string; departure?: string }>, snapshot: TimetableSnapshot, deltaMinutes: number, startIndex: number = 0) {
+      for (let i = startIndex; i < entries.length; i++) {
+         const entry = entries[i];
+         if (snapshot.arrivals[i] != null) entry.arrival = minutesToString(Math.max(0, snapshot.arrivals[i]! + deltaMinutes));
+         if (snapshot.departures[i] != null) entry.departure = minutesToString(Math.max(0, snapshot.departures[i]! + deltaMinutes));
+         this.normalizeTimetableEntry(entry);
       }
    }
 
+   private drawScene() {
+      if (!this.scenario || !this.network || !this.grid || !this.lines || !this.labels || !this.trainLabels) return;
+      const metrics = this.getViewMetrics();
+      this.resetSceneLayers();
+      this.drawTimeAxis(metrics);
+      this.drawTrackOverlays(metrics);
+      this.drawStations(metrics);
+      this.scenario.trains.forEach((train, idx) => this.drawTrain(train, idx, metrics));
+      if (this.lastHoverClientY !== null) this.updateHoverFromClientY(this.lastHoverClientY);
+   }
+
+   private drawTimeAxis(metrics: ViewMetrics) {
+      this.forEachTimeTick(metrics, 10, (minutes) => {
+         const y = metrics.yForMinutes(minutes);
+         const label = String(Math.floor(minutes) % 60).padStart(2, "0");
+         const left = this.createText(label, 11, 0x8b93a1, "right");
+         const right = this.createText(label, 11, 0x8b93a1, "left");
+         left.anchor.set(1, 0.5);
+         right.anchor.set(0, 0.5);
+         left.position.set(metrics.padding - 8, y);
+         right.position.set(metrics.padding + metrics.width + 8, y);
+         this.labels!.addChild(left, right);
+         this.grid!
+            .moveTo(metrics.padding, y)
+            .lineTo(metrics.padding + metrics.width, y)
+            .stroke({ width: 1, color: 0x2a2f36, alpha: 1, cap: "butt" });
+      });
+   }
+
+   private drawTrackOverlays(metrics: ViewMetrics) {
+      if (this.singleTrackBg && this.network && this.stationOrder.length > 1) {
+         for (let i = 0; i < this.stationOrder.length - 1; i++) {
+            const [from, to] = [this.stationOrder[i], this.stationOrder[i + 1]];
+            if (!isSingleTrackSection(this.network, from, to)) continue;
+            const x1 = metrics.xForStation(from);
+            const x2 = metrics.xForStation(to);
+            this.singleTrackBg.rect(Math.min(x1, x2), metrics.padding, Math.max(2, Math.abs(x2 - x1)), metrics.height)
+               .fill({ color: 0x4c0d0d, alpha: 0.18 });
+         }
+      }
+      if (!this.conflictBg || !this.scenario || !this.network) return;
+      for (const conflict of detectCollisions(this.scenario.trains, this.network)) {
+         if (!this.stationIndex.has(conflict.fromStation) || !this.stationIndex.has(conflict.toStation)) continue;
+         const clipped = this.clipToView(conflict.startTimeMinutes, conflict.endTimeMinutes);
+         if (!clipped) continue;
+         this.conflictBg
+            .poly([
+               metrics.xForStation(conflict.fromStation), metrics.yForMinutes(clipped.start),
+               metrics.xForStation(conflict.toStation), metrics.yForMinutes(clipped.start),
+               metrics.xForStation(conflict.toStation), metrics.yForMinutes(clipped.end),
+               metrics.xForStation(conflict.fromStation), metrics.yForMinutes(clipped.end),
+            ])
+            .fill({ color: 0xff0000, alpha: 0.35 });
+      }
+   }
+
+   private drawStations(metrics: ViewMetrics) {
+      for (const station of this.stationOrder) {
+         const x = metrics.xForStation(station);
+         this.grid!
+            .moveTo(x, metrics.padding)
+            .lineTo(x, metrics.padding + metrics.height)
+            .stroke({ width: 1, color: 0x394049, alpha: 1, cap: "butt" });
+         const label = this.createText(station, 12, 0xb0b8c0, "center");
+         label.anchor.set(0.5, 1);
+         label.position.set(x, metrics.padding - 6);
+         this.labels!.addChild(label);
+      }
+   }
+
+   private drawTrain(train: any, idx: number, metrics: ViewMetrics) {
+      if (!this.shouldShowTrain(train) || !train.timetable?.length) return;
+      const color = getCategoryColor(train.category, train.type);
+      const lineWidth = idx === this.selectedTrainIdx ? 4 : 2;
+      const entries = train.timetable;
+
+      for (let i = 0; i < entries.length - 1; i++) {
+         const a = entries[i];
+         const b = entries[i + 1];
+         if (!this.stationIndex.has(a.station) || !this.stationIndex.has(b.station)) continue;
+         const travelMinutes = this.getTravelMinutes(a.station, b.station, train.speedMax);
+         let depMinutes = a.departure ? toMinutes(a.departure) : null;
+         let arrMinutes = b.arrival ? toMinutes(b.arrival) : null;
+         if (depMinutes == null && arrMinutes != null) depMinutes = arrMinutes - travelMinutes;
+         else if (depMinutes != null && arrMinutes == null) arrMinutes = depMinutes + travelMinutes;
+         if (depMinutes == null || arrMinutes == null) continue;
+
+         const clipped = this.clipToView(depMinutes, arrMinutes);
+         if (!clipped) continue;
+         const x1 = metrics.xForStation(a.station);
+         const x2 = metrics.xForStation(b.station);
+         const span = arrMinutes - depMinutes || 1e-6;
+         const x1c = x1 + (x2 - x1) * ((clipped.start - depMinutes) / span);
+         const x2c = x1 + (x2 - x1) * ((clipped.end - depMinutes) / span);
+         const y1c = metrics.yForMinutes(clipped.start);
+         const y2c = metrics.yForMinutes(clipped.end);
+         this.lines!.moveTo(x1c, y1c).lineTo(x2c, y2c);
+         this.drawTrainLabel(train, idx, i, color, x1c, y1c, x2c, y2c);
+      }
+
+      for (let i = 0; i < entries.length; i++) {
+         const entry = entries[i];
+         if (!this.stationIndex.has(entry.station)) continue;
+         const x = metrics.xForStation(entry.station);
+         if (entry.arrival && entry.departure) {
+            const clipped = this.clipToView(toMinutes(entry.arrival), toMinutes(entry.departure));
+            if (clipped) this.lines!.moveTo(x, metrics.yForMinutes(clipped.start)).lineTo(x, metrics.yForMinutes(clipped.end));
+         }
+         this.drawTimeHandle(idx, i, entry.departure, x, metrics.yForTime);
+      }
+
+      this.lines!.stroke({ width: lineWidth, color, alpha: 1, cap: "round" });
+   }
+
+   private drawTrainLabel(train: any, trainIdx: number, segmentIdx: number, color: number, x1: number, y1: number, x2: number, y2: number) {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const length = Math.hypot(dx, dy);
+      if (length <= 4) return;
+      const midx = x1 + dx * 0.5;
+      const midy = y1 + dy * 0.5;
+      const angle = Math.atan2(dy, dx);
+      const sign = (trainIdx + segmentIdx) % 2 === 0 ? 1 : -1;
+      const label = this.createText(train.category ? `${train.category} ${train.number}` : train.number, 11, color, "center");
+      label.anchor.set(0.5);
+      label.rotation = angle > Math.PI / 2 || angle < -Math.PI / 2 ? angle + Math.PI : angle;
+      label.position.set(
+         midx + (-dy / length) * 6 + (dx / length) * 50 * sign,
+         midy + (dx / length) * 6 + (dy / length) * 50 * sign
+      );
+      this.bindTrainLabelInteractions(label, trainIdx);
+      this.trainLabels!.addChild(label);
+   }
+
+   private bindTrainLabelInteractions(label: PIXI.Text, trainIdx: number) {
+      label.eventMode = "static";
+      (label as any).cursor = "grab";
+      label.on("pointertap", (ev: PIXI.FederatedPointerEvent) => {
+         this.setSelectedTrain(trainIdx);
+         const detail = (ev as any)?.detail;
+         if ((typeof detail === "number" && detail >= 2) || this.isTrainLabelDoubleTap(trainIdx)) this.editSelectedTrain();
+      });
+      label.on("pointerdown", (ev: PIXI.FederatedPointerEvent) => {
+         (label as any).cursor = "grabbing";
+         this.beginTrainDrag(trainIdx, ev.clientY);
+      });
+      label.on("pointerup", () => {
+         (label as any).cursor = "grab";
+         this.endTrainDrag();
+      });
+      label.on("pointerupoutside", () => {
+         (label as any).cursor = "grab";
+         this.endTrainDrag();
+      });
+   }
+
+   private isTrainLabelDoubleTap(trainIdx: number) {
+      const now = performance?.now?.() ?? Date.now();
+      const lastTap = this.lastTrainLabelTap;
+      this.lastTrainLabelTap = { trainIdx, atMs: now };
+      return !!lastTap && lastTap.trainIdx === trainIdx && now - lastTap.atMs < 1500;
+   }
+
    private setupInteractions() {
-      const onWheel = (ev: WheelEvent) => {
-         ev.preventDefault();
-         const rect = this.container.getBoundingClientRect();
-         const padding = this.padding;
-         const height = this.app.renderer.height - padding * 2;
-         const y = ev.clientY - rect.top - padding;
-         const norm = Math.max(0, Math.min(1, y / Math.max(1, height)));
-         const zoomFactor = ev.deltaY > 0 ? 1.05 : 0.95;
-         const newDuration = Math.max(5, Math.min(360, this.viewDurationMinutes * zoomFactor));
-         const focusMin = this.viewStartMinutes + norm * this.viewDurationMinutes;
-         this.viewStartMinutes = focusMin - norm * newDuration;
-         this.viewDurationMinutes = newDuration;
-         this.drawScene();
-      };
-      this.container.addEventListener("wheel", onWheel, { passive: false });
-
-      const onPointerDown = (ev: PointerEvent) => {
-         this.isPanning = true;
-         this.lastPointerY = ev.clientY;
-         const target = ev.target as any;
-         const isText = target && target.constructor && target.constructor.name === "Text";
-         if (!isText) this.setSelectedTrain(null);
-      };
-      const onPointerMove = (ev: PointerEvent) => {
-         const minutesPerPixel = this.getMinutesPerPixel();
-         if (this.isDraggingHandle && this.handleTrainIdx !== null && this.handleEntryIdx !== null && this.handleField) {
-            const dy = ev.clientY - this.handleStartPointerY;
-            const deltaMinutes = dy * minutesPerPixel; // down -> later
-            const train = this.scenario!.trains[this.handleTrainIdx];
-            const entries = train.timetable as any[];
-            // Build snapshot if missing (safety)
-            if (!this.handleSnapshot) {
-               const arrivals: (number | null)[] = [];
-               const departures: (number | null)[] = [];
-               for (const e of entries) {
-                  arrivals.push(e.arrival ? toMinutes(e.arrival) : null);
-                  departures.push(e.departure ? toMinutes(e.departure) : null);
-               }
-               this.handleSnapshot = { arrivals, departures };
-            }
-            const snap = this.handleSnapshot!;
-            const baseIdx = this.handleEntryIdx;
-            const baseMinutes = this.handleStartMinutes;
-            
-            // Limit movement to at least the arrival time (from snapshot)
-            const arrivalMin = snap.arrivals[baseIdx];
-            const minAllowedTime = arrivalMin !== null ? arrivalMin : 0;
-            const newMinutes = Math.max(minAllowedTime, this.handleStartMinutes + deltaMinutes);
-            const totalDelta = newMinutes - baseMinutes;
-
-            // Update only current departure, then shift all subsequent stops by totalDelta
-            const cur = entries[baseIdx];
-            cur.departure = minutesToString(newMinutes);
-            for (let j = baseIdx + 1; j < entries.length; j++) {
-               const e = entries[j];
-               const a0 = snap.arrivals[j];
-               const d0 = snap.departures[j];
-               if (a0 != null) e.arrival = minutesToString(Math.max(0, a0 + totalDelta));
-               if (d0 != null) e.departure = minutesToString(Math.max(0, d0 + totalDelta));
-               if (e.arrival && e.departure) {
-                  const aMin = toMinutes(e.arrival);
-                  const dMin = toMinutes(e.departure);
-                  if (dMin < aMin) e.departure = minutesToString(aMin);
-               }
-            }
-            this.drawScene();
-            return;
-         }
-         if (this.isDraggingTrain && this.draggingTrainIdx !== null && this.dragSnapshot) {
-            const dy = ev.clientY - this.dragStartPointerY;
-            const deltaMinutes = dy * minutesPerPixel; // dragging down -> later, up -> earlier
-            this.applyTrainDragDelta(this.draggingTrainIdx, deltaMinutes);
-            this.drawScene();
-            return;
-         }
-         if (!this.isPanning) return;
-         const dy = ev.clientY - this.lastPointerY;
-         this.lastPointerY = ev.clientY;
-         this.viewStartMinutes -= dy * minutesPerPixel; // invert to match natural drag direction
-         this.drawScene();
-      };
+      if (this.interactionsBound) return;
+      this.interactionsBound = true;
       const onPointerUp = () => {
          this.isPanning = false;
          this.endTrainDrag();
          this.endHandleDrag();
       };
-      this.container.addEventListener("pointerdown", onPointerDown);
-      this.container.addEventListener("pointermove", (ev: PointerEvent) => {
-         this.updateHoverFromClientY(ev.clientY);
-      });
+      this.container.addEventListener("wheel", (ev) => this.handleWheel(ev), { passive: false });
+      this.container.addEventListener("pointerdown", (ev) => this.handleCanvasPointerDown(ev));
+      this.container.addEventListener("pointermove", (ev) => this.updateHoverFromClientY(ev.clientY));
       this.container.addEventListener("pointerleave", () => this.hideHover());
-      window.addEventListener("pointermove", onPointerMove);
+      window.addEventListener("pointermove", (ev) => this.handleGlobalPointerMove(ev));
       window.addEventListener("pointerup", onPointerUp);
       window.addEventListener("pointercancel", onPointerUp);
       window.addEventListener("blur", onPointerUp as any);
-
       window.addEventListener("resize", () => this.drawScene());
+   }
+
+   private handleWheel(ev: WheelEvent) {
+      ev.preventDefault();
+      const rect = this.container.getBoundingClientRect();
+      const height = this.app.renderer.height - this.padding * 2;
+      const y = ev.clientY - rect.top - this.padding;
+      const norm = Math.max(0, Math.min(1, y / Math.max(1, height)));
+      const newDuration = Math.max(5, Math.min(360, this.viewDurationMinutes * (ev.deltaY > 0 ? 1.05 : 0.95)));
+      const focusMin = this.viewStartMinutes + norm * this.viewDurationMinutes;
+      this.viewStartMinutes = focusMin - norm * newDuration;
+      this.viewDurationMinutes = newDuration;
+      this.drawScene();
+   }
+
+   private handleCanvasPointerDown(ev: PointerEvent) {
+      this.isPanning = true;
+      this.lastPointerY = ev.clientY;
+      const target = ev.target as any;
+      if (!(target && target.constructor && target.constructor.name === "Text")) this.setSelectedTrain(null);
+   }
+
+   private handleGlobalPointerMove(ev: PointerEvent) {
+      const minutesPerPixel = this.getMinutesPerPixel();
+      if (this.updateHandleDrag(ev.clientY, minutesPerPixel) || this.updateTrainDrag(ev.clientY, minutesPerPixel) || !this.isPanning) return;
+      const dy = ev.clientY - this.lastPointerY;
+      this.lastPointerY = ev.clientY;
+      this.viewStartMinutes -= dy * minutesPerPixel;
+      this.drawScene();
+   }
+
+   private updateHandleDrag(clientY: number, minutesPerPixel: number) {
+      if (!this.isDraggingHandle || this.handleTrainIdx === null || this.handleEntryIdx === null) return false;
+      const entries = this.scenario!.trains[this.handleTrainIdx].timetable as any[];
+      const snapshot = this.handleSnapshot ?? (this.handleSnapshot = this.buildTimetableSnapshot(entries));
+      const deltaMinutes = (clientY - this.handleStartPointerY) * minutesPerPixel;
+      const newMinutes = Math.max(snapshot.arrivals[this.handleEntryIdx] ?? 0, this.handleStartMinutes + deltaMinutes);
+      entries[this.handleEntryIdx].departure = minutesToString(newMinutes);
+      this.applySnapshotDelta(entries, snapshot, newMinutes - this.handleStartMinutes, this.handleEntryIdx + 1);
+      this.drawScene();
+      return true;
+   }
+
+   private updateTrainDrag(clientY: number, minutesPerPixel: number) {
+      if (!this.isDraggingTrain || this.draggingTrainIdx === null || !this.dragSnapshot) return false;
+      this.applyTrainDragDelta(this.draggingTrainIdx, (clientY - this.dragStartPointerY) * minutesPerPixel);
+      this.drawScene();
+      return true;
    }
 
    private updateHoverFromClientY(clientY: number) {
@@ -832,16 +694,13 @@ export default class SzenariosApplication {
    }
 
    private drawTimeHandle(
-      train: any,
       trainIdx: number,
       entryIdx: number,
-      field: "arrival" | "departure",
       timeStr: string | undefined,
       x: number,
       yForTime: (t: string) => number
    ) {
       if (!timeStr || !this.timeHandles) return;
-      if (field === "arrival") return; // no arrival handles
       const y = yForTime(timeStr);
       const g = new PIXI.Graphics();
       g.circle(x, y, 3).fill({ color: 0xffffff, alpha: 1 }).stroke({ color: 0x000000, width: 1, alpha: 0.6 });
@@ -851,18 +710,9 @@ export default class SzenariosApplication {
          this.isDraggingHandle = true;
          this.handleTrainIdx = trainIdx;
          this.handleEntryIdx = entryIdx;
-         this.handleField = field;
          this.handleStartPointerY = ev.clientY;
          this.handleStartMinutes = toMinutes(timeStr);
-         // snapshot all original times for cascading delta
-         const tr = this.scenario!.trains[trainIdx];
-         const arrivals: (number | null)[] = [];
-         const departures: (number | null)[] = [];
-         for (const te of tr.timetable as any[]) {
-            arrivals.push(te.arrival ? toMinutes(te.arrival) : null);
-            departures.push(te.departure ? toMinutes(te.departure) : null);
-         }
-         this.handleSnapshot = { arrivals, departures };
+         this.handleSnapshot = this.buildTimetableSnapshot(this.scenario!.trains[trainIdx].timetable as any[]);
       });
       g.on("pointerup", () => this.endHandleDrag());
       g.on("pointerupoutside", () => this.endHandleDrag());
@@ -874,7 +724,6 @@ export default class SzenariosApplication {
       this.isDraggingHandle = false;
       this.handleTrainIdx = null;
       this.handleEntryIdx = null;
-      this.handleField = null;
       this.handleSnapshot = undefined;
    }
 
@@ -882,14 +731,7 @@ export default class SzenariosApplication {
       this.isDraggingTrain = true;
       this.draggingTrainIdx = trainIdx;
       this.dragStartPointerY = clientY;
-      const train = this.scenario!.trains[trainIdx];
-      const arrivals: (number | null)[] = [];
-      const departures: (number | null)[] = [];
-      for (const e of train.timetable) {
-         arrivals.push(e.arrival ? toMinutes(e.arrival) : null);
-         departures.push(e.departure ? toMinutes(e.departure) : null);
-      }
-      this.dragSnapshot = { arrivals, departures };
+      this.dragSnapshot = this.buildTimetableSnapshot(this.scenario!.trains[trainIdx].timetable);
    }
 
    private endTrainDrag() {
@@ -901,88 +743,46 @@ export default class SzenariosApplication {
 
    private applyTrainDragDelta(trainIdx: number, deltaMinutes: number) {
       if (!this.dragSnapshot) return;
-      const train = this.scenario!.trains[trainIdx];
-      for (let i = 0; i < train.timetable.length; i++) {
-         const e = train.timetable[i] as any;
-         const a = this.dragSnapshot.arrivals[i];
-         const d = this.dragSnapshot.departures[i];
-         if (a != null) e.arrival = minutesToString(Math.max(0, a + deltaMinutes));
-         if (d != null) e.departure = minutesToString(Math.max(0, d + deltaMinutes));
-         if (e.arrival && e.departure) {
-            const aMin = toMinutes(e.arrival);
-            const dMin = toMinutes(e.departure);
-            if (dMin < aMin) e.departure = minutesToString(aMin);
-         }
-      }
+      this.applySnapshotDelta(this.scenario!.trains[trainIdx].timetable, this.dragSnapshot, deltaMinutes);
    }
 
    private setupScenarioSelector(list: Array<{ id: string }>, selectedId: string) {
       const select = document.getElementById("scenario-select") as HTMLSelectElement | null;
-      if (!select) return;
-      select.innerHTML = "";
-      for (const s of list) {
-         const opt = document.createElement("option");
-         opt.value = s.id;
-         opt.textContent = s.id;
-         if (s.id === selectedId) opt.selected = true;
-         select.appendChild(opt);
-      }
-      select.addEventListener("change", async () => {
-         const id = select.value;
-         this.currentScenarioId = id;
-         console.log("[Graph] Switching to scenario:", id);
-         
-         const scenario = await fetchScenario(id);
-         const newLayoutId = scenario.layout || "";
-         
-         // Check if layout has changed - if so, reload the network
-         let network: NetworkDto;
-         if (newLayoutId !== this.currentLayoutId) {
-            console.log(`[Graph] Layout changed from '${this.currentLayoutId}' to '${newLayoutId}', reloading network`);
-            this.currentLayoutId = newLayoutId;
-            network = await fetchNetwork(newLayoutId);
-            // Reset route selection when layout changes
-            this.selectedRoute = null;
-         } else {
-            // Same layout, can reuse existing network or refetch
-            network = this.network!;
+      if (select) {
+         select.innerHTML = "";
+         for (const { id } of list) {
+            const opt = document.createElement("option");
+            opt.value = id;
+            opt.textContent = id;
+            opt.selected = id === selectedId;
+            select.appendChild(opt);
          }
-         
-         this.clearStage();
-         await this.renderScenario(scenario, network);
-         const url = new URL(window.location.href);
-         url.searchParams.set("scenario", id);
-         window.history.replaceState({}, "", url.toString());
-      });
-
-      const exportBtn = document.getElementById("export-btn");
-      if (exportBtn) {
-         exportBtn.addEventListener("click", () => this.exportScenarioJson());
+         select.onchange = () => void this.switchScenario(select.value);
       }
+      this.bindClick("export-btn", () => this.exportScenarioJson());
+      this.bindClick("save-btn", () => this.saveScenarioToServer());
+      this.bindClick("add-train-btn", () => this.handleCreateTrain());
+      this.bindClick("train-copy-btn", () => this.copySelectedTrain());
+      this.bindClick("train-delete-btn", () => this.deleteSelectedTrain());
+      this.bindClick("train-edit-btn", () => this.editSelectedTrain());
+      this.bindClick("train-recalculate-btn", () => this.recalculateTrain());
+      this.bindClick("direction-filter-btn", () => this.cycleDirectionFilter());
+   }
 
-      const saveBtn = document.getElementById("save-btn");
-      if (saveBtn) {
-         saveBtn.addEventListener("click", () => this.saveScenarioToServer());
-      }
+   private bindClick(id: string, handler: () => void | Promise<void>) {
+      const element = document.getElementById(id) as HTMLButtonElement | null;
+      if (element) element.onclick = () => void handler();
+   }
 
-      const addBtn = document.getElementById("add-train-btn");
-      if (addBtn) addBtn.addEventListener("click", () => this.handleCreateTrain());
-
-      const copyBtn = document.getElementById("train-copy-btn") as HTMLButtonElement | null;
-      const deleteBtn = document.getElementById("train-delete-btn") as HTMLButtonElement | null;
-      const editBtn = document.getElementById("train-edit-btn") as HTMLButtonElement | null;
-      const recalculateBtn = document.getElementById("train-recalculate-btn") as HTMLButtonElement | null;
-      if (copyBtn) copyBtn.addEventListener("click", () => this.copySelectedTrain());
-      if (deleteBtn) deleteBtn.addEventListener("click", () => this.deleteSelectedTrain());
-      if (editBtn) editBtn.addEventListener("click", () => this.editSelectedTrain());
-      if (recalculateBtn) recalculateBtn.addEventListener("click", () => this.recalculateTrain());
-
-      const directionBtn = document.getElementById("direction-filter-btn") as HTMLButtonElement | null;
-      if (directionBtn) {
-         directionBtn.addEventListener("click", () => {
-            this.cycleDirectionFilter();
-         });
-      }
+   private async switchScenario(id: string) {
+      this.currentScenarioId = id;
+      const { scenario, network, layoutChanged } = await this.loadScenarioBundle(id);
+      if (layoutChanged) this.selectedRoute = null;
+      this.clearStage();
+      await this.renderScenario(scenario, network);
+      const url = new URL(window.location.href);
+      url.searchParams.set("scenario", id);
+      window.history.replaceState({}, "", url.toString());
    }
 
    private clearStage() {
@@ -996,20 +796,16 @@ export default class SzenariosApplication {
    }
 
    private getTrainDirection(train: any): 'leftToRight' | 'rightToLeft' | 'unknown' {
-      const timetable = train.timetable || [];
-      if (timetable.length < 2) return 'unknown';
-      
-      const firstStation = timetable[0].station;
-      const lastStation = timetable[timetable.length - 1].station;
-      
-      const firstIndex = this.stationIndex.get(firstStation);
-      const lastIndex = this.stationIndex.get(lastStation);
-      
+      const visibleEntries = (train.timetable || []).filter((entry: any) => this.stationIndex.has(entry.station));
+      if (visibleEntries.length < 2) return 'unknown';
+
+      const firstIndex = this.stationIndex.get(visibleEntries[0].station);
+      const lastIndex = this.stationIndex.get(visibleEntries[visibleEntries.length - 1].station);
+
       if (firstIndex === undefined || lastIndex === undefined) return 'unknown';
-      
       if (firstIndex < lastIndex) return 'leftToRight';
       if (firstIndex > lastIndex) return 'rightToLeft';
-      
+
       return 'unknown';
    }
 
@@ -1023,15 +819,8 @@ export default class SzenariosApplication {
    }
 
    private cycleDirectionFilter() {
-      // Cycle through modes: both -> leftToRight -> rightToLeft -> both
-      if (this.directionFilter === 'both') {
-         this.directionFilter = 'leftToRight';
-      } else if (this.directionFilter === 'leftToRight') {
-         this.directionFilter = 'rightToLeft';
-      } else {
-         this.directionFilter = 'both';
-      }
-      
+      const filters: DirectionFilter[] = ["both", "leftToRight", "rightToLeft"];
+      this.directionFilter = filters[(filters.indexOf(this.directionFilter) + 1) % filters.length];
       this.updateDirectionFilterButton();
       this.drawScene();
    }
@@ -1060,18 +849,14 @@ export default class SzenariosApplication {
    private setSelectedTrain(idx: number | null) {
       const changed = this.selectedTrainIdx !== idx;
       this.selectedTrainIdx = idx;
-      const copyBtn = document.getElementById("train-copy-btn") as HTMLButtonElement | null;
-      const deleteBtn = document.getElementById("train-delete-btn") as HTMLButtonElement | null;
-      const editBtn = document.getElementById("train-edit-btn") as HTMLButtonElement | null;
-      const recalculateBtn = document.getElementById("train-recalculate-btn") as HTMLButtonElement | null;
-      const enabled = idx !== null;
-      if (copyBtn) copyBtn.disabled = !enabled;
-      if (deleteBtn) deleteBtn.disabled = !enabled;
-      if (editBtn) editBtn.disabled = !enabled;
-      if (recalculateBtn) recalculateBtn.disabled = !enabled;
-      // Defer redraw to avoid interfering with event handling
-      if (changed) {
-         requestAnimationFrame(() => this.drawScene());
+      this.setTrainActionButtonsDisabled(idx === null);
+      if (changed) requestAnimationFrame(() => this.drawScene());
+   }
+
+   private setTrainActionButtonsDisabled(disabled: boolean) {
+      for (const id of ["train-copy-btn", "train-delete-btn", "train-edit-btn", "train-recalculate-btn"]) {
+         const button = document.getElementById(id) as HTMLButtonElement | null;
+         if (button) button.disabled = disabled;
       }
    }
 
@@ -1096,11 +881,10 @@ export default class SzenariosApplication {
       this.drawScene();
    }
 
-  private async editSelectedTrain() {
+   private async editSelectedTrain() {
       if (this.selectedTrainIdx === null || !this.scenario) return;
       const train = this.scenario.trains[this.selectedTrainIdx];
-      const dialog = new EditTrainDialog();
-      const res = await dialog.showEdit(train as any, this.stationOrder);
+      const res = await this.trainEditorPanel.showEdit(train as any);
       if (!res) return;
       train.number = res.number;
       (train as any).type = res.type;
@@ -1111,31 +895,32 @@ export default class SzenariosApplication {
       this.drawScene();
    }
 
-  
-
-   private exportScenarioJson() {
-      if (!this.scenario) return;
-      // Build the SzenarioDTO shape as the server expects (title, layout, start_time, trains with timetable)
-      const exported = {
+   private buildScenarioPayload() {
+      if (!this.scenario) return null;
+      return {
          title: this.scenario.title,
          layout: this.scenario.layout,
          start_time: this.scenario.start_time,
-         trains: this.scenario.trains.map((t) => ({
-            number: t.number,
-            type: t.type,
-            category: t.category,
-            speedMax: t.speedMax,
-            cars: t.cars,
-            followingTrainNumber: (t as any).followingTrainNumber,
-            timetable: t.timetable.map((e) => {
-               const entry: any = { station: e.station };
-               if (e.arrival && e.arrival.trim().length > 0) entry.arrival = e.arrival;
-               if (e.departure && e.departure.trim().length > 0) entry.departure = e.departure;
-               return entry;
-            }),
+         trains: this.scenario.trains.map((train) => ({
+            number: train.number,
+            type: train.type,
+            category: train.category,
+            speedMax: train.speedMax,
+            cars: train.cars,
+            followingTrainNumber: (train as any).followingTrainNumber,
+            timetable: train.timetable.map(({ station, arrival, departure }) => ({
+               station,
+               ...(arrival?.trim() ? { arrival } : {}),
+               ...(departure?.trim() ? { departure } : {}),
+            })),
          })),
       };
-      const json = JSON.stringify(exported, null, 2);
+   }
+
+   private exportScenarioJson() {
+      const payload = this.buildScenarioPayload();
+      if (!payload) return;
+      const json = JSON.stringify(payload, null, 2);
       const textarea = document.getElementById("export-json-text") as HTMLTextAreaElement | null;
       if (textarea) {
          textarea.value = json;
@@ -1173,31 +958,11 @@ export default class SzenariosApplication {
    }
 
    private async saveScenarioToServer() {
-      if (!this.scenario) {
+      const scenarioData = this.buildScenarioPayload();
+      if (!scenarioData) {
          alert("No scenario loaded");
          return;
       }
-
-      // Build the scenario data (same format as export)
-      const scenarioData = {
-         title: this.scenario.title,
-         layout: this.scenario.layout,
-         start_time: this.scenario.start_time,
-         trains: this.scenario.trains.map((t) => ({
-            number: t.number,
-            type: t.type,
-            category: t.category,
-            speedMax: t.speedMax,
-            cars: t.cars,
-            followingTrainNumber: (t as any).followingTrainNumber,
-            timetable: t.timetable.map((e) => {
-               const entry: any = { station: e.station };
-               if (e.arrival && e.arrival.trim().length > 0) entry.arrival = e.arrival;
-               if (e.departure && e.departure.trim().length > 0) entry.departure = e.departure;
-               return entry;
-            }),
-         })),
-      };
 
       try {
          await saveScenario(this.currentScenarioId, scenarioData as any);
@@ -1209,27 +974,28 @@ export default class SzenariosApplication {
       }
    }
 
-  private async handleCreateTrain() {
-     const dialog = new EditTrainDialog();
-     const res = await dialog.showCreate(this.stationOrder);
-     if (!res || !this.scenario || !this.network) return;
-     const startIdx = this.stationOrder.indexOf(res.startStation);
-     const endIdx = this.stationOrder.indexOf(res.endStation);
-     if (startIdx < 0 || endIdx < 0 || startIdx === endIdx) return;
-     const t0 = toMinutes(this.scenario.start_time);
-     const timetable = this.buildTimetable(startIdx, endIdx, res.speedMax, t0);
-     const train = {
-        number: res.number,
-        type: res.type,
-        category: res.category,
-        speedMax: res.speedMax,
-        cars: res.cars,
-        followingTrainNumber: res.followingTrainNumber,
-        timetable: timetable as any,
-     };
-     this.scenario.trains.push(train as any);
-     this.drawScene();
-  }
+   private async handleCreateTrain() {
+      const res = await this.trainEditorPanel.showCreate(this.stationOrder);
+      if (!res || !this.scenario || !this.network) return;
+      const range = this.getStationRange(res.startStation, res.endStation);
+      if (!range) return;
+      this.scenario.trains.push({
+         number: res.number,
+         type: res.type,
+         category: res.category,
+         speedMax: res.speedMax,
+         cars: res.cars,
+         followingTrainNumber: res.followingTrainNumber,
+         timetable: this.buildTimetable(range.startIdx, range.endIdx, res.speedMax, toMinutes(this.scenario.start_time)) as any,
+      } as any);
+      this.drawScene();
+   }
+
+   private getStationRange(startStation: string, endStation: string) {
+      const startIdx = this.stationOrder.indexOf(startStation);
+      const endIdx = this.stationOrder.indexOf(endStation);
+      return startIdx < 0 || endIdx < 0 || startIdx === endIdx ? null : { startIdx, endIdx };
+   }
 
    private buildTimetable(
       startIndex: number,
@@ -1238,101 +1004,39 @@ export default class SzenariosApplication {
       startTimeMinutes: number
    ): Array<{ station: string; arrival?: string; departure?: string }> {
       if (!this.network) return [];
-
+      const step = startIndex < endIndex ? 1 : -1;
       const path: string[] = [];
-      for (let i = startIndex; i !== endIndex + (startIndex < endIndex ? 1 : -1); i += startIndex < endIndex ? 1 : -1) {
-         path.push(this.stationOrder[i]);
-      }
+      for (let i = startIndex; i !== endIndex + step; i += step) path.push(this.stationOrder[i]);
 
-      let cur = startTimeMinutes;
-      const timetable: Array<{ station: string; arrival?: string; departure?: string }> = [];
-
-      for (let i = 0; i < path.length; i++) {
-         const st = path[i];
-         if (i === 0) {
-            timetable.push({ station: st, departure: minutesToString(cur) });
-         } else {
-            const prev = path[i - 1];
-            const dist = getDistanceMeters(this.network, prev, st);
-            const travel = (dist * 60) / (1000 * Math.max(1, speed));
-            console.log(`Travel time between ${prev} and ${st}: ${travel} minutes`);
-            cur += travel;
-            const arr = cur;
-            const dep = arr + 1; // 1-minute dwell
-            timetable.push({
-               station: st,
-               arrival: minutesToString(arr),
-               departure: i === path.length - 1 ? undefined : minutesToString(dep),
-            });
-            if (i !== path.length - 1) cur = dep;
-         }
-      }
-
-      return timetable;
+      let current = startTimeMinutes;
+      return path.map((station, index) => {
+         if (index === 0) return { station, departure: minutesToString(current) };
+         current += this.getTravelMinutes(path[index - 1], station, speed);
+         const arrival = current;
+         const departure = index === path.length - 1 ? undefined : minutesToString(arrival + 1);
+         if (departure) current = arrival + 1;
+         return { station, arrival: minutesToString(arrival), departure };
+      });
    }
 
-   private createTrainFromForm() {
-      if (!this.scenario || !this.network) return;
-      const num = (document.getElementById("train-number") as HTMLInputElement)?.value?.trim() || "NEW";
-      const type = ((document.getElementById("train-type") as HTMLSelectElement)?.value as 'Passenger' | 'Freight') || 'Passenger';
-      const category = (document.getElementById("train-category") as HTMLInputElement)?.value?.trim() || undefined;
-      const speedMax = parseInt((document.getElementById("train-speed") as HTMLInputElement)?.value || "120", 10) || 120;
-      const cars = parseInt((document.getElementById("train-cars") as HTMLInputElement)?.value || "6", 10) || 6;
-      const start = (document.getElementById("train-start") as HTMLSelectElement)?.value;
-      const end = (document.getElementById("train-end") as HTMLSelectElement)?.value;
-      if (!start || !end) return;
-
-      // Determine path along stationOrder from start to end
-      const startIdx = this.stationOrder.indexOf(start);
-      const endIdx = this.stationOrder.indexOf(end);
-      if (startIdx < 0 || endIdx < 0 || startIdx === endIdx) return;
-      const step = startIdx < endIdx ? 1 : -1;
-
-      // Build timetable using scenario start time as initial departure, 1 min dwell, travel by network distance and speed limit
-      const t0 = toMinutes(this.scenario.start_time);
-      const timetable = this.buildTimetable(startIdx, endIdx, speedMax, t0);
-
-      const train = {
-         number: num,
-         type,
-         category,
-         speedMax,
-         cars,
-         timetable: timetable as any,
-      };
-      this.scenario.trains.push(train as any);
-      this.drawScene();
+   private getTrainStartMinutes(train: any) {
+      const [firstEntry, secondEntry] = train.timetable;
+      if (!firstEntry) return null;
+      if (firstEntry.departure) return toMinutes(firstEntry.departure);
+      if (!secondEntry?.arrival) return null;
+      return toMinutes(secondEntry.arrival) - this.getTravelMinutes(firstEntry.station, secondEntry.station, train.speedMax);
    }
 
    private recalculateTrain() {
       if (this.selectedTrainIdx === null || !this.scenario || !this.network) return;
-
       const train = this.scenario.trains[this.selectedTrainIdx];
-
-      // Get the first departure time as the starting point
       const firstEntry = train.timetable[0];
-      if (!firstEntry) return;
-
-      const startIdx = this.stationOrder.indexOf(firstEntry.station);
-      const endIdx = this.stationOrder.indexOf(train.timetable[train.timetable.length - 1].station);
-      if (startIdx < 0 || endIdx < 0 || startIdx === endIdx) return;
-
-      let t0 = 0;
-      if (firstEntry.departure) t0 = toMinutes(firstEntry.departure);
-      else {
-         const secondEntry = train.timetable[1];
-         if (!secondEntry) return;
-         const dist = getDistanceMeters(this.network, firstEntry.station, secondEntry.station);
-         const travel = (dist * 60) / (1000 * Math.max(1, train.speedMax));
-         console.log(`Travel time between ${firstEntry.station} and ${secondEntry.station}: ${travel} minutes`);
-         t0 = toMinutes(secondEntry.arrival) - travel;
-      }
-      const timetable = this.buildTimetable(startIdx, endIdx, train.speedMax, t0);
-
-      // Update the train's timetable
-      train.timetable = timetable as any;
-
-      // Redraw the scene to show the updated times
+      const lastEntry = train.timetable[train.timetable.length - 1];
+      if (!firstEntry || !lastEntry) return;
+      const range = this.getStationRange(firstEntry.station, lastEntry.station);
+      const startMinutes = this.getTrainStartMinutes(train);
+      if (!range || startMinutes === null) return;
+      train.timetable = this.buildTimetable(range.startIdx, range.endIdx, train.speedMax, startMinutes) as any;
       this.drawScene();
    }
 }

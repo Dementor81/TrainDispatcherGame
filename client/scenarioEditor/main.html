@@ -50,65 +50,6 @@
       </nav>
       <div id="canvas-container"></div>
 
-      <!-- Add Train Modal -->
-      <div class="modal fade" id="add-train-modal" tabindex="-1" aria-labelledby="addTrainModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="addTrainModalLabel">Add Train</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="add-train-form" class="modal-body">
-              <div class="mb-3">
-                <label class="form-label">Train number</label>
-                <input id="train-number" class="form-control" type="text" required />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Type</label>
-                <select id="train-type" class="form-select" required>
-                  <option value="Passenger" selected>Passenger</option>
-                  <option value="Freight">Freight</option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Category</label>
-                <input id="train-category" class="form-control" type="text" placeholder="e.g., ICE, Freight, Regional" />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Following Train Number</label>
-                <input id="train-following-number" class="form-control" type="text" placeholder="Train number that will use this vehicle" />
-                <div class="form-text">If specified, this vehicle will be reused for the following train</div>
-              </div>
-              <div class="row g-3">
-                <div class="col">
-                  <label class="form-label">Speed (km/h)</label>
-                  <input id="train-speed" class="form-control" type="number" min="10" max="400" step="10" value="120" required />
-                </div>
-                <div class="col">
-                  <label class="form-label">Cars</label>
-                  <input id="train-cars" class="form-control" type="number" min="1" max="20" step="1" value="6" required />
-                </div>
-              </div>
-              <div id="train-start-end-row" class="row g-3 mt-1">
-                <div class="col">
-                  <label class="form-label">Start station</label>
-                  <select id="train-start" class="form-select" required></select>
-                </div>
-                <div class="col">
-                  <label class="form-label">Terminus</label>
-                  <select id="train-end" class="form-select" required></select>
-                </div>
-              </div>
-              <div class="form-text mt-2">Departure will be set to scenario start time; stops use 1 min dwell.</div>
-              <div class="modal-footer px-0">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button id="train-submit-btn" type="submit" class="btn btn-primary">Create</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
       <!-- Export JSON Modal -->
       <div class="modal fade" id="export-json-modal" tabindex="-1" aria-labelledby="exportJsonModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
