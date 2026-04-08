@@ -13,8 +13,8 @@ namespace TrainDispatcherGame.Server.Models.DTOs
         [JsonPropertyName("category")]
         public string? Category { get; set; }
 
-        [JsonPropertyName("speed")]
-        public int Speed { get; set; }
+        [JsonPropertyName("speedMax")]
+        public int SpeedMax { get; set; }
 
         [JsonPropertyName("cars")]
         public int Cars { get; set; }

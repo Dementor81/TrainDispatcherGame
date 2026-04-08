@@ -4,7 +4,16 @@ namespace TrainDispatcherGame.Server.Models
 {
 	public abstract class TrainEventBase
 	{
-		public DateTime ScheduledTime { get; set; }
+		private DateTime _scheduledTime;
+		public DateTime ScheduledTime
+		{
+			get => _scheduledTime;
+			set
+			{
+				_scheduledTime = value;
+				Processed = false;
+			}
+		}
 		public bool Processed { get; set; }
 
 		protected TrainEventBase(DateTime scheduledTime)

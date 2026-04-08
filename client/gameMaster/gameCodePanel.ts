@@ -5,7 +5,7 @@ export class GameCodePanel extends BasePanel {
   private static readonly QR_POPUP_NAME = "game-code-qr";
 
   constructor() {
-    super(null as any, { width: 280, height: 88, top: 600, right: 850 });
+    super(null as any, { width: 280, height: 88, top: 600, right: 850, title: 'Game-Code' });
     this.show();
   }
 

@@ -109,7 +109,7 @@ export interface TrainWayPointDto {
 export interface TrainDetailsDto {
   trainNumber: string;
   category?: string | null;
-  type: TrainType | string;
+  type: TrainType;
   cars: number;
   speedMax: number; // m/s
   followingTrainNumber?: string | null;
@@ -150,7 +150,7 @@ export interface ScenarioDto {
 
 export interface ScenarioTrainDto {
   number: string;
-  type: 'Passenger' | 'Freight';
+  type: TrainType;
   category?: string;
   speedMax: number; // km/h in source
   cars: number;

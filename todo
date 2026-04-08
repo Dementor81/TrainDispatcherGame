@@ -1,12 +1,12 @@
 Features:
     
-    ☐ MultipleUnit trains for s_bahn and ice trains
     ☐ total delays and train misshapens display for the gamemaster
     ☐ add a signal for the wrong line
     ☐ add a Ignore next signal button to the UI that let trains go over the signal
     ☐ improve how all games are handled, add a simple way to quit a game
     ☐ reduce the amount of requests to the server (upcoming trains and status are requested too often)
     ☐ check all client side events and if they are still used and needed
+    ✔ MultipleUnit trains for s_bahn and ice trains @done(26-04-08 19:43)
     ✔ if a train becomes another train, display the new train number in the UI @done(26-03-29 13:07)
     ✔ touchsupport @done(26-03-28 19:04)
     ✔ adding a key to start a new game @done(26-03-22 09:13)
@@ -28,6 +28,7 @@ Bugs:
 
     ☐ some random delays of trains at the server side
     ☐ the server dispatch does not calculate travel times within stations, from spawnpoint to stoppingpoint
+    ☐ ending trains show some bugs
     ✔ fix UI on tablet @done(26-03-28 19:04)
     ✔ traindetails panel does stay open when the train is exited @done(26-03-21 12:50)
     

@@ -206,7 +206,7 @@ export class TrainManager {
       }
 
       const trainNumber = this.generateUniqueTestTrainNumber();
-      const train = new Train(this._application, trainNumber, 3, 30, 'Passenger');
+      const train = new Train(this._application, trainNumber, 3, 30, 'MultipleUnit');
       train.speedCurrent = 0;
       const direction = 1;
       train.setDrawingDirection(direction);

@@ -61,6 +61,7 @@ namespace TrainDispatcherGame.Server.Simulation
 
             if (train.TrainEvent.IsDue(this.SimulationTime))
             {
+                train.TrainEvent.Processed = true;
                 if (train.TrainEvent is TrainSpawnEvent)
                     await this.HandleTrainSpawn(train);
                 else if (train.TrainEvent is SendApprovalEvent)
@@ -111,7 +112,8 @@ namespace TrainDispatcherGame.Server.Simulation
                 var currentWaypoint = train.GetCurrentWayPoint();
                 if (currentWaypoint != null)
                 {
-                    if(currentWaypoint.IsLast){
+                    if (currentWaypoint.IsLast)
+                    {
                         ServerLogger.Instance.LogDebug(Ctx(train.Number), $"Train {train.Number} has completed all events");
                         train.completed = true;
                         return;
@@ -126,7 +128,9 @@ namespace TrainDispatcherGame.Server.Simulation
                     {
                         await DispatchTrainByServer(train);
                     }
-                }else{
+                }
+                else
+                {
                     ServerLogger.Instance.LogError(Ctx(train.Number), $"Train {train.Number} has no current waypoint");
                     train.completed = true;
                     train.damaged = true;

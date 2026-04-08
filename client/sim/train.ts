@@ -84,7 +84,7 @@ export class Train {
     // Static factory method to create a train from server data
     static fromServerData(data: any, application: ApplicationContext): Train {
         const category = data.category ?? data.catagory ?? null;
-        const train = new Train(application, data.trainNumber, data.cars, data.speed, data.trainType || 'Passenger', category);
+        const train = new Train(application, data.trainNumber, data.cars, data.speedMax, data.trainType || 'Passenger', category);
 
         // Set schedule times if provided
         if (data.departureTime) {

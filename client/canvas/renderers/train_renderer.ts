@@ -6,6 +6,7 @@ import TrackLayoutManager from "../../manager/trackLayout_manager";
 import { EventManager } from "../../manager/event_manager";
 import { PositionCalculator } from "../utils/position_calculator";
 import TrainManager from "../../manager/train_manager";
+import { MultipleUnitTrainRenderer } from "./multiple_unit_train_renderer";
 
 interface TrainContainer extends PIXI.Container {
    trainNumber?: string;
@@ -24,6 +25,7 @@ export class TrainRenderer {
    private _eventManager: EventManager;
    private _canvas: HTMLCanvasElement;
    private _trainContainersByNumber: Map<string, TrainContainer> = new Map();
+   private _multipleUnitTrainRenderer = new MultipleUnitTrainRenderer();
 
    constructor(stage: PIXI.Container, trackLayoutManager: TrackLayoutManager, eventManager: EventManager, canvas: HTMLCanvasElement, trainManager: TrainManager) {
       this._container = new PIXI.Container();
@@ -183,6 +185,8 @@ export class TrainRenderer {
       this.ensureCarGraphics(train, trainContainer);
       const cars = trainContainer.cars ?? [];
       if (trainContainer.numberText) trainContainer.numberText.visible = false;
+      if (trainContainer.stationPie) trainContainer.stationPie.visible = false;
+      if (trainContainer.signalWarning) trainContainer.signalWarning.visible = false;
 
       let carIndex = 0;
       let carTrack = train.position.track;
@@ -190,6 +194,12 @@ export class TrainRenderer {
 
       let drawingDirection = train.drawingDirection;
       let isReversed = train.movingDirection === train.drawingDirection;
+      const isMultipleUnit = train.type === "MultipleUnit";
+      const frontCarIndex = isReversed ? cars.length - 1 : 0;
+      const labelCarIndex = isMultipleUnit
+         ? this._multipleUnitTrainRenderer.getLabelCarIndex(cars.length, isReversed)
+         : 0;
+      const overlayCarIndex = isMultipleUnit ? frontCarIndex : 0;
       const carStepLength = RendererConfig.trainCarSpacing + RendererConfig.carWidth;
       const despawnedCars = train.isExiting ? Math.min(cars.length, Math.floor(train.exitProgressMeters / carStepLength)) : 0;
       const exitOffset = train.isExiting ? train.exitProgressMeters * train.movingDirection : 0;
@@ -207,6 +217,8 @@ export class TrainRenderer {
          }
 
          const isLocomotive = carIndex === 0;
+         const shouldRenderLabel = carIndex === labelCarIndex;
+         const shouldRenderOverlays = carIndex === overlayCarIndex;
          // move each car, so instead of the center of the first car, the head of the first car is at the position of the train
          let carOffset = RendererConfig.carWidth / 2 * drawingDirection * (isReversed ? -1 : 1);
 
@@ -231,11 +243,15 @@ export class TrainRenderer {
             continue;
          }
          carGraphics.visible = true;
-         const carColor = isLocomotive ? RendererConfig.locomotiveColor : RendererConfig.carColor;
-         const carRadius = isLocomotive ? RendererConfig.locomotiveRadius : RendererConfig.carRadius;
+         if (isMultipleUnit) {
+            this._multipleUnitTrainRenderer.drawCar(carGraphics, carIndex, cars.length, drawingDirection);
+         } else {
+            const carColor = isLocomotive ? RendererConfig.locomotiveColor : RendererConfig.carColor;
+            const carRadius = isLocomotive ? RendererConfig.locomotiveRadius : RendererConfig.carRadius;
 
-         carGraphics.clear();
-         carGraphics.roundRect(-RendererConfig.carWidth / 2, -RendererConfig.trainHeight / 2, RendererConfig.carWidth, RendererConfig.trainHeight, carRadius).fill(carColor);
+            carGraphics.clear();
+            carGraphics.roundRect(-RendererConfig.carWidth / 2, -RendererConfig.trainHeight / 2, RendererConfig.carWidth, RendererConfig.trainHeight, carRadius).fill(carColor);
+         }
          //carGraphics.circle(0, 0, 2).fill(carColor);
 
          let curveTrack: Track | null = null;
@@ -270,8 +286,7 @@ export class TrainRenderer {
          carGraphics.y = carPosition.y;
          carGraphics.rotation = trackAngle;
 
-         // Locomotive-only overlays
-         if (isLocomotive) {
+         if (shouldRenderLabel) {
             const text = trainContainer.numberText;
             if (text) {
                text.visible = true;
@@ -288,7 +303,9 @@ export class TrainRenderer {
                // Ensure overlays stay on top of cars
                trainContainer.addChild(text);
             }
+         }
 
+         if (shouldRenderOverlays) {
             const pie = trainContainer.stationPie;
             if (pie) {
                const isWaiting = train.state === TrainState.WAITING_AT_STATION;

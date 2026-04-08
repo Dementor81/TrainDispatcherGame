@@ -1,9 +1,7 @@
-import type { ScenarioTrainDto } from "../network/dto";
+import type { ScenarioTrainDto, TrainType } from "../network/dto";
 import { BasePanel } from "../ui/basePanel";
 import type { Application } from "../core/application";
 import { UI } from "../utils/ui";
-
-type TrainType = "Passenger" | "Freight";
 
 export type CreateTrainResult = {
    number: string;
@@ -61,7 +59,7 @@ export class TrainEditorPanel extends BasePanel {
       };
 
       this.numEl = this.createInput("Train number", "text", true);
-      this.typeEl = this.createSelect("Type", ["Passenger", "Freight"]);
+      this.typeEl = this.createSelect("Type", ["Passenger", "Freight", "MultipleUnit"]);
       this.catEl = this.createInput("Category", "text", false, "e.g., ICE, Freight, Regional");
       this.followingEl = this.createInput("Following Train Number", "text", false, "Train number that will use this vehicle");
       this.speedEl = this.createInput("Speed (km/h)", "number", true);
@@ -158,7 +156,7 @@ export class TrainEditorPanel extends BasePanel {
       this.startEndRow.classList.add("d-none");
       this.helperText.classList.add("d-none");
       this.numEl.value = train.number || "";
-      this.typeEl.value = (train.type as string) || "Passenger";
+      this.typeEl.value = train.type || "Passenger";
       this.catEl.value = train.category || "";
       this.speedEl.value = String(train.speedMax ?? 120);
       this.carsEl.value = String(train.cars ?? 6);

@@ -7,7 +7,7 @@
       "number": "59005",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -48,7 +48,7 @@
       "number": "58002",
       "type": "Passenger",
       "category": "RE",
-      "speed": 140,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -89,7 +89,7 @@
       "number": "33801",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -115,7 +115,7 @@
       "number": "33806",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -141,7 +141,7 @@
       "number": "59007",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -182,7 +182,7 @@
       "number": "40001",
       "type": "Freight",
       "category": "GZ",
-      "speed": 80,
+      "speedMax": 100,
       "cars": 12,
       "path": [],
       "timetable": [
@@ -221,9 +221,9 @@
     },
     {
       "number": "601",
-      "type": "Passenger",
+      "type": "MultipleUnit",
       "category": "ICE",
-      "speed": 160,
+      "speedMax": 160,
       "cars": 9,
       "path": [],
       "timetable": [
@@ -262,9 +262,9 @@
     },
     {
       "number": "603",
-      "type": "Passenger",
+      "type": "MultipleUnit",
       "category": "ICE",
-      "speed": 160,
+      "speedMax": 160,
       "cars": 9,
       "path": [],
       "timetable": [
@@ -305,7 +305,7 @@
       "number": "58001",
       "type": "Passenger",
       "category": "RE",
-      "speed": 140,
+      "speedMax": 120,
       "cars": 5,
       "path": [],
       "timetable": [
@@ -346,7 +346,7 @@
       "number": "59011",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -387,7 +387,7 @@
       "number": "58005",
       "type": "Passenger",
       "category": "RE",
-      "speed": 140,
+      "speedMax": 120,
       "cars": 5,
       "path": [],
       "timetable": [
@@ -428,7 +428,7 @@
       "number": "59009",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -469,7 +469,7 @@
       "number": "58003",
       "type": "Passenger",
       "category": "RE",
-      "speed": 140,
+      "speedMax": 120,
       "cars": 5,
       "path": [],
       "timetable": [
@@ -510,7 +510,7 @@
       "number": "58004",
       "type": "Passenger",
       "category": "RE",
-      "speed": 140,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -551,7 +551,7 @@
       "number": "59002",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -592,7 +592,7 @@
       "number": "59004",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -614,16 +614,16 @@
         {
           "station": "neustadt",
           "arrival": "00:46:05",
-          "departure": "00:47:05"
+          "departure": "00:51:03"
         },
         {
           "station": "weststadt",
-          "arrival": "00:50:14",
-          "departure": "00:51:14"
+          "arrival": "00:54:12",
+          "departure": "00:55:12"
         },
         {
           "station": "linksdorf",
-          "arrival": "00:53:48",
+          "arrival": "00:57:46",
           "departure": ""
         }
       ],
@@ -631,9 +631,9 @@
     },
     {
       "number": "513",
-      "type": "Passenger",
+      "type": "MultipleUnit",
       "category": "ICE",
-      "speed": 160,
+      "speedMax": 160,
       "cars": 9,
       "path": [],
       "timetable": [
@@ -674,7 +674,7 @@
       "number": "33702",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -705,7 +705,7 @@
       "number": "33703",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -736,7 +736,7 @@
       "number": "33704",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -767,7 +767,7 @@
       "number": "33705",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -798,7 +798,7 @@
       "number": "40102",
       "type": "Freight",
       "category": "GZ",
-      "speed": 100,
+      "speedMax": 100,
       "cars": 12,
       "path": [],
       "timetable": [
@@ -820,16 +820,16 @@
         {
           "station": "neustadt",
           "arrival": "00:36:06",
-          "departure": "00:50:20"
+          "departure": "00:54:14"
         },
         {
           "station": "weststadt",
-          "arrival": "00:54:06",
-          "departure": "00:54:06"
+          "arrival": "00:58:00",
+          "departure": "00:58:00"
         },
         {
           "station": "linksdorf",
-          "arrival": "00:57:11",
+          "arrival": "01:01:05",
           "departure": ""
         }
       ],
@@ -839,7 +839,7 @@
       "number": "40602",
       "type": "Freight",
       "category": "GZ",
-      "speed": 80,
+      "speedMax": 100,
       "cars": 8,
       "path": [],
       "timetable": [
@@ -870,7 +870,7 @@
       "number": "40100",
       "type": "Freight",
       "category": "GZ",
-      "speed": 100,
+      "speedMax": 100,
       "cars": 10,
       "path": [],
       "timetable": [
@@ -911,7 +911,7 @@
       "number": "40003",
       "type": "Freight",
       "category": "GZ",
-      "speed": 80,
+      "speedMax": 100,
       "cars": 12,
       "path": [],
       "timetable": [
@@ -933,16 +933,16 @@
         {
           "station": "burghausen",
           "arrival": "00:50:22",
-          "departure": "01:09:01"
+          "departure": "01:04:44"
         },
         {
           "station": "ostheim",
-          "arrival": "01:13:53",
-          "departure": "01:21:09"
+          "arrival": "01:09:36",
+          "departure": "01:16:33"
         },
         {
           "station": "rechtsheim",
-          "arrival": "01:24:58",
+          "arrival": "01:20:22",
           "departure": ""
         }
       ],
@@ -950,9 +950,9 @@
     },
     {
       "number": "703",
-      "type": "Passenger",
+      "type": "MultipleUnit",
       "category": "ICE",
-      "speed": 160,
+      "speedMax": 160,
       "cars": 9,
       "path": [],
       "timetable": [
@@ -991,9 +991,9 @@
     },
     {
       "number": "6601",
-      "type": "Passenger",
+      "type": "MultipleUnit",
       "category": "S",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -1017,9 +1017,9 @@
     },
     {
       "number": "6602",
-      "type": "Passenger",
+      "type": "MultipleUnit",
       "category": "S",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -1043,9 +1043,9 @@
     },
     {
       "number": "6603",
-      "type": "Passenger",
+      "type": "MultipleUnit",
       "category": "S",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -1069,9 +1069,9 @@
     },
     {
       "number": "6604",
-      "type": "Passenger",
+      "type": "MultipleUnit",
       "category": "S",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -1097,7 +1097,7 @@
       "number": "33801",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 3,
       "path": [],
       "timetable": [
@@ -1128,7 +1128,7 @@
       "number": "40600",
       "type": "Freight",
       "category": "GZ",
-      "speed": 80,
+      "speedMax": 100,
       "cars": 7,
       "path": [],
       "timetable": [
@@ -1159,7 +1159,7 @@
       "number": "33804",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -1185,7 +1185,7 @@
       "number": "46404",
       "type": "Freight",
       "category": "GZ",
-      "speed": 100,
+      "speedMax": 100,
       "cars": 10,
       "path": [],
       "timetable": [
@@ -1211,7 +1211,7 @@
       "number": "33803",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -1237,7 +1237,7 @@
       "number": "33808",
       "type": "Passenger",
       "category": "RB",
-      "speed": 120,
+      "speedMax": 120,
       "cars": 4,
       "path": [],
       "timetable": [
@@ -1254,6 +1254,228 @@
         {
           "station": "linksdorf",
           "arrival": "00:34:03",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "40005",
+      "type": "Freight",
+      "category": "GZ",
+      "speedMax": 100,
+      "cars": 12,
+      "path": [],
+      "timetable": [
+        {
+          "station": "linksdorf",
+          "arrival": "",
+          "departure": "00:31:36"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:35:27",
+          "departure": "00:50:06"
+        },
+        {
+          "station": "neustadt",
+          "arrival": "00:54:49",
+          "departure": "00:56:54"
+        },
+        {
+          "station": "burghausen",
+          "arrival": "01:01:47",
+          "departure": "01:22:09"
+        },
+        {
+          "station": "ostheim",
+          "arrival": "01:27:01",
+          "departure": "01:34:17"
+        },
+        {
+          "station": "rechtsheim",
+          "arrival": "01:38:06",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "46406",
+      "type": "Freight",
+      "category": "GZ",
+      "speedMax": 100,
+      "cars": 10,
+      "path": [],
+      "timetable": [
+        {
+          "station": "meßbach",
+          "arrival": "",
+          "departure": "00:16:05"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:19:10",
+          "departure": "00:23:33"
+        },
+        {
+          "station": "linksdorf",
+          "arrival": "00:26:38",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "46405",
+      "type": "Freight",
+      "category": "GZ",
+      "speedMax": 100,
+      "cars": 8,
+      "path": [],
+      "timetable": [
+        {
+          "station": "linksdorf",
+          "arrival": "",
+          "departure": "00:35:29"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:37:53",
+          "departure": "00:38:53"
+        },
+        {
+          "station": "meßbach",
+          "arrival": "00:41:17",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "33805",
+      "type": "Passenger",
+      "category": "RB",
+      "speedMax": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "linksdorf",
+          "arrival": "",
+          "departure": "00:42:38"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:45:12",
+          "departure": "00:47:57"
+        },
+        {
+          "station": "meßbach",
+          "arrival": "00:50:31",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": "33810"
+    },
+    {
+      "number": "40603",
+      "type": "Freight",
+      "category": "GZ",
+      "speedMax": 100,
+      "cars": 8,
+      "path": [],
+      "timetable": [
+        {
+          "station": "rechtsheim",
+          "arrival": "",
+          "departure": "00:20:00"
+        },
+        {
+          "station": "ostheim",
+          "arrival": "00:22:24",
+          "departure": "00:23:24"
+        },
+        {
+          "station": "burghausen",
+          "arrival": "00:25:48",
+          "departure": "00:25:48"
+        },
+        {
+          "station": "golm",
+          "arrival": "00:28:12",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": "40604"
+    },
+    {
+      "number": "40604",
+      "type": "Freight",
+      "category": "GZ",
+      "speedMax": 100,
+      "cars": 7,
+      "path": [],
+      "timetable": [
+        {
+          "station": "golm",
+          "arrival": "",
+          "departure": "00:58:13"
+        },
+        {
+          "station": "burghausen",
+          "arrival": "01:00:37",
+          "departure": "01:13:08"
+        },
+        {
+          "station": "ostheim",
+          "arrival": "01:15:32",
+          "departure": "01:20:31"
+        },
+        {
+          "station": "rechtsheim",
+          "arrival": "01:22:55",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "605",
+      "type": "MultipleUnit",
+      "category": "ICE",
+      "speedMax": 160,
+      "cars": 9,
+      "path": [],
+      "timetable": [
+        {
+          "station": "rechtsheim",
+          "arrival": "",
+          "departure": "00:40:00"
+        },
+        {
+          "station": "ostheim",
+          "arrival": "00:41:55",
+          "departure": "00:41:55"
+        },
+        {
+          "station": "burghausen",
+          "arrival": "00:44:20",
+          "departure": "00:46:13"
+        },
+        {
+          "station": "neustadt",
+          "arrival": "00:48:40",
+          "departure": "00:48:40"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:51:02",
+          "departure": "00:51:02"
+        },
+        {
+          "station": "linksdorf",
+          "arrival": "00:52:57",
           "departure": ""
         }
       ],

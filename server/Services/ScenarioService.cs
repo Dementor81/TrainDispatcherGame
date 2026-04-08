@@ -211,7 +211,7 @@ namespace TrainDispatcherGame.Server.Services
                 {
                     Type = trainSchedule.Type,
                     Category = trainSchedule.Category,
-                    Speed = trainSchedule.Speed / 3.6d,
+                    SpeedMax = trainSchedule.SpeedMax / 3.6d,
                     Cars = trainSchedule.Cars,
                     FollowingTrainNumber = trainSchedule.FollowingTrainNumber
                 };

@@ -1,69 +1,30 @@
-{
+﻿{
   "title": "Fahrplan zweigleisig Test",
   "layout": "frankenbahn",
   "start_time": "00:00",
   "trains": [
+    
     {
-      "number": "59005",
-      "type": "Passenger",
-      "category": "RB",
-      "speed": 160,
+      "number": "001",
+      "type": "MultipleUnit",
+      "category": null,
+      "speedMax": 160,
       "cars": 5,
       "path": [],
       "timetable": [
         {
           "station": "linksdorf",
           "arrival": "",
+          "departure": "00:00:00"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:02:00",
           "departure": "00:02:00"
         },
         {
-          "station": "weststadt",
-          "arrival": "00:02:43",
-          "departure": "00:03:04"
-        },
-        {
           "station": "neustadt",
-          "arrival": "00:15:22",
-          "departure": "00:16:22"
-        },
-        {
-          "station": "burghausen",
-          "arrival": "00:20:07",
-          "departure": "00:21:07"
-        },
-        {
-          "station": "ostheim",
-          "arrival": "00:24:52",
-          "departure": "00:25:52"
-        },
-        {
-          "station": "rechtsheim",
-          "arrival": "00:28:55",
-          "departure": ""
-        }
-      ],
-      "followingTrainNumber": null
-    },{
-      "number": "46404",
-      "type": "Freight",
-      "category": "GZ",
-      "speed": 100,
-      "cars": 10,
-      "path": [],
-      "timetable": [
-        {
-          "station": "meßbach",
-          "arrival": "",
-          "departure": "00:01:35"
-        },
-        {
-          "station": "weststadt",
-          "arrival": "00:07:40",
-          "departure": "00:08:40"
-        },
-        {
-          "station": "linksdorf",
-          "arrival": "00:11:45",
+          "arrival": "00:04:00",
           "departure": ""
         }
       ],

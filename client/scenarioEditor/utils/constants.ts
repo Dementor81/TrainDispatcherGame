@@ -2,6 +2,8 @@
  * Constants used in the scenario editor
  */
 
+import type { TrainType } from "../../network/dto";
+
 
 /**
  * Fixed color mapping for common categories.
@@ -19,7 +21,7 @@ export const CATEGORY_COLOR_MAP: Record<string, number> = {
  * Returns a stable color for a given train category. If category is empty,
  * falls back to type-based defaults.
  */
-export function getCategoryColor(category?: string, type?: 'Passenger' | 'Freight'): number {
+export function getCategoryColor(category?: string, type?: TrainType): number {
    if (type === 'Freight') return CATEGORY_COLOR_MAP.freight;
    const normalized = (category || '').trim().toLowerCase();
    // Prefer fixed mappings for well-known categories (prefix match)

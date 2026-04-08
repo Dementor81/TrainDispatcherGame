@@ -89,7 +89,7 @@ namespace TrainDispatcherGame.Server.Managers
                 arrivalTime = currentEvent.ArrivalTime,
                 departureTime = currentEvent.DepartureTime,
                 cars = train.Cars,
-                speed = train.Speed,
+                speedMax = train.SpeedMax,
                 followingTrainNumber = train.FollowingTrainNumber
             };
 

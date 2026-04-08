@@ -9,7 +9,7 @@ namespace TrainDispatcherGame.Server.Models
         public string Number { get; set; } = string.Empty;
         public TrainType Type { get; set; } = TrainType.Passenger;
         public string? Category { get; set; } = null;
-        public double Speed { get; set; }//m/s
+        public double SpeedMax { get; set; }//m/s
         public int Cars { get; set; }
         public TrainEventBase? TrainEvent { get; set; }
         public List<TrainWayPoint> Route { get; set; } = new();
@@ -88,7 +88,7 @@ namespace TrainDispatcherGame.Server.Models
 
         public int GetTravelTime(int distance)
         {
-            return (int)(distance / Speed);
+            return (int)(distance / SpeedMax);
         }
 
         public void Reset()

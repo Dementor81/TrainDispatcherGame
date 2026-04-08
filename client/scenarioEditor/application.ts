@@ -6,6 +6,7 @@ import { precomputeExitSpans, getDistanceMeters, isSingleTrackSection, deriveOrd
 import { getCategoryColor } from "./utils/constants";
 import { TrainEditorPanel } from "./trainEditorPanel";
 import { detectCollisions } from "./utils/collisionDetection";
+import Toast from "../ui/toast";
 
 type DirectionFilter = 'both' | 'leftToRight' | 'rightToLeft';
 type TimetableSnapshot = { arrivals: (number | null)[]; departures: (number | null)[] };
@@ -966,7 +967,7 @@ export default class SzenariosApplication {
 
       try {
          await saveScenario(this.currentScenarioId, scenarioData as any);
-         alert("Scenario saved successfully!");
+         Toast.show("Scenario saved successfully!", "success");
       } catch (error) {
          const message = error instanceof Error ? error.message : "Unknown error";
          alert(`Failed to save scenario: ${message}`);
