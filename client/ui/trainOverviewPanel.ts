@@ -3,7 +3,7 @@ import { StationTimetableEventDto, TrainDelayUpdatedNotificationDto, TrainRemove
 import { Application } from '../core/application';
 import { BasePanel } from './basePanel';
 import { TrainState } from '../sim/train';
-import { formatTimeFromSeconds, UNSET_TIME_PLACEHOLDER } from '../utils/time';
+import { formatTimeFromIso, UNSET_TIME_PLACEHOLDER } from '../utils/time';
 
 export class TrainOverviewPanel extends BasePanel {
 
@@ -87,7 +87,15 @@ export class TrainOverviewPanel extends BasePanel {
     this._loading = true;
     try {
       const trains = await getUpcomingTrains(currentStationId);
-      const getSortTime = (train: StationTimetableEventDto) => train.departureSeconds ?? train.arrivalSeconds ?? 0;
+      const getSortTime = (train: StationTimetableEventDto) => {
+        const time = train.departureTime ?? train.arrivalTime;
+        if (!time) {
+          return 0;
+        }
+
+        const parsed = new Date(time).getTime();
+        return Number.isNaN(parsed) ? 0 : parsed;
+      };
       trains.sort((a, b) => getSortTime(a) - getSortTime(b));
       this.renderTrains(trains);
     } catch (error) {
@@ -227,15 +235,13 @@ export class TrainOverviewPanel extends BasePanel {
   private updateTrainRow(row: HTMLTableRowElement, train: StationTimetableEventDto): void {
     const delayInfo = this.formatDelay(train.currentDelay);
     const isStoppedBySignal = this.application.trains.some(t => t.number === train.trainNumber && t.stoppedBySignal);
-    const hasArrival = train.departureSeconds !== null && train.departureSeconds !== train.arrivalSeconds;
 
     row.innerHTML = `
       <td class="small fw-bold ${isStoppedBySignal ? 'text-danger' : ''}">${train.category} ${train.trainNumber}</td>
       <td class="small">${train.fromStation}</td>
       <td class="small">${train.nextStation}</td>
-      <td class="small">${hasArrival ? formatTimeFromSeconds(train.arrivalSeconds, UNSET_TIME_PLACEHOLDER) : UNSET_TIME_PLACEHOLDER
-      }</td>
-      <td class="small">${formatTimeFromSeconds(train.departureSeconds, UNSET_TIME_PLACEHOLDER)}</td>
+      <td class="small">${formatTimeFromIso(train.arrivalTime, UNSET_TIME_PLACEHOLDER)}</td>
+      <td class="small">${formatTimeFromIso(train.departureTime, UNSET_TIME_PLACEHOLDER)}</td>
       <td><span data-delay-badge="true" class="badge ${delayInfo.class}">${delayInfo.text}</span></td>
     `;
   }

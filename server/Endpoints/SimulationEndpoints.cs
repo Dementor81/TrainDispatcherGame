@@ -7,6 +7,11 @@ namespace TrainDispatcherGame.Server.Endpoints
 {
     public static class SimulationEndpoints
     {
+        private static DateTime? NormalizeScheduledTime(DateTime time)
+        {
+            return time.Year <= 1 ? null : time;
+        }
+
         public static IEndpointRouteBuilder MapSimulationEndpoints(this IEndpointRouteBuilder app)
         {
             app.MapPost("/api/simulation/start", (HttpRequest req, GameSessionManager sessionManager) =>
@@ -237,8 +242,8 @@ namespace TrainDispatcherGame.Server.Endpoints
                 var waypoints = train.Route.Select(wp => new
                 {
                     station = wp.Station,
-                    arrivalTime = wp.ArrivalTime,
-                    departureTime = wp.DepartureTime,
+                    arrivalTime = NormalizeScheduledTime(wp.ArrivalTime),
+                    departureTime = NormalizeScheduledTime(wp.DepartureTime),
                     processed = wp.Processed,
                     isLast = wp.IsLast,
                     stops = wp.Stops,

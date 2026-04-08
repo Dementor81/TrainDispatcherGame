@@ -34,7 +34,7 @@ export class TrainManager {
       this._stationHandler = new TrainStationHandler(this._eventManager, this._application.clientSimulation, this._trackLayoutManager, {
          getDirectionTowardExit: (train, waypoints) => this.getDirectionTowardExit(train, waypoints),
          reverseTrain: (trainNumber) => this.reverseTrain(trainNumber),
-      });     
+      });
       this._movementHandler = new TrainMovementHandler(this._application, this._signalHandler, {
          removeTrain: (trainNumber) => this.removeTrain(trainNumber),
       });
@@ -67,10 +67,10 @@ export class TrainManager {
       if (Train.isHardStoppedState(train.state)) return;
 
       const isEmergencyBraking = train.state === TrainState.EMERGENCY_BRAKING;
-      if (!isEmergencyBraking) {
-         this._signalHandler.checkTrainStoppedBySignal(train);
-         this._stationHandler.checkStationStop(train);
-      }
+
+      this._signalHandler.checkTrainStoppedBySignal(train);
+      this._stationHandler.checkStationStop(train);
+
 
       this._movementHandler.updateTrainSpeed(train);
 

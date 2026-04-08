@@ -80,8 +80,8 @@ export interface TrainDto {
 export interface StationTimetableEventDto {
   trainNumber: string;
   category?: string;
-  arrivalSeconds: number;
-  departureSeconds?: number | null;
+  arrivalTime?: string | null;
+  departureTime?: string | null;
   currentDelay: number;
   fromStation: string;
   nextStation: string;
@@ -98,8 +98,8 @@ export interface TrainRemovedNotificationDto {
 
 export interface TrainWayPointDto {
   station: string;
-  arrivalTime: string;
-  departureTime: string;
+  arrivalTime?: string | null;
+  departureTime?: string | null;
   processed: boolean;
   isLast: boolean;
   stops: boolean;

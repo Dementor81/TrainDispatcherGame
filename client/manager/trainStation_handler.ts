@@ -17,6 +17,10 @@ export class TrainStationHandler {
    private _trackLayoutManager: TrackLayoutManager;
    private _callbacks: TrainStationCallbacks;
 
+   private static parseScheduledTime(value?: string | null): Date | null {
+      return value ? new Date(value) : null;
+   }
+
    constructor(
       eventManager: EventManager,
       clientSimulation: ClientSimulation,
@@ -39,7 +43,6 @@ export class TrainStationHandler {
       const stoppingPoint = currentTrack.length / 2 + train.length / 2 * train.movingDirection;
       const remainingDistanceToStop = (stoppingPoint - train.position!.km);
 
-      console.log(`${train.number} remainingDistanceToStop: ${remainingDistanceToStop}`);
       if (remainingDistanceToStop < -0.1 || remainingDistanceToStop > SimulationConfig.trainLookaheadDistance)
          return false;
 
@@ -63,9 +66,8 @@ export class TrainStationHandler {
             this._eventManager.emit("trainStoppedAtStation", train);
          }
 
-         if (train.action === 'End' && train.followingTrainNumber) {
+         if (train.action === 'End') {
             void this.handleTrainEnding(train);
-            train.setState(TrainState.ENDED, 0);
             return true;
          }
 
@@ -111,6 +113,7 @@ export class TrainStationHandler {
 
       if (!followingTrainNumber) {
          console.warn(`Train ${oldNumber} has action 'End' but no following train number`);
+         train.setState(TrainState.ENDED, 0);
          return;
       }
 
@@ -120,7 +123,10 @@ export class TrainStationHandler {
          const newDirection = this._callbacks.getDirectionTowardExit(train, waypoints);
 
          train.number = followingTrainNumber;
-         train.setScheduleTimes(new Date(firstWaypoint.arrivalTime), new Date(firstWaypoint.departureTime));
+         train.setScheduleTimes(
+            TrainStationHandler.parseScheduledTime(firstWaypoint.arrivalTime),
+            TrainStationHandler.parseScheduledTime(firstWaypoint.departureTime)
+         );
          train.action = firstWaypoint.action as any;
 
          if (newDirection !== null && newDirection !== train.movingDirection) {

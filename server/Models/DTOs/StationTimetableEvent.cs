@@ -10,11 +10,11 @@ namespace TrainDispatcherGame.Server.Models.DTOs
         [JsonPropertyName("trainNumber")]
         public string TrainNumber { get; set; } = string.Empty;
 
-        [JsonPropertyName("arrivalSeconds")]
-        public int ArrivalSeconds { get; set; }
+        [JsonPropertyName("arrivalTime")]
+        public DateTime? ArrivalTime { get; set; }
 
-        [JsonPropertyName("departureSeconds")]
-        public int? DepartureSeconds { get; set; }
+        [JsonPropertyName("departureTime")]
+        public DateTime? DepartureTime { get; set; }
 
         [JsonPropertyName("currentDelay")]
         public int CurrentDelay { get; set; } = 0;

@@ -5,6 +5,11 @@ namespace TrainDispatcherGame.Server.Simulation
 {
     public class StationTimetableService
     {
+        private static DateTime? NormalizeScheduledTime(DateTime time)
+        {
+            return time.Year <= 1 ? null : time;
+        }
+
         public List<StationTimetableEvent> BuildStationTimetableEvents(IEnumerable<Train> trains, string stationId)
         {
             var stationEvents = new List<StationTimetableEvent>();
@@ -30,8 +35,8 @@ namespace TrainDispatcherGame.Server.Simulation
                         {
                             TrainNumber = train.Number,
                             Category = train.Category ?? string.Empty,
-                            ArrivalSeconds = (int)waypoint.ArrivalTime.TimeOfDay.TotalSeconds,
-                            DepartureSeconds = (int)waypoint.DepartureTime.TimeOfDay.TotalSeconds,
+                            ArrivalTime = NormalizeScheduledTime(waypoint.ArrivalTime),
+                            DepartureTime = NormalizeScheduledTime(waypoint.DepartureTime),
                             CurrentDelay = train.delay,
                             FromStation = fromStation,
                             NextStation = nextStation
