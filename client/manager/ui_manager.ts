@@ -69,6 +69,15 @@ export class UIManager {
         // Simulation stopped notifications
         this._eventManager.on('simulationStopped', () => {
             ApprovalToast.clearAll(); // Clear any outstanding approval toasts
+            this.hideTrainDetailsPanel();
+        });
+
+        this._eventManager.on('connectionPermanentlyLost', () => {
+            this.hideTrainDetailsPanel();
+        });
+
+        this._eventManager.on('stationJoinedFull', () => {
+            this.hideTrainDetailsPanel();
         });
     }    
 
@@ -142,6 +151,10 @@ export class UIManager {
 
     hideTrainOverviewPanel(): void {
         this._trainOverviewPanel?.hide();
+    }
+
+    hideTrainDetailsPanel(): void {
+        this._trainDetailsPanel?.hide();
     }
 
    
