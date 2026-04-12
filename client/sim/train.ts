@@ -16,6 +16,7 @@ export enum TrainState {
     WAITING_AT_SIGNAL = "waiting_at_signal",
     BRAKING_FOR_STATION = "braking_for_station",
     WAITING_AT_STATION = "waiting_at_station",
+    WAITING_FOR_NEXT_SERVICE = "waiting_for_next_service",
     END_OF_TRACK = "end_of_track",
     COLLISION = "collision",
     EMERGENCY_STOP = "emergency_stop",
@@ -178,8 +179,22 @@ export class Train {
         return this._arrivalTime;
     }
 
+    set arrivalTime(time: Date | null) {
+        this._arrivalTime = time;
+    }
+
+    /// <summary>
+    /// The time the train is should depart from the current station. Its at least the scheduled departure time, but can be later if the train is delayed.
+    /// </summary>
     get departureTime(): Date | null {
         return this._departureTime;
+    }
+
+    /// <summary>
+    /// The time the train is should depart from the current station. Its at least the scheduled departure time, but can be later if the train is delayed.
+    /// </summary>
+    set departureTime(time: Date | null) {
+        this._departureTime = time;
     }
 
     get state(): TrainState {
@@ -323,6 +338,7 @@ export class Train {
     }
 
     setState(nextState: TrainState, distanceToStop: number | null = null): void {
+        if(this._distanceToStop !== null && (distanceToStop ?? 0) > this._distanceToStop) return;
         if (!this.canTransitionTo(nextState)) return;
         const previousState = this._state;
 

@@ -16,6 +16,7 @@ export class TrainDetailsPanel extends BasePanel {
     [TrainState.WAITING_AT_SIGNAL]: 'Warten am Signal',
     [TrainState.BRAKING_FOR_STATION]: 'Bremsung am Bahnsteig',
     [TrainState.WAITING_AT_STATION]: 'Bahnhofshalt',
+    [TrainState.WAITING_FOR_NEXT_SERVICE]: 'Warten auf Folgefahrt',
     [TrainState.END_OF_TRACK]: 'Streckenende',
     [TrainState.MISROUTED]: 'Fehlgeleitet',
     [TrainState.COLLISION]: 'Kollision',

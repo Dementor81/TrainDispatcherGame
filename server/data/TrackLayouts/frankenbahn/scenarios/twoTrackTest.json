@@ -3,11 +3,10 @@
   "layout": "frankenbahn",
   "start_time": "00:00",
   "trains": [
-    
     {
       "number": "001",
       "type": "MultipleUnit",
-      "category": null,
+      "category": "S",
       "speedMax": 160,
       "cars": 5,
       "path": [],
@@ -20,11 +19,53 @@
         {
           "station": "weststadt",
           "arrival": "00:02:00",
-          "departure": "00:02:00"
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": "002"
+    },
+    {
+      "number": "002",
+      "type": "MultipleUnit",
+      "category": "S",
+      "speedMax": 120,
+      "cars": 6,
+      "path": [],
+      "timetable": [
+        {
+          "station": "weststadt",
+          "arrival": "",
+          "departure": "00:05:33"
         },
         {
+          "station": "linksdorf",
+          "arrival": "00:07:33",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "004",
+      "type": "Passenger",
+      "category": "RB",
+      "speedMax": 120,
+      "cars": 6,
+      "path": [],
+      "timetable": [
+        {
           "station": "neustadt",
-          "arrival": "00:04:00",
+          "arrival": "",
+          "departure": "00:00:00"
+        },
+        {
+          "station": "weststadt",
+          "arrival": "00:02:00",
+          "departure": "00:03:11"
+        },
+        {
+          "station": "linksdorf",
+          "arrival": "00:05:11",
           "departure": ""
         }
       ],

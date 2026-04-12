@@ -17,7 +17,7 @@ export class TrainSignalHandler {
    }
 
    checkTrainStoppedBySignal(train: Train): void {
-      if (train.state === TrainState.MANUAL_CONTROL) return;
+      if (train.state === TrainState.MANUAL_CONTROL || train.state === TrainState.WAITING_FOR_NEXT_SERVICE) return;
 
       if (train.stoppedBySignal !== null) {
          if (train.stoppedBySignal.isTrainAllowedToGo()) {
@@ -27,9 +27,7 @@ export class TrainSignalHandler {
                this._eventManager.emit("trainDepartedFromStation", train);
                return;
             }
-         } else {
-            if (train.speedCurrent === 0) train.setState(TrainState.WAITING_AT_SIGNAL, 0);
-         }
+         } 
       } else {
          const stoppingSignal = this.checkSignalsAhead(train);
          if (stoppingSignal) {

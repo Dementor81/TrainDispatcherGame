@@ -66,20 +66,15 @@ export class TrainManager {
 
       if (Train.isHardStoppedState(train.state)) return;
 
-      const isEmergencyBraking = train.state === TrainState.EMERGENCY_BRAKING;
 
+
+      if (this._stationHandler.checkStationStop(train)) return; // train is stopped at the current station, so we can skip the rest of the update
+      if (this._stationHandler.checkTrainEnding(train)) return; // train is ending, so we can skip the rest of the update
       this._signalHandler.checkTrainStoppedBySignal(train);
-      this._stationHandler.checkStationStop(train);
-
 
       this._movementHandler.updateTrainSpeed(train);
 
-      if (isEmergencyBraking && train.speedCurrent <= 0.05) {
-         train.setState(TrainState.EMERGENCY_STOP, 0);
-         return;
-      }
-
-      this.promoteWaitingStates(train);
+      this.updateTrainStates(train);
 
       if (!this.isMovementState(train.state)) return;
 
@@ -148,20 +143,19 @@ export class TrainManager {
       }
    }
 
+   private updateTrainStates(train: Train): void {
+
+      if (train.speedCurrent === 0) {
+         if (train.state === TrainState.EMERGENCY_BRAKING) train.setState(TrainState.EMERGENCY_STOP, 0);
+         if (train.state === TrainState.BRAKING_FOR_SIGNAL) train.setState(TrainState.WAITING_AT_SIGNAL, 0);
+      }
+   }
+
    private isMovementState(state: TrainState): boolean {
       return Tools.is(state, [TrainState.RUNNING, TrainState.EMERGENCY_BRAKING, TrainState.BRAKING_FOR_SIGNAL, TrainState.BRAKING_FOR_STATION, TrainState.MANUAL_CONTROL]);
    }
 
-   private promoteWaitingStates(train: Train): void {
-      const speedStopEpsilon = 0.05;
-      if (train.speedCurrent > speedStopEpsilon) return;
 
-      if (train.state === TrainState.BRAKING_FOR_SIGNAL) {
-         train.setState(TrainState.WAITING_AT_SIGNAL, 0);
-      } else if (train.state === TrainState.BRAKING_FOR_STATION) {
-         train.setState(TrainState.WAITING_AT_STATION, 0);
-      }
-   }
 
    private detectTrainCollision(train: Train): Train | null {
       const currentTrack = train.position?.track;
