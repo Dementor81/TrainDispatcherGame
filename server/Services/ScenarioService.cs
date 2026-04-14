@@ -204,9 +204,15 @@ namespace TrainDispatcherGame.Server.Services
             var scenarioDTO = LoadScenarioFile(filePath);
 
             var trains = new List<Train>();
+            var trainNumbers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var trainSchedule in scenarioDTO.Trains)
             {
+                if (!trainNumbers.Add(trainSchedule.Number))
+                {
+                    throw new Exception($"Scenario contains duplicate train number '{trainSchedule.Number}'");
+                }
+
                 var train = new Train(trainSchedule.Number)
                 {
                     Type = trainSchedule.Type,

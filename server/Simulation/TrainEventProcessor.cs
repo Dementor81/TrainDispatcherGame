@@ -14,6 +14,7 @@ namespace TrainDispatcherGame.Server.Simulation
         private readonly TrackLayoutService _trackLayoutService;
         private readonly OpenLineTrackRegistry _openLineTracks;
         private readonly Func<string, int, bool> _isExitBlocked;
+        private readonly Func<string, Train?> _findTrainByNumber;
         private readonly string _sessionId;
 
         public TrainEventProcessor(NotificationManager notificationManager,
@@ -21,6 +22,7 @@ namespace TrainDispatcherGame.Server.Simulation
                                    TrackLayoutService trackLayoutService,
                                    OpenLineTrackRegistry trackRegistry,
                                    Func<string, int, bool> isExitBlocked,
+                                   Func<string, Train?> findTrainByNumber,
                                    string sessionId)
         {
             _notificationManager = notificationManager;
@@ -28,6 +30,7 @@ namespace TrainDispatcherGame.Server.Simulation
             _trackLayoutService = trackLayoutService;
             _openLineTracks = trackRegistry;
             _isExitBlocked = isExitBlocked;
+            _findTrainByNumber = findTrainByNumber;
             _sessionId = sessionId;
         }
 
@@ -186,6 +189,25 @@ namespace TrainDispatcherGame.Server.Simulation
 
         public async Task HandleTrainStart(Train train)
         {
+            var firstWaypoint = train.GetCurrentWayPoint();
+            if (!string.IsNullOrWhiteSpace(train.PredecessorTrainNumber))
+            {
+                var predecessor = _findTrainByNumber(train.PredecessorTrainNumber);
+                if (predecessor != null && !predecessor.completed)
+                {
+                    train.TrainEvent = new TrainStartEvent(SimulationTime.AddMinutes(1), firstWaypoint?.Station ?? string.Empty);
+                    ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train start delayed until {train.TrainEvent.ScheduledTime:HH:mm:ss} because predecessor {predecessor.Number} is not completed");
+                    return;
+                }
+
+                if (firstWaypoint != null && _playerManager.IsStationControlled(firstWaypoint.Station))
+                {
+                    train.TrainEvent = null;
+                    ServerLogger.Instance.LogDebug(Ctx(train.Number), $"Train start skipped because predecessor {train.PredecessorTrainNumber} is handled by the player at {firstWaypoint.Station}");
+                    return;
+                }
+            }
+
             ServerLogger.Instance.LogDebug(Ctx(train.Number), $"train started");
             await DispatchTrainByServer(train);
         }

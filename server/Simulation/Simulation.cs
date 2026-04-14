@@ -51,7 +51,7 @@ namespace TrainDispatcherGame.Server.Simulation
             _scenarioId = scenarioId;
             _sessionId = sessionId;
             _openLineTracks = new OpenLineTrackRegistry(_trackLayoutService, _sessionId);
-            _eventProcessor = new TrainEventProcessor(_notificationManager, _playerManager, _trackLayoutService, _openLineTracks, IsExitBlocked, _sessionId);
+            _eventProcessor = new TrainEventProcessor(_notificationManager, _playerManager, _trackLayoutService, _openLineTracks, IsExitBlocked, FindTrainByNumber, _sessionId);
             _timetableService = new StationTimetableService();
             ServerLogger.Instance.SetSimulationTimeProvider(() => SimulationTime);
             this.Reset();
@@ -60,6 +60,11 @@ namespace TrainDispatcherGame.Server.Simulation
         private string Ctx(string context)
         {
             return SessionLogContext.Prefix(_sessionId, context);
+        }
+
+        private Train? FindTrainByNumber(string trainNumber)
+        {
+            return _trains.FirstOrDefault(train => string.Equals(train.Number, trainNumber, StringComparison.OrdinalIgnoreCase));
         }
 
         private void Reset()
@@ -71,6 +76,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 _trackLayoutService.SetActiveLayout(scenario.LayoutId);
             }
             _trains = scenario.Trains;
+            ResolveTrainPredecessors();
             _simulationStartTime = scenario.StartTime;
             lock (_blockedExitsLock)
             {
@@ -113,6 +119,57 @@ namespace TrainDispatcherGame.Server.Simulation
         /// Create initial start events for all trains
         /// it creates a TrainStartEvent for each train, with the departure time minus 60 seconds of the first waypoint.
         /// </summary>
+        private void ResolveTrainPredecessors()
+        {
+            try
+            {
+                foreach (var train in _trains)
+                {
+                    train.PredecessorTrainNumber = null;
+                }
+
+                var trainsByNumber = new Dictionary<string, Train>(StringComparer.OrdinalIgnoreCase);
+                var duplicateTrainNumbers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var train in _trains)
+                {
+                    if (!trainsByNumber.TryAdd(train.Number, train))
+                    {
+                        duplicateTrainNumbers.Add(train.Number);
+                    }
+                }
+
+                foreach (var duplicateTrainNumber in duplicateTrainNumbers)
+                {
+                    trainsByNumber.Remove(duplicateTrainNumber);
+                    ServerLogger.Instance.LogWarning(Ctx(duplicateTrainNumber), $"Skipping predecessor resolution for duplicate train number {duplicateTrainNumber}");
+                }
+
+                foreach (var train in _trains)
+                {
+                    if (string.IsNullOrWhiteSpace(train.FollowingTrainNumber))
+                    {
+                        continue;
+                    }
+
+                    if (duplicateTrainNumbers.Contains(train.Number) || duplicateTrainNumbers.Contains(train.FollowingTrainNumber))
+                    {
+                        ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Skipping predecessor resolution from {train.Number} to {train.FollowingTrainNumber} because train numbers are not unique");
+                        continue;
+                    }
+
+                    if (trainsByNumber.TryGetValue(train.FollowingTrainNumber, out var successor))
+                    {
+                        successor.PredecessorTrainNumber = train.Number;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ServerLogger.Instance.LogError(Ctx(_scenarioId ?? string.Empty), $"Error resolving train predecessors: {ex.Message}");
+            }
+        }
+
         private void CreateInitialStartEvents()
         {
             try
@@ -315,7 +372,8 @@ namespace TrainDispatcherGame.Server.Simulation
                 }
 
 
-                var nextSpawn = _eventProcessor.CreateSpawnFromConnection(train, connection, isReversed, 0, currentWayPoint.DepartureTime);
+                var arrivalTime = SimulationTime.AddSeconds(train.GetTravelTime(connection.Distance));
+                var nextSpawn = new TrainSpawnEvent(arrivalTime, connection, isReversed);
                 train.TrainEvent = nextSpawn;
                 if (!_openLineTracks.AddTrain(connection, train))
                 {
