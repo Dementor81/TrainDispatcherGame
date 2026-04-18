@@ -4,7 +4,7 @@ import { TrainState } from '../sim/train';
 import { getTrainDetails, getTrainWaypoints } from '../network/api';
 import { Train } from '../sim/train';
 import { UI } from '../utils/ui';
-import { formatTimeFromIso, UNSET_TIME_PLACEHOLDER } from '../utils/time';
+import { formatArrivalTimeForStation, formatTimeFromIso, UNSET_TIME_PLACEHOLDER } from '../utils/time';
 import { TrainDetailsDto, TrainWayPointDto } from '../network/dto';
 
 export class TrainDetailsPanel extends BasePanel {
@@ -201,7 +201,7 @@ export class TrainDetailsPanel extends BasePanel {
       if (wp.processed) row.className = 'text-muted';
       row.innerHTML = `
         <td>${wp.station}</td>
-        <td>${formatTimeFromIso(wp.arrivalTime, UNSET_TIME_PLACEHOLDER)}</td>
+        <td>${formatArrivalTimeForStation(wp.arrivalTime, wp.departureTime, UNSET_TIME_PLACEHOLDER)}</td>
         <td>${formatTimeFromIso(wp.departureTime, UNSET_TIME_PLACEHOLDER)}</td>
       `;
       tbody.appendChild(row);

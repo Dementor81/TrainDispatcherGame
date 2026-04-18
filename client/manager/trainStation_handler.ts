@@ -92,6 +92,8 @@ export class TrainStationHandler {
                train.departureTime = departureTime;
             }
 
+            this._eventManager.emit("trainStoppedAtStation", train);
+
             return true;
          }
       }

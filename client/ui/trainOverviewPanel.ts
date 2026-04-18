@@ -3,7 +3,7 @@ import { StationTimetableEventDto, TrainDelayUpdatedNotificationDto, TrainRemove
 import { Application } from '../core/application';
 import { BasePanel } from './basePanel';
 import { TrainState } from '../sim/train';
-import { formatTimeFromIso, UNSET_TIME_PLACEHOLDER } from '../utils/time';
+import { formatArrivalTimeForStation, formatTimeFromIso, UNSET_TIME_PLACEHOLDER } from '../utils/time';
 
 export class TrainOverviewPanel extends BasePanel {
 
@@ -240,7 +240,7 @@ export class TrainOverviewPanel extends BasePanel {
       <td class="small fw-bold ${isStoppedBySignal ? 'text-danger' : ''}">${train.category} ${train.trainNumber}</td>
       <td class="small">${train.fromStation}</td>
       <td class="small">${train.nextStation}</td>
-      <td class="small">${formatTimeFromIso(train.arrivalTime, UNSET_TIME_PLACEHOLDER)}</td>
+      <td class="small">${formatArrivalTimeForStation(train.arrivalTime, train.departureTime, UNSET_TIME_PLACEHOLDER)}</td>
       <td class="small">${formatTimeFromIso(train.departureTime, UNSET_TIME_PLACEHOLDER)}</td>
       <td><span data-delay-badge="true" class="badge ${delayInfo.class}">${delayInfo.text}</span></td>
     `;

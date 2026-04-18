@@ -291,11 +291,11 @@
         {
           "station": "weststadt",
           "arrival": "00:16:34",
-          "departure": "00:17:34"
+          "departure": "00:16:34"
         },
         {
           "station": "linksdorf",
-          "arrival": "00:19:29",
+          "arrival": "00:18:29",
           "departure": ""
         }
       ],
@@ -317,26 +317,26 @@
         {
           "station": "weststadt",
           "arrival": "00:16:54",
-          "departure": "00:17:30"
+          "departure": "00:17:33"
         },
         {
           "station": "neustadt",
-          "arrival": "00:20:37",
-          "departure": "00:21:37"
+          "arrival": "00:20:40",
+          "departure": "00:21:40"
         },
         {
           "station": "burghausen",
-          "arrival": "00:24:51",
-          "departure": "00:26:04"
+          "arrival": "00:24:54",
+          "departure": "00:26:07"
         },
         {
           "station": "ostheim",
-          "arrival": "00:29:16",
-          "departure": "00:30:16"
+          "arrival": "00:29:19",
+          "departure": "00:30:19"
         },
         {
           "station": "rechtsheim",
-          "arrival": "00:32:53",
+          "arrival": "00:32:56",
           "departure": ""
         }
       ],
