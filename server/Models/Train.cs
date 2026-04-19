@@ -17,8 +17,11 @@ namespace TrainDispatcherGame.Server.Models
         public string? CurrentLocation { get; set; }
         public bool controlledByPlayer { get; set; } = false;
         public bool completed { get; set; } = false;
+        // Seconds late (positive) or early (negative) vs schedule.
         public int delay { get; set; } = 0;
         public bool damaged { get; set; } = false;
+        // If true, this train is skipped by the server event loop after a fatal update error.
+        public bool updateFailed { get; set; } = false;
         public string? PredecessorTrainNumber { get; set; }
         public string? FollowingTrainNumber { get; set; }
 

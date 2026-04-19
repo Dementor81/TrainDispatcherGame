@@ -43,6 +43,8 @@ namespace TrainDispatcherGame.Server.Simulation
         public int Speed { get; private set; } = 1;
         public string ScenarioId => _scenarioId;
 
+        internal string SessionId => _sessionId;
+
         public Simulation(NotificationManager notificationManager, TrackLayoutService trackLayoutService, PlayerManager playerManager, string scenarioId, string sessionId)
         {
             _notificationManager = notificationManager;
@@ -51,7 +53,7 @@ namespace TrainDispatcherGame.Server.Simulation
             _scenarioId = scenarioId;
             _sessionId = sessionId;
             _openLineTracks = new OpenLineTrackRegistry(_trackLayoutService, _sessionId);
-            _eventProcessor = new TrainEventProcessor(_notificationManager, _playerManager, _trackLayoutService, _openLineTracks, IsExitBlocked, FindTrainByNumber, _sessionId);
+            _eventProcessor = new TrainEventProcessor(this, _notificationManager, _playerManager, _trackLayoutService, _openLineTracks);
             _timetableService = new StationTimetableService();
             ServerLogger.Instance.SetSimulationTimeProvider(() => SimulationTime);
             this.Reset();
@@ -62,7 +64,7 @@ namespace TrainDispatcherGame.Server.Simulation
             return SessionLogContext.Prefix(_sessionId, context);
         }
 
-        private Train? FindTrainByNumber(string trainNumber)
+        internal Train? FindTrainByNumber(string trainNumber)
         {
             return _trains.FirstOrDefault(train => string.Equals(train.Number, trainNumber, StringComparison.OrdinalIgnoreCase));
         }
@@ -305,14 +307,12 @@ namespace TrainDispatcherGame.Server.Simulation
                     try
                     {
                         this.ElapsedSeconds += (TimerInterval / 1000) * this.Speed;
-                        _eventProcessor.SimulationTime = this.SimulationTime;
                         CheckTrainEvents();
                     }
                     catch (Exception ex)
                     {
-                        _state = SimulationState.Error;
-                        _errorMessage = ex.Message;
-                        ServerLogger.Instance.LogError(Ctx(_scenarioId ?? string.Empty), $"Error in simulation update: {ex.Message}");
+                        // Keep simulation running even if a single tick encounters an unexpected error.
+                        ServerLogger.Instance.LogError(Ctx(_scenarioId ?? string.Empty), $"Error in simulation update tick: {ex.Message}");
                     }
                 }
             }
@@ -322,9 +322,17 @@ namespace TrainDispatcherGame.Server.Simulation
         {
             foreach (var train in _trains)
             {
-                if (train.completed || train.controlledByPlayer) continue;
+                if (train.completed || train.controlledByPlayer || train.updateFailed) continue;
 
-                _eventProcessor.HandleTrainEvent(train).GetAwaiter().GetResult();
+                try
+                {
+                    _eventProcessor.HandleTrainEvent(train).GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    train.updateFailed = true;
+                    ServerLogger.Instance.LogError(Ctx(train.Number), $"Train update disabled after error: {ex.Message}");
+                }
             }
         }
 
@@ -349,7 +357,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 var layout = _trackLayoutService.GetTrackLayout(currentWayPoint.Station);
                 if (layout == null) throw new Exception($"No layout found for station {currentWayPoint.Station}");
                 var expectedTimeAtExit = currentWayPoint.DepartureTime.AddSeconds(train.GetTravelTime(layout.MaxExitDistance / 2));
-                train.delay = (int)Math.Max(0, (SimulationTime - expectedTimeAtExit).TotalSeconds);
+                train.delay = (int)(SimulationTime - expectedTimeAtExit).TotalSeconds;
 
 
                 if (currentWayPoint.Stops && !currentWayPoint.Processed && train.Type != TrainType.Freight)
@@ -482,12 +490,22 @@ namespace TrainDispatcherGame.Server.Simulation
 
                 // Mark the current station event as processed
                 currentWaypoint.Processed = true;
-                train.delay = (int)(SimulationTime - currentWaypoint.ArrivalTime).TotalSeconds;
+                // Some first waypoints have no arrival time in scenario data (DateTime.MinValue).
+                var referenceArrivalTime = currentWaypoint.ArrivalTime == DateTime.MinValue
+                    ? currentWaypoint.DepartureTime
+                    : currentWaypoint.ArrivalTime;
+                if (referenceArrivalTime == DateTime.MinValue)
+                {
+                    referenceArrivalTime = SimulationTime;
+                }
+
+                train.delay = (int)(SimulationTime - referenceArrivalTime).TotalSeconds;
                 ServerLogger.Instance.LogDebug(Ctx(train.Number), $"Train {train.Number} successfully stopped at station {normalizedStationId} with delay {train.delay} seconds");
                 if (currentWaypoint.IsLast)
                 {
                     ServerLogger.Instance.LogDebug(Ctx(train.Number), $"Train {train.Number} has completed all events");
                     train.completed = true;
+                    NotifyTrainRemoved(train);
                     return;
                 }
 
@@ -572,7 +590,7 @@ namespace TrainDispatcherGame.Server.Simulation
             }
         }
 
-        private void NotifyTrainDelayUpdated(Train train)
+        internal void NotifyTrainDelayUpdated(Train train)
         {
             var payload = new TrainDelayUpdatedNotification
             {

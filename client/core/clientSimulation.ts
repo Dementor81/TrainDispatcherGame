@@ -230,7 +230,8 @@ export class ClientSimulation {
             this._currentSimulationTime = new Date();
          }      
       }else{
-         this._currentSimulationTime = new Date(this._currentSimulationTime.getTime() + SimulationConfig.simulationIntervalSeconds * 1000);
+         const simulatedStepMs = SimulationConfig.simulationIntervalSeconds * 1000 * this._simulationSpeed;
+         this._currentSimulationTime = new Date(this._currentSimulationTime.getTime() + simulatedStepMs);
       }
       return this._currentSimulationTime;
    }

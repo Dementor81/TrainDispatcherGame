@@ -9,40 +9,29 @@ namespace TrainDispatcherGame.Server.Simulation
 {
     public class TrainEventProcessor
     {
+        private readonly Simulation _simulation;
         private readonly NotificationManager _notificationManager;
         private readonly PlayerManager _playerManager;
         private readonly TrackLayoutService _trackLayoutService;
         private readonly OpenLineTrackRegistry _openLineTracks;
-        private readonly Func<string, int, bool> _isExitBlocked;
-        private readonly Func<string, Train?> _findTrainByNumber;
-        private readonly string _sessionId;
 
-        public TrainEventProcessor(NotificationManager notificationManager,
+        public TrainEventProcessor(Simulation simulation,
+                                   NotificationManager notificationManager,
                                    PlayerManager playerManager,
                                    TrackLayoutService trackLayoutService,
-                                   OpenLineTrackRegistry trackRegistry,
-                                   Func<string, int, bool> isExitBlocked,
-                                   Func<string, Train?> findTrainByNumber,
-                                   string sessionId)
+                                   OpenLineTrackRegistry trackRegistry)
         {
+            _simulation = simulation;
             _notificationManager = notificationManager;
             _playerManager = playerManager;
             _trackLayoutService = trackLayoutService;
             _openLineTracks = trackRegistry;
-            _isExitBlocked = isExitBlocked;
-            _findTrainByNumber = findTrainByNumber;
-            _sessionId = sessionId;
         }
 
-        private string Ctx(string context)
-        {
-            return SessionLogContext.Prefix(_sessionId, context);
-        }
-
-        public DateTime SimulationTime { get; set; }
+        private string Ctx(string context) => SessionLogContext.Prefix(_simulation.SessionId, context);
 
         /// <summary>
-        /// Creates a new train spawn event from a connection. Also calculates the delay of the train.
+        /// Creates a new train spawn event from a connection. Also calculates delay (seconds; negative if early).
         /// </summary>
         /// <param name="train">The train to spawn.</param>
         /// <param name="connection">The connection to spawn the train on.</param>
@@ -52,9 +41,12 @@ namespace TrainDispatcherGame.Server.Simulation
         /// <returns>The new train spawn event.</returns>
         public TrainSpawnEvent CreateSpawnFromConnection(Train train, NetworkConnection connection, bool isReversed, int additionalDistance, DateTime planedDepartureTime)
         {
-            var actualDepartureTime = planedDepartureTime > SimulationTime ? planedDepartureTime : SimulationTime;
+            var simTime = _simulation.SimulationTime;
+            var actualDepartureTime = planedDepartureTime > simTime ? planedDepartureTime : simTime;
             var arrivalTime = actualDepartureTime.AddSeconds(train.GetTravelTime(connection.Distance + additionalDistance));
-            train.delay = (int)Math.Max(0, (actualDepartureTime - planedDepartureTime).TotalSeconds);
+            train.delay = (int)(actualDepartureTime - planedDepartureTime).TotalSeconds;
+            _simulation.NotifyTrainDelayUpdated(train);
+
             return new TrainSpawnEvent(arrivalTime, connection, isReversed);
         }
 
@@ -62,7 +54,7 @@ namespace TrainDispatcherGame.Server.Simulation
         {
             if (train.TrainEvent == null) throw new Exception($"Train {train.Number} has no train event");
 
-            if (train.TrainEvent.IsDue(this.SimulationTime))
+            if (train.TrainEvent.IsDue(_simulation.SimulationTime))
             {
                 train.TrainEvent.Processed = true;
                 if (train.TrainEvent is TrainSpawnEvent)
@@ -121,7 +113,7 @@ namespace TrainDispatcherGame.Server.Simulation
                         train.completed = true;
                         return;
                     }
-                    if (currentWaypoint.DepartureTime > SimulationTime)
+                    if (currentWaypoint.DepartureTime > _simulation.SimulationTime)
                     {
                         train.TrainEvent = new TrainWaitEvent(currentWaypoint.DepartureTime);
                         ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train {train.Number} waiting at {currentWaypoint.Station} until {currentWaypoint.DepartureTime:HH:mm:ss}");
@@ -163,9 +155,9 @@ namespace TrainDispatcherGame.Server.Simulation
             if (connection != null)
             {
                 var destinationExitId = isReversed ? connection.FromExitId : connection.ToExitId;
-                if (_isExitBlocked(nextWaypoint.Station, destinationExitId))
+                if (_simulation.IsExitBlocked(nextWaypoint.Station, destinationExitId))
                 {
-                    sendApprovalEvent.ScheduledTime = SimulationTime.AddSeconds(20);
+                    sendApprovalEvent.ScheduledTime = _simulation.SimulationTime.AddSeconds(20);
                     ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train {train.Number} approval delayed until {sendApprovalEvent.ScheduledTime:HH:mm:ss} - destination exit {destinationExitId} at {nextWaypoint.Station} is blocked");
                     return;
                 }
@@ -176,7 +168,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 {
                     // Connection is blocked, reschedule approval request using the blocking train's event time
                     var blockingTrain = track.TrainOnTrack;
-                    var retryTime = blockingTrain.TrainEvent?.ScheduledTime.AddSeconds(20) ?? SimulationTime.AddSeconds(20);
+                    var retryTime = blockingTrain.TrainEvent?.ScheduledTime.AddSeconds(20) ?? _simulation.SimulationTime.AddSeconds(20);
                     sendApprovalEvent.ScheduledTime = retryTime;
                     ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train {train.Number} approval delayed until {retryTime:HH:mm:ss} - connection to {nextWaypoint.Station} blocked by train {blockingTrain.Number}");
                     return;
@@ -192,10 +184,10 @@ namespace TrainDispatcherGame.Server.Simulation
             var firstWaypoint = train.GetCurrentWayPoint();
             if (!string.IsNullOrWhiteSpace(train.PredecessorTrainNumber))
             {
-                var predecessor = _findTrainByNumber(train.PredecessorTrainNumber);
+                var predecessor = _simulation.FindTrainByNumber(train.PredecessorTrainNumber);
                 if (predecessor != null && !predecessor.completed)
                 {
-                    train.TrainEvent = new TrainStartEvent(SimulationTime.AddMinutes(1), firstWaypoint?.Station ?? string.Empty);
+                    train.TrainEvent = new TrainStartEvent(_simulation.SimulationTime.AddMinutes(1), firstWaypoint?.Station ?? string.Empty);
                     ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train start delayed until {train.TrainEvent.ScheduledTime:HH:mm:ss} because predecessor {predecessor.Number} is not completed");
                     return;
                 }
@@ -203,6 +195,8 @@ namespace TrainDispatcherGame.Server.Simulation
                 if (firstWaypoint != null && _playerManager.IsStationControlled(firstWaypoint.Station))
                 {
                     train.TrainEvent = null;
+                    train.controlledByPlayer = true;
+                    train.CurrentLocation = firstWaypoint.Station?.ToLowerInvariant() ?? string.Empty;
                     ServerLogger.Instance.LogDebug(Ctx(train.Number), $"Train start skipped because predecessor {train.PredecessorTrainNumber} is handled by the player at {firstWaypoint.Station}");
                     return;
                 }
@@ -236,7 +230,7 @@ namespace TrainDispatcherGame.Server.Simulation
             if (_openLineTracks.TryGet(connection, out var track) && track.TrainOnTrack != null)
             {
                 var blockingTrain = track.TrainOnTrack;
-                var retryTime = blockingTrain.TrainEvent?.ScheduledTime.AddSeconds(20) ?? SimulationTime.AddSeconds(20);
+                var retryTime = blockingTrain.TrainEvent?.ScheduledTime.AddSeconds(20) ?? _simulation.SimulationTime.AddSeconds(20);
                 train.TrainEvent = new RetryDispatchEvent(retryTime);
                 train.CurrentLocation = currentWaypoint.Station;
                 ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train dispatch delayed until {retryTime:HH:mm:ss} - connection blocked by train {blockingTrain.Number}");

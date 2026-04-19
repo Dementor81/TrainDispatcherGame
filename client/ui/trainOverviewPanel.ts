@@ -247,19 +247,23 @@ export class TrainOverviewPanel extends BasePanel {
   }
 
   private formatDelay(delaySeconds: number): { class: string; text: string } {
-    // Ignore delays below 60 seconds
-    if (delaySeconds < 60) {
-      return { class: 'text-success', text: '+0min' };
+    if (!Number.isFinite(delaySeconds)) {
+      return { class: 'text-success', text: '0min' };
     }
 
-    // Convert seconds to minutes
-    const delayMinutes = Math.floor(delaySeconds / 60);
-
-    if (delayMinutes >= 10) {
-      return { class: 'text-danger', text: `+${delayMinutes}min` };
-    } else {
-      return { class: 'text-warning', text: `+${delayMinutes}min` };
+    const absSec = Math.abs(delaySeconds);
+    if (absSec < 60) {
+      return { class: 'text-success', text: '0min' };
     }
+
+    const minutes = Math.trunc(delaySeconds / 60);
+    if (minutes < 0) {
+      return { class: 'text-success', text: `${minutes}min` };
+    }
+    if (minutes >= 10) {
+      return { class: 'text-danger', text: `+${minutes}min` };
+    }
+    return { class: 'text-warning', text: `+${minutes}min` };
   }
 
 }

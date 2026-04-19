@@ -47,6 +47,7 @@ export class TrainStationHandler {
       if (train.state === TrainState.WAITING_AT_STATION) {
          if (!train.departureTime || !train.stationStopStartTime) throw new Error("Train is waiting at the station but has no departure time or station stop start time");
          if (train.departureTime && currentSimulationTime >= train.departureTime) {
+            console.log(`Train ${train.number} departure time reached, departure time: ${train.departureTime}, current time: ${currentSimulationTime}, waiting progress: ${train.waitingProgress}, setting waiting progress to 1`);
             train.setWaitingProgress(1);
             const nextSignal = this._trackLayoutManager.getNextSignal(train.position!.track, train.position!.km, train.movingDirection);
             if (nextSignal && !nextSignal.isTrainAllowedToGo()) {
@@ -61,7 +62,25 @@ export class TrainStationHandler {
          } else {
             //train is still waiting at the station, calculate the waiting progress
             const totalMs = Math.max(1, train.departureTime.getTime() - train.stationStopStartTime.getTime()); //prevents division by zero or negative values
-            train.setWaitingProgress((currentSimulationTime.getTime() - train.stationStopStartTime.getTime()) / totalMs);
+            const timeElapsedMs = currentSimulationTime.getTime() - train.stationStopStartTime.getTime();
+            const waitingProgress = timeElapsedMs / totalMs;
+            console.log(
+               `[StationWaitCalc] Train ${train.number} waiting progress calculation:`,
+               {
+                  currentSimulationTime: currentSimulationTime,
+                  stationStopStartTime: train.stationStopStartTime,
+                  departureTime: train.departureTime,
+                  currentSimulationTimeMs: currentSimulationTime.getTime(),
+                  stationStopStartTimeMs: train.stationStopStartTime.getTime(),
+                  departureTimeMs: train.departureTime.getTime(),
+                  totalMs: totalMs,
+                  timeElapsedMs: timeElapsedMs,
+                  waitingProgress: waitingProgress
+               }
+            );
+            train.setWaitingProgress(waitingProgress);
+       
+            console.log(`Train ${train.number} waiting progress: ${train.waitingProgress} simulation time: ${currentSimulationTime}`);
             return true;
          }
       }
@@ -91,7 +110,7 @@ export class TrainStationHandler {
             if (!train.departureTime || departureTime > train.departureTime) {
                train.departureTime = departureTime;
             }
-
+console.log(`Train ${train.number} stopped at station, departure time: ${train.departureTime}`);
             this._eventManager.emit("trainStoppedAtStation", train);
 
             return true;
