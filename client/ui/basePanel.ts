@@ -157,6 +157,20 @@ export abstract class BasePanel {
     this.beginResize(touch.clientX, touch.clientY);
   };
 
+  private readonly onWindowResize = (): void => {
+    if (!this.isVisible) {
+      return;
+    }
+
+    if (this.isDragging || this.isResizing) {
+      return;
+    }
+
+    if (this.clampCurrentPositionToViewport()) {
+      this.savePanelState();
+    }
+  };
+
   constructor(application: Application, options: BasePanelOptions = {}) {
     this.application = application;
     this.updateIntervalMs = options.updateIntervalMs ?? null;
@@ -193,6 +207,7 @@ export abstract class BasePanel {
       this.createResizeHandle();
     }
     this.restorePanelState();
+    window.addEventListener("resize", this.onWindowResize);
     if (this.panelTitle) {
       this.setupDragging();
     }
@@ -324,6 +339,10 @@ export abstract class BasePanel {
     return Number.isFinite(parsed) ? parsed : null;
   }
 
+  private shouldPersistPanelState(): boolean {
+    return this.dragHandle !== null;
+  }
+
   private clampToViewport(left: number, top: number): { left: number; top: number } {
     const minVisibleMargin = 40;
     const maxLeft = Math.max(0, window.innerWidth - minVisibleMargin);
@@ -357,6 +376,27 @@ export abstract class BasePanel {
     };
   }
 
+  private clampCurrentPositionToViewport(): boolean {
+    const rect = this.container.getBoundingClientRect();
+    this.anchorToTopLeft(rect);
+
+    const currentLeft = this.parsePx(this.container.style.left) ?? rect.left;
+    const currentTop = this.parsePx(this.container.style.top) ?? rect.top;
+    const maxLeft = Math.max(0, window.innerWidth - rect.width);
+    const maxTop = Math.max(0, window.innerHeight - rect.height);
+    const nextLeft = Math.min(Math.max(0, currentLeft), maxLeft);
+    const nextTop = Math.min(Math.max(0, currentTop), maxTop);
+    const moved = nextLeft !== currentLeft || nextTop !== currentTop;
+
+    this.container.style.transform = "none";
+    this.container.style.right = "unset";
+    this.container.style.bottom = "unset";
+    this.container.style.left = `${nextLeft}px`;
+    this.container.style.top = `${nextTop}px`;
+
+    return moved;
+  }
+
   private resizeToPointer(pointerX: number, pointerY: number): void {
     if (!this.isResizable) {
       return;
@@ -372,6 +412,10 @@ export abstract class BasePanel {
   }
 
   private savePanelState(): void {
+    if (!this.shouldPersistPanelState()) {
+      return;
+    }
+
     const left = this.parsePx(this.container.style.left);
     const top = this.parsePx(this.container.style.top);
     const payload: { left?: number; top?: number; width?: number; height?: number } = {};
@@ -400,6 +444,10 @@ export abstract class BasePanel {
   }
 
   private restorePanelState(): boolean {
+    if (!this.shouldPersistPanelState()) {
+      return false;
+    }
+
     try {
       const raw = localStorage.getItem(this.getStorageKey());
       if (!raw) {
@@ -451,6 +499,9 @@ export abstract class BasePanel {
 
     this.container.style.display = "block";
     this.isVisible = true;
+    if (this.clampCurrentPositionToViewport()) {
+      this.savePanelState();
+    }
     this.startUpdates();
   }
 
@@ -494,6 +545,7 @@ export abstract class BasePanel {
 
   public destroy(): void {
     this.stopUpdates();
+    window.removeEventListener("resize", this.onWindowResize);
     this.removeDragging();
     if (this.container.parentNode) {
       this.container.parentNode.removeChild(this.container);

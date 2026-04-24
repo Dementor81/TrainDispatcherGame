@@ -233,10 +233,13 @@ export class TrainRouteManager {
    removeRoutePartsByTrack(clearedTrack: Track, km: number | null = null, emitRoutesCleared: boolean = true): boolean {
       for (const route of this._routes) {
          // Remove the cleared track from this route
-         for (const part of route.parts) {
+         for (let partIndex = 0; partIndex < route.parts.length; partIndex++) {
+            const part = route.parts[partIndex];
             if (part.kind === "track" && part.track === clearedTrack && (km === null || part.toKm === km)) {
-               route.parts.shift();
-               route.removeFirstSwitchIfPresent();
+               route.parts.splice(partIndex, 1);
+               if (partIndex === 0) {
+                  route.removeFirstSwitchIfPresent();
+               }
 
                // Check if route is now empty
                if (route.isEmpty()) {

@@ -2,7 +2,7 @@ import { getUpcomingTrains } from '../network/api';
 import { StationTimetableEventDto, TrainDelayUpdatedNotificationDto, TrainRemovedNotificationDto } from '../network/dto';
 import { Application } from '../core/application';
 import { BasePanel } from './basePanel';
-import { TrainState } from '../sim/train';
+import Train, { TrainState } from '../sim/train';
 import { formatArrivalTimeForStation, formatTimeFromIso, UNSET_TIME_PLACEHOLDER } from '../utils/time';
 
 export class TrainOverviewPanel extends BasePanel {
@@ -33,6 +33,12 @@ export class TrainOverviewPanel extends BasePanel {
     });
     application.eventManager.on('trainRemoved', (payload: TrainRemovedNotificationDto) => {
       this.applyTrainRemoved(payload);
+    });
+    application.eventManager.on('trainStoppedBySignal', (train: Train | undefined) => {
+      this.applySignalStopStatusUpdate(train?.number);
+    });
+    application.eventManager.on('trainContinuedAfterSignalStop', (train: Train | undefined) => {
+      this.applySignalStopStatusUpdate(train?.number);
     });
     application.eventManager.on('trainStateChanged', (train: any, _previousState: TrainState, nextState: TrainState) => {
       if ((nextState === TrainState.EXITING || nextState === TrainState.ENDED) && typeof train?.number === 'string') {
@@ -131,6 +137,27 @@ export class TrainOverviewPanel extends BasePanel {
     }
   }
 
+  private applySignalStopStatusUpdate(trainNumber: string | undefined): void {
+    if (!this.isVisible || typeof trainNumber !== 'string') {
+      return;
+    }
+
+    const row = this.findTrainRow(trainNumber);
+    if (!row) {
+      return;
+    }
+
+    const trainCell = row.querySelector<HTMLTableCellElement>('td');
+    if (!trainCell) {
+      return;
+    }
+
+    const isStoppedBySignal = this.application.trains.some(
+      (train) => train.number === trainNumber && train.stoppedBySignal
+    );
+    trainCell.classList.toggle('text-danger', isStoppedBySignal);
+  }
+
   private applyTrainRemoved(payload: TrainRemovedNotificationDto): void {
     if (!payload || typeof payload.trainNumber !== 'string') {
       return;
@@ -146,13 +173,9 @@ export class TrainOverviewPanel extends BasePanel {
   private removeTrainRow(trainNumber: string): void {
     const trainsList = document.getElementById('trainsList');
     if (!trainsList) return;
-
     const tbody = trainsList.querySelector<HTMLTableSectionElement>('tbody');
     if (!tbody) return;
-
-    const row = Array.from(tbody.querySelectorAll<HTMLTableRowElement>('tr[data-train-number]'))
-      .find((candidate) => candidate.dataset.trainNumber === trainNumber);
-
+    const row = this.findTrainRow(trainNumber);
     if (!row) return;
     row.remove();
 
@@ -162,11 +185,7 @@ export class TrainOverviewPanel extends BasePanel {
   }
 
   private updateTrainDelayRow(trainNumber: string, delaySeconds: number): boolean {
-    const trainsList = document.getElementById('trainsList');
-    if (!trainsList) return false;
-
-    const row = Array.from(trainsList.querySelectorAll<HTMLTableRowElement>('tr[data-train-number]'))
-      .find((candidate) => candidate.dataset.trainNumber === trainNumber);
+    const row = this.findTrainRow(trainNumber);
     if (!row) return false;
 
     const delayBadge = row.querySelector<HTMLElement>('[data-delay-badge="true"]');
@@ -176,6 +195,14 @@ export class TrainOverviewPanel extends BasePanel {
     delayBadge.className = `badge ${delayInfo.class}`;
     delayBadge.textContent = delayInfo.text;
     return true;
+  }
+
+  private findTrainRow(trainNumber: string): HTMLTableRowElement | null {
+    const trainsList = document.getElementById('trainsList');
+    if (!trainsList) return null;
+
+    return Array.from(trainsList.querySelectorAll<HTMLTableRowElement>('tr[data-train-number]'))
+      .find((candidate) => candidate.dataset.trainNumber === trainNumber) ?? null;
   }
 
   private renderTrains(trains: StationTimetableEventDto[]): void {

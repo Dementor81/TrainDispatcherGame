@@ -38,6 +38,18 @@ namespace TrainDispatcherGame.Server.Simulation
         public bool AddTrain(NetworkConnection connection, Train train)
         {
             if (!_openLineTracks.TryGetValue(connection, out var track)) throw new Exception($"for connection {connection.FromStation} to {connection.ToStation} no open line track found");
+
+            foreach (var otherTrack in _openLineTracks.Values)
+            {
+                if (otherTrack == track) continue;
+                if (otherTrack.TrainOnTrack != train) continue;
+
+                ServerLogger.Instance.LogWarning(
+                    SessionLogContext.Prefix(_sessionId, train.Number),
+                    $"Safety cleanup: train {train.Number} was still registered on {otherTrack.Connection.FromStation}->{otherTrack.Connection.ToStation} while adding it to {connection.FromStation}->{connection.ToStation}. Removing stale registration.");
+                otherTrack.RemoveTrain();
+            }
+
             return track.AddTrain(train);
         }
 

@@ -22,6 +22,7 @@ export class TrainSignalHandler {
       if (train.stoppedBySignal !== null) {
          if (train.stoppedBySignal.isTrainAllowedToGo()) {
             train.setStoppedBySignal(null);
+            this._eventManager.emit("trainContinuedAfterSignalStop", train);
             if (train.waitingProgress === 1) {
                train.setState(TrainState.RUNNING);
                this._eventManager.emit("trainDepartedFromStation", train);

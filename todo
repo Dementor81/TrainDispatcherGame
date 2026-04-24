@@ -31,9 +31,9 @@ Big Features:
 Bugs:
     
     ☐ the server dispatch does not calculate travel times within stations, from spawnpoint to stoppingpoint
-    ☐ train delays are not shown currectly for all players
+    ✔ train delays are not shown currectly for all players @done(26-04-24 20:29)
     ☐ exits are blocked randomly, invisible to the player, server cannot send trains anymore
-    ☐ Gamemaster isnt informed about train accidents
+    ✔ Gamemaster isnt informed about train accidents @done(26-04-24 20:29)
     ✔ ending trains show some bugs @done(26-04-14 20:33)
     ✔ fix UI on tablet @done(26-03-28 19:04)
     ✔ traindetails panel does stay open when the train is exited @done(26-03-21 12:50)
