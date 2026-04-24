@@ -4,6 +4,7 @@ namespace TrainDispatcherGame.Server.Logging
     {
         Debug,
         Warning,
+        Emergency,
         Error
     }
 }

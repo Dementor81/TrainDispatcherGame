@@ -14,16 +14,23 @@ namespace TrainDispatcherGame.Server.Simulation
         {
             var stationEvents = new List<StationTimetableEvent>();
 
+            string nextStation = string.Empty;
+            string fromStation = string.Empty;
+
             foreach (var train in trains)
             {
                 if (train.completed) continue;
-                if (train.Route.Count == 0) continue;
 
                 for (int i = train.CurrentWaypointIndex; i < train.Route.Count; i++)
                 {
                     var waypoint = train.Route[i];
                     if (waypoint.Station == stationId)
                     {
+                        if (i > 0) fromStation = train.Route[i - 1].Station;
+                        else fromStation = stationId;
+                        if (i < train.Route.Count - 1) nextStation = train.Route[i + 1].Station;
+                        else nextStation = stationId;
+
                         stationEvents.Add(new StationTimetableEvent
                         {
                             TrainNumber = train.Number,
@@ -31,8 +38,8 @@ namespace TrainDispatcherGame.Server.Simulation
                             ArrivalTime = NormalizeScheduledTime(waypoint.ArrivalTime),
                             DepartureTime = NormalizeScheduledTime(waypoint.DepartureTime),
                             CurrentDelay = train.delay,
-                            FromStation = train.Route[0].Station,
-                            NextStation = train.Route[^1].Station
+                            FromStation = fromStation,
+                            NextStation = nextStation
                         });
                         break;
                     }

@@ -80,6 +80,11 @@ namespace TrainDispatcherGame.Server.Logging
             Log(LogLevel.Error, context, message);
         }
 
+        public void LogEmergency(string context, string message)
+        {
+            Log(LogLevel.Emergency, context, message);
+        }
+
         private void Log(LogLevel level, string context, string message)
         {
             var safeContext = context ?? string.Empty;

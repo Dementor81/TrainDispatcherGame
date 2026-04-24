@@ -20,17 +20,20 @@ Big Features:
     ☐ slow down trains if the train is on a router with switches set to the branch
     ☐ add a admin page that allows to see all games and players
     ☐ settings page on game master panel for settlings like "show train labels" or random delays
+    ☐ create new trains on the fly with a button in the gamemaster panel
+    ☐ Manual/Help window for players
+    ☐ show amount of total caused delay for all trains and per player in the gamemaster panel
     ✔ acceleration and deceleration @done(26-03-03 07:40)
     ✔ shunting @done(26-03-03 07:40)
     ✔ add game logic to the server to handle multiple game sessions simultaniously @done(26-02-22 18:22)
     ✔ better UI for station selection with a display which station is already taken by whom @done(26-02-24 19:22)
 
 Bugs:
-
-    ☐ some random delays of trains at the server side
+    
     ☐ the server dispatch does not calculate travel times within stations, from spawnpoint to stoppingpoint
-    ☐ stoping trains might be shown with same arrival and departure time, if its the same minute
-    ☐ train delays are not shown currectly
+    ☐ train delays are not shown currectly for all players
+    ☐ exits are blocked randomly, invisible to the player, server cannot send trains anymore
+    ☐ Gamemaster isnt informed about train accidents
     ✔ ending trains show some bugs @done(26-04-14 20:33)
     ✔ fix UI on tablet @done(26-03-28 19:04)
     ✔ traindetails panel does stay open when the train is exited @done(26-03-21 12:50)

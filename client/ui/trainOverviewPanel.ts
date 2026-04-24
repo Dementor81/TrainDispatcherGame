@@ -7,11 +7,12 @@ import { formatArrivalTimeForStation, formatTimeFromIso, UNSET_TIME_PLACEHOLDER 
 
 export class TrainOverviewPanel extends BasePanel {
 
+  private static readonly FULL_REFRESH_INTERVAL_MS = 300_000;
   private _loading: boolean = false;
 
   constructor(application: Application) {
     super(application, {
-      updateIntervalMs: null,
+      updateIntervalMs: TrainOverviewPanel.FULL_REFRESH_INTERVAL_MS,
       width: 630,
       height: 300,
       top: 0,
@@ -37,6 +38,12 @@ export class TrainOverviewPanel extends BasePanel {
       if ((nextState === TrainState.EXITING || nextState === TrainState.ENDED) && typeof train?.number === 'string') {
         this.removeTrainByNumber(train.number);
       }
+    });
+    application.eventManager.on('stationJoinedFull', () => {
+      this.refreshAfterSessionContextChange();
+    });
+    application.eventManager.on('sessionContextRestored', () => {
+      this.refreshAfterSessionContextChange();
     });
   }
 
@@ -105,12 +112,23 @@ export class TrainOverviewPanel extends BasePanel {
     }
   }
 
+  private refreshAfterSessionContextChange(): void {
+    if (!this.isVisible) {
+      return;
+    }
+    void this.ensureCurrentStationLoaded();
+  }
+
   private applyTrainDelayUpdate(payload: TrainDelayUpdatedNotificationDto): void {
     if (!payload || typeof payload.trainNumber !== 'string' || typeof payload.currentDelay !== 'number') {
+      console.warn('TrainOverviewPanel: Ignoring invalid trainDelayUpdated payload.', payload);
       return;
     }
 
-    this.updateTrainDelayRow(payload.trainNumber, payload.currentDelay);
+    const updated = this.updateTrainDelayRow(payload.trainNumber, payload.currentDelay);
+    if (!updated) {
+      console.debug(`TrainOverviewPanel: No matching row for delay update ${payload.trainNumber}.`);
+    }
   }
 
   private applyTrainRemoved(payload: TrainRemovedNotificationDto): void {
@@ -143,20 +161,21 @@ export class TrainOverviewPanel extends BasePanel {
     }
   }
 
-  private updateTrainDelayRow(trainNumber: string, delaySeconds: number): void {
+  private updateTrainDelayRow(trainNumber: string, delaySeconds: number): boolean {
     const trainsList = document.getElementById('trainsList');
-    if (!trainsList) return;
+    if (!trainsList) return false;
 
     const row = Array.from(trainsList.querySelectorAll<HTMLTableRowElement>('tr[data-train-number]'))
       .find((candidate) => candidate.dataset.trainNumber === trainNumber);
-    if (!row) return;
+    if (!row) return false;
 
     const delayBadge = row.querySelector<HTMLElement>('[data-delay-badge="true"]');
-    if (!delayBadge) return;
+    if (!delayBadge) return false;
 
     const delayInfo = this.formatDelay(delaySeconds);
     delayBadge.className = `badge ${delayInfo.class}`;
     delayBadge.textContent = delayInfo.text;
+    return true;
   }
 
   private renderTrains(trains: StationTimetableEventDto[]): void {

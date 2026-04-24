@@ -119,6 +119,7 @@ export enum LogLevel {
   Debug = 0,
   Warning = 1,
   Error = 2,
+  Emergency = 3,
 }
 
 export interface LogEntryDto {

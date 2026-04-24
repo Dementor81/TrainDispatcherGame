@@ -164,6 +164,7 @@ export class LogsPanel extends BasePanel {
   private levelColor(level: LogLevel): string {
     if (level == LogLevel.Error) return "#dc3545";
     if (level == LogLevel.Warning) return "#ffc107";
+    if (level == LogLevel.Emergency) return "#ff0000";
     return "#f8f9fa";
   }
 

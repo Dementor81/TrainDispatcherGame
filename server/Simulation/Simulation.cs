@@ -385,11 +385,12 @@ namespace TrainDispatcherGame.Server.Simulation
                 train.TrainEvent = nextSpawn;
                 if (!_openLineTracks.AddTrain(connection, train))
                 {
-                    ServerLogger.Instance.LogError(Ctx(train.Number), $"Train {train.Number} collision detected on track from {connection.FromStation} to {connection.ToStation}");
+                    ServerLogger.Instance.LogEmergency(Ctx(train.Number), $"Train {train.Number} collision detected on track from {connection.FromStation} to {connection.ToStation}");
                     train.completed = true;
                     train.damaged = true;
                 }
 
+                NotifyTrainDelayUpdated(train);
 
             }
             catch (Exception ex)
@@ -560,7 +561,7 @@ namespace TrainDispatcherGame.Server.Simulation
         {
             try
             {
-                ServerLogger.Instance.LogWarning(Ctx(trainA.Number), $"Collision: trains {trainA.Number} and {trainB.Number} by client report");
+                ServerLogger.Instance.LogEmergency(Ctx(trainA.Number), $"Collision: trains {trainA.Number} and {trainB.Number} by client report");
                 trainA.damaged = true;
                 trainB.damaged = true;
                 trainA.completed = true;
@@ -581,8 +582,8 @@ namespace TrainDispatcherGame.Server.Simulation
                 train.damaged = true;
                 train.completed = true;
                 var switchInfo = switchId.HasValue ? $" at switch {switchId.Value}" : string.Empty;
-                ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Derailment: train {train.Number} removed by client report at station {normalizedStationId}{switchInfo}");
-            
+                ServerLogger.Instance.LogEmergency(Ctx(train.Number), $"Derailment: train {train.Number} removed by client report at station {normalizedStationId}{switchInfo}");
+
             }
             catch (Exception ex)
             {

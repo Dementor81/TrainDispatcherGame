@@ -415,6 +415,7 @@ export class SignalRManager {
                 } else {
                     console.log('SignalR: Successfully rejoined game after reconnection');
                 }
+                this._eventManager.emit('sessionContextRestored');
             } catch (error) {
                 console.error('SignalR: Failed to restore game context after reconnection:', error);
             }
@@ -426,6 +427,7 @@ export class SignalRManager {
             try {
                 await this.joinSession(this.gameCode);
                 console.log('SignalR: Successfully rejoined session after reconnection');
+                this._eventManager.emit('sessionContextRestored');
             } catch (error) {
                 console.error('SignalR: Failed to rejoin session after reconnection:', error);
             }

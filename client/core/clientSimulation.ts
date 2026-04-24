@@ -141,7 +141,6 @@ export class ClientSimulation {
 
       this.resumeSimulation();
       console.log("Client simulation started");
-      this._eventManager.emit("simulationStarted");
    }
 
    /**
