@@ -33,20 +33,6 @@ body {
 }
 
 
-/* Control Panel Styles */
-#controlPanel .btn {
-    transition: all 0.2s ease-in-out;
-}
-
-#controlPanel .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-#controlPanel .btn:active {
-    transform: translateY(0);
-}
-
 /* Train Overview Panel Styles */
 .trains-list {
     scrollbar-width: thin;
@@ -81,36 +67,6 @@ body {
 .badge {
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
-}
-
-/* Train Overview Table Styles */
-#trainOverviewPanel .table {
-    margin-bottom: 0;
-}
-
-#trainOverviewPanel .table th {
-    border-top: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    font-weight: 600;
-    font-size: 0.75rem;
-    padding: 0.25rem 0.25rem;
-    color: rgb(145, 145, 145);
-}
-
-#trainOverviewPanel .table td {
-    border-top: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 0.2rem 0.25rem;
-    vertical-align: middle;
-}
-
-#trainOverviewPanel .table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-#trainOverviewPanel .table-responsive {
-    max-height: 250px;
-    overflow-y: auto;
 }
 
 /* Make sure buttons don't interfere with canvas interactions */
@@ -262,16 +218,6 @@ body {
 
 /* Responsive adjustments */
 @media (max-width: 1200px) {
-    #controlPanel {
-        min-width: 280px !important;
-        max-width: 350px !important;
-    }
-
-    #controlPanel .btn {
-        font-size: 0.8rem;
-        padding: 0.25rem 0.5rem;
-    }
-
     #TrainOverviewPanel table {
         font-size: small;
     }
@@ -281,9 +227,5 @@ body {
     }
 
 
-
-}
-
-@media (max-height: 800px) {
 
 }
