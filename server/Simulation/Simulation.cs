@@ -64,6 +64,11 @@ namespace TrainDispatcherGame.Server.Simulation
             return SessionLogContext.Prefix(_sessionId, context);
         }
 
+        private Task NotifySimulationStateChanged()
+        {
+            return _notificationManager.SendSimulationStateChange(_state, Speed, SimulationTime, ElapsedSeconds);
+        }
+
         internal Train? FindTrainByNumber(string trainNumber)
         {
             return _trains.FirstOrDefault(train => string.Equals(train.Number, trainNumber, StringComparison.OrdinalIgnoreCase));
@@ -111,7 +116,7 @@ namespace TrainDispatcherGame.Server.Simulation
 
             // If previously paused, Stop() will set state to Stopped and reset.
             // Ensure clients receive current state
-            await _notificationManager.SendSimulationStateChange(this._state, this.Speed);
+            await NotifySimulationStateChanged();
 
             ServerLogger.Instance.LogDebug(Ctx(scenarioId), $"Scenario set to {scenarioId}");
         }
@@ -222,14 +227,14 @@ namespace TrainDispatcherGame.Server.Simulation
                 ServerLogger.Instance.LogDebug(Ctx(_scenarioId ?? string.Empty), $"Simulation started at {_simulationStartTime:HH:mm:ss}");
 
                 // Notify all clients about the state change
-                await _notificationManager.SendSimulationStateChange(_state, this.Speed);
+                await NotifySimulationStateChanged();
             }
             catch (Exception ex)
             {
                 _state = SimulationState.Error;
                 _errorMessage = ex.Message;
                 ServerLogger.Instance.LogError(Ctx(_scenarioId ?? string.Empty), $"Error starting simulation: {ex.Message}");
-                await _notificationManager.SendSimulationStateChange(_state, this.Speed);
+                await NotifySimulationStateChanged();
             }
         }
 
@@ -251,7 +256,7 @@ namespace TrainDispatcherGame.Server.Simulation
             ServerLogger.Instance.LogDebug(Ctx(_scenarioId ?? string.Empty), "Simulation stopped");
 
             // Notify all clients about the state change
-            await _notificationManager.SendSimulationStateChange(_state, this.Speed);
+            await NotifySimulationStateChanged();
         }
 
         public async void Pause()
@@ -268,7 +273,7 @@ namespace TrainDispatcherGame.Server.Simulation
             ServerLogger.Instance.LogDebug(Ctx(_scenarioId ?? string.Empty), $"Simulation paused at {SimulationTime:HH:mm:ss}");
 
             // Notify all clients about the state change
-            await _notificationManager.SendSimulationStateChange(_state, this.Speed);
+            await NotifySimulationStateChanged();
         }
 
         public async Task Resume()
@@ -287,7 +292,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 ServerLogger.Instance.LogDebug(Ctx(_scenarioId ?? string.Empty), $"Simulation resumed at {SimulationTime:HH:mm:ss}");
 
                 // Notify all clients about the state change
-                await _notificationManager.SendSimulationStateChange(_state, this.Speed);
+                await NotifySimulationStateChanged();
             }
             catch (Exception ex)
             {
@@ -618,7 +623,7 @@ namespace TrainDispatcherGame.Server.Simulation
         }
 
         // Manually advance simulation time by a number of seconds and process due events
-        public void AdvanceSeconds(double seconds)
+        public async Task AdvanceSeconds(double seconds)
         {
             if (seconds <= 0)
             {
@@ -630,6 +635,8 @@ namespace TrainDispatcherGame.Server.Simulation
                 this.ElapsedSeconds += seconds;
                 CheckTrainEvents();
             }
+
+            await NotifySimulationStateChanged();
         }
 
         public void SetSpeed(int speed)
@@ -638,7 +645,7 @@ namespace TrainDispatcherGame.Server.Simulation
             if (speed > 100) speed = 100;
             this.Speed = speed;
             // Broadcast current state including new speed
-            _ = _notificationManager.SendSimulationStateChange(this._state, this.Speed);
+            _ = NotifySimulationStateChanged();
         }
 
         public List<TrainDispatcherGame.Server.Models.DTOs.OpenLineTrackStatusDto> GetOpenLineTrackStatuses()

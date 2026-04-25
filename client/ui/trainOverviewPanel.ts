@@ -1,5 +1,5 @@
 import { getUpcomingTrains } from '../network/api';
-import { StationTimetableEventDto, TrainDelayUpdatedNotificationDto, TrainRemovedNotificationDto } from '../network/dto';
+import { SimulationStatusDto, StationTimetableEventDto, TrainDelayUpdatedNotificationDto, TrainRemovedNotificationDto } from '../network/dto';
 import { Application } from '../core/application';
 import { BasePanel } from './basePanel';
 import Train, { TrainState } from '../sim/train';
@@ -20,8 +20,8 @@ export class TrainOverviewPanel extends BasePanel {
       resizable: true,
       title: 'Alle Züge',
     });
-    application.eventManager.on('simulationStateChanged', (state: string) => {
-      if (state.toLowerCase() === 'running') {
+    application.eventManager.on('simulationStatusChanged', (status: SimulationStatusDto) => {
+      if (status.state.toLowerCase() === 'running') {
         this.clearTrains();
         if (this.isVisible) {
           void this.ensureCurrentStationLoaded();

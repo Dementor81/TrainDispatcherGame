@@ -1,7 +1,7 @@
 import { EventManager } from "../manager/event_manager";
 import { SimulationConfig } from "./config";
 import { getSimulationStatus } from "../network/api";
-import { SimulationState } from "../network/dto";
+import { SimulationState, SimulationStatusDto } from "../network/dto";
 
 /**
  * ClientSimulation handles the simulation timer and time tracking
@@ -39,10 +39,6 @@ export class ClientSimulation {
    public get speed(): number {
       return this._simulationSpeed;
    }
-
-   public set speed(value: number) {
-      this._simulationSpeed = value;
-   }
    
    public get simulationState(): SimulationState {
       return this._simulationState;
@@ -51,14 +47,8 @@ export class ClientSimulation {
    constructor(eventManager: EventManager) {
       this._eventManager = eventManager;
       
-      // Subscribe to simulation state changes from server
-      this._eventManager.on('simulationStateChanged', (state: SimulationState) => {
-         this.handleSimulationStateChanged(state);
-      });
-
-      // Simulation speed change events (from server)
-      this._eventManager.on('simulationSpeedChanged', (speed: number) => {
-         this.speed = speed;
+      this._eventManager.on('simulationStatusChanged', (status: SimulationStatusDto) => {
+         this.handleSimulationStatusChanged(status);
       });
       
       // Initialize with server state on startup
@@ -71,23 +61,7 @@ export class ClientSimulation {
    private async initialize(): Promise<void> {
       try {
          const status = await getSimulationStatus();
-         
-         // Synchronize simulation time
-         this._currentSimulationTime = new Date(status.currentTime);
-         this._lastSimulationTimeUpdate = Date.now();
-         
-         // Synchronize simulation state
-         if (status.state) {
-            this.handleSimulationStateChanged(status.state as SimulationState);
-            // Emit the initial state so other components can react
-            this._eventManager.emit('simulationStateChanged', status.state);
-         }
-         
-         // Synchronize simulation speed
-         if (typeof status.speed === 'number') {
-            this._simulationSpeed = Math.max(0.1, Math.min(100, status.speed));
-            this._eventManager.emit('simulationSpeedChanged', this._simulationSpeed);
-         }
+         this._eventManager.emit('simulationStatusChanged', status);
          
          console.log(`ClientSimulation: Initialized with server state: ${status.state}, time: ${status.currentTime}, speed: ${status.speed}`);
       } catch (error) {
@@ -97,14 +71,13 @@ export class ClientSimulation {
    
 
    
-   /**
-    * Handle simulation state changes from the server
-    */
-   private handleSimulationStateChanged(state: SimulationState): void {
-      // Store the state
-      this._simulationState = state;
+   private handleSimulationStatusChanged(status: SimulationStatusDto): void {
+      this._currentSimulationTime = new Date(status.currentTime);
+      this._lastSimulationTimeUpdate = Date.now();
+      this._simulationSpeed = Math.max(0.1, Math.min(100, status.speed));
+      this._simulationState = status.state;
       
-      switch (state.toLowerCase()) {
+      switch (status.state.toLowerCase()) {
          case 'running':
             this.resumeSimulation();
             console.log('ClientSimulation: Resumed');
@@ -119,7 +92,7 @@ export class ClientSimulation {
             console.log('ClientSimulation: Stopped');
             break;
          default:
-            console.log(`ClientSimulation: Unknown simulation state: ${state}`);
+            console.log(`ClientSimulation: Unknown simulation state: ${status.state}`);
       }
    }
 
@@ -222,8 +195,7 @@ export class ClientSimulation {
       if (!this._currentSimulationTime || now - this._lastSimulationTimeUpdate > SimulationConfig.simulationTimeUpdateIntervalSeconds * 1000) {
          try {
             const status = await getSimulationStatus();
-            this._currentSimulationTime = new Date(status.currentTime);
-            this._lastSimulationTimeUpdate = now;
+            this._eventManager.emit('simulationStatusChanged', status);
          } catch (error) {
             console.warn("Failed to get simulation time from server, using real time:", error);
             this._currentSimulationTime = new Date();
@@ -232,6 +204,7 @@ export class ClientSimulation {
          const simulatedStepMs = SimulationConfig.simulationIntervalSeconds * 1000 * this._simulationSpeed;
          this._currentSimulationTime = new Date(this._currentSimulationTime.getTime() + simulatedStepMs);
       }
+      this._currentSimulationTime ??= new Date();
       return this._currentSimulationTime;
    }
 

@@ -3,7 +3,6 @@ import {
    stopSimulation,
    pauseSimulation,
    resumeSimulation,
-   getSimulationStatus,
    advanceSimulationOneMinute,
    setSimulationSpeed,
 } from "../network/api";
@@ -24,22 +23,15 @@ export class ControlPanel extends BasePanel {
 
       this.subscribeToEvents(application.eventManager);
 
-      this.handleSimulationStateChanged(application.clientSimulation.simulationState);
-      this.handleSimulationSpeedChanged(application.clientSimulation.speed);
+      this.updateButtonStates(application.clientSimulation.simulationState);
+      this.updateSpeedInput(application.clientSimulation.speed);
    }
 
    private subscribeToEvents(eventManager: EventManager): void {
-      eventManager.on('simulationStateChanged', (state: SimulationState) => {
-         this.handleSimulationStateChanged(state);
+      eventManager.on('simulationStatusChanged', (status: SimulationStatusDto) => {
+         this.updateButtonStates(status.state);
+         this.updateSpeedInput(status.speed);
       });
-
-      eventManager.on('simulationSpeedChanged', (speed: number) => {
-         this.handleSimulationSpeedChanged(speed);
-      });
-   }
-
-   private handleSimulationStateChanged(state: SimulationState): void {
-      this.updateButtonStates(state);
    }
 
    protected createContent(): HTMLDivElement {
@@ -93,7 +85,7 @@ export class ControlPanel extends BasePanel {
       return controlsContainer;
    }
 
-   private async handleSimulationSpeedChanged(speed: number) {
+   private updateSpeedInput(speed: number): void {
       const speedInput = document.getElementById("speedInput") as HTMLInputElement;        
       speedInput.value = String(speed);
    }

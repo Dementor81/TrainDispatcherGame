@@ -65,7 +65,8 @@ export interface SimulationStatusDto {
   errorMessage?: string;
   elapsedSeconds: number;
   currentTime: string;
-  speed?: number;
+  speed: number;
+  timestamp?: string;
 }
 
 export interface TrainDto {

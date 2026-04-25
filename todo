@@ -23,6 +23,7 @@ Big Features:
     ☐ create new trains on the fly with a button in the gamemaster panel
     ☐ Manual/Help window for players
     ☐ show amount of total caused delay for all trains and per player in the gamemaster panel
+    ☐ spawn trains at stations at startup (critical for bigger scenarios)
     ✔ acceleration and deceleration @done(26-03-03 07:40)
     ✔ shunting @done(26-03-03 07:40)
     ✔ add game logic to the server to handle multiple game sessions simultaniously @done(26-02-22 18:22)

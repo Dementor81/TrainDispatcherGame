@@ -104,13 +104,15 @@ namespace TrainDispatcherGame.Server.Managers
             ServerLogger.Instance.LogDebug(Ctx(train.Number), $"Sent train {train.Number} to player {player.Id} at station {normalizedStationId}, exit point {exitPointId}, action: {currentEvent.Action}, arrival: {currentEvent.ArrivalTime}, departure: {currentEvent.DepartureTime}");
         }
 
-        public async Task SendSimulationStateChange(SimulationState newState, int speed)
+        public async Task SendSimulationStateChange(SimulationState newState, int speed, DateTime currentTime, double elapsedSeconds)
         {
             await _hubContext.Clients.Group(SessionGroup()).SendAsync("SimulationStateChanged", new
             {
                 state = newState.ToString(),
                 timestamp = DateTime.UtcNow,
-                speed = speed
+                speed = speed,
+                currentTime = currentTime,
+                elapsedSeconds = elapsedSeconds
             });
             
             ServerLogger.Instance.LogDebug(Ctx(newState.ToString()), $"Sent simulation state change to all clients in session {_sessionId}: {newState}");

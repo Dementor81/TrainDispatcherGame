@@ -79,7 +79,7 @@ namespace TrainDispatcherGame.Server.Endpoints
                 return Results.Ok(new { message = "Simulation reset", state = simulation.State.ToString() });
             });
 
-            app.MapPost("/api/simulation/advance-minute", (HttpRequest req, GameSessionManager sessionManager) =>
+            app.MapPost("/api/simulation/advance-minute", async (HttpRequest req, GameSessionManager sessionManager) =>
             {
                 var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
                 if (sessionError != null)
@@ -88,7 +88,7 @@ namespace TrainDispatcherGame.Server.Endpoints
                 }
 
                 var simulation = session!.Simulation;
-                simulation.AdvanceSeconds(60);
+                await simulation.AdvanceSeconds(60);
                 return Results.Ok(new
                 {
                     message = "Simulation advanced by 60 seconds",

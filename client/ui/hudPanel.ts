@@ -1,6 +1,7 @@
 import { EventManager } from "../manager/event_manager";
 import { Application } from "../core/application";
 import { BasePanel, BasePanelOptions } from "./basePanel";
+import { SimulationStatusDto } from "../network/dto";
 
 export class HUDPanel extends BasePanel {
     private timeRow!: HTMLDivElement;
@@ -21,8 +22,9 @@ export class HUDPanel extends BasePanel {
     }
 
     private setupEventListeners(eventManager: EventManager): void {
-        eventManager.on('simulationStateChanged', (state: string) => {
-            this.updateSimulationState(state);
+        eventManager.on('simulationStatusChanged', (status: SimulationStatusDto) => {
+            this.updateSimulationState(status.state);
+            this.updateSimulationTime();
         });
         eventManager.on('connectionStatusChanged', (state: string) => {
             const isConnected = state === 'Connected';

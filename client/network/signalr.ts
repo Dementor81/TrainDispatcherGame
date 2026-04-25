@@ -2,7 +2,7 @@ import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } fro
 import Train from '../sim/train';
 import Switch from '../sim/switch';
 import { EventManager } from '../manager/event_manager';
-import { SimulationState, TrainDelayUpdatedNotificationDto, TrainRemovedNotificationDto } from './dto';
+import { SimulationStatusDto, TrainDelayUpdatedNotificationDto, TrainRemovedNotificationDto } from './dto';
 import type { ApplicationContext } from '@core/applicationContext';
 
 export class JoinRejectedError extends Error {
@@ -149,7 +149,7 @@ export class SignalRManager {
         });
 
         this.connection.on('SimulationStateChanged', (data) => {            
-            this.handleSimulationStateChanged(data);
+            this.handleSimulationStatusChanged(data);
         });
 
         this.connection.on('TrainDelayUpdated', (data) => {
@@ -473,16 +473,10 @@ export class SignalRManager {
         this._eventManager.emit('trainCreated', train, data.exitPointId);
     }
 
-    private handleSimulationStateChanged(data: any): void {
+    private handleSimulationStatusChanged(data: SimulationStatusDto): void {
         // Handle simulation state change event from server
         console.log(`Simulation state changed to: ${data.state} at ${data.timestamp}`);
-        // Convert data.state to SimulationState type
-        const state: SimulationState = data.state as SimulationState;
-        // Emit the simulation state change event through the EventManager
-        this._eventManager.emit('simulationStateChanged', state);
-        if (typeof data.speed === 'number') {
-            this._eventManager.emit('simulationSpeedChanged', data.speed);
-        }
+        this._eventManager.emit('simulationStatusChanged', data);
     }
 
     private handleExitBlockStatusChanged(data: any): void {        
