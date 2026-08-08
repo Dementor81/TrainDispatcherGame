@@ -1,18 +1,17 @@
 {
-    "compilerOptions": {
-      "target": "ES6",
-      "module": "ESNext",
-      "moduleResolution": "node",
-      "strict": true,
-      "esModuleInterop": true,
-      "baseUrl": "./",
-      "paths": {
-        "@core/*": ["core/*"],
-        "@sim/*": ["sim/*"],
-        "@canvas/*": ["canvas/*"]
-      },
-      "outDir": "./dist"
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "paths": {
+      "@core/*": ["./core/*"],
+      "@sim/*": ["./sim/*"],
+      "@canvas/*": ["./canvas/*"]
     },
-    "include": ["./**/*.ts", "./**/*.d.ts"],
-    "exclude": []
-  }
+    "outDir": "./dist"
+  },
+  "include": ["./**/*.ts", "./**/*.d.ts"],
+  "exclude": []
+}

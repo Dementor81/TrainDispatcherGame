@@ -1,6 +1,7 @@
 import { fetchLogs } from "../network/api";
 import { LogEntryDto, LogLevel } from "../network/dto";
 import { BasePanel } from "../ui/basePanel";
+import { UI } from "../utils/ui";
 
 export class LogsPanel extends BasePanel {
   private filterInput?: HTMLInputElement;
@@ -32,39 +33,22 @@ export class LogsPanel extends BasePanel {
     filterInput.id = "logsFilterInput";
     filterInput.type = "text";
     filterInput.className = "form-control form-control-sm";
-    filterInput.placeholder = "train-1, station_a";
+    filterInput.placeholder = "Bahnhof oder Zugnummer";
     filterInput.addEventListener("input", () => this.Updates());
     this.filterInput = filterInput;
-    const spacer = document.createElement("div");
-    spacer.style.flex = "1 1 auto";
 
-    const autoScrollBtn = document.createElement("button");
-    autoScrollBtn.type = "button";
-    autoScrollBtn.className = "btn btn-sm";
-    autoScrollBtn.title = "Toggle auto-scroll";
-    autoScrollBtn.innerHTML = "<i class=\"bi bi-caret-down-square\"></i>";
-    autoScrollBtn.addEventListener("click", () => {
+    this.autoScrollBtn = UI.createButton("btn-sm", null, () => {
       this.autoScroll = !this.autoScroll;
       if (this.autoScroll) this.scrollToBottom();
       this.updateAutoScrollButton();
     });
-    this.autoScrollBtn = autoScrollBtn;
-
-    const toggleBtn = document.createElement("button");
-    toggleBtn.type = "button";
-    toggleBtn.className = "btn btn-sm btn-outline-secondary";
-    toggleBtn.title = "Toggle time display";
-    toggleBtn.innerHTML = "<i class=\"bi bi-clock\"></i>";
-    toggleBtn.addEventListener("click", () => {
-      this.showRealTime = !this.showRealTime;
-      this.Updates();
-    });
+    this.autoScrollBtn.title = "nach unten scrollen";
+    this.autoScrollBtn.innerHTML = "<i class=\"bi bi-caret-down-square\"></i>";
+    
 
     filterRow.appendChild(filterLabel);
     filterRow.appendChild(filterInput);
-    filterRow.appendChild(spacer);
-    filterRow.appendChild(autoScrollBtn);
-    filterRow.appendChild(toggleBtn);
+    filterRow.appendChild(this.autoScrollBtn);
 
     const output = document.createElement("div");
     output.id = "logsOutput";
@@ -153,7 +137,6 @@ export class LogsPanel extends BasePanel {
 
   private normalizeEntry(entry: any): LogEntryDto {
     return {
-      timestamp: entry.timestamp ?? entry.Timestamp ?? "",
       simulationTime: entry.simulationTime ?? entry.SimulationTime ?? entry.simulation_time ?? entry.simulationTimeUtc,
       level: entry.level ?? entry.Level ?? "Debug",
       context: entry.context ?? entry.Context ?? "",
@@ -175,10 +158,8 @@ export class LogsPanel extends BasePanel {
   }
 
   private resolveDisplayTime(entry: LogEntryDto): string {
-    const sim = entry.simulationTime ? new Date(entry.simulationTime) : null;
-    const real = entry.timestamp ? new Date(entry.timestamp) : null;
-    const chosen = this.showRealTime ? real : (sim ?? real);
-    return chosen ? chosen.toLocaleTimeString() : "--:--:--";
+    if (!entry.simulationTime) return "--:--:--";
+    return new Date(entry.simulationTime).toLocaleTimeString();
   }
 }
 

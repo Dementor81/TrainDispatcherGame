@@ -11,23 +11,18 @@ namespace TrainDispatcherGame.Server.Endpoints
             app.MapGet("/api/logs", (HttpRequest req, GameSessionManager sessionManager) =>
             {
                 var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
-                if (sessionError != null)
-                {
-                    return sessionError;
-                }
+                if (sessionError != null) return sessionError;
 
                 var contexts = new List<string>();
                 if (req.Query.TryGetValue("context", out StringValues contextValues))
                 {
                     foreach (var value in contextValues)
                     {
-                        if (string.IsNullOrWhiteSpace(value))
+                        if (!string.IsNullOrWhiteSpace(value))
                         {
-                            continue;
+                            var parts = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                            contexts.AddRange(parts);
                         }
-
-                        var parts = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                        contexts.AddRange(parts);
                     }
                 }
 

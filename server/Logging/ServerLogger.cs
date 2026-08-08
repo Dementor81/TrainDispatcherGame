@@ -87,13 +87,10 @@ namespace TrainDispatcherGame.Server.Logging
 
         private void Log(LogLevel level, string context, string message)
         {
-            var safeContext = context ?? string.Empty;
-            var safeMessage = message ?? string.Empty;
-
             var simulationTime = _simulationTimeProvider?.Invoke();
             lock (_lock)
             {
-                _entries.Add(new LogEntry(DateTime.UtcNow, simulationTime, level, safeContext, safeMessage));
+                _entries.Add(new LogEntry(DateTime.UtcNow, simulationTime, level, context, message));
             }
         }
     }

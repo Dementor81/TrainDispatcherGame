@@ -4,7 +4,7 @@ import { TrackLayoutManager } from "./trackLayout_manager";
 import { ClientSimulation } from "../core/clientSimulation";
 import { SimulationConfig } from "../core/config";
 import { getTrainWaypoints } from "../network/api";
-import { TrainWayPointDto } from "network/dto";
+import { TrainWayPointDto } from "../network/dto";
 
 export interface TrainStationCallbacks {
    getDirectionTowardExit(train: Train, waypoints: TrainWayPointDto[]): number | null;

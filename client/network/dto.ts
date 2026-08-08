@@ -124,7 +124,6 @@ export enum LogLevel {
 }
 
 export interface LogEntryDto {
-  timestamp: string;
   simulationTime?: string;
   level: LogLevel;
   context: string;

@@ -10,7 +10,7 @@ import { SimulationState, SimulationStatusDto } from "../network/dto";
 import { BasePanel } from "./basePanel";
 import { Application } from "../core/application";
 import { UI } from "../utils/ui";
-import EventManager from "manager/event_manager";
+import EventManager from "../manager/event_manager";
 
 export class ControlPanel extends BasePanel {
 

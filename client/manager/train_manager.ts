@@ -8,7 +8,7 @@ import Tools from "../core/utils";
 import { SignalRManager } from "../network/signalr";
 import { ClientSimulation } from "../core/clientSimulation";
 import { getTrainWaypoints } from "../network/api";
-import { TrainWayPointDto } from "network/dto";
+import { TrainWayPointDto } from "../network/dto";
 import { TrainSignalHandler } from "./trainSignal_handler";
 import { TrainStationHandler } from "./trainStation_handler";
 import { TrainMovementHandler } from "./trainMovement_handler";

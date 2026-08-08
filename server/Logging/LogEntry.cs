@@ -9,8 +9,8 @@ namespace TrainDispatcherGame.Server.Logging
             Timestamp = timestamp;
             SimulationTime = simulationTime;
             Level = level;
-            Context = context;
-            Message = message;
+            Context = context?? string.Empty;
+            Message = message?? string.Empty;
         }
 
         public DateTime Timestamp { get; }
