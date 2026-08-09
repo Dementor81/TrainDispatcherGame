@@ -869,7 +869,7 @@ export default class SzenariosApplication {
    private async editSelectedTrain() {
       if (this.selectedTrainIdx === null || !this.scenario) return;
       const train = this.scenario.trains[this.selectedTrainIdx];
-      const res = await this.trainEditorPanel.showEdit(train as any);
+      const res = await this.trainEditorPanel.showEdit(train as any, this.scenario.trains);
       if (!res) return;
       train.number = res.number;
       (train as any).type = res.type;
@@ -960,7 +960,7 @@ export default class SzenariosApplication {
    }
 
    private async handleCreateTrain() {
-      const res = await this.trainEditorPanel.showCreate(this.stationOrder);
+      const res = await this.trainEditorPanel.showCreate(this.stationOrder, this.scenario?.trains ?? []);
       if (!res || !this.scenario || !this.network) return;
       const range = this.getStationRange(res.startStation, res.endStation);
       if (!range) return;

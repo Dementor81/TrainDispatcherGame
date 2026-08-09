@@ -29,7 +29,7 @@ export class TrainEditorPanel extends BasePanel {
    private catEl!: HTMLInputElement;
    private speedEl!: HTMLInputElement;
    private carsEl!: HTMLInputElement;
-   private followingEl!: HTMLInputElement;
+   private followingEl!: HTMLSelectElement;
    private startSel!: HTMLSelectElement;
    private endSel!: HTMLSelectElement;
    private startEndRow!: HTMLDivElement;
@@ -37,6 +37,8 @@ export class TrainEditorPanel extends BasePanel {
    private submitBtn!: HTMLButtonElement;
    private pendingResolve: ((value: CreateTrainResult | EditTrainResult | null) => void) | null = null;
    private isClosingProgrammatically = false;
+   private scenarioTrains: ScenarioTrainDto[] = [];
+   private excludeTrainNumber: string | undefined;
 
    constructor() {
       // The scenario editor only needs the shared BasePanel chrome, not the full main Application.
@@ -61,7 +63,10 @@ export class TrainEditorPanel extends BasePanel {
       this.numEl = this.createInput("Train number", "text", true);
       this.typeEl = this.createSelect("Type", ["Passenger", "Freight", "MultipleUnit"]);
       this.catEl = this.createInput("Category", "text", false, "e.g., ICE, Freight, Regional");
-      this.followingEl = this.createInput("Following Train Number", "text", false, "Train number that will use this vehicle");
+      this.catEl.addEventListener("input", () => this.populateFollowingTrains());
+      this.followingEl = document.createElement("select");
+      this.followingEl.className = "form-select no-drag";
+      this.followingEl.ariaLabel = "Following Train Number";
       this.speedEl = this.createInput("Speed (km/h)", "number", true);
       this.speedEl.min = "10";
       this.speedEl.max = "400";
@@ -115,13 +120,13 @@ export class TrainEditorPanel extends BasePanel {
       this.isClosingProgrammatically = false;
    }
 
-   public async showCreate(stationOrder: string[]): Promise<CreateTrainResult | null> {
-      this.prepareCreate(stationOrder);
+   public async showCreate(stationOrder: string[], trains: ScenarioTrainDto[]): Promise<CreateTrainResult | null> {
+      this.prepareCreate(stationOrder, trains);
       return this.open<CreateTrainResult>();
    }
 
-   public async showEdit(train: ScenarioTrainDto): Promise<EditTrainResult | null> {
-      this.prepareEdit(train);
+   public async showEdit(train: ScenarioTrainDto, trains: ScenarioTrainDto[]): Promise<EditTrainResult | null> {
+      this.prepareEdit(train, trains);
       return this.open<EditTrainResult>();
    }
 
@@ -134,7 +139,7 @@ export class TrainEditorPanel extends BasePanel {
       });
    }
 
-   private prepareCreate(stationOrder: string[]) {
+   private prepareCreate(stationOrder: string[], trains: ScenarioTrainDto[]) {
       this.setTitle("Add Train");
       this.submitBtn.textContent = "Create";
       this.startEndRow.classList.remove("d-none");
@@ -144,13 +149,15 @@ export class TrainEditorPanel extends BasePanel {
       this.catEl.value = "";
       this.speedEl.value = "120";
       this.carsEl.value = "6";
-      this.followingEl.value = "";
+      this.scenarioTrains = trains;
+      this.excludeTrainNumber = undefined;
+      this.populateFollowingTrains("");
       this.populateStations(stationOrder);
       this.startSel.required = true;
       this.endSel.required = true;
    }
 
-   private prepareEdit(train: ScenarioTrainDto) {
+   private prepareEdit(train: ScenarioTrainDto, trains: ScenarioTrainDto[]) {
       this.setTitle("Edit Train");
       this.submitBtn.textContent = "Save";
       this.startEndRow.classList.add("d-none");
@@ -160,9 +167,39 @@ export class TrainEditorPanel extends BasePanel {
       this.catEl.value = train.category || "";
       this.speedEl.value = String(train.speedMax ?? 120);
       this.carsEl.value = String(train.cars ?? 6);
-      this.followingEl.value = train.followingTrainNumber || "";
+      this.scenarioTrains = trains;
+      this.excludeTrainNumber = train.number;
+      this.populateFollowingTrains(train.followingTrainNumber || "");
       this.startSel.required = false;
       this.endSel.required = false;
+   }
+
+   private normalizeCategory(category?: string | null): string {
+      return (category || "").trim().toLowerCase();
+   }
+
+   private populateFollowingTrains(preferred?: string) {
+      const previous = preferred ?? this.followingEl.value;
+      const category = this.normalizeCategory(this.catEl.value);
+      this.followingEl.innerHTML = "";
+      this.followingEl.appendChild(new Option("", ""));
+
+      const numbers = this.scenarioTrains
+         .filter((train) => {
+            if (this.excludeTrainNumber && train.number === this.excludeTrainNumber) return false;
+            return this.normalizeCategory(train.category) === category;
+         })
+         .map((train) => train.number);
+
+      for (const number of numbers) {
+         this.followingEl.appendChild(new Option(number, number));
+      }
+
+      if (preferred && !numbers.includes(preferred)) {
+         this.followingEl.appendChild(new Option(preferred, preferred));
+      }
+      this.followingEl.value =
+         numbers.includes(previous) || (preferred !== undefined && previous === preferred) ? previous : "";
    }
 
    private populateStations(stationOrder: string[]) {
