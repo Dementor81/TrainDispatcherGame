@@ -72,7 +72,10 @@ export class ScenarioSelectionDialog {
       networkLabel.textContent = "Spielnetz:";
       const networkSelect = document.createElement("select");
       networkSelect.className = "form-select form-select-sm flex-grow-1";
-      networkSelect.addEventListener("change", () => this.updateScenarioDropdown());
+      networkSelect.addEventListener("change", () => {
+         this.updateScenarioDropdown();
+         void this.applySelectedScenario();
+      });
       networkRow.appendChild(networkLabel);
       networkRow.appendChild(networkSelect);
 
@@ -84,16 +87,8 @@ export class ScenarioSelectionDialog {
       scenarioLabel.textContent = "Scenario:";
       const scenarioSelect = document.createElement("select");
       scenarioSelect.className = "form-select form-select-sm flex-grow-1";
-      scenarioSelect.addEventListener("change", async () => {
-         const id = this.scenarioSelect.value;
-         if (id) {
-            try {
-               await setScenario(id);
-               this.currentScenarioId = id;
-            } catch (e) {
-               console.error("Failed to set scenario", e);
-            }
-         }
+      scenarioSelect.addEventListener("change", () => {
+         void this.applySelectedScenario();
       });
       scenarioRow.appendChild(scenarioLabel);
       scenarioRow.appendChild(scenarioSelect);
@@ -103,8 +98,12 @@ export class ScenarioSelectionDialog {
 
       const footer = document.createElement("div");
       footer.className = "modal-footer border-secondary";
-      const closeFooter = UI.createButton("btn-secondary btn-sm", "Start Simulation", () => {});
-      closeFooter.setAttribute("data-bs-dismiss", "modal");
+      const closeFooter = UI.createButton("btn-secondary btn-sm", "Start Simulation", async () => {
+         await this.applySelectedScenario();
+         if (this.isSelectionComplete()) {
+            this.modalInstance.hide();
+         }
+      });
       footer.appendChild(closeFooter);
 
       content.appendChild(header);
@@ -193,14 +192,35 @@ export class ScenarioSelectionDialog {
          return;
       }
 
+      let matched = false;
       for (const scenario of filteredScenarios) {
          const opt = document.createElement("option");
          opt.value = scenario.id;
          opt.textContent = scenario.title;
          if (scenario.id === this.currentScenarioId) {
             opt.selected = true;
+            matched = true;
          }
          this.scenarioSelect.appendChild(opt);
+      }
+
+      // Changing network rebuilds options; browser shows the first item but does not fire change.
+      if (!matched) {
+         this.scenarioSelect.value = filteredScenarios[0].id;
+      }
+   }
+
+   private async applySelectedScenario(): Promise<void> {
+      const id = this.scenarioSelect.value;
+      if (!id || id === this.currentScenarioId) {
+         return;
+      }
+
+      try {
+         await setScenario(id);
+         this.currentScenarioId = id;
+      } catch (e) {
+         console.error("Failed to set scenario", e);
       }
    }
 

@@ -13,8 +13,8 @@
          "description": ""
       },
       {
-         "id": "camburg",
-         "name": "Camburg",
+         "id": "camberg",
+         "name": "camberg",
          "description": ""
       },
       {
@@ -63,56 +63,56 @@
          "from": "aurich",
          "fromId": 0,
          "to": "wingst",
-         "toId": 0,
+         "toId": 1,
          "distance": 4000
       },
       {
          "from": "aurich",
          "fromId": 3,
          "to": "kreuztal",
-         "toId": 0,
+         "toId": 2,
          "distance": 4000
       },
       {
          "from": "aurich",
          "fromId": 5,
          "to": "hohenbrunn",
-         "toId": 0,
+         "toId": 1,
          "distance": 4000
       },
       {
          "from": "bernau",
          "fromId": 1,
-         "to": "camburg",
-         "toId": 0,
+         "to": "camberg",
+         "toId": 4,
          "distance": 4000
       },
       {
-         "from": "camburg",
+         "from": "camberg",
          "fromId": 0,
          "to": "kreuztal",
-         "toId": 0,
+         "toId": 1,
          "distance": 4000
       },
       {
-         "from": "camburg",
+         "from": "camberg",
          "fromId": 3,
          "to": "horb",
-         "toId": 0,
+         "toId": 2,
          "distance": 4000
       },
       {
          "from": "dospen",
          "fromId": 3,
          "to": "hohenbrunn",
-         "toId": 0,
+         "toId": 2,
          "distance": 4000
       },
       {
          "from": "dospen",
          "fromId": 0,
          "to": "landing",
-         "toId": 0,
+         "toId": 1,
          "distance": 4000
       },
       {
@@ -140,49 +140,49 @@
          "from": "hohenbrunn",
          "fromId": 5,
          "to": "kreuztal",
-         "toId": 0,
+         "toId": 6,
          "distance": 4000
       },
       {
          "from": "hohenbrunn",
          "fromId": 0,
          "to": "dospen",
-         "toId": 0,
+         "toId": 1,
          "distance": 4000
       },
       {
          "from": "horb",
          "fromId": 0,
-         "to": "camburg",
-         "toId": 0,
+         "to": "camberg",
+         "toId": 1,
          "distance": 4000
       },
       {
          "from": "horb",
          "fromId": 3,
          "to": "ostermünde",
-         "toId": 0,
+         "toId": 2,
          "distance": 4000
       },
       {
          "from": "kreuztal",
-         "fromId": 2,
+         "fromId": 0,
          "to": "aurich",
-         "toId": 0,
+         "toId": 1,
          "distance": 4000
       },
       {
          "from": "kreuztal",
          "fromId": 3,
-         "to": "camburg",
-         "toId": 0,
+         "to": "camberg",
+         "toId": 2,
          "distance": 4000
       },
       {
          "from": "kreuztal",
          "fromId": 4,
          "to": "hohenbrunn",
-         "toId": 0,
+         "toId": 3,
          "distance": 4000
       },
       {
@@ -217,14 +217,14 @@
          "from": "ostermünde",
          "fromId": 0,
          "to": "horb",
-         "toId": 0,
+         "toId": 1,
          "distance": 4000
       },
       {
          "from": "westerhausen",
          "fromId": 3,
          "to": "landing",
-         "toId": 0,
+         "toId": 2,
          "distance": 4000
       },
       {

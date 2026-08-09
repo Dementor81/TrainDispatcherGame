@@ -472,8 +472,8 @@
          "signals": [
             {
                "type": "main",
-               "position": 296,
-               "direction": -1
+               "position": 307,
+               "direction": 1
             }
          ],
          "switches": [
@@ -610,8 +610,8 @@
          "signals": [
             {
                "type": "main",
-               "position": 253,
-               "direction": 1
+               "position": 259,
+               "direction": -1
             }
          ],
          "switches": [
@@ -931,14 +931,24 @@
    ],
    "platforms": [
       {
+         "track": 249,
+         "from_km": 64,
+         "to_km": 504
+      },
+      {
+         "track": 260,
+         "from_km": 5,
+         "to_km": 406
+      },
+      {
          "track": 247,
-         "from_km": 482,
-         "to_km": 22
+         "from_km": 453,
+         "to_km": 14
       },
       {
          "track": 256,
-         "from_km": 468,
-         "to_km": 55
+         "from_km": 456,
+         "to_km": 91
       }
    ]
 }

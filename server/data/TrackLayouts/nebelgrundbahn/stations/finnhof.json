@@ -824,8 +824,13 @@
    "platforms": [
       {
          "track": 475,
-         "from_km": 113,
-         "to_km": 377
+         "from_km": 75,
+         "to_km": 422
+      },
+      {
+         "track": 470,
+         "from_km": 371,
+         "to_km": 25
       }
    ]
 }

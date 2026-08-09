@@ -44,7 +44,13 @@
             "x": 975.0,
             "y": 250.0
          },
-         "signals": [],
+         "signals": [
+            {
+               "type": "main",
+               "position": 184,
+               "direction": -1
+            }
+         ],
          "switches": [
             {
                "type": "Switch",
@@ -239,7 +245,7 @@
             },
             {
                "type": "main",
-               "position": 542,
+               "position": 560,
                "direction": 1
             }
          ],
@@ -311,7 +317,7 @@
          "signals": [
             {
                "type": "main",
-               "position": 130,
+               "position": 102,
                "direction": -1
             }
          ],
@@ -361,7 +367,7 @@
          "signals": [
             {
                "type": "main",
-               "position": 704,
+               "position": 726,
                "direction": 1
             }
          ],
@@ -389,8 +395,8 @@
          "signals": [
             {
                "type": "main",
-               "position": 167,
-               "direction": 1
+               "position": 171,
+               "direction": -1
             }
          ],
          "switches": [
@@ -509,6 +515,11 @@
             "y": -100.0
          },
          "signals": [
+            {
+               "type": "main",
+               "position": 57,
+               "direction": -1
+            },
             {
                "type": "main",
                "position": 365,
@@ -639,7 +650,7 @@
          "signals": [
             {
                "type": "main",
-               "position": 358,
+               "position": 356,
                "direction": 1
             }
          ],
@@ -667,8 +678,8 @@
          "signals": [
             {
                "type": "main",
-               "position": 352,
-               "direction": -1
+               "position": 353,
+               "direction": 1
             }
          ],
          "switches": [
@@ -844,18 +855,28 @@
    "platforms": [
       {
          "track": 519,
-         "from_km": 48,
-         "to_km": 538
+         "from_km": 84,
+         "to_km": 534
       },
       {
          "track": 526,
-         "from_km": 99,
-         "to_km": 596
+         "from_km": 167,
+         "to_km": 670
       },
       {
          "track": 500,
          "from_km": 24,
          "to_km": 503
+      },
+      {
+         "track": 515,
+         "from_km": 621,
+         "to_km": 117
+      },
+      {
+         "track": 523,
+         "from_km": 583,
+         "to_km": 134
       }
    ]
 }

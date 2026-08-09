@@ -372,11 +372,6 @@
          "signals": [
             {
                "type": "main",
-               "position": 41,
-               "direction": -1
-            },
-            {
-               "type": "main",
                "position": 561,
                "direction": 1
             }
@@ -451,11 +446,6 @@
                "type": "main",
                "position": 27,
                "direction": -1
-            },
-            {
-               "type": "main",
-               "position": 581,
-               "direction": 1
             }
          ],
          "switches": [
@@ -595,8 +585,8 @@
          "signals": [
             {
                "type": "main",
-               "position": 450,
-               "direction": -1
+               "position": 448,
+               "direction": 1
             }
          ],
          "switches": [
@@ -900,14 +890,24 @@
    ],
    "platforms": [
       {
-         "track": 405,
-         "from_km": 450,
-         "to_km": 26
+         "track": 415,
+         "from_km": 76,
+         "to_km": 600
+      },
+      {
+         "track": 403,
+         "from_km": 73,
+         "to_km": 494
       },
       {
          "track": 398,
-         "from_km": 650,
-         "to_km": 74
+         "from_km": 598,
+         "to_km": 95
+      },
+      {
+         "track": 405,
+         "from_km": 44,
+         "to_km": 445
       }
    ]
 }

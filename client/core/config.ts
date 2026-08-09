@@ -4,6 +4,7 @@ export class RendererConfig {
     static readonly inactiveTrackColor = 0x444444;
     static readonly switchColor = 0x888888;
     static readonly trackWidth = 4;
+    static readonly bumperLength = 12;
     static readonly switchWidth = 4;
     static readonly switchHeight = 4;
     static readonly switchCircleRadius = 8;

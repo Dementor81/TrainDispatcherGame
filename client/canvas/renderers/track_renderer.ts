@@ -4,6 +4,8 @@ import Exit from "../../sim/exit";
 import { RendererConfig } from "../../core/config";
 import { drawArrow } from "../pixi_extension";
 import TrackLayoutManager from "../../manager/trackLayout_manager";
+import { Point } from "../../utils/point";
+import { V2 } from "../../utils/v2";
 
 interface ExitContainer extends PIXI.Container {
    exitId?: number;
@@ -36,20 +38,28 @@ export class TrackRenderer {
          .lineTo(track.end.x, track.end.y)
          .stroke({ width: RendererConfig.trackWidth, color: RendererConfig.trackColor, alpha: 1, cap: "round" });
 
-      if (track.switches[0] !== null) {
-         if (track.switches[0] instanceof Exit) {
-            const exit = track.switches[0] as Exit;
-            this.renderExit(exit, track, true);
-         }
+      if (track.switches[0] === null) {
+         this.renderBumper(graphics, track, track.start);
+      } else if (track.switches[0] instanceof Exit) {
+         this.renderExit(track.switches[0] as Exit, track, true);
       }
-      if (track.switches[1] !== null) {
-         if (track.switches[1] instanceof Exit) {
-            const exit = track.switches[1] as Exit;
-            this.renderExit(exit, track, false);
-         }
+
+      if (track.switches[1] === null) {
+         this.renderBumper(graphics, track, track.end);
+      } else if (track.switches[1] instanceof Exit) {
+         this.renderExit(track.switches[1] as Exit, track, false);
       }
 
       this._container.addChild(graphics);
+   }
+
+   private renderBumper(graphics: PIXI.Graphics, track: Track, point: Point): void {
+      const half = RendererConfig.bumperLength / 2;
+      const normal = new V2(-track.unit.y, track.unit.x).multiply(half);
+      graphics
+         .moveTo(point.x - normal.x, point.y - normal.y)
+         .lineTo(point.x + normal.x, point.y + normal.y)
+         .stroke({ width: RendererConfig.trackWidth, color: RendererConfig.trackColor, alpha: 1, cap: "butt" });
    }
 
    renderExit(exit: Exit, track: Track, inverted: boolean): void {

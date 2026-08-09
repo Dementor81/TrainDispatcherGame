@@ -107,7 +107,7 @@
             },
             {
                "type": "main",
-               "position": 653,
+               "position": 673,
                "direction": 1
             }
          ],
@@ -157,7 +157,7 @@
          "signals": [
             {
                "type": "main",
-               "position": 35,
+               "position": 17,
                "direction": -1
             },
             {
@@ -240,7 +240,7 @@
          "signals": [
             {
                "type": "main",
-               "position": 219,
+               "position": 194,
                "direction": -1
             }
          ],
@@ -268,8 +268,8 @@
          "signals": [
             {
                "type": "main",
-               "position": 256,
-               "direction": 1
+               "position": 234,
+               "direction": -1
             }
          ],
          "switches": [
@@ -437,8 +437,8 @@
          "signals": [
             {
                "type": "main",
-               "position": 378,
-               "direction": -1
+               "position": 396,
+               "direction": 1
             }
          ],
          "switches": [
@@ -574,9 +574,14 @@
    ],
    "platforms": [
       {
+         "track": 475,
+         "from_km": 91,
+         "to_km": 632
+      },
+      {
          "track": 479,
-         "from_km": 623,
-         "to_km": 20
+         "from_km": 583,
+         "to_km": 43
       }
    ]
 }

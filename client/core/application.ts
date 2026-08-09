@@ -98,8 +98,8 @@ export class Application implements ApplicationContext {
          this._currentStationId = layout;
          this._currentGameCode = (sessionStorage.getItem("gameCode") || "").trim();
          await this._trackLayoutManager.loadTrackLayout(layout);
-         this._renderer?.renderTrackLayout();
          this.setMainCanvasVisible(true);
+         this._renderer?.renderTrackLayout();
          
          // Show the control panel and train overview panel after successfully joining a station
          this._uiManager.showTrainOverviewPanel();

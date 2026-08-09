@@ -173,8 +173,8 @@ export class Renderer {
       // Render signals
       this._signalRenderer.renderAll(tracks);
 
-      // Auto-zoom to fit on first load
-      this._camera.zoomToFit(tracks, this._pixiApp.canvas.width, this._pixiApp.canvas.height);
+      // Auto-zoom to fit on first load (screen = CSS px; matches stage transform space)
+      this._camera.zoomToFit(tracks, this._pixiApp.screen.width, this._pixiApp.screen.height);
    }
 
    public renderTrains(): void {

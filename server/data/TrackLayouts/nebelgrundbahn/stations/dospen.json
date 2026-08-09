@@ -211,7 +211,7 @@
          "id": 208,
          "start": { "x": 1650, "y": 550 },
          "end": { "x": 2150, "y": 550 },
-         "signals": [],
+         "signals": [{ "type": "main", "position": 355 , "direction":  -1}],
          "switches": [{ "type": "Switch", "id": 73 }, {"type": "Exit", "id": 3} ]
       },
       {
@@ -232,7 +232,7 @@
          "id": 218,
          "start": { "x": -100, "y": 550 },
          "end": { "x": 450, "y": 550 },
-         "signals": [],
+         "signals": [{ "type": "main", "position": 352 , "direction":  1}],
          "switches": [{"type": "Exit", "id": 0} , { "type": "Track", "id": 176 }]
       }
    ],

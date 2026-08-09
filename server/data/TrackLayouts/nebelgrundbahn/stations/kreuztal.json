@@ -350,8 +350,8 @@
          "signals": [
             {
                "type": "main",
-               "position": 154,
-               "direction": -1
+               "position": 155,
+               "direction": 1
             }
          ],
          "switches": [
@@ -555,8 +555,8 @@
          "signals": [
             {
                "type": "main",
-               "position": 398,
-               "direction": -1
+               "position": 396,
+               "direction": 1
             }
          ],
          "switches": [
@@ -633,8 +633,8 @@
          "signals": [
             {
                "type": "main",
-               "position": 249,
-               "direction": 1
+               "position": 200,
+               "direction": -1
             }
          ],
          "switches": [
@@ -1040,9 +1040,14 @@
          "to_km": 701
       },
       {
+         "track": 350,
+         "from_km": 112,
+         "to_km": 641
+      },
+      {
          "track": 355,
-         "from_km": 745,
-         "to_km": 204
+         "from_km": 740,
+         "to_km": 211
       }
    ]
 }
