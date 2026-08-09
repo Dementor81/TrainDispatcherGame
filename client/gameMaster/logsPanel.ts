@@ -5,14 +5,13 @@ import { UI } from "../utils/ui";
 
 export class LogsPanel extends BasePanel {
   private filterInput?: HTMLInputElement;
-  private showRealTime: boolean = false;
   private lastFilterKey: string = "";
-  private lastRenderedCount: number = 0;
+  private lastSeenId: number = 0;
   private autoScroll: boolean = true;
   private autoScrollBtn?: HTMLButtonElement;
 
   constructor() {
-    super(null as any, { width: 620, height: 320, bottom: 0, right: 0, updateIntervalMs: 2000, title: 'Nachrichten', resizable: true });
+    super(null as any, { width: 620, height: 320, bottom: 0, right: 0, updateIntervalMs: 5000, title: 'Nachrichten', resizable: true });
 
     this.show();
   }
@@ -77,17 +76,18 @@ export class LogsPanel extends BasePanel {
 
       const contexts = this.getFilterContexts();
       const filterKey = contexts.join("|");
-      const logs = await fetchLogs(contexts);
-      const shouldRebuild = filterKey !== this.lastFilterKey || logs.length < this.lastRenderedCount;
-
-      if (shouldRebuild) {
+      const filterChanged = filterKey !== this.lastFilterKey;
+      if (filterChanged) {
         output.innerHTML = "";
         this.lastFilterKey = filterKey;
-        this.lastRenderedCount = 0;
+        this.lastSeenId = 0;
       }
 
+      const afterId = filterChanged ? undefined : this.lastSeenId;
+      const logs = await fetchLogs(contexts, afterId);
+
       if (!logs || logs.length === 0) {
-        if (this.lastRenderedCount === 0) {
+        if (this.lastSeenId === 0 && output.childElementCount === 0) {
           const empty = document.createElement("div");
           empty.className = "text-muted";
           empty.textContent = "No logs available";
@@ -96,20 +96,21 @@ export class LogsPanel extends BasePanel {
         return;
       }
 
-      if (shouldRebuild && output.firstChild && output.textContent === "No logs available") {
+      if (output.firstChild && output.textContent === "No logs available") {
         output.innerHTML = "";
       }
 
-      const startIndex = Math.max(this.lastRenderedCount, 0);
-      for (let i = startIndex; i < logs.length; i++) {
-        const entry = this.normalizeEntry(logs[i]);
+      for (const raw of logs) {
+        const entry = this.normalizeEntry(raw);
         const line = document.createElement("div");
         line.style.color = this.levelColor(entry.level);
         line.textContent = this.formatEntry(entry);
         output.appendChild(line);
+        if (entry.id != null && entry.id > this.lastSeenId) {
+          this.lastSeenId = entry.id;
+        }
       }
 
-      this.lastRenderedCount = logs.length;
       if (this.autoScroll) this.scrollToBottom();
     } catch (err) {
       console.error("LogsPanel: failed to update", err);
@@ -137,6 +138,7 @@ export class LogsPanel extends BasePanel {
 
   private normalizeEntry(entry: any): LogEntryDto {
     return {
+      id: entry.id ?? entry.Id,
       simulationTime: entry.simulationTime ?? entry.SimulationTime ?? entry.simulation_time ?? entry.simulationTimeUtc,
       level: entry.level ?? entry.Level ?? "Debug",
       context: entry.context ?? entry.Context ?? "",

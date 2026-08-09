@@ -1,10 +1,12 @@
-import { fetchOpenLineTracks } from "../network/api";
+import { GmSnapshotPoller } from "./gmSnapshotPoller";
+import { OpenLineTrackStatusDto } from "../network/dto";
 import { BasePanel } from "../ui/basePanel";
 
 export class OpenLinePanel extends BasePanel {
-  constructor() {
-    super(null as any, { width: 620, height: 400, top: 0, left: 630, updateIntervalMs: 2000, title: 'Offene Strecken', resizable: true });
+  private unsubscribe: (() => void) | null = null;
 
+  constructor(private readonly poller: GmSnapshotPoller) {
+    super(null as any, { width: 620, height: 400, top: 0, left: 630, title: 'Offene Strecken', resizable: true });
     this.show();
   }
 
@@ -31,12 +33,26 @@ export class OpenLinePanel extends BasePanel {
     return section;
   }
 
-  protected async Updates(): Promise<void> {
+  public override show(): void {
+    super.show();
+    if (!this.unsubscribe) {
+      this.unsubscribe = this.poller.subscribe((snapshot) => this.renderTracks(snapshot.openLineTracks));
+    }
+  }
+
+  public override hide(): void {
+    this.unsubscribe?.();
+    this.unsubscribe = null;
+    super.hide();
+  }
+
+  private renderTracks(tracks: OpenLineTrackStatusDto[]): void {
+    if (!this.isVisible) return;
+
     try {
       const listEl = this.container.querySelector("#openLineListBody") as HTMLElement | null;
       if (!listEl) return;
 
-      const tracks = await fetchOpenLineTracks();
       listEl.innerHTML = "";
 
       if (!tracks || tracks.length === 0) {
@@ -65,7 +81,6 @@ export class OpenLinePanel extends BasePanel {
         mode.className = "text-light";
         mode.style.width = "120px";
 
-        // Display mode as icons
         if (t.mode === "DualTrack") {
           mode.innerHTML = "<i class=\"bi bi-arrow-left-right\"></i>";
         } else if (t.mode === "SingleTrack") {

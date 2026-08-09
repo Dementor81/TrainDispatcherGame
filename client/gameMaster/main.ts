@@ -14,6 +14,7 @@ import OpenLinePanel from "./openLinePanel";
 import LogsPanel from "./logsPanel";
 import PlayersPanel from "./playersPanel";
 import GameCodePanel from "./gameCodePanel";
+import { GmSnapshotPoller } from "./gmSnapshotPoller";
 import { ensureValidSessionOrShowModal } from "../core/sessionGuard";
 import { renderAppVersionBadge } from "../ui/appVersionBadge";
 
@@ -32,11 +33,14 @@ window.addEventListener("load", async () => {
   const panel = new ControlPanel(app as any);
   panel.show();
   const scenario = new ScenarioSelectionDialog();
-  const trains = new TrainsPanel();
-  const openline = new OpenLinePanel();
+  const snapshotPoller = new GmSnapshotPoller();
+  snapshotPoller.start();
+  const trains = new TrainsPanel(snapshotPoller);
+  const openline = new OpenLinePanel(snapshotPoller);
   const logs = new LogsPanel();
-  const players = new PlayersPanel();
+  const players = new PlayersPanel(snapshotPoller);
   const gameCode = new GameCodePanel();
 
-  (window as any).gameMaster = { app, hud, panel, scenario, trains, openline, logs, players, gameCode };
+  (window as any).gameMaster = { app, hud, panel, scenario, trains, openline, logs, players, gameCode, snapshotPoller };
 });
+

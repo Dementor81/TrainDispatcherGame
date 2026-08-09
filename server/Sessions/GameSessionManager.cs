@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.SignalR;
 using TrainDispatcherGame.Server.Hubs;
+using TrainDispatcherGame.Server.Logging;
 using TrainDispatcherGame.Server.Managers;
 using TrainDispatcherGame.Server.Services;
 using TrainDispatcherGame.Server.Simulation;
@@ -300,6 +301,7 @@ namespace TrainDispatcherGame.Server.Sessions
                     {
                         removedSession.Simulation.Stop();
                         removedSession.PlayerManager.ClearAllPlayers();
+                        ServerLogger.Instance.ClearSession(sessionId);
                     }
                 }
 

@@ -6,10 +6,13 @@ namespace TrainDispatcherGame.Server.Logging
 {
     public class ServerLogger
     {
+        public const int MaxEntries = 5000;
+
         private static readonly ServerLogger _instance = new ServerLogger();
         private readonly List<LogEntry> _entries = new List<LogEntry>();
         private readonly object _lock = new object();
         private Func<DateTime?>? _simulationTimeProvider;
+        private long _nextId = 1;
 
         private ServerLogger()
         {
@@ -65,6 +68,16 @@ namespace TrainDispatcherGame.Server.Logging
             }
         }
 
+        public void ClearSession(string sessionId)
+        {
+            var prefix = SessionLogContext.SessionPrefix(sessionId);
+            lock (_lock)
+            {
+                _entries.RemoveAll(entry =>
+                    entry.Context.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
         public void LogDebug(string context, string message)
         {
             Log(LogLevel.Debug, context, message);
@@ -90,7 +103,12 @@ namespace TrainDispatcherGame.Server.Logging
             var simulationTime = _simulationTimeProvider?.Invoke();
             lock (_lock)
             {
-                _entries.Add(new LogEntry(DateTime.UtcNow, simulationTime, level, context, message));
+                _entries.Add(new LogEntry(_nextId++, DateTime.UtcNow, simulationTime, level, context, message));
+                var overflow = _entries.Count - MaxEntries;
+                if (overflow > 0)
+                {
+                    _entries.RemoveRange(0, overflow);
+                }
             }
         }
     }

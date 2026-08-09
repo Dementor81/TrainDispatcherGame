@@ -524,12 +524,26 @@ export abstract class BasePanel {
   }
 
   private startUpdates(): void {
-    void this.Updates();
+    void this.runUpdatesIfActive();
     if (this.updateIntervalMs !== null && this.updateIntervalMs > 0) {
       this.updateTimerId = window.setInterval(() => {
-        void this.Updates();
+        void this.runUpdatesIfActive();
       }, this.updateIntervalMs);
     }
+    document.addEventListener("visibilitychange", this.onDocumentVisibilityChange);
+  }
+
+  private readonly onDocumentVisibilityChange = (): void => {
+    if (!document.hidden && this.isVisible) {
+      void this.runUpdatesIfActive();
+    }
+  };
+
+  private async runUpdatesIfActive(): Promise<void> {
+    if (!this.isVisible || document.hidden) {
+      return;
+    }
+    await this.Updates();
   }
 
   protected async Updates(): Promise<void> {
@@ -541,6 +555,7 @@ export abstract class BasePanel {
       clearInterval(this.updateTimerId);
       this.updateTimerId = null;
     }
+    document.removeEventListener("visibilitychange", this.onDocumentVisibilityChange);
   }
 
   public destroy(): void {

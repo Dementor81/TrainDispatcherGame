@@ -124,6 +124,7 @@ export enum LogLevel {
 }
 
 export interface LogEntryDto {
+  id?: number;
   simulationTime?: string;
   level: LogLevel;
   context: string;
@@ -188,4 +189,10 @@ export interface OpenLineTrackStatusDto {
   distance: number;
   mode?: string;
   trainNumber: string | null;
+}
+
+export interface GameMasterSnapshotDto {
+  trains: any[];
+  openLineTracks: OpenLineTrackStatusDto[];
+  controlledStations: PlayerControlledStationDto[];
 }

@@ -106,6 +106,24 @@ namespace TrainDispatcherGame.Server.Endpoints
                 }
             });
 
+            app.MapGet("/api/network/{layoutId}/diagram.svg", (string layoutId, NetworkDiagramService diagramService) =>
+            {
+                try
+                {
+                    return Results.Text(
+                        diagramService.GetDiagram(layoutId),
+                        "image/svg+xml; charset=utf-8");
+                }
+                catch (FileNotFoundException ex)
+                {
+                    return Results.NotFound(new { message = ex.Message });
+                }
+                catch (Exception ex) when (ex is ArgumentException or InvalidDataException or System.Text.Json.JsonException)
+                {
+                    return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+                }
+            });
+
             return app;
         }
     }

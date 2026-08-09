@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Network Creator</title>
+  </head>
+  <body>
+    <nav class="navbar navbar-dark bg-dark">
+      <div class="container">
+        <span class="navbar-brand">Network Creator</span>
+        <a class="nav-link text-light" href="index.html">Main</a>
+      </div>
+    </nav>
+
+    <main class="container py-4">
+      <div id="message" class="alert d-none" role="alert"></div>
+
+      <section class="card mb-4">
+        <div class="card-body">
+          <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+            <button id="select-folder" class="btn btn-primary" type="button">Select layout folder</button>
+            <button id="add-virtual-station" class="btn btn-outline-primary" type="button" disabled>Add virtual station</button>
+            <span id="folder-name" class="text-secondary">No folder selected</span>
+          </div>
+          <p class="form-text">
+            Select a layout folder containing <code>stations/*.json</code>. Folder access requires a Chromium-based browser on HTTPS or localhost.
+          </p>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="network-name" class="form-label">Network name</label>
+              <input id="network-name" class="form-control" />
+            </div>
+            <div class="col-md-8">
+              <label for="network-description" class="form-label">Description (optional)</label>
+              <input id="network-description" class="form-control" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="diagram-section" class="card mb-4 d-none">
+        <div class="card-body">
+          <h2 class="h5">Network diagram</h2>
+          <p id="diagram-status" class="text-secondary small mb-3"></p>
+          <img id="diagram" class="network-diagram d-none" alt="Generated network diagram" />
+        </div>
+      </section>
+
+      <div id="stations"></div>
+
+      <section id="output-section" class="card d-none">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0">network.json</h2>
+            <div class="d-flex gap-2">
+              <button id="generate" class="btn btn-outline-primary" type="button">Generate</button>
+              <button id="save" class="btn btn-success" type="button" disabled>Save</button>
+            </div>
+          </div>
+          <textarea id="output" class="form-control font-monospace" rows="18" readonly></textarea>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

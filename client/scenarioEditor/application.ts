@@ -109,7 +109,8 @@ export default class SzenariosApplication {
     * Find all valid routes through the network using DFS.
     * Rules:
     * 1. Each station can only be visited once per route
-    * 2. Exit IDs must maintain parity (all odd or all even) to prevent direction changes
+    * 2. Within a station, arrival and departure exits must have opposite parity
+    *    (odd↔even). Same-parity transit (odd→odd or even→even) is invalid.
     */
    private findAllRoutes(network: NetworkDto): string[][] {
       const routes: string[][] = [];
@@ -130,54 +131,38 @@ export default class SzenariosApplication {
          });
       }
 
-      // Helper to check if exit ID is odd or even
-      const isOdd = (exitId: number): boolean => {
-         return exitId % 2 === 1;
-      };
+      const sameParity = (a: number, b: number): boolean => (a % 2) === (b % 2);
 
-      // DFS to explore routes
+      // DFS to explore routes. arrivalExitId is the exit used to enter currentStation
+      // (null at the route start, where any departure is allowed).
       const dfs = (
          currentStation: string,
          visited: Set<string>,
          path: string[],
-         expectedParity: boolean | null // null = not set yet, true = odd, false = even
+         arrivalExitId: number | null
       ) => {
-         // Add current station to path
          path.push(currentStation);
          visited.add(currentStation);
 
-         // Check if we can extend this route
-         let hasExtension = false;
          const neighbors = adjacency.get(currentStation) || [];
-         
          for (const neighbor of neighbors) {
-            // Skip if already visited
             if (visited.has(neighbor.to)) {
                continue;
             }
 
-            // Check parity rule: fromExitId must match expected parity
-            const exitIsOdd = isOdd(neighbor.fromExitId);
-            
-            // First connection sets the parity
-            if (expectedParity === null) {
-               dfs(neighbor.to, new Set(visited), [...path], exitIsOdd);
-               hasExtension = true;
-            } else if (exitIsOdd === expectedParity) {
-               // Parity matches, continue on this route
-               dfs(neighbor.to, new Set(visited), [...path], expectedParity);
-               hasExtension = true;
+            // Through-station rule: leave via opposite parity of the arrival exit
+            if (arrivalExitId !== null && sameParity(arrivalExitId, neighbor.fromExitId)) {
+               continue;
             }
-            // If parity doesn't match, skip this connection
+
+            dfs(neighbor.to, new Set(visited), [...path], neighbor.toExitId);
          }
 
-         // If this is a valid endpoint (at least 2 stations and no valid extensions), save the route
          if (path.length >= 2) {
             routes.push([...path]);
          }
       };
 
-      // Try starting from each station
       const allStations = new Set<string>();
       for (const conn of network.connections) {
          allStations.add(conn.from);
@@ -188,7 +173,6 @@ export default class SzenariosApplication {
          dfs(startStation, new Set(), [], null);
       }
 
-      // Filter out routes that are completely contained within other routes
       return this.filterOverlappingRoutes(routes);
    }
 

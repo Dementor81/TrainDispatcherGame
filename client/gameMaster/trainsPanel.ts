@@ -1,10 +1,11 @@
-import { getAllTrains } from "../network/api";
+import { GmSnapshotPoller } from "./gmSnapshotPoller";
 import { BasePanel } from "../ui/basePanel";
 
 export class TrainsPanel extends BasePanel {
-  constructor() {
-    super(null as any, { width: 620, height: 720, updateIntervalMs: 2000, left: 0, top: 60, title: 'Alle Züge',resizable: true });
+  private unsubscribe: (() => void) | null = null;
 
+  constructor(private readonly poller: GmSnapshotPoller) {
+    super(null as any, { width: 620, height: 720, left: 0, top: 60, title: 'Alle Züge', resizable: true });
     this.show();
   }
 
@@ -33,13 +34,26 @@ export class TrainsPanel extends BasePanel {
     return section;
   }
 
-  protected async Updates(): Promise<void> {
+  public override show(): void {
+    super.show();
+    if (!this.unsubscribe) {
+      this.unsubscribe = this.poller.subscribe((snapshot) => this.renderTrains(snapshot.trains));
+    }
+  }
+
+  public override hide(): void {
+    this.unsubscribe?.();
+    this.unsubscribe = null;
+    super.hide();
+  }
+
+  private renderTrains(trains: any[]): void {
+    if (!this.isVisible) return;
+
     try {
       const listEl = this.container.querySelector("#trainsListBody") as HTMLElement | null;
       if (!listEl) return;
 
-      const trains = await getAllTrains() as any[];
-      // Normalize minimal fields we need
       const normalized: Array<any> = trains.map((t: any) => ({
         number: t.number ?? t.Number ?? "-",
         completed: t.completed ?? t.Completed ?? false,

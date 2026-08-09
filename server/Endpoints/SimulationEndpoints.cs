@@ -201,27 +201,34 @@ namespace TrainDispatcherGame.Server.Endpoints
                     return sessionError;
                 }
 
-                var simulation = session!.Simulation;
-                var list = simulation.Trains.Select(t => new
+                return Results.Ok(BuildTrainList(session!.Simulation));
+            });
+
+            app.MapGet("/api/gamemaster/snapshot", (HttpRequest req, GameSessionManager sessionManager) =>
+            {
+                var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
+                if (sessionError != null)
                 {
-                    number = t.Number,
-                    category = t.Category,
-                    type = t.Type,
-                    completed = t.completed,
-                    damaged = t.damaged,
-                    currentLocation = t.CurrentLocation,
-                    headingForStation = t.TrainEvent is TrainSpawnEvent sp1 ? sp1.HeadingStation : null,
-                    delay = t.delay,
-                    nextEventTime = t.TrainEvent?.ScheduledTime,
-                    nextEventType = t.TrainEvent is TrainSpawnEvent ? "Spawn"
-                        : t.TrainEvent is SendApprovalEvent ? "Approval"
-                        : t.TrainEvent is TrainStartEvent ? "Start"
-                        : t.TrainEvent is RetryDispatchEvent ? "Retry"
-                        : t.TrainEvent is TrainWaitEvent ? "Wait"
-                        : null,
-                    spawnStation = (t.TrainEvent as TrainSpawnEvent)?.Connection.ToStation
-                }).ToList();
-                return Results.Ok(list);
+                    return sessionError;
+                }
+
+                var simulation = session!.Simulation;
+                var controlledStations = session.PlayerManager.GetAllPlayers()
+                    .Where(p => !string.IsNullOrWhiteSpace(p.StationId))
+                    .Select(p => new PlayerControlledStationDto
+                    {
+                        PlayerId = p.Id,
+                        PlayerName = p.Name,
+                        StationId = p.StationId
+                    })
+                    .ToList();
+
+                return Results.Ok(new
+                {
+                    trains = BuildTrainList(simulation),
+                    openLineTracks = simulation.GetOpenLineTrackStatuses(),
+                    controlledStations
+                });
             });
 
             app.MapGet("/api/trains/{trainNumber}/waypoints", (string trainNumber, HttpRequest req, GameSessionManager sessionManager) =>
@@ -330,6 +337,29 @@ namespace TrainDispatcherGame.Server.Endpoints
             });
 
             return app;
+        }
+
+        private static object BuildTrainList(Simulation.Simulation simulation)
+        {
+            return simulation.Trains.Select(t => new
+            {
+                number = t.Number,
+                category = t.Category,
+                type = t.Type,
+                completed = t.completed,
+                damaged = t.damaged,
+                currentLocation = t.CurrentLocation,
+                headingForStation = t.TrainEvent is TrainSpawnEvent sp1 ? sp1.HeadingStation : null,
+                delay = t.delay,
+                nextEventTime = t.TrainEvent?.ScheduledTime,
+                nextEventType = t.TrainEvent is TrainSpawnEvent ? "Spawn"
+                    : t.TrainEvent is SendApprovalEvent ? "Approval"
+                    : t.TrainEvent is TrainStartEvent ? "Start"
+                    : t.TrainEvent is RetryDispatchEvent ? "Retry"
+                    : t.TrainEvent is TrainWaitEvent ? "Wait"
+                    : null,
+                spawnStation = (t.TrainEvent as TrainSpawnEvent)?.Connection.ToStation
+            }).ToList();
         }
     }
 }

@@ -17,7 +17,7 @@ export class ClientSimulation {
    
    // Simulation time tracking
    private _currentSimulationTime: Date | null = null;
-   private _lastSimulationTimeUpdate: number = 0;
+   private _statusFetchPromise: Promise<void> | null = null;
    
    // Simulation state tracking
    private _simulationState: SimulationState = 'Stopped';
@@ -50,6 +50,12 @@ export class ClientSimulation {
       this._eventManager.on('simulationStatusChanged', (status: SimulationStatusDto) => {
          this.handleSimulationStatusChanged(status);
       });
+
+      this._eventManager.on('sessionContextRestored', () => {
+         this.refreshSimulationStatus().catch((error) => {
+            console.warn('ClientSimulation: Failed to refresh status after reconnect:', error);
+         });
+      });
       
       // Initialize with server state on startup
       this.initialize();
@@ -73,7 +79,6 @@ export class ClientSimulation {
    
    private handleSimulationStatusChanged(status: SimulationStatusDto): void {
       this._currentSimulationTime = new Date(status.currentTime);
-      this._lastSimulationTimeUpdate = Date.now();
       this._simulationSpeed = Math.max(0.1, Math.min(100, status.speed));
       this._simulationState = status.state;
       
@@ -186,26 +191,34 @@ export class ClientSimulation {
    }
 
    /**
-    * Get current simulation time from server (with caching)
+    * Get current simulation time.
+    * While running, extrapolates locally from the last SignalR/HTTP sync.
+    * HTTP is only used when no clock is available yet (join / reconnect).
     */
    public async getCurrentSimulationTime(): Promise<Date> {
-      const now = Date.now();
-
-      // Cache simulation time for 1 second to avoid too many API calls
-      if (!this._currentSimulationTime || now - this._lastSimulationTimeUpdate > SimulationConfig.simulationTimeUpdateIntervalSeconds * 1000) {
-         try {
-            const status = await getSimulationStatus();
-            this._eventManager.emit('simulationStatusChanged', status);
-         } catch (error) {
-            console.warn("Failed to get simulation time from server, using real time:", error);
-            this._currentSimulationTime = new Date();
-         }      
-      }else{
+      if (!this._currentSimulationTime) {
+         if (!this._statusFetchPromise) {
+            this._statusFetchPromise = this.refreshSimulationStatus().finally(() => {
+               this._statusFetchPromise = null;
+            });
+         }
+         await this._statusFetchPromise;
+      } else {
          const simulatedStepMs = SimulationConfig.simulationIntervalSeconds * 1000 * this._simulationSpeed;
          this._currentSimulationTime = new Date(this._currentSimulationTime.getTime() + simulatedStepMs);
       }
       this._currentSimulationTime ??= new Date();
       return this._currentSimulationTime;
+   }
+
+   private async refreshSimulationStatus(): Promise<void> {
+      try {
+         const status = await getSimulationStatus();
+         this._eventManager.emit('simulationStatusChanged', status);
+      } catch (error) {
+         console.warn("Failed to get simulation time from server, using real time:", error);
+         this._currentSimulationTime = new Date();
+      }
    }
 
    /**

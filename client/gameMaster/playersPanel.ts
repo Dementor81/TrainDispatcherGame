@@ -1,10 +1,12 @@
-import { fetchControlledStations } from "../network/api";
+import { GmSnapshotPoller } from "./gmSnapshotPoller";
+import { PlayerControlledStationDto } from "../network/dto";
 import { BasePanel } from "../ui/basePanel";
 
 export class PlayersPanel extends BasePanel {
-  constructor() {
-    super(null as any, { width: 620, height: 260, right: 0, top: 0, updateIntervalMs: 2000, title: 'Alle Spieler', resizable: true });
+  private unsubscribe: (() => void) | null = null;
 
+  constructor(private readonly poller: GmSnapshotPoller) {
+    super(null as any, { width: 620, height: 260, right: 0, top: 0, title: 'Alle Spieler', resizable: true });
     this.show();
   }
 
@@ -29,12 +31,26 @@ export class PlayersPanel extends BasePanel {
     return section;
   }
 
-  protected async Updates(): Promise<void> {
+  public override show(): void {
+    super.show();
+    if (!this.unsubscribe) {
+      this.unsubscribe = this.poller.subscribe((snapshot) => this.renderPlayers(snapshot.controlledStations));
+    }
+  }
+
+  public override hide(): void {
+    this.unsubscribe?.();
+    this.unsubscribe = null;
+    super.hide();
+  }
+
+  private renderPlayers(players: PlayerControlledStationDto[]): void {
+    if (!this.isVisible) return;
+
     try {
       const listEl = this.container.querySelector("#playersListBody") as HTMLElement | null;
       if (!listEl) return;
 
-      const players = await fetchControlledStations();
       listEl.innerHTML = "";
 
       if (!players || players.length === 0) {
@@ -47,7 +63,7 @@ export class PlayersPanel extends BasePanel {
 
       for (const p of players) {
         const row = document.createElement("div");
-        row.className = "d-flex flex-row gap-2 align-items-start py-1 border-bottom border-secondary";        
+        row.className = "d-flex flex-row gap-2 align-items-start py-1 border-bottom border-secondary";
 
         const name = document.createElement("div");
         name.className = "text-light";

@@ -26,15 +26,26 @@ namespace TrainDispatcherGame.Server.Endpoints
                     }
                 }
 
-                var prefix = SessionLogContext.SessionPrefix(session!.SessionId);
-                var allLogs = ServerLogger.Instance.GetLogs()
-                    .Where(entry => entry.Context.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-                var logs = contexts.Count == 0
-                    ? allLogs
-                    : allLogs.Where(entry => contexts.Any(c => entry.Context.Contains(c, StringComparison.OrdinalIgnoreCase))).ToList();
+                long afterId = 0;
+                if (req.Query.TryGetValue("afterId", out StringValues afterIdValues)
+                    && long.TryParse(afterIdValues.FirstOrDefault(), out var parsedAfterId)
+                    && parsedAfterId > 0)
+                {
+                    afterId = parsedAfterId;
+                }
 
-                return Results.Json(logs);
+                var prefix = SessionLogContext.SessionPrefix(session!.SessionId);
+                var logs = ServerLogger.Instance.GetLogs()
+                    .Where(entry => entry.Context.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                    .Where(entry => entry.Id > afterId);
+
+                if (contexts.Count > 0)
+                {
+                    logs = logs.Where(entry =>
+                        contexts.Any(c => entry.Context.Contains(c, StringComparison.OrdinalIgnoreCase)));
+                }
+
+                return Results.Json(logs.ToList());
             });
 
             return app;

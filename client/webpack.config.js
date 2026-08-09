@@ -12,6 +12,7 @@ module.exports = (env, argv) => {
       entry: {
          index: "./index.ts",
          main: "./main.ts",
+         networkEditor: "./networkEditor/main.ts",
          scenarioEditor: "./scenarioEditor/main.ts",
          gameMaster: "./gameMaster/main.ts",
       },
@@ -79,6 +80,13 @@ module.exports = (env, argv) => {
             inject: "head",
             scriptLoading: "blocking",
             chunks: ["scenarioEditor"],
+         }),
+         new HtmlWebpackPlugin({
+            template: "networkEditor/main.html",
+            filename: "networkEditor.html",
+            inject: "body",
+            scriptLoading: "blocking",
+            chunks: ["networkEditor"],
          }),
          new HtmlWebpackPlugin({
             template: "gameMaster/main.html",

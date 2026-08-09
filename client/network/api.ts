@@ -1,4 +1,4 @@
-import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto, OpenLineTrackStatusDto, TrainWayPointDto, TrainDetailsDto, LogEntryDto, PlayerControlledStationDto } from "./dto";
+import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto, OpenLineTrackStatusDto, TrainWayPointDto, TrainDetailsDto, LogEntryDto, PlayerControlledStationDto, GameMasterSnapshotDto } from "./dto";
 
 const API_BASE_URL = "/api";
 
@@ -271,7 +271,15 @@ export async function fetchOpenLineTracks(): Promise<OpenLineTrackStatusDto[]> {
   return response.json();
 }
 
-export async function fetchLogs(contexts?: string[]): Promise<LogEntryDto[]> {
+export async function fetchGameMasterSnapshot(): Promise<GameMasterSnapshotDto> {
+  const response = await fetch(withGameCode(`${API_BASE_URL}/gamemaster/snapshot`));
+  if (!response.ok) {
+    throw new Error(`Failed to fetch game master snapshot: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+export async function fetchLogs(contexts?: string[], afterId?: number): Promise<LogEntryDto[]> {
   const url = new URL(withGameCode(`${API_BASE_URL}/logs`));
   if (contexts && contexts.length > 0) {
     for (const context of contexts) {
@@ -279,6 +287,9 @@ export async function fetchLogs(contexts?: string[]): Promise<LogEntryDto[]> {
         url.searchParams.append('context', context);
       }
     }
+  }
+  if (afterId != null && afterId > 0) {
+    url.searchParams.set('afterId', String(afterId));
   }
   const response = await fetch(url.toString());
   if (!response.ok) {
