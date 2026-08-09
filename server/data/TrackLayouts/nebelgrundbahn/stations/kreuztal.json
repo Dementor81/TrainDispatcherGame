@@ -1,0 +1,1048 @@
+{
+   "id": "Kreuztal",
+   "tracks": [
+      {
+         "id": 294,
+         "start": {
+            "x": -950.0,
+            "y": -100.0
+         },
+         "end": {
+            "x": -850.0,
+            "y": 0.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Exit",
+               "id": 2
+            },
+            {
+               "type": "Track",
+               "id": 354
+            }
+         ]
+      },
+      {
+         "id": 296,
+         "start": {
+            "x": -900.0,
+            "y": -150.0
+         },
+         "end": {
+            "x": -800.0,
+            "y": -50.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Exit",
+               "id": 0
+            },
+            {
+               "type": "Track",
+               "id": 358
+            }
+         ]
+      },
+      {
+         "id": 318,
+         "start": {
+            "x": 500.0,
+            "y": 0.0
+         },
+         "end": {
+            "x": 600.0,
+            "y": 100.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 9
+            },
+            {
+               "type": "Switch",
+               "id": 6
+            }
+         ]
+      },
+      {
+         "id": 328,
+         "start": {
+            "x": 450.0,
+            "y": -50.0
+         },
+         "end": {
+            "x": 500.0,
+            "y": 0.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Track",
+               "id": 350
+            },
+            {
+               "type": "Switch",
+               "id": 9
+            }
+         ]
+      },
+      {
+         "id": 343,
+         "start": {
+            "x": -250.0,
+            "y": -100.0
+         },
+         "end": {
+            "x": -200.0,
+            "y": -150.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 19
+            },
+            {
+               "type": "Track",
+               "id": 345
+            }
+         ]
+      },
+      {
+         "id": 345,
+         "start": {
+            "x": -200.0,
+            "y": -150.0
+         },
+         "end": {
+            "x": 500.0,
+            "y": -150.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 60,
+               "direction": -1
+            },
+            {
+               "type": "main",
+               "position": 481,
+               "direction": 1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Track",
+               "id": 343
+            },
+            {
+               "type": "Track",
+               "id": 388
+            }
+         ]
+      },
+      {
+         "id": 347,
+         "start": {
+            "x": -250.0,
+            "y": -100.0
+         },
+         "end": {
+            "x": 550.0,
+            "y": -100.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 86,
+               "direction": -1
+            },
+            {
+               "type": "main",
+               "position": 554,
+               "direction": 1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 19
+            },
+            {
+               "type": "Switch",
+               "id": 33
+            }
+         ]
+      },
+      {
+         "id": 348,
+         "start": {
+            "x": -300.0,
+            "y": -50.0
+         },
+         "end": {
+            "x": -250.0,
+            "y": -100.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 18
+            },
+            {
+               "type": "Switch",
+               "id": 19
+            }
+         ]
+      },
+      {
+         "id": 350,
+         "start": {
+            "x": -300.0,
+            "y": -50.0
+         },
+         "end": {
+            "x": 450.0,
+            "y": -50.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 133,
+               "direction": -1
+            },
+            {
+               "type": "main",
+               "position": 656,
+               "direction": 1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 18
+            },
+            {
+               "type": "Track",
+               "id": 328
+            }
+         ]
+      },
+      {
+         "id": 354,
+         "start": {
+            "x": -850.0,
+            "y": 0.0
+         },
+         "end": {
+            "x": -400.0,
+            "y": 0.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 198,
+               "direction": 1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Track",
+               "id": 294
+            },
+            {
+               "type": "Switch",
+               "id": 22
+            }
+         ]
+      },
+      {
+         "id": 355,
+         "start": {
+            "x": -400.0,
+            "y": 0.0
+         },
+         "end": {
+            "x": 500.0,
+            "y": 0.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 104,
+               "direction": -1
+            },
+            {
+               "type": "main",
+               "position": 763,
+               "direction": 1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 22
+            },
+            {
+               "type": "Switch",
+               "id": 9
+            }
+         ]
+      },
+      {
+         "id": 356,
+         "start": {
+            "x": -450.0,
+            "y": 50.0
+         },
+         "end": {
+            "x": -400.0,
+            "y": 0.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Track",
+               "id": 368
+            },
+            {
+               "type": "Switch",
+               "id": 22
+            }
+         ]
+      },
+      {
+         "id": 357,
+         "start": {
+            "x": -400.0,
+            "y": 0.0
+         },
+         "end": {
+            "x": -350.0,
+            "y": -50.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 22
+            },
+            {
+               "type": "Switch",
+               "id": 23
+            }
+         ]
+      },
+      {
+         "id": 358,
+         "start": {
+            "x": -800.0,
+            "y": -50.0
+         },
+         "end": {
+            "x": -350.0,
+            "y": -50.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 154,
+               "direction": -1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Track",
+               "id": 296
+            },
+            {
+               "type": "Switch",
+               "id": 23
+            }
+         ]
+      },
+      {
+         "id": 359,
+         "start": {
+            "x": -350.0,
+            "y": -50.0
+         },
+         "end": {
+            "x": -300.0,
+            "y": -50.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 23
+            },
+            {
+               "type": "Switch",
+               "id": 18
+            }
+         ]
+      },
+      {
+         "id": 360,
+         "start": {
+            "x": -1000.0,
+            "y": 150.0
+         },
+         "end": {
+            "x": -950.0,
+            "y": 100.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 25
+            },
+            {
+               "type": "Switch",
+               "id": 24
+            }
+         ]
+      },
+      {
+         "id": 367,
+         "start": {
+            "x": -900.0,
+            "y": 100.0
+         },
+         "end": {
+            "x": -850.0,
+            "y": 50.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 27
+            },
+            {
+               "type": "Track",
+               "id": 368
+            }
+         ]
+      },
+      {
+         "id": 368,
+         "start": {
+            "x": -850.0,
+            "y": 50.0
+         },
+         "end": {
+            "x": -450.0,
+            "y": 50.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 21,
+               "direction": -1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Track",
+               "id": 367
+            },
+            {
+               "type": "Track",
+               "id": 356
+            }
+         ]
+      },
+      {
+         "id": 369,
+         "start": {
+            "x": -950.0,
+            "y": 100.0
+         },
+         "end": {
+            "x": -900.0,
+            "y": 100.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 24
+            },
+            {
+               "type": "Switch",
+               "id": 27
+            }
+         ]
+      },
+      {
+         "id": 370,
+         "start": {
+            "x": -900.0,
+            "y": 100.0
+         },
+         "end": {
+            "x": 600.0,
+            "y": 100.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 109,
+               "direction": -1
+            },
+            {
+               "type": "main",
+               "position": 694,
+               "direction": -1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 27
+            },
+            {
+               "type": "Switch",
+               "id": 6
+            }
+         ]
+      },
+      {
+         "id": 374,
+         "start": {
+            "x": -1600.0,
+            "y": 150.0
+         },
+         "end": {
+            "x": -1000.0,
+            "y": 150.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 394,
+               "direction": 1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Exit",
+               "id": 6
+            },
+            {
+               "type": "Switch",
+               "id": 25
+            }
+         ]
+      },
+      {
+         "id": 375,
+         "start": {
+            "x": -1600.0,
+            "y": 100.0
+         },
+         "end": {
+            "x": -950.0,
+            "y": 100.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 398,
+               "direction": -1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Exit",
+               "id": 4
+            },
+            {
+               "type": "Switch",
+               "id": 24
+            }
+         ]
+      },
+      {
+         "id": 376,
+         "start": {
+            "x": 800.0,
+            "y": 100.0
+         },
+         "end": {
+            "x": 850.0,
+            "y": 150.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 29
+            },
+            {
+               "type": "Switch",
+               "id": 28
+            }
+         ]
+      },
+      {
+         "id": 378,
+         "start": {
+            "x": 800.0,
+            "y": 100.0
+         },
+         "end": {
+            "x": 1600.0,
+            "y": 100.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 248,
+               "direction": -1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 29
+            },
+            {
+               "type": "Exit",
+               "id": 1
+            }
+         ]
+      },
+      {
+         "id": 380,
+         "start": {
+            "x": 850.0,
+            "y": 150.0
+         },
+         "end": {
+            "x": 1600.0,
+            "y": 150.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 249,
+               "direction": 1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 28
+            },
+            {
+               "type": "Exit",
+               "id": 3
+            }
+         ]
+      },
+      {
+         "id": 386,
+         "start": {
+            "x": 750.0,
+            "y": 100.0
+         },
+         "end": {
+            "x": 800.0,
+            "y": 100.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 31
+            },
+            {
+               "type": "Switch",
+               "id": 29
+            }
+         ]
+      },
+      {
+         "id": 388,
+         "start": {
+            "x": 500.0,
+            "y": -150.0
+         },
+         "end": {
+            "x": 550.0,
+            "y": -100.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Track",
+               "id": 345
+            },
+            {
+               "type": "Switch",
+               "id": 33
+            }
+         ]
+      },
+      {
+         "id": 391,
+         "start": {
+            "x": 550.0,
+            "y": -100.0
+         },
+         "end": {
+            "x": 750.0,
+            "y": 100.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 33
+            },
+            {
+               "type": "Switch",
+               "id": 31
+            }
+         ]
+      },
+      {
+         "id": 393,
+         "start": {
+            "x": 650.0,
+            "y": 100.0
+         },
+         "end": {
+            "x": 700.0,
+            "y": 150.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 39
+            },
+            {
+               "type": "Switch",
+               "id": 38
+            }
+         ]
+      },
+      {
+         "id": 394,
+         "start": {
+            "x": 600.0,
+            "y": 100.0
+         },
+         "end": {
+            "x": 650.0,
+            "y": 100.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 6
+            },
+            {
+               "type": "Switch",
+               "id": 39
+            }
+         ]
+      },
+      {
+         "id": 395,
+         "start": {
+            "x": 650.0,
+            "y": 100.0
+         },
+         "end": {
+            "x": 750.0,
+            "y": 100.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 39
+            },
+            {
+               "type": "Switch",
+               "id": 31
+            }
+         ]
+      },
+      {
+         "id": 396,
+         "start": {
+            "x": -1000.0,
+            "y": 150.0
+         },
+         "end": {
+            "x": 700.0,
+            "y": 150.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 1573,
+               "direction": 1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 25
+            },
+            {
+               "type": "Switch",
+               "id": 38
+            }
+         ]
+      },
+      {
+         "id": 397,
+         "start": {
+            "x": 700.0,
+            "y": 150.0
+         },
+         "end": {
+            "x": 850.0,
+            "y": 150.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 38
+            },
+            {
+               "type": "Switch",
+               "id": 28
+            }
+         ]
+      }
+   ],
+   "switches": [
+      {
+         "id": 6,
+         "location": {
+            "x": 600.0,
+            "y": 100.0
+         },
+         "tracks": [
+            394,
+            370,
+            318,
+            null
+         ]
+      },
+      {
+         "id": 9,
+         "location": {
+            "x": 500.0,
+            "y": 0.0
+         },
+         "tracks": [
+            318,
+            328,
+            355,
+            null
+         ]
+      },
+      {
+         "id": 18,
+         "location": {
+            "x": -300.0,
+            "y": -50.0
+         },
+         "tracks": [
+            359,
+            350,
+            348,
+            null
+         ]
+      },
+      {
+         "id": 19,
+         "location": {
+            "x": -250.0,
+            "y": -100.0
+         },
+         "tracks": [
+            348,
+            343,
+            347,
+            null
+         ]
+      },
+      {
+         "id": 22,
+         "location": {
+            "x": -400.0,
+            "y": 0.0
+         },
+         "tracks": [
+            355,
+            354,
+            356,
+            357
+         ]
+      },
+      {
+         "id": 23,
+         "location": {
+            "x": -350.0,
+            "y": -50.0
+         },
+         "tracks": [
+            359,
+            358,
+            357,
+            null
+         ]
+      },
+      {
+         "id": 24,
+         "location": {
+            "x": -950.0,
+            "y": 100.0
+         },
+         "tracks": [
+            369,
+            375,
+            360,
+            null
+         ]
+      },
+      {
+         "id": 25,
+         "location": {
+            "x": -1000.0,
+            "y": 150.0
+         },
+         "tracks": [
+            374,
+            396,
+            360,
+            null
+         ]
+      },
+      {
+         "id": 27,
+         "location": {
+            "x": -900.0,
+            "y": 100.0
+         },
+         "tracks": [
+            369,
+            370,
+            367,
+            null
+         ]
+      },
+      {
+         "id": 28,
+         "location": {
+            "x": 850.0,
+            "y": 150.0
+         },
+         "tracks": [
+            380,
+            397,
+            376,
+            null
+         ]
+      },
+      {
+         "id": 29,
+         "location": {
+            "x": 800.0,
+            "y": 100.0
+         },
+         "tracks": [
+            386,
+            378,
+            376,
+            null
+         ]
+      },
+      {
+         "id": 31,
+         "location": {
+            "x": 750.0,
+            "y": 100.0
+         },
+         "tracks": [
+            386,
+            395,
+            391,
+            null
+         ]
+      },
+      {
+         "id": 33,
+         "location": {
+            "x": 550.0,
+            "y": -100.0
+         },
+         "tracks": [
+            391,
+            388,
+            347,
+            null
+         ]
+      },
+      {
+         "id": 38,
+         "location": {
+            "x": 700.0,
+            "y": 150.0
+         },
+         "tracks": [
+            397,
+            396,
+            393,
+            null
+         ]
+      },
+      {
+         "id": 39,
+         "location": {
+            "x": 650.0,
+            "y": 100.0
+         },
+         "tracks": [
+            394,
+            395,
+            393,
+            null
+         ]
+      }
+   ],
+   "platforms": [
+      {
+         "track": 396,
+         "from_km": 786,
+         "to_km": 1346
+      },
+      {
+         "track": 370,
+         "from_km": 1242,
+         "to_km": 701
+      },
+      {
+         "track": 355,
+         "from_km": 745,
+         "to_km": 204
+      }
+   ]
+}

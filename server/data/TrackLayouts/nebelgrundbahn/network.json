@@ -1,0 +1,245 @@
+{
+   "name": "nebelgrundbahn",
+   "description": "",
+   "stations": [
+      {
+         "id": "aurich",
+         "name": "Aurich",
+         "description": ""
+      },
+      {
+         "id": "bernau",
+         "name": "Bernau",
+         "description": ""
+      },
+      {
+         "id": "camburg",
+         "name": "Camburg",
+         "description": ""
+      },
+      {
+         "id": "dospen",
+         "name": "Dospen",
+         "description": ""
+      },
+      {
+         "id": "finnhof",
+         "name": "Finnhof",
+         "description": ""
+      },
+      {
+         "id": "hohenbrunn",
+         "name": "Hohenbrunn",
+         "description": ""
+      },
+      {
+         "id": "horb",
+         "name": "Horb",
+         "description": ""
+      },
+      {
+         "id": "kreuztal",
+         "name": "Kreuztal",
+         "description": ""
+      },
+      {
+         "id": "landing",
+         "name": "Landing",
+         "description": ""
+      },
+      {
+         "id": "langenfelde",
+         "name": "Langenfelde",
+         "description": ""
+      },
+      {
+         "id": "wingst",
+         "name": "Wingst",
+         "description": "Nördlichster Bahnhof der Strecke, der Beide Richtungen über nur einen Außenbahnsteig abwickeln muss."
+      }
+   ],
+   "connections": [
+      {
+         "from": "aurich",
+         "fromId": 0,
+         "to": "wingst",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "aurich",
+         "fromId": 3,
+         "to": "kreuztal",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "aurich",
+         "fromId": 5,
+         "to": "hohenbrunn",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "bernau",
+         "fromId": 1,
+         "to": "camburg",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "camburg",
+         "fromId": 0,
+         "to": "kreuztal",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "camburg",
+         "fromId": 3,
+         "to": "horb",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "dospen",
+         "fromId": 3,
+         "to": "hohenbrunn",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "dospen",
+         "fromId": 0,
+         "to": "landing",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "dospen",
+         "fromId": 5,
+         "to": "langenfelde",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "finnhof",
+         "fromId": 1,
+         "to": "bernau",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "finnhof",
+         "fromId": 3,
+         "to": "unterberg",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "hohenbrunn",
+         "fromId": 5,
+         "to": "kreuztal",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "hohenbrunn",
+         "fromId": 0,
+         "to": "dospen",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "horb",
+         "fromId": 0,
+         "to": "camburg",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "horb",
+         "fromId": 3,
+         "to": "ostermünde",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "kreuztal",
+         "fromId": 2,
+         "to": "aurich",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "kreuztal",
+         "fromId": 3,
+         "to": "camburg",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "kreuztal",
+         "fromId": 4,
+         "to": "hohenbrunn",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "landing",
+         "fromId": 3,
+         "to": "dospen",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "landing",
+         "fromId": 0,
+         "to": "westerhausen",
+         "toId": 1,
+         "distance": 4000
+      },
+      {
+         "from": "langenfelde",
+         "fromId": 1,
+         "to": "finnhof",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "nordendorf",
+         "fromId": 3,
+         "to": "wingst",
+         "toId": 2,
+         "distance": 4000
+      },
+      {
+         "from": "ostermünde",
+         "fromId": 0,
+         "to": "horb",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "westerhausen",
+         "fromId": 3,
+         "to": "landing",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "wingst",
+         "fromId": 3,
+         "to": "aurich",
+         "toId": 0,
+         "distance": 4000
+      },
+      {
+         "from": "wingst",
+         "fromId": 0,
+         "to": "nordendorf",
+         "toId": 1,
+         "distance": 4000
+      }
+   ]
+}

@@ -1,0 +1,232 @@
+{
+   "id": "Langenfelde",
+   "tracks": [
+      {
+         "id": 378,
+         "start": {
+            "x": -250.0,
+            "y": -25.0
+         },
+         "end": {
+            "x": 200.0,
+            "y": -25.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 30,
+               "direction": -1
+            },
+            {
+               "type": "main",
+               "position": 378,
+               "direction": 1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Track",
+               "id": 379
+            },
+            {
+               "type": "Switch",
+               "id": 3
+            }
+         ]
+      },
+      {
+         "id": 379,
+         "start": {
+            "x": -300.0,
+            "y": 25.0
+         },
+         "end": {
+            "x": -250.0,
+            "y": -25.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 0
+            },
+            {
+               "type": "Track",
+               "id": 378
+            }
+         ]
+      },
+      {
+         "id": 385,
+         "start": {
+            "x": 200.0,
+            "y": -25.0
+         },
+         "end": {
+            "x": 250.0,
+            "y": 25.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 3
+            },
+            {
+               "type": "Switch",
+               "id": 2
+            }
+         ]
+      },
+      {
+         "id": 386,
+         "start": {
+            "x": -300.0,
+            "y": 25.0
+         },
+         "end": {
+            "x": 250.0,
+            "y": 25.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 470,
+               "direction": 1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 0
+            },
+            {
+               "type": "Switch",
+               "id": 2
+            }
+         ]
+      },
+      {
+         "id": 390,
+         "start": {
+            "x": 250.0,
+            "y": 25.0
+         },
+         "end": {
+            "x": 750.0,
+            "y": 25.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 197,
+               "direction": -1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 2
+            },
+            {
+               "type": "Exit",
+               "id": 1
+            }
+         ]
+      },
+      {
+         "id": 391,
+         "start": {
+            "x": 200.0,
+            "y": -25.0
+         },
+         "end": {
+            "x": 550.0,
+            "y": -25.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Switch",
+               "id": 3
+            },
+            null
+         ]
+      },
+      {
+         "id": 393,
+         "start": {
+            "x": -750.0,
+            "y": 25.0
+         },
+         "end": {
+            "x": -300.0,
+            "y": 25.0
+         },
+         "signals": [],
+         "switches": [
+            {
+               "type": "Exit",
+               "id": 0
+            },
+            {
+               "type": "Switch",
+               "id": 0
+            }
+         ]
+      }
+   ],
+   "switches": [
+      {
+         "id": 0,
+         "location": {
+            "x": -300.0,
+            "y": 25.0
+         },
+         "tracks": [
+            393,
+            386,
+            379,
+            null
+         ]
+      },
+      {
+         "id": 2,
+         "location": {
+            "x": 250.0,
+            "y": 25.0
+         },
+         "tracks": [
+            390,
+            386,
+            385,
+            null
+         ]
+      },
+      {
+         "id": 3,
+         "location": {
+            "x": 200.0,
+            "y": -25.0
+         },
+         "tracks": [
+            378,
+            391,
+            385,
+            null
+         ]
+      }
+   ],
+   "platforms": [
+      {
+         "track": 378,
+         "from_km": 433,
+         "to_km": 10
+      },
+      {
+         "track": 386,
+         "from_km": 65,
+         "to_km": 486
+      }
+   ]
+}
