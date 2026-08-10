@@ -924,7 +924,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RE7101",
+      "number": "7101",
       "type": "Passenger",
       "category": "RE",
       "speedMax": 140,
@@ -975,7 +975,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RE7103",
+      "number": "7103",
       "type": "Passenger",
       "category": "RE",
       "speedMax": 140,
@@ -1026,7 +1026,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RE7105",
+      "number": "7105",
       "type": "Passenger",
       "category": "RE",
       "speedMax": 140,
@@ -1077,7 +1077,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RE7107",
+      "number": "7107",
       "type": "Passenger",
       "category": "RE",
       "speedMax": 140,
@@ -1128,7 +1128,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RE7102",
+      "number": "7102",
       "type": "Passenger",
       "category": "RE",
       "speedMax": 140,
@@ -1179,7 +1179,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RE7104",
+      "number": "7104",
       "type": "Passenger",
       "category": "RE",
       "speedMax": 140,
@@ -1230,7 +1230,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RE7106",
+      "number": "7106",
       "type": "Passenger",
       "category": "RE",
       "speedMax": 140,
@@ -1281,7 +1281,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RE7108",
+      "number": "7108",
       "type": "Passenger",
       "category": "RE",
       "speedMax": 140,
@@ -1332,7 +1332,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RE7301",
+      "number": "7301",
       "type": "Passenger",
       "category": "RE",
       "speedMax": 140,
@@ -1378,7 +1378,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RE7303",
+      "number": "7303",
       "type": "Passenger",
       "category": "RE",
       "speedMax": 140,
@@ -1424,7 +1424,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RE7305",
+      "number": "7305",
       "type": "Passenger",
       "category": "RE",
       "speedMax": 140,
@@ -1470,7 +1470,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RE7307",
+      "number": "7307",
       "type": "Passenger",
       "category": "RE",
       "speedMax": 140,
@@ -1516,7 +1516,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RE7302",
+      "number": "7302",
       "type": "Passenger",
       "category": "RE",
       "speedMax": 140,
@@ -1562,7 +1562,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RE7304",
+      "number": "7304",
       "type": "Passenger",
       "category": "RE",
       "speedMax": 140,
@@ -1608,7 +1608,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RE7306",
+      "number": "7306",
       "type": "Passenger",
       "category": "RE",
       "speedMax": 140,
@@ -1654,7 +1654,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RE7308",
+      "number": "7308",
       "type": "Passenger",
       "category": "RE",
       "speedMax": 140,
@@ -1700,7 +1700,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RB5501",
+      "number": "5501",
       "type": "Passenger",
       "category": "RB",
       "speedMax": 120,
@@ -1746,7 +1746,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RB5503",
+      "number": "5503",
       "type": "Passenger",
       "category": "RB",
       "speedMax": 120,
@@ -1792,7 +1792,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RB5502",
+      "number": "5502",
       "type": "Passenger",
       "category": "RB",
       "speedMax": 120,
@@ -1838,7 +1838,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RB5504",
+      "number": "5504",
       "type": "Passenger",
       "category": "RB",
       "speedMax": 120,
@@ -1884,7 +1884,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "ICE501",
+      "number": "501",
       "type": "MultipleUnit",
       "category": "ICE",
       "speedMax": 160,
@@ -1930,7 +1930,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "ICE503",
+      "number": "503",
       "type": "MultipleUnit",
       "category": "ICE",
       "speedMax": 160,
@@ -1976,7 +1976,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "ICE502",
+      "number": "502",
       "type": "MultipleUnit",
       "category": "ICE",
       "speedMax": 160,
@@ -2027,7 +2027,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "ICE504",
+      "number": "504",
       "type": "MultipleUnit",
       "category": "ICE",
       "speedMax": 160,
@@ -2078,7 +2078,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "GZ4001",
+      "number": "4001",
       "type": "Freight",
       "category": "GZ",
       "speedMax": 100,
@@ -2129,7 +2129,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "GZ4003",
+      "number": "4003",
       "type": "Freight",
       "category": "GZ",
       "speedMax": 100,
@@ -2180,7 +2180,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "GZ4002",
+      "number": "4002",
       "type": "Freight",
       "category": "GZ",
       "speedMax": 100,
@@ -2226,7 +2226,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "GZ4004",
+      "number": "4004",
       "type": "Freight",
       "category": "GZ",
       "speedMax": 100,
@@ -2272,7 +2272,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "RB5601",
+      "number": "5601",
       "type": "Passenger",
       "category": "RB",
       "speedMax": 120,
@@ -2297,28 +2297,28 @@
         {
           "station": "langenfelde",
           "arrival": "00:13:00",
-          "departure": "00:14:00"
+          "departure": "00:14:40"
         },
         {
           "station": "finnhof",
-          "arrival": "00:16:00",
-          "departure": "00:17:00"
+          "arrival": "00:16:40",
+          "departure": "00:17:40"
         },
         {
           "station": "bernau",
-          "arrival": "00:19:00",
-          "departure": "00:20:00"
+          "arrival": "00:19:40",
+          "departure": "00:20:40"
         },
         {
           "station": "camberg",
-          "arrival": "00:22:00",
+          "arrival": "00:22:40",
           "departure": ""
         }
       ],
-      "followingTrainNumber": "RB5602"
+      "followingTrainNumber": "5602"
     },
     {
-      "number": "RB5602",
+      "number": "5602",
       "type": "Passenger",
       "category": "RB",
       "speedMax": 120,
@@ -2356,10 +2356,10 @@
           "departure": ""
         }
       ],
-      "followingTrainNumber": "RB5603"
+      "followingTrainNumber": "5603"
     },
     {
-      "number": "RB5603",
+      "number": "5603",
       "type": "Passenger",
       "category": "RB",
       "speedMax": 120,
@@ -2397,10 +2397,10 @@
           "departure": ""
         }
       ],
-      "followingTrainNumber": "RB5604"
+      "followingTrainNumber": "5604"
     },
     {
-      "number": "RB5604",
+      "number": "5604",
       "type": "Passenger",
       "category": "RB",
       "speedMax": 120,
@@ -2438,10 +2438,10 @@
           "departure": ""
         }
       ],
-      "followingTrainNumber": null
+      "followingTrainNumber": "5605"
     },
     {
-      "number": "RB5611",
+      "number": "5611",
       "type": "Passenger",
       "category": "RB",
       "speedMax": 120,
@@ -2466,33 +2466,33 @@
         {
           "station": "bernau",
           "arrival": "00:18:00",
-          "departure": "00:19:00"
+          "departure": "00:20:44"
         },
         {
           "station": "finnhof",
-          "arrival": "00:21:00",
-          "departure": "00:22:00"
+          "arrival": "00:22:44",
+          "departure": "00:23:44"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:24:00",
-          "departure": "00:25:00"
+          "arrival": "00:25:44",
+          "departure": "00:26:44"
         },
         {
           "station": "dospen",
-          "arrival": "00:27:00",
-          "departure": "00:28:00"
+          "arrival": "00:28:44",
+          "departure": "00:31:05"
         },
         {
           "station": "landing",
-          "arrival": "00:30:00",
+          "arrival": "00:33:05",
           "departure": ""
         }
       ],
-      "followingTrainNumber": "RB5612"
+      "followingTrainNumber": "5612"
     },
     {
-      "number": "RB5612",
+      "number": "5612",
       "type": "Passenger",
       "category": "RB",
       "speedMax": 120,
@@ -2507,33 +2507,33 @@
         {
           "station": "dospen",
           "arrival": "00:39:00",
-          "departure": "00:40:00"
+          "departure": "00:42:13"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:42:00",
-          "departure": "00:43:00"
+          "arrival": "00:44:13",
+          "departure": "00:45:13"
         },
         {
           "station": "finnhof",
-          "arrival": "00:45:00",
-          "departure": "00:46:00"
+          "arrival": "00:47:13",
+          "departure": "00:48:13"
         },
         {
           "station": "bernau",
-          "arrival": "00:48:00",
-          "departure": "00:49:00"
+          "arrival": "00:50:13",
+          "departure": "00:51:13"
         },
         {
           "station": "camberg",
-          "arrival": "00:51:00",
+          "arrival": "00:53:13",
           "departure": ""
         }
       ],
-      "followingTrainNumber": "RB5613"
+      "followingTrainNumber": "5613"
     },
     {
-      "number": "RB5613",
+      "number": "5613",
       "type": "Passenger",
       "category": "RB",
       "speedMax": 120,
@@ -2571,10 +2571,10 @@
           "departure": ""
         }
       ],
-      "followingTrainNumber": "RB5614"
+      "followingTrainNumber": "5614"
     },
     {
-      "number": "RB5614",
+      "number": "5614",
       "type": "Passenger",
       "category": "RB",
       "speedMax": 120,
@@ -2612,10 +2612,10 @@
           "departure": ""
         }
       ],
-      "followingTrainNumber": null
+      "followingTrainNumber": "5615"
     },
     {
-      "number": "GZ4101",
+      "number": "4101",
       "type": "Freight",
       "category": "GZ",
       "speedMax": 100,
@@ -2625,38 +2625,38 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:31:00"
+          "departure": "00:30:06"
         },
         {
           "station": "landing",
-          "arrival": "00:33:24",
-          "departure": "00:33:24"
+          "arrival": "00:32:30",
+          "departure": "00:32:30"
         },
         {
           "station": "dospen",
-          "arrival": "00:35:48",
-          "departure": "00:35:48"
+          "arrival": "00:34:54",
+          "departure": "00:34:54"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:38:12",
-          "departure": "00:38:12"
+          "arrival": "00:37:18",
+          "departure": "00:40:25"
         },
         {
           "station": "finnhof",
-          "arrival": "00:40:36",
-          "departure": "00:40:36"
+          "arrival": "00:42:49",
+          "departure": "00:42:49"
         },
         {
           "station": "unterberg",
-          "arrival": "00:43:00",
+          "arrival": "00:45:13",
           "departure": ""
         }
       ],
-      "followingTrainNumber": "GZ4102"
+      "followingTrainNumber": "4102"
     },
     {
-      "number": "GZ4102",
+      "number": "4102",
       "type": "Freight",
       "category": "GZ",
       "speedMax": 100,
@@ -2666,38 +2666,38 @@
         {
           "station": "unterberg",
           "arrival": "",
-          "departure": "00:43:30"
+          "departure": "00:46:13"
         },
         {
           "station": "finnhof",
-          "arrival": "00:45:54",
-          "departure": "00:45:54"
+          "arrival": "00:48:37",
+          "departure": "00:50:18"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:48:18",
-          "departure": "00:48:18"
+          "arrival": "00:52:42",
+          "departure": "00:59:36"
         },
         {
           "station": "dospen",
-          "arrival": "00:50:42",
-          "departure": "00:50:42"
+          "arrival": "01:02:00",
+          "departure": "01:08:40"
         },
         {
           "station": "landing",
-          "arrival": "00:53:06",
-          "departure": "00:53:06"
+          "arrival": "01:11:04",
+          "departure": "01:11:04"
         },
         {
           "station": "westerhausen",
-          "arrival": "00:55:30",
+          "arrival": "01:13:28",
           "departure": ""
         }
       ],
       "followingTrainNumber": null
     },
     {
-      "number": "GZ4103",
+      "number": "4103",
       "type": "Freight",
       "category": "GZ",
       "speedMax": 100,
@@ -2735,10 +2735,10 @@
           "departure": ""
         }
       ],
-      "followingTrainNumber": "GZ4104"
+      "followingTrainNumber": "4104"
     },
     {
-      "number": "GZ4104",
+      "number": "4104",
       "type": "Freight",
       "category": "GZ",
       "speedMax": 100,
@@ -2779,7 +2779,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "GZ4201",
+      "number": "4201",
       "type": "Freight",
       "category": "GZ",
       "speedMax": 100,
@@ -2830,7 +2830,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "GZ4202",
+      "number": "4202",
       "type": "Freight",
       "category": "GZ",
       "speedMax": 100,
@@ -2881,7 +2881,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "GZ4203",
+      "number": "4203",
       "type": "Freight",
       "category": "GZ",
       "speedMax": 100,
@@ -2927,7 +2927,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "GZ4204",
+      "number": "4204",
       "type": "Freight",
       "category": "GZ",
       "speedMax": 100,
@@ -2973,7 +2973,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "GZ4205",
+      "number": "4205",
       "type": "Freight",
       "category": "GZ",
       "speedMax": 100,
@@ -3014,7 +3014,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "GZ4206",
+      "number": "4206",
       "type": "Freight",
       "category": "GZ",
       "speedMax": 100,
@@ -3055,7 +3055,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "ICE5201",
+      "number": "5201",
       "type": "MultipleUnit",
       "category": "ICE",
       "speedMax": 160,
@@ -3080,28 +3080,28 @@
         {
           "station": "kreuztal",
           "arrival": "01:01:10",
-          "departure": "01:02:40"
+          "departure": "01:02:30"
         },
         {
           "station": "aurich",
-          "arrival": "01:04:10",
-          "departure": "01:04:10"
+          "arrival": "01:04:00",
+          "departure": "01:04:00"
         },
         {
           "station": "wingst",
-          "arrival": "01:05:40",
-          "departure": "01:05:40"
+          "arrival": "01:05:30",
+          "departure": "01:05:30"
         },
         {
           "station": "nordendorf",
-          "arrival": "01:07:10",
+          "arrival": "01:07:00",
           "departure": ""
         }
       ],
-      "followingTrainNumber": "ICE5202"
+      "followingTrainNumber": "5202"
     },
     {
-      "number": "ICE5202",
+      "number": "5202",
       "type": "MultipleUnit",
       "category": "ICE",
       "speedMax": 160,
@@ -3147,7 +3147,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "ICE5203",
+      "number": "5203",
       "type": "MultipleUnit",
       "category": "ICE",
       "speedMax": 160,
@@ -3190,10 +3190,10 @@
           "departure": ""
         }
       ],
-      "followingTrainNumber": "ICE5204"
+      "followingTrainNumber": "5204"
     },
     {
-      "number": "ICE5204",
+      "number": "5204",
       "type": "MultipleUnit",
       "category": "ICE",
       "speedMax": 160,
@@ -3239,7 +3239,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "ICE5211",
+      "number": "5211",
       "type": "MultipleUnit",
       "category": "ICE",
       "speedMax": 160,
@@ -3285,7 +3285,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "ICE5213",
+      "number": "5213",
       "type": "MultipleUnit",
       "category": "ICE",
       "speedMax": 160,
@@ -3331,7 +3331,7 @@
       "followingTrainNumber": null
     },
     {
-      "number": "ICE5215",
+      "number": "5215",
       "type": "MultipleUnit",
       "category": "ICE",
       "speedMax": 160,
@@ -3371,6 +3371,1121 @@
         {
           "station": "nordendorf",
           "arrival": "01:50:00",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "33502",
+      "type": "Freight",
+      "category": "GZ",
+      "speedMax": 100,
+      "cars": 6,
+      "path": [],
+      "timetable": [
+        {
+          "station": "unterberg",
+          "arrival": "",
+          "departure": "00:01:33"
+        },
+        {
+          "station": "finnhof",
+          "arrival": "00:03:57",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": "33702"
+    },
+    {
+      "number": "33702",
+      "type": "Freight",
+      "category": "GZ",
+      "speedMax": 100,
+      "cars": 6,
+      "path": [],
+      "timetable": [
+        {
+          "station": "finnhof",
+          "arrival": "",
+          "departure": "00:33:32"
+        },
+        {
+          "station": "langenfelde",
+          "arrival": "00:35:56",
+          "departure": "00:37:36"
+        },
+        {
+          "station": "dospen",
+          "arrival": "00:40:00",
+          "departure": "00:49:39"
+        },
+        {
+          "station": "landing",
+          "arrival": "00:52:03",
+          "departure": "00:52:03"
+        },
+        {
+          "station": "westerhausen",
+          "arrival": "00:54:27",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "33802",
+      "type": "Freight",
+      "category": "GZ",
+      "speedMax": 100,
+      "cars": 8,
+      "path": [],
+      "timetable": [
+        {
+          "station": "ostermünde",
+          "arrival": "",
+          "departure": "00:02:12"
+        },
+        {
+          "station": "horb",
+          "arrival": "00:04:36",
+          "departure": "00:04:36"
+        },
+        {
+          "station": "camberg",
+          "arrival": "00:07:00",
+          "departure": "00:07:00"
+        },
+        {
+          "station": "bernau",
+          "arrival": "00:09:24",
+          "departure": "00:09:24"
+        },
+        {
+          "station": "finnhof",
+          "arrival": "00:11:48",
+          "departure": "00:11:48"
+        },
+        {
+          "station": "langenfelde",
+          "arrival": "00:14:12",
+          "departure": "00:15:12"
+        },
+        {
+          "station": "dospen",
+          "arrival": "00:17:36",
+          "departure": "00:17:36"
+        },
+        {
+          "station": "landing",
+          "arrival": "00:20:00",
+          "departure": "00:20:00"
+        },
+        {
+          "station": "westerhausen",
+          "arrival": "00:22:24",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "47302",
+      "type": "Freight",
+      "category": "GZ",
+      "speedMax": 100,
+      "cars": 10,
+      "path": [],
+      "timetable": [
+        {
+          "station": "nordendorf",
+          "arrival": "",
+          "departure": "00:00:00"
+        },
+        {
+          "station": "wingst",
+          "arrival": "00:02:24",
+          "departure": "00:05:30"
+        },
+        {
+          "station": "aurich",
+          "arrival": "00:07:54",
+          "departure": "00:07:54"
+        },
+        {
+          "station": "kreuztal",
+          "arrival": "00:10:18",
+          "departure": "00:16:06"
+        },
+        {
+          "station": "camberg",
+          "arrival": "00:18:30",
+          "departure": "00:18:30"
+        },
+        {
+          "station": "horb",
+          "arrival": "00:20:54",
+          "departure": "00:20:54"
+        },
+        {
+          "station": "ostermünde",
+          "arrival": "00:23:18",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "74",
+      "type": "MultipleUnit",
+      "category": "ICE",
+      "speedMax": 160,
+      "cars": 10,
+      "path": [],
+      "timetable": [
+        {
+          "station": "nordendorf",
+          "arrival": "",
+          "departure": "00:02:26"
+        },
+        {
+          "station": "wingst",
+          "arrival": "00:03:56",
+          "departure": "00:03:56"
+        },
+        {
+          "station": "aurich",
+          "arrival": "00:05:26",
+          "departure": "00:05:26"
+        },
+        {
+          "station": "kreuztal",
+          "arrival": "00:06:56",
+          "departure": "00:08:26"
+        },
+        {
+          "station": "camberg",
+          "arrival": "00:09:56",
+          "departure": "00:09:56"
+        },
+        {
+          "station": "horb",
+          "arrival": "00:11:26",
+          "departure": "00:11:26"
+        },
+        {
+          "station": "ostermünde",
+          "arrival": "00:12:56",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "1091",
+      "type": "MultipleUnit",
+      "category": "ICE",
+      "speedMax": 160,
+      "cars": 10,
+      "path": [],
+      "timetable": [
+        {
+          "station": "nordendorf",
+          "arrival": "",
+          "departure": "00:08:56"
+        },
+        {
+          "station": "wingst",
+          "arrival": "00:10:26",
+          "departure": "00:10:26"
+        },
+        {
+          "station": "aurich",
+          "arrival": "00:11:56",
+          "departure": "00:11:56"
+        },
+        {
+          "station": "hohenbrunn",
+          "arrival": "00:13:26",
+          "departure": "00:14:26"
+        },
+        {
+          "station": "dospen",
+          "arrival": "00:15:56",
+          "departure": "00:15:56"
+        },
+        {
+          "station": "landing",
+          "arrival": "00:17:26",
+          "departure": "00:17:26"
+        },
+        {
+          "station": "westerhausen",
+          "arrival": "00:18:56",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "44706",
+      "type": "Freight",
+      "category": "GZ",
+      "speedMax": 100,
+      "cars": 10,
+      "path": [],
+      "timetable": [
+        {
+          "station": "nordendorf",
+          "arrival": "",
+          "departure": "00:04:10"
+        },
+        {
+          "station": "wingst",
+          "arrival": "00:06:34",
+          "departure": "00:12:11"
+        },
+        {
+          "station": "aurich",
+          "arrival": "00:14:35",
+          "departure": "00:14:35"
+        },
+        {
+          "station": "hohenbrunn",
+          "arrival": "00:16:59",
+          "departure": "00:16:59"
+        },
+        {
+          "station": "dospen",
+          "arrival": "00:19:23",
+          "departure": "00:20:37"
+        },
+        {
+          "station": "landing",
+          "arrival": "00:23:01",
+          "departure": "00:23:01"
+        },
+        {
+          "station": "westerhausen",
+          "arrival": "00:25:25",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "1094",
+      "type": "MultipleUnit",
+      "category": "ICE",
+      "speedMax": 160,
+      "cars": 10,
+      "path": [],
+      "timetable": [
+        {
+          "station": "westerhausen",
+          "arrival": "",
+          "departure": "00:03:28"
+        },
+        {
+          "station": "landing",
+          "arrival": "00:04:58",
+          "departure": "00:04:58"
+        },
+        {
+          "station": "dospen",
+          "arrival": "00:06:28",
+          "departure": "00:07:16"
+        },
+        {
+          "station": "hohenbrunn",
+          "arrival": "00:08:46",
+          "departure": "00:08:46"
+        },
+        {
+          "station": "aurich",
+          "arrival": "00:10:16",
+          "departure": "00:11:16"
+        },
+        {
+          "station": "wingst",
+          "arrival": "00:12:46",
+          "departure": "00:12:46"
+        },
+        {
+          "station": "nordendorf",
+          "arrival": "00:14:16",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "5506",
+      "type": "Passenger",
+      "category": "RB",
+      "speedMax": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "nordendorf",
+          "arrival": "",
+          "departure": "00:14:22"
+        },
+        {
+          "station": "wingst",
+          "arrival": "00:16:22",
+          "departure": "00:17:22"
+        },
+        {
+          "station": "aurich",
+          "arrival": "00:19:22",
+          "departure": "00:20:22"
+        },
+        {
+          "station": "hohenbrunn",
+          "arrival": "00:22:22",
+          "departure": "00:25:47"
+        },
+        {
+          "station": "dospen",
+          "arrival": "00:27:47",
+          "departure": "00:28:47"
+        },
+        {
+          "station": "landing",
+          "arrival": "00:30:47",
+          "departure": "00:31:47"
+        },
+        {
+          "station": "westerhausen",
+          "arrival": "00:33:47",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "7501",
+      "type": "Passenger",
+      "category": "RE",
+      "speedMax": 140,
+      "cars": 6,
+      "path": [],
+      "timetable": [
+        {
+          "station": "westerhausen",
+          "arrival": "",
+          "departure": "00:32:30"
+        },
+        {
+          "station": "landing",
+          "arrival": "00:34:13",
+          "departure": "00:35:13"
+        },
+        {
+          "station": "dospen",
+          "arrival": "00:36:56",
+          "departure": "00:36:56"
+        },
+        {
+          "station": "hohenbrunn",
+          "arrival": "00:38:39",
+          "departure": "00:39:39"
+        },
+        {
+          "station": "kreuztal",
+          "arrival": "00:41:22",
+          "departure": "00:42:22"
+        },
+        {
+          "station": "camberg",
+          "arrival": "00:44:05",
+          "departure": "00:44:05"
+        },
+        {
+          "station": "horb",
+          "arrival": "00:45:48",
+          "departure": "00:46:48"
+        },
+        {
+          "station": "ostermünde",
+          "arrival": "00:48:31",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "7502",
+      "type": "Passenger",
+      "category": "RE",
+      "speedMax": 140,
+      "cars": 6,
+      "path": [],
+      "timetable": [
+        {
+          "station": "ostermünde",
+          "arrival": "",
+          "departure": "00:12:20"
+        },
+        {
+          "station": "horb",
+          "arrival": "00:14:03",
+          "departure": "00:15:03"
+        },
+        {
+          "station": "camberg",
+          "arrival": "00:16:46",
+          "departure": "00:16:46"
+        },
+        {
+          "station": "kreuztal",
+          "arrival": "00:18:29",
+          "departure": "00:19:29"
+        },
+        {
+          "station": "hohenbrunn",
+          "arrival": "00:21:12",
+          "departure": "00:22:12"
+        },
+        {
+          "station": "dospen",
+          "arrival": "00:23:55",
+          "departure": "00:23:55"
+        },
+        {
+          "station": "landing",
+          "arrival": "00:25:38",
+          "departure": "00:26:38"
+        },
+        {
+          "station": "westerhausen",
+          "arrival": "00:28:21",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "7503",
+      "type": "Passenger",
+      "category": "RE",
+      "speedMax": 140,
+      "cars": 6,
+      "path": [],
+      "timetable": [
+        {
+          "station": "westerhausen",
+          "arrival": "",
+          "departure": "01:36:20"
+        },
+        {
+          "station": "landing",
+          "arrival": "01:38:03",
+          "departure": "01:39:03"
+        },
+        {
+          "station": "dospen",
+          "arrival": "01:40:46",
+          "departure": "01:40:46"
+        },
+        {
+          "station": "hohenbrunn",
+          "arrival": "01:42:29",
+          "departure": "01:43:29"
+        },
+        {
+          "station": "kreuztal",
+          "arrival": "01:45:12",
+          "departure": "01:46:12"
+        },
+        {
+          "station": "camberg",
+          "arrival": "01:47:55",
+          "departure": "01:47:55"
+        },
+        {
+          "station": "horb",
+          "arrival": "01:49:38",
+          "departure": "01:50:38"
+        },
+        {
+          "station": "ostermünde",
+          "arrival": "01:52:21",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "7504",
+      "type": "Passenger",
+      "category": "RE",
+      "speedMax": 140,
+      "cars": 6,
+      "path": [],
+      "timetable": [
+        {
+          "station": "ostermünde",
+          "arrival": "",
+          "departure": "01:37:00"
+        },
+        {
+          "station": "horb",
+          "arrival": "01:38:43",
+          "departure": "01:39:43"
+        },
+        {
+          "station": "camberg",
+          "arrival": "01:41:26",
+          "departure": "01:41:26"
+        },
+        {
+          "station": "kreuztal",
+          "arrival": "01:43:09",
+          "departure": "01:44:09"
+        },
+        {
+          "station": "hohenbrunn",
+          "arrival": "01:45:52",
+          "departure": "01:46:52"
+        },
+        {
+          "station": "dospen",
+          "arrival": "01:48:35",
+          "departure": "01:48:35"
+        },
+        {
+          "station": "landing",
+          "arrival": "01:50:18",
+          "departure": "01:51:18"
+        },
+        {
+          "station": "westerhausen",
+          "arrival": "01:53:01",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "7601",
+      "type": "Passenger",
+      "category": "RE",
+      "speedMax": 140,
+      "cars": 6,
+      "path": [],
+      "timetable": [
+        {
+          "station": "ostermünde",
+          "arrival": "",
+          "departure": "00:08:10"
+        },
+        {
+          "station": "horb",
+          "arrival": "00:09:53",
+          "departure": "00:10:53"
+        },
+        {
+          "station": "camberg",
+          "arrival": "00:12:36",
+          "departure": "00:12:36"
+        },
+        {
+          "station": "kreuztal",
+          "arrival": "00:14:19",
+          "departure": "00:15:19"
+        },
+        {
+          "station": "aurich",
+          "arrival": "00:17:02",
+          "departure": "00:18:02"
+        },
+        {
+          "station": "wingst",
+          "arrival": "00:19:45",
+          "departure": "00:19:45"
+        },
+        {
+          "station": "nordendorf",
+          "arrival": "00:21:28",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": "7602"
+    },
+    {
+      "number": "7602",
+      "type": "Passenger",
+      "category": "RE",
+      "speedMax": 140,
+      "cars": 6,
+      "path": [],
+      "timetable": [
+        {
+          "station": "nordendorf",
+          "arrival": "",
+          "departure": "00:48:40"
+        },
+        {
+          "station": "wingst",
+          "arrival": "00:50:23",
+          "departure": "00:50:23"
+        },
+        {
+          "station": "aurich",
+          "arrival": "00:52:06",
+          "departure": "00:53:06"
+        },
+        {
+          "station": "kreuztal",
+          "arrival": "00:54:49",
+          "departure": "00:55:49"
+        },
+        {
+          "station": "camberg",
+          "arrival": "00:57:32",
+          "departure": "00:57:32"
+        },
+        {
+          "station": "horb",
+          "arrival": "00:59:15",
+          "departure": "01:00:15"
+        },
+        {
+          "station": "ostermünde",
+          "arrival": "01:01:58",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "7603",
+      "type": "Passenger",
+      "category": "RE",
+      "speedMax": 140,
+      "cars": 6,
+      "path": [],
+      "timetable": [
+        {
+          "station": "ostermünde",
+          "arrival": "",
+          "departure": "01:18:10"
+        },
+        {
+          "station": "horb",
+          "arrival": "01:19:53",
+          "departure": "01:20:53"
+        },
+        {
+          "station": "camberg",
+          "arrival": "01:22:36",
+          "departure": "01:22:36"
+        },
+        {
+          "station": "kreuztal",
+          "arrival": "01:24:19",
+          "departure": "01:25:19"
+        },
+        {
+          "station": "aurich",
+          "arrival": "01:27:02",
+          "departure": "01:28:02"
+        },
+        {
+          "station": "wingst",
+          "arrival": "01:29:45",
+          "departure": "01:29:45"
+        },
+        {
+          "station": "nordendorf",
+          "arrival": "01:31:28",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": "7604"
+    },
+    {
+      "number": "7604",
+      "type": "Passenger",
+      "category": "RE",
+      "speedMax": 140,
+      "cars": 6,
+      "path": [],
+      "timetable": [
+        {
+          "station": "nordendorf",
+          "arrival": "",
+          "departure": "01:40:50"
+        },
+        {
+          "station": "wingst",
+          "arrival": "01:42:33",
+          "departure": "01:42:33"
+        },
+        {
+          "station": "aurich",
+          "arrival": "01:44:16",
+          "departure": "01:45:16"
+        },
+        {
+          "station": "kreuztal",
+          "arrival": "01:46:59",
+          "departure": "01:47:59"
+        },
+        {
+          "station": "camberg",
+          "arrival": "01:49:42",
+          "departure": "01:49:42"
+        },
+        {
+          "station": "horb",
+          "arrival": "01:51:25",
+          "departure": "01:52:25"
+        },
+        {
+          "station": "ostermünde",
+          "arrival": "01:54:08",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "5701",
+      "type": "Passenger",
+      "category": "RB",
+      "speedMax": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "westerhausen",
+          "arrival": "",
+          "departure": "00:54:10"
+        },
+        {
+          "station": "landing",
+          "arrival": "00:56:10",
+          "departure": "00:57:10"
+        },
+        {
+          "station": "dospen",
+          "arrival": "00:59:10",
+          "departure": "01:00:10"
+        },
+        {
+          "station": "hohenbrunn",
+          "arrival": "01:02:10",
+          "departure": "01:03:10"
+        },
+        {
+          "station": "aurich",
+          "arrival": "01:05:10",
+          "departure": "01:06:10"
+        },
+        {
+          "station": "wingst",
+          "arrival": "01:08:10",
+          "departure": "01:09:10"
+        },
+        {
+          "station": "nordendorf",
+          "arrival": "01:11:10",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "5703",
+      "type": "Passenger",
+      "category": "RB",
+      "speedMax": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "westerhausen",
+          "arrival": "",
+          "departure": "01:48:50"
+        },
+        {
+          "station": "landing",
+          "arrival": "01:50:50",
+          "departure": "01:51:50"
+        },
+        {
+          "station": "dospen",
+          "arrival": "01:53:50",
+          "departure": "01:54:50"
+        },
+        {
+          "station": "hohenbrunn",
+          "arrival": "01:56:50",
+          "departure": "01:57:50"
+        },
+        {
+          "station": "aurich",
+          "arrival": "01:59:50",
+          "departure": "02:00:50"
+        },
+        {
+          "station": "wingst",
+          "arrival": "02:02:50",
+          "departure": "02:03:50"
+        },
+        {
+          "station": "nordendorf",
+          "arrival": "02:05:50",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "5801",
+      "type": "Passenger",
+      "category": "RB",
+      "speedMax": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "westerhausen",
+          "arrival": "",
+          "departure": "00:11:50"
+        },
+        {
+          "station": "landing",
+          "arrival": "00:13:50",
+          "departure": "00:14:50"
+        },
+        {
+          "station": "dospen",
+          "arrival": "00:16:50",
+          "departure": "00:17:50"
+        },
+        {
+          "station": "langenfelde",
+          "arrival": "00:19:50",
+          "departure": "00:20:50"
+        },
+        {
+          "station": "finnhof",
+          "arrival": "00:22:50",
+          "departure": "00:23:50"
+        },
+        {
+          "station": "unterberg",
+          "arrival": "00:25:50",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "5803",
+      "type": "Passenger",
+      "category": "RB",
+      "speedMax": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "westerhausen",
+          "arrival": "",
+          "departure": "01:11:50"
+        },
+        {
+          "station": "landing",
+          "arrival": "01:13:50",
+          "departure": "01:14:50"
+        },
+        {
+          "station": "dospen",
+          "arrival": "01:16:50",
+          "departure": "01:17:50"
+        },
+        {
+          "station": "langenfelde",
+          "arrival": "01:19:50",
+          "departure": "01:20:50"
+        },
+        {
+          "station": "finnhof",
+          "arrival": "01:22:50",
+          "departure": "01:23:50"
+        },
+        {
+          "station": "unterberg",
+          "arrival": "01:25:50",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "5811",
+      "type": "Passenger",
+      "category": "RB",
+      "speedMax": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "ostermünde",
+          "arrival": "",
+          "departure": "00:17:40"
+        },
+        {
+          "station": "horb",
+          "arrival": "00:19:40",
+          "departure": "00:20:40"
+        },
+        {
+          "station": "camberg",
+          "arrival": "00:22:40",
+          "departure": "00:23:40"
+        },
+        {
+          "station": "bernau",
+          "arrival": "00:25:40",
+          "departure": "00:26:40"
+        },
+        {
+          "station": "finnhof",
+          "arrival": "00:28:40",
+          "departure": "00:29:40"
+        },
+        {
+          "station": "unterberg",
+          "arrival": "00:31:40",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "5813",
+      "type": "Passenger",
+      "category": "RB",
+      "speedMax": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "ostermünde",
+          "arrival": "",
+          "departure": "01:38:50"
+        },
+        {
+          "station": "horb",
+          "arrival": "01:40:50",
+          "departure": "01:41:50"
+        },
+        {
+          "station": "camberg",
+          "arrival": "01:43:50",
+          "departure": "01:44:50"
+        },
+        {
+          "station": "bernau",
+          "arrival": "01:46:50",
+          "departure": "01:47:50"
+        },
+        {
+          "station": "finnhof",
+          "arrival": "01:49:50",
+          "departure": "01:50:50"
+        },
+        {
+          "station": "unterberg",
+          "arrival": "01:52:50",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "5605",
+      "type": "Passenger",
+      "category": "RB",
+      "speedMax": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "landing",
+          "arrival": "",
+          "departure": "01:55:00"
+        },
+        {
+          "station": "dospen",
+          "arrival": "01:57:00",
+          "departure": "01:58:00"
+        },
+        {
+          "station": "langenfelde",
+          "arrival": "02:00:00",
+          "departure": "02:01:00"
+        },
+        {
+          "station": "finnhof",
+          "arrival": "02:03:00",
+          "departure": "02:04:00"
+        },
+        {
+          "station": "bernau",
+          "arrival": "02:06:00",
+          "departure": "02:07:00"
+        },
+        {
+          "station": "camberg",
+          "arrival": "02:09:00",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "5615",
+      "type": "Passenger",
+      "category": "RB",
+      "speedMax": 120,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "camberg",
+          "arrival": "",
+          "departure": "02:00:00"
+        },
+        {
+          "station": "bernau",
+          "arrival": "02:02:00",
+          "departure": "02:03:00"
+        },
+        {
+          "station": "finnhof",
+          "arrival": "02:05:00",
+          "departure": "02:06:00"
+        },
+        {
+          "station": "langenfelde",
+          "arrival": "02:08:00",
+          "departure": "02:09:00"
+        },
+        {
+          "station": "dospen",
+          "arrival": "02:11:00",
+          "departure": "02:12:00"
+        },
+        {
+          "station": "landing",
+          "arrival": "02:14:00",
           "departure": ""
         }
       ],

@@ -6,6 +6,7 @@ import { precomputeExitSpans, getDistanceMeters, isSingleTrackSection, deriveOrd
 import { getCategoryColor } from "./utils/constants";
 import { TrainEditorPanel } from "./trainEditorPanel";
 import { detectCollisions } from "./utils/collisionDetection";
+import { validateTrains } from "./utils/trainValidation";
 import Toast from "../ui/toast";
 
 type DirectionFilter = 'both' | 'leftToRight' | 'rightToLeft';
@@ -256,7 +257,7 @@ export default class SzenariosApplication {
       this.stationOrder = derived.length
          ? derived
          : network.stations?.length
-            ? [...network.stations]
+            ? network.stations.map((s) => s.id)
             : Array.from(new Set(scenario.trains.flatMap((train) => (train.timetable || []).map((entry) => entry.station))));
       this.stationIndex = new Map(this.stationOrder.map((station, index) => [station, index] as [string, number]));
    }
@@ -745,6 +746,7 @@ export default class SzenariosApplication {
          select.onchange = () => void this.switchScenario(select.value);
       }
       this.bindClick("export-btn", () => this.exportScenarioJson());
+      this.bindClick("validate-trains-btn", () => this.showTrainValidation());
       this.bindClick("save-btn", () => this.saveScenarioToServer());
       this.bindClick("add-train-btn", () => this.handleCreateTrain());
       this.bindClick("train-copy-btn", () => this.copySelectedTrain());
@@ -900,6 +902,40 @@ export default class SzenariosApplication {
             })),
          })),
       };
+   }
+
+   private showTrainValidation() {
+      if (!this.scenario || !this.network) {
+         alert("No scenario loaded");
+         return;
+      }
+
+      const errors = validateTrains(
+         this.scenario.trains,
+         (this.network.stations || []).map((s) => s.id)
+      );
+      const list = document.getElementById("validate-trains-list");
+      if (list) {
+         list.replaceChildren();
+         if (errors.length === 0) {
+            const li = document.createElement("li");
+            li.textContent = "No errors found";
+            list.appendChild(li);
+         } else {
+            for (const error of errors) {
+               const li = document.createElement("li");
+               li.textContent = error;
+               list.appendChild(li);
+            }
+         }
+      }
+
+      const modalEl = document.getElementById("validate-trains-modal") as any;
+      const Modal = (window as any).bootstrap?.Modal;
+      if (modalEl && Modal) {
+         const modal = new Modal(modalEl);
+         modal.show();
+      }
    }
 
    private exportScenarioJson() {

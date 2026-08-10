@@ -167,8 +167,14 @@ export interface ScenarioTimetableEntryDto {
   departure: string; // may be HH:mm:ss or ISO
 }
 
+export interface NetworkStationDto {
+  id: string;
+  name: string;
+  description?: string;
+}
+
 export interface NetworkDto {
-  stations: string[];
+  stations: NetworkStationDto[];
   connections: NetworkConnectionDto[];
 }
 

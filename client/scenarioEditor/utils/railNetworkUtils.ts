@@ -14,7 +14,7 @@ const stationExitSpanMeters: Map<string, number> = new Map();
  */
 export async function precomputeExitSpans(network: NetworkDto): Promise<void> {
    const stationSet = new Set<string>();
-   for (const s of network.stations || []) stationSet.add(s);
+   for (const s of network.stations || []) stationSet.add(s.id);
    for (const c of network.connections || []) {
       if (c.from) stationSet.add(c.from);
       if (c.to) stationSet.add(c.to);

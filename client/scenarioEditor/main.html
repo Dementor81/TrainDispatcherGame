@@ -41,6 +41,7 @@
             <button id="save-btn" class="btn btn-sm btn-success">
               <i class="bi bi-floppy"></i> Save
             </button>
+            <button id="validate-trains-btn" class="btn btn-sm btn-outline-warning">Validate trains</button>
             <button id="export-btn" class="btn btn-sm btn-outline-light">Export JSON</button>
             <div class="navbar-nav">
               <a class="nav-link" href="main.html">Main</a>
@@ -63,6 +64,24 @@
             </div>
             <div class="modal-footer">
               <button id="export-copy-btn" type="button" class="btn btn-primary">Copy to Clipboard</button>
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Validate Trains Modal -->
+      <div class="modal fade" id="validate-trains-modal" tabindex="-1" aria-labelledby="validateTrainsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="validateTrainsModalLabel">Train validation</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <ul id="validate-trains-list" class="mb-0"></ul>
+            </div>
+            <div class="modal-footer">
               <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
             </div>
           </div>
