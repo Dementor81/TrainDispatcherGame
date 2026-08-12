@@ -263,6 +263,7 @@ export default class SzenariosApplication {
    }
 
    private createSceneLayers() {
+      this.clearStage();
       this.singleTrackBg = new PIXI.Graphics();
       this.conflictBg = new PIXI.Graphics();
       this.grid = new PIXI.Graphics();
@@ -349,14 +350,21 @@ export default class SzenariosApplication {
       });
    }
 
+   private destroyContainerChildren(container?: PIXI.Container) {
+      if (!container) return;
+      for (const child of container.removeChildren()) {
+         child.destroy({ children: true });
+      }
+   }
+
    private resetSceneLayers() {
       this.singleTrackBg?.clear();
       this.conflictBg?.clear();
       this.grid?.clear();
       this.lines?.clear();
-      this.labels?.removeChildren();
-      this.trainLabels?.removeChildren();
-      this.timeHandles?.removeChildren();
+      this.destroyContainerChildren(this.labels);
+      this.destroyContainerChildren(this.trainLabels);
+      this.destroyContainerChildren(this.timeHandles);
    }
 
    private forEachTimeTick(metrics: ViewMetrics, step: number, cb: (minutes: number) => void) {
@@ -773,7 +781,19 @@ export default class SzenariosApplication {
    }
 
    private clearStage() {
-      this.app.stage.removeChildren();
+      for (const child of this.app.stage.removeChildren()) {
+         child.destroy({ children: true });
+      }
+      this.singleTrackBg = undefined;
+      this.conflictBg = undefined;
+      this.grid = undefined;
+      this.lines = undefined;
+      this.labels = undefined;
+      this.trainLabels = undefined;
+      this.timeHandles = undefined;
+      this.hoverOverlay = undefined;
+      this.hoverLeftLabel = undefined;
+      this.hoverRightLabel = undefined;
    }
 
    private getMinutesPerPixel(): number {
