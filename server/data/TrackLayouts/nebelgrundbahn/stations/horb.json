@@ -41,7 +41,7 @@
             },
             {
                "type": "main",
-               "position": 608,
+               "position": 623,
                "direction": 1
             }
          ],
@@ -107,7 +107,7 @@
             "y": 25.0
          },
          "end": {
-            "x": 175.0,
+            "x": 125.0,
             "y": 25.0
          },
          "signals": [
@@ -132,7 +132,7 @@
             "y": -25.0
          },
          "end": {
-            "x": 175.0,
+            "x": 125.0,
             "y": -25.0
          },
          "signals": [
@@ -372,7 +372,7 @@
          "signals": [
             {
                "type": "main",
-               "position": 561,
+               "position": 579,
                "direction": 1
             }
          ],
@@ -545,62 +545,6 @@
          ]
       },
       {
-         "id": 430,
-         "start": {
-            "x": -1125.0,
-            "y": 25.0
-         },
-         "end": {
-            "x": -475.0,
-            "y": 25.0
-         },
-         "signals": [
-            {
-               "type": "main",
-               "position": 451,
-               "direction": 1
-            }
-         ],
-         "switches": [
-            {
-               "type": "Exit",
-               "id": 2
-            },
-            {
-               "type": "Switch",
-               "id": 14
-            }
-         ]
-      },
-      {
-         "id": 431,
-         "start": {
-            "x": -1125.0,
-            "y": -25.0
-         },
-         "end": {
-            "x": -475.0,
-            "y": -25.0
-         },
-         "signals": [
-            {
-               "type": "main",
-               "position": 448,
-               "direction": 1
-            }
-         ],
-         "switches": [
-            {
-               "type": "Exit",
-               "id": 0
-            },
-            {
-               "type": "Switch",
-               "id": 8
-            }
-         ]
-      },
-      {
          "id": 434,
          "start": {
             "x": 475.0,
@@ -651,7 +595,7 @@
             "y": -25.0
          },
          "end": {
-            "x": 1125.0,
+            "x": 1325.0,
             "y": -25.0
          },
          "signals": [
@@ -701,7 +645,7 @@
             "y": 25.0
          },
          "end": {
-            "x": 1125.0,
+            "x": 1325.0,
             "y": 25.0
          },
          "signals": [],
@@ -713,6 +657,62 @@
             {
                "type": "Exit",
                "id": 3
+            }
+         ]
+      },
+      {
+         "id": 442,
+         "start": {
+            "x": -1325.0,
+            "y": -25.0
+         },
+         "end": {
+            "x": -475.0,
+            "y": -25.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 610,
+               "direction": 1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Exit",
+               "id": 0
+            },
+            {
+               "type": "Switch",
+               "id": 8
+            }
+         ]
+      },
+      {
+         "id": 443,
+         "start": {
+            "x": -1325.0,
+            "y": 25.0
+         },
+         "end": {
+            "x": -475.0,
+            "y": 25.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 605,
+               "direction": 1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Exit",
+               "id": 2
+            },
+            {
+               "type": "Switch",
+               "id": 14
             }
          ]
       }
@@ -777,7 +777,7 @@
             "y": -25.0
          },
          "tracks": [
-            431,
+            442,
             413,
             407,
             null
@@ -856,7 +856,7 @@
          },
          "tracks": [
             429,
-            430,
+            443,
             427,
             null
          ]
@@ -897,7 +897,7 @@
       {
          "track": 403,
          "from_km": 73,
-         "to_km": 494
+         "to_km": 438
       },
       {
          "track": 398,
@@ -907,7 +907,7 @@
       {
          "track": 405,
          "from_km": 44,
-         "to_km": 445
+         "to_km": 391
       }
    ]
 }
