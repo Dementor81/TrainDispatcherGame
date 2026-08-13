@@ -362,7 +362,13 @@
             "x": 425.0,
             "y": -25.0
          },
-         "signals": [],
+         "signals": [
+            {
+               "type": "main",
+               "position": 772,
+               "direction": 1
+            }
+         ],
          "switches": [
             {
                "type": "Switch",
