@@ -9,7 +9,6 @@ import SignalRManager, { JoinRejectedError } from "../network/signalr";
 import Train from "../sim/train";
 import { getSimulationStatus } from "../network/api";
 import { SimulationState } from "../network/dto";
-import ApprovalToast from "../ui/approvalToast";
 import { SimulationConfig } from "../core/config";
 import TrainRouteManager from "../manager/trainRoute_manager";
 import Signal from "../sim/signal";

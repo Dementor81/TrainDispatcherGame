@@ -577,24 +577,6 @@ namespace TrainDispatcherGame.Server.Hubs
             await Task.CompletedTask;
         }
 
-        public async Task RespondApproval(string trainNumber, string fromStationId, bool approved)
-        {
-            if (!TryResolveSession(out var session) || session == null)
-            {
-                return;
-            }
-
-            try
-            {
-                session.Simulation.ReceiveApproval(trainNumber, fromStationId, approved);
-            }
-            catch (Exception ex)
-            {
-                ServerLogger.Instance.LogError(Ctx(session.SessionId, trainNumber), $"Error processing approval response for train {trainNumber}: {ex.Message}");
-            }
-            await Task.CompletedTask;
-        }
-
         public async Task TrainRemoved(string trainNumber, string stationId)
         {
             if (!TryResolveSession(out var session) || session == null)

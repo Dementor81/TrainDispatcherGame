@@ -5,7 +5,6 @@ import { TestingPanel } from "../ui/testingPanel";
 import { HUDPanel } from "../ui/hudPanel";
 import { TrainDetailsPanel } from "../ui/trainDetailsPanel";
 import NotificationModal from "../ui/notificationModal";
-import ApprovalToast from "../ui/approvalToast";
 import Toast from "../ui/toast";
 import { Application } from "../core/application";
 import { EventManager } from "./event_manager";
@@ -46,11 +45,6 @@ export class UIManager {
             this.showTrainDetailsPanel(trainNumber);
         });
 
-        // Approval requests from server
-        this._eventManager.on('approvalRequested', (data: { stationId: string, fromStationId: string, trainNumber: string }) => {
-            this.showApprovalToast(data);
-        });
-
         // Train collision notifications
         this._eventManager.on('trainCollision', (trainA: Train, trainB: Train) => {
             this.notifyCollision(trainA.number, trainB.number);
@@ -68,7 +62,6 @@ export class UIManager {
 
         // Simulation stopped notifications
         this._eventManager.on('simulationStopped', () => {
-            ApprovalToast.clearAll(); // Clear any outstanding approval toasts
             this.hideTrainDetailsPanel();
         });
 
@@ -138,15 +131,6 @@ export class UIManager {
     notifyMisrouted(trainNumber: string): void {
         const message = `Zug ${trainNumber} ist fehlgeleitet!`;
         Toast.show(message, 'warning');
-    }
-
-    showApprovalToast(data: { stationId: string, fromStationId: string, trainNumber: string }): void {
-        const approvalToast = new ApprovalToast(this._application);
-        approvalToast.showApproval({
-            stationId: data.stationId,
-            fromStationId: data.fromStationId,
-            trainNumber: data.trainNumber
-        });
     }
 
     hideTrainOverviewPanel(): void {

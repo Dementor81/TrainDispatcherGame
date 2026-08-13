@@ -1,8 +1,7 @@
 import { EventManager } from "./event_manager";
 import switchToggleSound from "../assets/sounds/switch_toggle.mp3";
-import approvalRequestSound from "../assets/sounds/approval_request.mp3";
 
-type SoundName = "switchToggled" | "approvalRequested";
+type SoundName = "switchToggled";
 
 export class SoundsManager {
    private readonly _eventManager: EventManager;
@@ -12,17 +11,12 @@ export class SoundsManager {
       this._eventManager = eventManager;
       this._sounds = {
          switchToggled: this.createAudio(switchToggleSound),
-         approvalRequested: this.createAudio(approvalRequestSound),
       };
    }
 
    init(): void {
       this._eventManager.on("switchClicked", () => {
          this.play("switchToggled");
-      });
-
-      this._eventManager.on("approvalRequested", () => {
-         this.play("approvalRequested");
       });
    }
 

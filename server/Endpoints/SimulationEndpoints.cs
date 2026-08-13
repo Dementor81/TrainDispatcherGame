@@ -353,7 +353,6 @@ namespace TrainDispatcherGame.Server.Endpoints
                 delay = t.delay,
                 nextEventTime = t.TrainEvent?.ScheduledTime,
                 nextEventType = t.TrainEvent is TrainSpawnEvent ? "Spawn"
-                    : t.TrainEvent is SendApprovalEvent ? "Approval"
                     : t.TrainEvent is TrainStartEvent ? "Start"
                     : t.TrainEvent is RetryDispatchEvent ? "Retry"
                     : t.TrainEvent is TrainWaitEvent ? "Wait"

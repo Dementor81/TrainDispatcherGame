@@ -160,11 +160,6 @@ export class SignalRManager {
             this.handleTrainRemoved(data);
         });
 
-        this.connection.on('ApprovalRequested', (data) => {
-            console.log('Approval requested:', data);
-            this._eventManager.emit('approvalRequested', data);
-        });
-
         this.connection.on('ExitBlockStatusChanged', (data) => {
             console.log('Exit block status changed:', data);
             this.handleExitBlockStatusChanged(data);
@@ -373,19 +368,6 @@ export class SignalRManager {
             console.log(`Reported train ${trainNumber} removed at station ${stationId}`);
         } catch (error) {
             console.error('Failed to report train removed:', error);
-            throw error;
-        }
-    }
-
-    public async respondApproval(trainNumber: string, fromStationId: string, approved: boolean): Promise<void> {
-        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
-            throw new Error('SignalR connection not established');
-        }
-
-        try {
-            await this.connection.invoke('RespondApproval', trainNumber, fromStationId, approved);
-        } catch (error) {
-            console.error('Failed to respond to approval:', error);
             throw error;
         }
     }

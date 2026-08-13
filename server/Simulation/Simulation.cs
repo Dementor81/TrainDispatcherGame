@@ -413,7 +413,7 @@ namespace TrainDispatcherGame.Server.Simulation
         /// and remove any trains on open line tracks heading to/from this station.
         /// </summary>
         /// <param name="stationId">The station the player controlled.</param>
-        public async Task ReturnTrainsAtStation(string stationId)
+        public Task ReturnTrainsAtStation(string stationId)
         {
             try
             {
@@ -431,7 +431,7 @@ namespace TrainDispatcherGame.Server.Simulation
                     train.controlledByPlayer = false;
                     train.CurrentLocation = null;
                     _openLineTracks.RemoveTrainFromAllTracks(train);
-                    await _eventProcessor.DispatchTrainByServer(train);
+                    _eventProcessor.DispatchTrainByServer(train);
                 }
 
             }
@@ -439,35 +439,7 @@ namespace TrainDispatcherGame.Server.Simulation
             {
                 ServerLogger.Instance.LogError(Ctx(stationId ?? string.Empty), $"Error returning trains at station {stationId} on disconnect: {ex.Message}");
             }
-        }
-
-        public void ReceiveApproval(string trainNumber, string fromStationId, bool approved)
-        {
-            try
-            {
-                var train = _trains.FirstOrDefault(t => t.Number == trainNumber);
-                if (train == null)
-                {
-                    ServerLogger.Instance.LogWarning(Ctx(trainNumber), $"Approval for unknown train {trainNumber}");
-                    return;
-                }
-                var sendApprovalEvent = train.TrainEvent as SendApprovalEvent;
-                if (sendApprovalEvent == null) throw new Exception($"Train {train.Number} next event is not a send approval event");
-
-                if (!approved)
-                {
-                    ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Approval denied for train {train.Number}");
-                    sendApprovalEvent.ApprovalDenied(SimulationTime.AddSeconds(60));
-                    return;
-                }
-
-                ServerLogger.Instance.LogDebug(Ctx(train.Number), $"Approval received for train {train.Number} from {fromStationId}");
-                _eventProcessor.AdvanceTrainToNextStation(train);
-            }
-            catch (Exception ex)
-            {
-                ServerLogger.Instance.LogError(Ctx(trainNumber), $"Error processing approval: {ex.Message}");
-            }
+            return Task.CompletedTask;
         }
 
         public void ReportTrainStopped(Train train, string stationId)
