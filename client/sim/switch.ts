@@ -77,11 +77,30 @@ class Switch {
       this._tracks = tracks;
    }
 
-   // Toggle the switch state by swapping branch and from tracks
    toggle(): void {
-      if (this._tracks[3] === null) {         
-         this._branch = this._branch === this._tracks[2] ? this._tracks[1] : this._tracks[2];         
+      const positions = this.possiblePositions();
+      if (positions.length < 2) return;
+
+      const i = positions.findIndex(([from, branch]) =>
+         (from === this._from && branch === this._branch) ||
+         (from === this._branch && branch === this._from)
+      );
+      const [from, branch] = positions[(i + 1) % positions.length];
+      this._from = from;
+      this._branch = branch;
+   }
+
+   private possiblePositions(): [Track, Track][] {
+      const connected = this._tracks.filter((t): t is Track => t !== null);
+      const atStart = connected.filter(t => t.switchAtStart() === this);
+      const atEnd = connected.filter(t => t.switchAtEnd() === this);
+      const positions: [Track, Track][] = [];
+      for (const from of atStart) {
+         for (const branch of atEnd) {
+            positions.push([from, branch]);
+         }
       }
+      return positions;
    }
    
 }
