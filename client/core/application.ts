@@ -88,6 +88,7 @@ export class Application implements ApplicationContext {
       console.log("Selected layout:", layout, "Player ID:", playerId, "Player Name:", playerName);
       
       try {
+         this._renderer?.clearIncomingTrains();
          // Join the station via SignalR for real-time updates
          await this._signalRManager.joinStation(layout);
          console.log('Successfully joined station via SignalR');
@@ -263,8 +264,14 @@ export class Application implements ApplicationContext {
       });
 
       // Exit block status changed (from server) → create or remove blocking route
-      this._eventManager.on('exitBlockStatusChanged', (exitId: number, blocked: boolean) => {
-         this.handleExitBlockStatusChanged(exitId, blocked);
+      this._eventManager.on('exitBlockStatusChanged', (exitId: number, blocked: boolean, trainNumber?: string, category?: string) => {
+         this.handleExitBlockStatusChanged(exitId, blocked, trainNumber, category);
+      });
+
+      this._eventManager.on('trainCreated', (_train: Train, exitPointId: number) => {
+         if (exitPointId !== undefined && exitPointId !== null) {
+            this._renderer?.setIncomingTrain(exitPointId, null);
+         }
       });
 
       // Full station rejoin after grace period expired — clear stale local trains.
@@ -288,8 +295,13 @@ export class Application implements ApplicationContext {
       console.log("Event listeners setup complete");
    }
 
-   private handleExitBlockStatusChanged(exitId: number, blocked: boolean): void {
+   private handleExitBlockStatusChanged(exitId: number, blocked: boolean, trainNumber?: string, category?: string): void {
       if (blocked) {
+         if (trainNumber) {
+            const label = category ? `${category} ${trainNumber}` : trainNumber;
+            this._renderer?.setIncomingTrain(exitId, label);
+         }
+
          // Station B: Create blocking route from exit
          const location = this._trackLayoutManager.getExitPointLocation(exitId);
          const direction = this._trackLayoutManager.getExitPointDirection(exitId);
@@ -316,6 +328,8 @@ export class Application implements ApplicationContext {
             console.warn(`Failed to create blocking route for exit ${exitId}`);
          }
       } else {
+         this._renderer?.setIncomingTrain(exitId, null);
+
          // BOTH stations handle unblock:
          // Find and remove any route associated with this exit
          const routeAtExit = this._trainRouteManager.routes.find(r => r.exit?.id === exitId);
@@ -414,6 +428,7 @@ export class Application implements ApplicationContext {
 
          // Clear canvas contents
          if (this._renderer) {
+            this._renderer.clearIncomingTrains();
             this._renderer.clear();
          }
          this.setMainCanvasVisible(false);

@@ -71,7 +71,6 @@ export function getDistanceMeters(network: NetworkDto, a: string, b: string): nu
    const conn = findConnection(network, a, b) || findConnection(network, b, a);
    const base = conn ? conn.distance : 0;
    const extra = getStationExitSpan(a) * 0.5 + getStationExitSpan(b) * 0.5;
-   console.log(`Distance between ${a} and ${b}: ${base} + ${extra} = ${base + extra}`);
    return base + extra;
 }
 

@@ -260,6 +260,24 @@ namespace TrainDispatcherGame.Server.Endpoints
                 return Results.Ok(waypoints);
             });
 
+            app.MapGet("/api/trains/{trainNumber}/events", (string trainNumber, HttpRequest req, GameSessionManager sessionManager) =>
+            {
+                var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
+                if (sessionError != null)
+                {
+                    return sessionError;
+                }
+
+                var simulation = session!.Simulation;
+                var train = simulation.Trains.FirstOrDefault(t => t.Number == trainNumber);
+                if (train == null)
+                {
+                    return Results.NotFound(new { message = $"Train {trainNumber} not found" });
+                }
+
+                return Results.Ok(train.Events.Select(ToTrainEventDto).ToList());
+            });
+
             app.MapGet("/api/trains/{trainNumber}/details", (string trainNumber, HttpRequest req, GameSessionManager sessionManager) =>
             {
                 var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
@@ -353,12 +371,83 @@ namespace TrainDispatcherGame.Server.Endpoints
                 delay = t.delay,
                 nextEventTime = t.TrainEvent?.ScheduledTime,
                 nextEventType = t.TrainEvent is TrainSpawnEvent ? "Spawn"
+                    : t.TrainEvent is SendApprovalEvent ? "Approval"
                     : t.TrainEvent is TrainStartEvent ? "Start"
                     : t.TrainEvent is RetryDispatchEvent ? "Retry"
                     : t.TrainEvent is TrainWaitEvent ? "Wait"
                     : null,
                 spawnStation = (t.TrainEvent as TrainSpawnEvent)?.Connection.ToStation
             }).ToList();
+        }
+
+        private static TrainEventDto ToTrainEventDto(TrainEventBase evt)
+        {
+            var dto = new TrainEventDto
+            {
+                ScheduledTime = evt.ScheduledTime,
+                Processed = evt.Processed
+            };
+
+            switch (evt)
+            {
+                case TrainSpawnEvent spawn:
+                    dto.Type = "Spawn";
+                    dto.Data["headingStation"] = spawn.HeadingStation;
+                    dto.Data["fromStation"] = spawn.Connection.FromStation;
+                    dto.Data["toStation"] = spawn.Connection.ToStation;
+                    dto.Data["isReversed"] = spawn.IsReversed;
+                    dto.Data["headingExitId"] = spawn.HeadingExitId;
+                    break;
+                case TrainStartEvent start:
+                    dto.Type = "Start";
+                    dto.Data["station"] = start.Station;
+                    break;
+                case SendApprovalEvent approval:
+                    dto.Type = "Approval";
+                    dto.Data["approvalSent"] = approval.ApprovalSent;
+                    break;
+                case TrainWaitEvent wait:
+                    dto.Type = "Wait";
+                    dto.Data["station"] = wait.Station;
+                    break;
+                case RetryDispatchEvent retry:
+                    dto.Type = "Retry";
+                    dto.Data["blockingTrainNumber"] = retry.BlockingTrainNumber;
+                    break;
+                case TrainHandedToPlayerEvent handed:
+                    dto.Type = "HandedToPlayer";
+                    dto.Data["station"] = handed.Station;
+                    if (handed.ExitPointId.HasValue)
+                        dto.Data["exitPointId"] = handed.ExitPointId.Value;
+                    break;
+                case TrainStoppedEvent stopped:
+                    dto.Type = "Stopped";
+                    dto.Data["station"] = stopped.Station;
+                    dto.Data["delay"] = stopped.Delay;
+                    break;
+                case TrainDepartedEvent departed:
+                    dto.Type = "Departed";
+                    dto.Data["station"] = departed.Station;
+                    dto.Data["delay"] = departed.Delay;
+                    break;
+                case TrainCompletedEvent:
+                    dto.Type = "Completed";
+                    break;
+                case TrainMissedStopEvent missed:
+                    dto.Type = "MissedStop";
+                    dto.Data["station"] = missed.Station;
+                    break;
+                case TrainMissroutedEvent missrouted:
+                    dto.Type = "Missrouted";
+                    dto.Data["expectedStation"] = missrouted.ExpectedStation;
+                    dto.Data["actualStation"] = missrouted.ActualStation;
+                    break;
+                default:
+                    dto.Type = evt.GetType().Name;
+                    break;
+            }
+
+            return dto;
         }
     }
 }

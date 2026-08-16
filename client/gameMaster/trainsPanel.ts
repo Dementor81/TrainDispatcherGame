@@ -4,7 +4,10 @@ import { BasePanel } from "../ui/basePanel";
 export class TrainsPanel extends BasePanel {
   private unsubscribe: (() => void) | null = null;
 
-  constructor(private readonly poller: GmSnapshotPoller) {
+  constructor(
+    private readonly poller: GmSnapshotPoller,
+    private readonly onTrainClick: (trainNumber: string) => void,
+  ) {
     super(null as any, { width: 620, height: 720, left: 0, top: 60, title: 'Alle Züge', resizable: true });
     this.show();
   }
@@ -93,7 +96,11 @@ export class TrainsPanel extends BasePanel {
         }
 
         const row = document.createElement("div");
-        row.className = "d-flex flex-row gap-2 align-items-start py-1 border-bottom border-secondary";
+        row.className = "d-flex flex-row gap-2 align-items-start py-1 border-bottom border-secondary no-drag";
+        row.style.cursor = "pointer";
+        row.addEventListener("mouseenter", () => { row.style.backgroundColor = "rgba(255,255,255,0.08)"; });
+        row.addEventListener("mouseleave", () => { row.style.backgroundColor = ""; });
+        row.addEventListener("click", () => this.onTrainClick(String(t.number)));
 
         const id = document.createElement("div");
         id.className = "text-light fw-bold";

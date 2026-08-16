@@ -19,6 +19,8 @@ export class TrackRenderer {
    private _container: PIXI.Container;
    private _exitContainer: PIXI.Container;
    private _trackLayoutManager: TrackLayoutManager;
+   private _incomingTrains = new Map<number, string>();
+   private _incomingTrainTexts = new Map<number, PIXI.Text>();
 
    constructor(stage: PIXI.Container, trackLayoutManager: TrackLayoutManager) {
       this._container = new PIXI.Container();
@@ -100,7 +102,47 @@ export class TrackRenderer {
       text.x = end.x;
       text.y = end.y - RendererConfig.exitTextOffset;
       exitContainer.addChild(text);
+
+      const incomingLabel = this._incomingTrains.get(exit.id) ?? '';
+      const incomingText = new PIXI.Text({
+         text: incomingLabel,
+         style: {
+            fontSize: RendererConfig.exitTextSize,
+            fill: RendererConfig.exitTextColor,
+            align: "center",
+            fontFamily: RendererConfig.exitTextFont,
+         },
+      });
+      let perp = new V2(-track.unit.y, track.unit.x);
+      if (perp.y < 0) perp = perp.multiply(-1);
+      const incomingPos = basePosition.add(perp.multiply(RendererConfig.exitTextOffset));
+      incomingText.anchor.set(0.5, 0);
+      incomingText.x = incomingPos.x;
+      incomingText.y = incomingPos.y;
+      incomingText.visible = incomingLabel.length > 0;
+      exitContainer.addChild(incomingText);
+      this._incomingTrainTexts.set(exit.id, incomingText);
+
       this._exitContainer.addChild(exitContainer);
+   }
+
+   setIncomingTrain(exitId: number, label: string | null): void {
+      if (label) this._incomingTrains.set(exitId, label);
+      else this._incomingTrains.delete(exitId);
+
+      const text = this._incomingTrainTexts.get(exitId);
+      if (text) {
+         text.text = label ?? '';
+         text.visible = !!label;
+      }
+   }
+
+   clearIncomingTrains(): void {
+      this._incomingTrains.clear();
+      for (const text of this._incomingTrainTexts.values()) {
+         text.text = '';
+         text.visible = false;
+      }
    }
 
    renderAll(tracks: Track[]): void {
@@ -113,5 +155,6 @@ export class TrackRenderer {
    clear(): void {
       this._container.removeChildren();
       this._exitContainer.removeChildren();
+      this._incomingTrainTexts.clear();
    }
 } 

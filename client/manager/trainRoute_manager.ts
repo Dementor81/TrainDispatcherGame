@@ -63,6 +63,31 @@ export class TrainRouteManager {
       return false;
    }
 
+   private isBumperAt(track: Track, km: number): boolean {
+      if (km === 0) return track.switches[0] == null;
+      if (km === track.length) return track.switches[1] == null;
+      return false;
+   }
+
+   private routeEndsAtBumper(route: TrainRoute): boolean {
+      return this.isBumperAt(route.end.track, route.end.km);
+   }
+
+   /**
+    * Drop leftover inbound routes that ended at a bumper on this track and
+    * no longer occupy any other track (train already fully on the stub).
+    */
+   private releaseArrivedBumperRoutes(track: Track): void {
+      const leftover = this._routes.filter(route =>
+         this.routeEndsAtBumper(route) &&
+         route.end.track === track &&
+         route.parts.every(part => part.kind !== "track" || part.track === track)
+      );
+      for (const route of leftover) {
+         this.removeRoute(route);
+      }
+   }
+
    /**
     * Check if a switch is already used in any existing route
     * @param switchToCheck - The switch to check
@@ -81,7 +106,7 @@ export class TrainRouteManager {
 
    /**
     * Create a TrainRoute starting at the given endpoint and store it.
-    * Crawls forward along the rail network until the first signal (in direction) or an exit.
+    * Crawls forward along the rail network until the first same-direction signal, an exit, or a bumper.
     * If the route ends at a switch, the route is invalid and null is returned.
     * direction is the direction of the train (1 for left to right, -1 for right to left).
     * @param signal - The signal that created this route (optional)
@@ -91,6 +116,8 @@ export class TrainRouteManager {
    createAndStoreRoute(start: RouteEndpoint, direction: number = 1, signal: Signal | null = null, exit: Exit | null = null): TrainRoute | null {
       if (!start || !start.track) throw new Error("Start endpoint must include a valid track");
       if (direction !== 1 && direction !== -1) throw new Error("Direction must be 1 or -1");
+
+      this.releaseArrivedBumperRoutes(start.track);
 
       const parts: RoutePart[] = [];
 
@@ -149,10 +176,18 @@ export class TrainRouteManager {
          const boundaryKm = atEnd ? currentTrack.length : 0;
          const boundaryConnection = currentTrack.switches[atEnd ? 1 : 0];
 
+         if (boundaryConnection == null) {
+            if (!pushTrackSegment(currentTrack, currentKm, boundaryKm)) {
+               return null;
+            }
+            endEndpoint = { track: currentTrack, km: boundaryKm };
+            break;
+         }
+
          try {
             nextElement = this._layout.findNextTrack(currentTrack, currentDirection);
          } catch {
-            // Dead end / malformed connection
+            // Malformed connection
             return null;
          }
 

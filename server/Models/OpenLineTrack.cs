@@ -4,6 +4,8 @@ namespace TrainDispatcherGame.Server.Models
     {        
         public NetworkConnection Connection { get; set; } = new();
         public Train? TrainOnTrack { get; set; }
+        // Train waiting to enter this track when it becomes free.
+        public string? WaitingTrainNumber { get; set; }
 
         public OpenLineTrack(NetworkConnection connection)
         {

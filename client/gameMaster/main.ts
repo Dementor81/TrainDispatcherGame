@@ -10,6 +10,7 @@ import { HUDPanel } from "../ui/hudPanel";
 import { ControlPanel } from "../ui/controlPanel";
 import ScenarioSelectionDialog from "./scenarioSelectionDialog";
 import TrainsPanel from "./trainsPanel";
+import TrainEventsPanel from "./trainEventsPanel";
 import OpenLinePanel from "./openLinePanel";
 import LogsPanel from "./logsPanel";
 import PlayersPanel from "./playersPanel";
@@ -35,12 +36,13 @@ window.addEventListener("load", async () => {
   const scenario = new ScenarioSelectionDialog();
   const snapshotPoller = new GmSnapshotPoller();
   snapshotPoller.start();
-  const trains = new TrainsPanel(snapshotPoller);
+  const trainEvents = new TrainEventsPanel();
+  const trains = new TrainsPanel(snapshotPoller, (trainNumber) => trainEvents.showTrain(trainNumber));
   const openline = new OpenLinePanel(snapshotPoller);
   const logs = new LogsPanel();
   const players = new PlayersPanel(snapshotPoller);
   const gameCode = new GameCodePanel();
 
-  (window as any).gameMaster = { app, hud, panel, scenario, trains, openline, logs, players, gameCode, snapshotPoller };
+  (window as any).gameMaster = { app, hud, panel, scenario, trains, trainEvents, openline, logs, players, gameCode, snapshotPoller };
 });
 

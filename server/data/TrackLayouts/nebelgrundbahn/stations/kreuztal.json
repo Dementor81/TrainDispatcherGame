@@ -684,6 +684,11 @@
                "type": "main",
                "position": 67,
                "direction": -1
+            },
+            {
+               "type": "main",
+               "position": 1501,
+               "direction": 1
             }
          ],
          "switches": [
@@ -757,7 +762,13 @@
             "x": 850.0,
             "y": 275.0
          },
-         "signals": [],
+         "signals": [
+            {
+               "type": "main",
+               "position": 1611,
+               "direction": 1
+            }
+         ],
          "switches": [
             {
                "type": "Switch",

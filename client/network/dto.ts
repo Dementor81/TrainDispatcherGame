@@ -116,6 +116,13 @@ export interface TrainDetailsDto {
   followingTrainNumber?: string | null;
 }
 
+export interface TrainEventDto {
+  type: string;
+  scheduledTime: string;
+  processed: boolean;
+  data: Record<string, unknown>;
+}
+
 export enum LogLevel {
   Debug = 0,
   Warning = 1,

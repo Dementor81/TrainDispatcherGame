@@ -101,7 +101,6 @@ namespace TrainDispatcherGame.Server.Managers
             }
 
             await _hubContext.Clients.Group(SessionStationGroup(normalizedStationId)).SendAsync("TrainSent", payload);
-            ServerLogger.Instance.LogDebug(Ctx(train.Number), $"Sent train {train.Number} to player {player.Id} at station {normalizedStationId}, exit point {exitPointId}, action: {currentEvent.Action}, arrival: {currentEvent.ArrivalTime}, departure: {currentEvent.DepartureTime}");
         }
 
         public async Task SendSimulationStateChange(SimulationState newState, int speed, DateTime currentTime, double elapsedSeconds)
@@ -118,14 +117,42 @@ namespace TrainDispatcherGame.Server.Managers
             ServerLogger.Instance.LogDebug(Ctx(newState.ToString()), $"Sent simulation state change to all clients in session {_sessionId}: {newState}");
         }
 
-        public async Task SendExitBlockStatus(string stationId, int exitId, bool blocked)
+        public async Task SendApprovalRequest(string stationId, string fromStationId, string trainNumber)
+        {
+            var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+            var normalizedFromStationId = fromStationId?.ToLowerInvariant() ?? string.Empty;
+
+            var player = _playerManager.GetPlayerByStation(normalizedStationId);
+            if (player == null)
+            {
+                ServerLogger.Instance.LogWarning(Ctx(normalizedStationId), $"Approval request skipped: no player at station {normalizedStationId}");
+                return;
+            }
+
+            var payload = new
+            {
+                stationId = normalizedStationId,
+                fromStationId = normalizedFromStationId,
+                trainNumber = trainNumber
+            };
+
+            if (_isInGracePeriod?.Invoke(normalizedStationId) == true)
+            {
+                BufferMessage(normalizedStationId, "ApprovalRequested", payload);
+                return;
+            }
+
+            await _hubContext.Clients.Group(SessionStationGroup(normalizedStationId)).SendAsync("ApprovalRequested", payload);
+        }
+
+        public async Task SendExitBlockStatus(string stationId, int exitId, bool blocked, string? trainNumber = null, string? category = null)
         {
             var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
             
             var player = _playerManager.GetPlayerByStation(normalizedStationId);
             if (player == null) return;
 
-            var payload = new { exitId = exitId, blocked = blocked };
+            var payload = new { exitId = exitId, blocked = blocked, trainNumber = trainNumber, category = category };
 
             if (_isInGracePeriod?.Invoke(normalizedStationId) == true)
             {
@@ -135,7 +162,6 @@ namespace TrainDispatcherGame.Server.Managers
             }
 
             await _hubContext.Clients.Group(SessionStationGroup(normalizedStationId)).SendAsync("ExitBlockStatusChanged", payload);
-            ServerLogger.Instance.LogDebug(Ctx(normalizedStationId), $"Exit {exitId} at station {normalizedStationId} is now {(blocked ? "blocked" : "unblocked")}");
         }
 
         public async Task SendTrainDelayUpdated(TrainDelayUpdatedNotification payload)

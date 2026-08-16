@@ -1,7 +1,8 @@
 import { EventManager } from "./event_manager";
 import switchToggleSound from "../assets/sounds/switch_toggle.mp3";
+import approvalRequestSound from "../assets/sounds/approval_request.mp3";
 
-type SoundName = "switchToggled";
+type SoundName = "switchToggled" | "incomingTrain" | "approvalRequested";
 
 export class SoundsManager {
    private readonly _eventManager: EventManager;
@@ -9,14 +10,27 @@ export class SoundsManager {
 
    constructor(eventManager: EventManager) {
       this._eventManager = eventManager;
+      const incomingAudio = this.createAudio(approvalRequestSound);
       this._sounds = {
          switchToggled: this.createAudio(switchToggleSound),
+         incomingTrain: incomingAudio,
+         approvalRequested: incomingAudio,
       };
    }
 
    init(): void {
       this._eventManager.on("switchClicked", () => {
          this.play("switchToggled");
+      });
+
+      this._eventManager.on("exitBlockStatusChanged", (_exitId: number, blocked: boolean, trainNumber?: string) => {
+         if (blocked && trainNumber) {
+            this.play("incomingTrain");
+         }
+      });
+
+      this._eventManager.on("approvalRequested", () => {
+         this.play("approvalRequested");
       });
    }
 
@@ -27,8 +41,8 @@ export class SoundsManager {
    }
 
    private play(soundName: SoundName): void {
-      const baseAudio = this._sounds[soundName];
-      const audio = baseAudio.cloneNode(true) as HTMLAudioElement;
+      const audio = this._sounds[soundName];
+      audio.pause();
       audio.currentTime = 0;
       void audio.play().catch((error: unknown) => {
          console.warn(`Could not play sound "${soundName}"`, error);

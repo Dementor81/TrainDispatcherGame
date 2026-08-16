@@ -46,25 +46,32 @@ export default class SzenariosApplication {
    private availableRoutes: string[][] = [];
    private selectedRoute: string[] | null = null;
    private singleTrackBg?: PIXI.Graphics;
+   private stationGrid?: PIXI.Graphics;
+   private stationLabels?: PIXI.Container;
+   private content?: PIXI.Container;
+   private timeGrid?: PIXI.Graphics;
    private conflictBg?: PIXI.Graphics;
-   private grid?: PIXI.Graphics;
-   private lines?: PIXI.Graphics;
-   private labels?: PIXI.Container;
-   private trainLabels?: PIXI.Container;
-   private timeHandles?: PIXI.Container;
+   private trainsLayer?: PIXI.Container;
+   private timeLabels?: PIXI.Container;
+   private trainLayers: PIXI.Container[] = [];
    private hoverOverlay?: PIXI.Graphics;
-   private hoverLeftLabel?: PIXI.Text;
-   private hoverRightLabel?: PIXI.Text;
+   private hoverLeftLabel?: PIXI.BitmapText;
+   private hoverRightLabel?: PIXI.BitmapText;
+   private hoverLineWidth: number = 0;
    private lastHoverClientY: number | null = null;
    private padding: number = 40;
    private viewStartMinutes: number = 0;
    private viewDurationMinutes: number = 60;
    private isPanning: boolean = false;
    private lastPointerY: number = 0;
+   private pointerDownY: number = 0;
+   private pointerDownOnTrain: boolean = false;
+   private dragLastClientY: number = 0;
    private selectedTrainIdx: number | null = null;
    private lastTrainLabelTap?: { trainIdx: number; atMs: number };
    private directionFilter: DirectionFilter = 'both';
    private interactionsBound: boolean = false;
+   private pendingDraw: boolean = false;
 
    constructor(container: HTMLElement) {
       this.container = container;
@@ -76,8 +83,17 @@ export default class SzenariosApplication {
          resizeTo: this.container,
          background: 0x101214 as any,
          antialias: true,
+         autoStart: false,
       });
+      this.app.ticker.stop();
+      this.app.canvas.style.display = "block";
       this.container.appendChild(this.app.canvas);
+      PIXI.BitmapFont.install({
+         name: "scenario-ui",
+         resolution: Math.max(1, window.devicePixelRatio || 1),
+         chars: [["a", "z"], ["A", "Z"], ["0", "9"], " :.-_/"],
+         style: { fontFamily: this.fontFamily, fontSize: 12, fill: 0xffffff },
+      });
 
       // Choose scenario by URL (?scenario=ID) or first in list; fallback 'timetable'
       let list: Array<{ id: string }> = [];
@@ -265,12 +281,14 @@ export default class SzenariosApplication {
    private createSceneLayers() {
       this.clearStage();
       this.singleTrackBg = new PIXI.Graphics();
+      this.stationGrid = new PIXI.Graphics();
+      this.stationLabels = new PIXI.Container();
+      this.content = new PIXI.Container();
+      this.timeGrid = new PIXI.Graphics();
       this.conflictBg = new PIXI.Graphics();
-      this.grid = new PIXI.Graphics();
-      this.lines = new PIXI.Graphics();
-      this.labels = new PIXI.Container();
-      this.trainLabels = new PIXI.Container();
-      this.timeHandles = new PIXI.Container();
+      this.trainsLayer = new PIXI.Container();
+      this.content.addChild(this.timeGrid, this.conflictBg, this.trainsLayer);
+      this.timeLabels = new PIXI.Container();
       this.hoverOverlay = new PIXI.Graphics();
       this.hoverLeftLabel = this.createText("", 11, 0x8b93a1, "right");
       this.hoverRightLabel = this.createText("", 11, 0x8b93a1, "left");
@@ -278,12 +296,10 @@ export default class SzenariosApplication {
       this.hoverRightLabel.anchor.set(0, 0.5);
       this.app.stage.addChild(
          this.singleTrackBg,
-         this.conflictBg,
-         this.grid,
-         this.lines,
-         this.labels,
-         this.trainLabels,
-         this.timeHandles,
+         this.stationGrid,
+         this.content,
+         this.stationLabels,
+         this.timeLabels,
          this.hoverOverlay,
          this.hoverLeftLabel,
          this.hoverRightLabel
@@ -326,10 +342,16 @@ export default class SzenariosApplication {
       return this.viewStartMinutes + this.viewDurationMinutes;
    }
 
+   private getPixelsPerMinute(): number {
+      const height = this.app.renderer.height - this.padding * 2;
+      return height / this.viewDurationMinutes;
+   }
+
    private getViewMetrics(): ViewMetrics {
       const padding = this.padding;
       const width = this.app.renderer.width - padding * 2;
       const height = this.app.renderer.height - padding * 2;
+      const ppm = this.getPixelsPerMinute();
       const denom = Math.max(1, this.stationOrder.length - 1);
       return {
          padding,
@@ -338,16 +360,19 @@ export default class SzenariosApplication {
          viewStart: this.viewStartMinutes,
          viewEnd: this.viewEndMinutes,
          xForStation: (station: string) => padding + ((this.stationIndex.get(station) ?? 0) / denom) * width,
-         yForMinutes: (minutes: number) => padding + ((minutes - this.viewStartMinutes) / this.viewDurationMinutes) * height,
-         yForTime: (time: string) => padding + ((toMinutes(time) - this.viewStartMinutes) / this.viewDurationMinutes) * height,
+         yForMinutes: (minutes: number) => minutes * ppm,
+         yForTime: (time: string) => toMinutes(time) * ppm,
       };
    }
 
    private createText(text: string, fontSize: number, fill: number, align: "left" | "right" | "center" = "left") {
-      return new PIXI.Text({
+      const label = new PIXI.BitmapText({
          text,
-         style: { fontSize, fill, align, fontFamily: this.fontFamily },
+         style: { fontSize, align, fontFamily: "scenario-ui", fill: 0xffffff },
       });
+      label.tint = fill;
+      label.anchor.set(align === "right" ? 1 : align === "center" ? 0.5 : 0, 0.5);
+      return label;
    }
 
    private destroyContainerChildren(container?: PIXI.Container) {
@@ -357,26 +382,77 @@ export default class SzenariosApplication {
       }
    }
 
-   private resetSceneLayers() {
-      this.singleTrackBg?.clear();
-      this.conflictBg?.clear();
-      this.grid?.clear();
-      this.lines?.clear();
-      this.destroyContainerChildren(this.labels);
-      this.destroyContainerChildren(this.trainLabels);
-      this.destroyContainerChildren(this.timeHandles);
+   private replaceGraphics(current: PIXI.Graphics | undefined, parent: PIXI.Container): PIXI.Graphics {
+      const index = current?.parent === parent ? parent.getChildIndex(current) : parent.children.length;
+      if (current) {
+         parent.removeChild(current);
+         current.destroy();
+      }
+      const next = new PIXI.Graphics();
+      parent.addChildAt(next, Math.min(index, parent.children.length));
+      return next;
+   }
+
+   private scheduleDrawScene() {
+      if (this.pendingDraw) return;
+      this.pendingDraw = true;
+      requestAnimationFrame(() => {
+         this.pendingDraw = false;
+         this.drawScene();
+      });
+   }
+
+   private renderNow() {
+      this.app.render();
+   }
+
+   private applyViewTransform() {
+      const y = this.padding - this.viewStartMinutes * this.getPixelsPerMinute();
+      if (this.content) this.content.y = y;
+      if (this.timeLabels) this.timeLabels.y = y;
+      this.renderNow();
+   }
+
+   private syncHoverLine(metrics: ViewMetrics) {
+      if (!this.hoverOverlay) return;
+      if (this.hoverLineWidth === metrics.width) return;
+      this.hoverLineWidth = metrics.width;
+      const parent = this.hoverOverlay.parent;
+      const index = parent ? parent.getChildIndex(this.hoverOverlay) : 0;
+      this.hoverOverlay.destroy();
+      const g = new PIXI.Graphics();
+      const xStart = metrics.padding;
+      const xEnd = metrics.padding + metrics.width;
+      for (let x = xStart; x < xEnd; x += 10) {
+         g.moveTo(x, 0).lineTo(Math.min(x + 6, xEnd), 0);
+      }
+      g.stroke({ width: 1, color: 0x8b93a1, alpha: 0.8, cap: "butt" });
+      this.hoverOverlay = g;
+      parent?.addChildAt(g, index);
+   }
+
+   private getSceneTimeRange(): { start: number; end: number } {
+      let start = this.viewStartMinutes;
+      let end = this.viewEndMinutes;
+      for (const train of this.scenario?.trains ?? []) {
+         for (const entry of train.timetable || []) {
+            if (entry.arrival) {
+               const minutes = toMinutes(entry.arrival);
+               start = Math.min(start, minutes);
+               end = Math.max(end, minutes);
+            }
+            if (entry.departure) {
+               const minutes = toMinutes(entry.departure);
+               start = Math.min(start, minutes);
+               end = Math.max(end, minutes);
+            }
+         }
+      }
+      return { start: start - this.viewDurationMinutes, end: end + this.viewDurationMinutes };
    }
 
    private forEachTimeTick(metrics: ViewMetrics, step: number, cb: (minutes: number) => void) {
       for (let tick = Math.floor(metrics.viewStart / step) * step; tick <= metrics.viewEnd; tick += step) cb(tick);
-   }
-
-   private clipToView(start: number, end: number) {
-      if (end < this.viewStartMinutes || start > this.viewEndMinutes) return null;
-      return {
-         start: Math.max(start, this.viewStartMinutes),
-         end: Math.min(end, this.viewEndMinutes),
-      };
    }
 
    private getTravelMinutes(fromStation: string, toStation: string, speed: number) {
@@ -407,28 +483,36 @@ export default class SzenariosApplication {
    }
 
    private drawScene() {
-      if (!this.scenario || !this.network || !this.grid || !this.lines || !this.labels || !this.trainLabels) return;
+      if (!this.scenario || !this.network || !this.content || !this.trainsLayer || !this.stationLabels || !this.timeLabels) return;
       const metrics = this.getViewMetrics();
-      this.resetSceneLayers();
+      this.singleTrackBg = this.replaceGraphics(this.singleTrackBg, this.app.stage);
+      this.stationGrid = this.replaceGraphics(this.stationGrid, this.app.stage);
+      this.timeGrid = this.replaceGraphics(this.timeGrid, this.content);
+      this.conflictBg = this.replaceGraphics(this.conflictBg, this.content);
+      this.destroyContainerChildren(this.stationLabels);
+      this.destroyContainerChildren(this.timeLabels);
+      this.destroyContainerChildren(this.trainsLayer);
+      this.trainLayers = [];
       this.drawTimeAxis(metrics);
       this.drawTrackOverlays(metrics);
       this.drawStations(metrics);
       this.scenario.trains.forEach((train, idx) => this.drawTrain(train, idx, metrics));
+      this.syncHoverLine(metrics);
+      this.applyViewTransform();
       if (this.lastHoverClientY !== null) this.updateHoverFromClientY(this.lastHoverClientY);
    }
 
    private drawTimeAxis(metrics: ViewMetrics) {
-      this.forEachTimeTick(metrics, 10, (minutes) => {
+      const range = this.getSceneTimeRange();
+      this.forEachTimeTick({ ...metrics, viewStart: range.start, viewEnd: range.end }, 10, (minutes) => {
          const y = metrics.yForMinutes(minutes);
          const label = String(Math.floor(minutes) % 60).padStart(2, "0");
          const left = this.createText(label, 11, 0x8b93a1, "right");
          const right = this.createText(label, 11, 0x8b93a1, "left");
-         left.anchor.set(1, 0.5);
-         right.anchor.set(0, 0.5);
          left.position.set(metrics.padding - 8, y);
          right.position.set(metrics.padding + metrics.width + 8, y);
-         this.labels!.addChild(left, right);
-         this.grid!
+         this.timeLabels!.addChild(left, right);
+         this.timeGrid!
             .moveTo(metrics.padding, y)
             .lineTo(metrics.padding + metrics.width, y)
             .stroke({ width: 1, color: 0x2a2f36, alpha: 1, cap: "butt" });
@@ -449,14 +533,12 @@ export default class SzenariosApplication {
       if (!this.conflictBg || !this.scenario || !this.network) return;
       for (const conflict of detectCollisions(this.scenario.trains, this.network)) {
          if (!this.stationIndex.has(conflict.fromStation) || !this.stationIndex.has(conflict.toStation)) continue;
-         const clipped = this.clipToView(conflict.startTimeMinutes, conflict.endTimeMinutes);
-         if (!clipped) continue;
          this.conflictBg
             .poly([
-               metrics.xForStation(conflict.fromStation), metrics.yForMinutes(clipped.start),
-               metrics.xForStation(conflict.toStation), metrics.yForMinutes(clipped.start),
-               metrics.xForStation(conflict.toStation), metrics.yForMinutes(clipped.end),
-               metrics.xForStation(conflict.fromStation), metrics.yForMinutes(clipped.end),
+               metrics.xForStation(conflict.fromStation), metrics.yForMinutes(conflict.startTimeMinutes),
+               metrics.xForStation(conflict.toStation), metrics.yForMinutes(conflict.startTimeMinutes),
+               metrics.xForStation(conflict.toStation), metrics.yForMinutes(conflict.endTimeMinutes),
+               metrics.xForStation(conflict.fromStation), metrics.yForMinutes(conflict.endTimeMinutes),
             ])
             .fill({ color: 0xff0000, alpha: 0.35 });
       }
@@ -465,22 +547,27 @@ export default class SzenariosApplication {
    private drawStations(metrics: ViewMetrics) {
       for (const station of this.stationOrder) {
          const x = metrics.xForStation(station);
-         this.grid!
+         this.stationGrid!
             .moveTo(x, metrics.padding)
             .lineTo(x, metrics.padding + metrics.height)
             .stroke({ width: 1, color: 0x394049, alpha: 1, cap: "butt" });
          const label = this.createText(station, 12, 0xb0b8c0, "center");
          label.anchor.set(0.5, 1);
          label.position.set(x, metrics.padding - 6);
-         this.labels!.addChild(label);
+         this.stationLabels!.addChild(label);
       }
    }
 
    private drawTrain(train: any, idx: number, metrics: ViewMetrics) {
-      if (!this.shouldShowTrain(train) || !train.timetable?.length) return;
+      if (!this.shouldShowTrain(train) || !train.timetable?.length || !this.trainsLayer) return;
       const color = getCategoryColor(train.category, train.type);
       const lineWidth = idx === this.selectedTrainIdx ? 4 : 2;
       const entries = train.timetable;
+      const layer = new PIXI.Container();
+      const lines = new PIXI.Graphics();
+      layer.addChild(lines);
+      this.trainsLayer.addChild(layer);
+      this.trainLayers[idx] = layer;
 
       for (let i = 0; i < entries.length - 1; i++) {
          const a = entries[i];
@@ -493,17 +580,12 @@ export default class SzenariosApplication {
          else if (depMinutes != null && arrMinutes == null) arrMinutes = depMinutes + travelMinutes;
          if (depMinutes == null || arrMinutes == null) continue;
 
-         const clipped = this.clipToView(depMinutes, arrMinutes);
-         if (!clipped) continue;
          const x1 = metrics.xForStation(a.station);
          const x2 = metrics.xForStation(b.station);
-         const span = arrMinutes - depMinutes || 1e-6;
-         const x1c = x1 + (x2 - x1) * ((clipped.start - depMinutes) / span);
-         const x2c = x1 + (x2 - x1) * ((clipped.end - depMinutes) / span);
-         const y1c = metrics.yForMinutes(clipped.start);
-         const y2c = metrics.yForMinutes(clipped.end);
-         this.lines!.moveTo(x1c, y1c).lineTo(x2c, y2c);
-         this.drawTrainLabel(train, idx, i, color, x1c, y1c, x2c, y2c);
+         const y1 = metrics.yForMinutes(depMinutes);
+         const y2 = metrics.yForMinutes(arrMinutes);
+         lines.moveTo(x1, y1).lineTo(x2, y2);
+         this.drawTrainLabel(layer, train, idx, i, color, x1, y1, x2, y2);
       }
 
       for (let i = 0; i < entries.length; i++) {
@@ -511,16 +593,26 @@ export default class SzenariosApplication {
          if (!this.stationIndex.has(entry.station)) continue;
          const x = metrics.xForStation(entry.station);
          if (entry.arrival && entry.departure) {
-            const clipped = this.clipToView(toMinutes(entry.arrival), toMinutes(entry.departure));
-            if (clipped) this.lines!.moveTo(x, metrics.yForMinutes(clipped.start)).lineTo(x, metrics.yForMinutes(clipped.end));
+            lines.moveTo(x, metrics.yForMinutes(toMinutes(entry.arrival))).lineTo(x, metrics.yForMinutes(toMinutes(entry.departure)));
          }
-         this.drawTimeHandle(idx, i, entry.departure, x, metrics.yForTime);
+         this.drawTimeHandle(layer, idx, i, entry.departure, x, metrics.yForTime);
       }
 
-      this.lines!.stroke({ width: lineWidth, color, alpha: 1, cap: "round" });
+      lines.stroke({ width: lineWidth, color, alpha: 1, cap: "round" });
    }
 
-   private drawTrainLabel(train: any, trainIdx: number, segmentIdx: number, color: number, x1: number, y1: number, x2: number, y2: number) {
+   private redrawTrain(idx: number) {
+      const old = this.trainLayers[idx];
+      if (old) {
+         old.parent?.removeChild(old);
+         old.destroy({ children: true });
+      }
+      const train = this.scenario?.trains[idx];
+      if (train) this.drawTrain(train, idx, this.getViewMetrics());
+      this.renderNow();
+   }
+
+   private drawTrainLabel(layer: PIXI.Container, train: any, trainIdx: number, segmentIdx: number, color: number, x1: number, y1: number, x2: number, y2: number) {
       const dx = x2 - x1;
       const dy = y2 - y1;
       const length = Math.hypot(dx, dy);
@@ -537,27 +629,30 @@ export default class SzenariosApplication {
          midy + (dx / length) * 6 + (dy / length) * 50 * sign
       );
       this.bindTrainLabelInteractions(label, trainIdx);
-      this.trainLabels!.addChild(label);
+      layer.addChild(label);
    }
 
-   private bindTrainLabelInteractions(label: PIXI.Text, trainIdx: number) {
+   private bindTrainLabelInteractions(label: PIXI.BitmapText, trainIdx: number) {
       label.eventMode = "static";
-      (label as any).cursor = "grab";
+      label.cursor = "grab";
       label.on("pointertap", (ev: PIXI.FederatedPointerEvent) => {
-         this.setSelectedTrain(trainIdx);
          const detail = (ev as any)?.detail;
          if ((typeof detail === "number" && detail >= 2) || this.isTrainLabelDoubleTap(trainIdx)) this.editSelectedTrain();
       });
       label.on("pointerdown", (ev: PIXI.FederatedPointerEvent) => {
-         (label as any).cursor = "grabbing";
+         ev.stopPropagation();
+         this.isPanning = false;
+         this.pointerDownOnTrain = true;
+         label.cursor = "grabbing";
+         this.setSelectedTrain(trainIdx, false);
          this.beginTrainDrag(trainIdx, ev.clientY);
       });
       label.on("pointerup", () => {
-         (label as any).cursor = "grab";
+         label.cursor = "grab";
          this.endTrainDrag();
       });
       label.on("pointerupoutside", () => {
-         (label as any).cursor = "grab";
+         label.cursor = "grab";
          this.endTrainDrag();
       });
    }
@@ -572,20 +667,23 @@ export default class SzenariosApplication {
    private setupInteractions() {
       if (this.interactionsBound) return;
       this.interactionsBound = true;
-      const onPointerUp = () => {
-         this.isPanning = false;
+      const onPointerUp = (ev: PointerEvent) => {
+         const panMoved = Math.abs(ev.clientY - this.pointerDownY) >= 3;
          this.endTrainDrag();
          this.endHandleDrag();
+         if (!this.pointerDownOnTrain && !panMoved) this.setSelectedTrain(null);
+         this.pointerDownOnTrain = false;
+         this.isPanning = false;
       };
       this.container.addEventListener("wheel", (ev) => this.handleWheel(ev), { passive: false });
-      this.container.addEventListener("pointerdown", (ev) => this.handleCanvasPointerDown(ev));
+      this.container.addEventListener("pointerdown", (ev) => this.handleCanvasPointerDown(ev), { capture: true });
       this.container.addEventListener("pointermove", (ev) => this.updateHoverFromClientY(ev.clientY));
       this.container.addEventListener("pointerleave", () => this.hideHover());
       window.addEventListener("pointermove", (ev) => this.handleGlobalPointerMove(ev));
       window.addEventListener("pointerup", onPointerUp);
       window.addEventListener("pointercancel", onPointerUp);
       window.addEventListener("blur", onPointerUp as any);
-      window.addEventListener("resize", () => this.drawScene());
+      window.addEventListener("resize", () => this.scheduleDrawScene());
    }
 
    private handleWheel(ev: WheelEvent) {
@@ -598,14 +696,14 @@ export default class SzenariosApplication {
       const focusMin = this.viewStartMinutes + norm * this.viewDurationMinutes;
       this.viewStartMinutes = focusMin - norm * newDuration;
       this.viewDurationMinutes = newDuration;
-      this.drawScene();
+      this.scheduleDrawScene();
    }
 
    private handleCanvasPointerDown(ev: PointerEvent) {
       this.isPanning = true;
+      this.pointerDownOnTrain = false;
       this.lastPointerY = ev.clientY;
-      const target = ev.target as any;
-      if (!(target && target.constructor && target.constructor.name === "Text")) this.setSelectedTrain(null);
+      this.pointerDownY = ev.clientY;
    }
 
    private handleGlobalPointerMove(ev: PointerEvent) {
@@ -614,7 +712,8 @@ export default class SzenariosApplication {
       const dy = ev.clientY - this.lastPointerY;
       this.lastPointerY = ev.clientY;
       this.viewStartMinutes -= dy * minutesPerPixel;
-      this.drawScene();
+      this.applyViewTransform();
+      if (this.lastHoverClientY !== null) this.updateHoverFromClientY(this.lastHoverClientY);
    }
 
    private updateHandleDrag(clientY: number, minutesPerPixel: number) {
@@ -625,14 +724,16 @@ export default class SzenariosApplication {
       const newMinutes = Math.max(snapshot.arrivals[this.handleEntryIdx] ?? 0, this.handleStartMinutes + deltaMinutes);
       entries[this.handleEntryIdx].departure = minutesToString(newMinutes);
       this.applySnapshotDelta(entries, snapshot, newMinutes - this.handleStartMinutes, this.handleEntryIdx + 1);
-      this.drawScene();
+      this.redrawTrain(this.handleTrainIdx);
       return true;
    }
 
    private updateTrainDrag(clientY: number, minutesPerPixel: number) {
       if (!this.isDraggingTrain || this.draggingTrainIdx === null || !this.dragSnapshot) return false;
-      this.applyTrainDragDelta(this.draggingTrainIdx, (clientY - this.dragStartPointerY) * minutesPerPixel);
-      this.drawScene();
+      this.dragLastClientY = clientY;
+      const layer = this.trainLayers[this.draggingTrainIdx];
+      if (layer) layer.y = clientY - this.dragStartPointerY;
+      this.renderNow();
       return true;
    }
 
@@ -649,19 +750,7 @@ export default class SzenariosApplication {
          this.hideHover();
          return;
       }
-      // draw dashed horizontal line across content width
-      this.hoverOverlay.clear();
-      const xStart = padding;
-      const xEnd = padding + width;
-      const dash = 6;
-      const gap = 4;
-      for (let x = xStart; x < xEnd; x += dash + gap) {
-         const xx2 = Math.min(x + dash, xEnd);
-         this.hoverOverlay.moveTo(x, y).lineTo(xx2, y);
-      }
-      this.hoverOverlay.stroke({ width: 1, color: 0x8b93a1, alpha: 0.8, cap: "butt" });
-
-      // compute minutes at this y and update labels
+      this.hoverOverlay.y = y;
       const viewMinutes = this.viewStartMinutes + ((y - padding) / Math.max(1, height)) * this.viewDurationMinutes;
       const totalSeconds = Math.round(viewMinutes * 60);
       const minuteOnly = ((Math.floor(totalSeconds / 60) % 60) + 60) % 60;
@@ -676,25 +765,26 @@ export default class SzenariosApplication {
       this.hoverOverlay.visible = true;
       this.hoverLeftLabel.visible = true;
       this.hoverRightLabel.visible = true;
+      this.renderNow();
    }
 
    private hideHover() {
-      if (this.hoverOverlay) {
-         this.hoverOverlay.clear();
-         this.hoverOverlay.visible = false;
-      }
+      this.lastHoverClientY = null;
+      if (this.hoverOverlay) this.hoverOverlay.visible = false;
       if (this.hoverLeftLabel) this.hoverLeftLabel.visible = false;
       if (this.hoverRightLabel) this.hoverRightLabel.visible = false;
+      if (this.app) this.renderNow();
    }
 
    private drawTimeHandle(
+      layer: PIXI.Container,
       trainIdx: number,
       entryIdx: number,
       timeStr: string | undefined,
       x: number,
       yForTime: (t: string) => number
    ) {
-      if (!timeStr || !this.timeHandles) return;
+      if (!timeStr) return;
       const y = yForTime(timeStr);
       const g = new PIXI.Graphics();
       g.circle(x, y, 3).fill({ color: 0xffffff, alpha: 1 }).stroke({ color: 0x000000, width: 1, alpha: 0.6 });
@@ -711,28 +801,43 @@ export default class SzenariosApplication {
       g.on("pointerup", () => this.endHandleDrag());
       g.on("pointerupoutside", () => this.endHandleDrag());
       g.on("pointercancel", () => this.endHandleDrag());
-      this.timeHandles.addChild(g);
+      layer.addChild(g);
    }
 
    private endHandleDrag() {
+      const wasDragging = this.isDraggingHandle;
       this.isDraggingHandle = false;
       this.handleTrainIdx = null;
       this.handleEntryIdx = null;
       this.handleSnapshot = undefined;
+      if (wasDragging) this.drawScene();
    }
 
    private beginTrainDrag(trainIdx: number, clientY: number) {
       this.isDraggingTrain = true;
       this.draggingTrainIdx = trainIdx;
       this.dragStartPointerY = clientY;
+      this.dragLastClientY = clientY;
       this.dragSnapshot = this.buildTimetableSnapshot(this.scenario!.trains[trainIdx].timetable);
    }
 
    private endTrainDrag() {
       if (!this.isDraggingTrain) return;
+      const idx = this.draggingTrainIdx;
+      const moved = Math.abs(this.dragLastClientY - this.dragStartPointerY) >= 3;
+      if (moved && idx !== null && this.dragSnapshot) {
+         this.applyTrainDragDelta(idx, (this.dragLastClientY - this.dragStartPointerY) * this.getMinutesPerPixel());
+      }
       this.isDraggingTrain = false;
       this.draggingTrainIdx = null;
       this.dragSnapshot = undefined;
+      if (moved) {
+         this.drawScene();
+         return;
+      }
+      const layer = idx !== null ? this.trainLayers[idx] : undefined;
+      if (layer) layer.y = 0;
+      this.scheduleDrawScene();
    }
 
    private applyTrainDragDelta(trainIdx: number, deltaMinutes: number) {
@@ -785,21 +890,22 @@ export default class SzenariosApplication {
          child.destroy({ children: true });
       }
       this.singleTrackBg = undefined;
+      this.stationGrid = undefined;
+      this.stationLabels = undefined;
+      this.content = undefined;
+      this.timeGrid = undefined;
       this.conflictBg = undefined;
-      this.grid = undefined;
-      this.lines = undefined;
-      this.labels = undefined;
-      this.trainLabels = undefined;
-      this.timeHandles = undefined;
+      this.trainsLayer = undefined;
+      this.timeLabels = undefined;
+      this.trainLayers = [];
       this.hoverOverlay = undefined;
       this.hoverLeftLabel = undefined;
       this.hoverRightLabel = undefined;
+      this.hoverLineWidth = 0;
    }
 
    private getMinutesPerPixel(): number {
-      const padding = this.padding;
-      const height = this.app.renderer.height - padding * 2;
-      return this.viewDurationMinutes / Math.max(1, height);
+      return 1 / this.getPixelsPerMinute();
    }
 
    private getTrainDirection(train: any): 'leftToRight' | 'rightToLeft' | 'unknown' {
@@ -853,11 +959,11 @@ export default class SzenariosApplication {
       }
    }
 
-   private setSelectedTrain(idx: number | null) {
+   private setSelectedTrain(idx: number | null, redraw: boolean = true) {
       const changed = this.selectedTrainIdx !== idx;
       this.selectedTrainIdx = idx;
       this.setTrainActionButtonsDisabled(idx === null);
-      if (changed) requestAnimationFrame(() => this.drawScene());
+      if (changed && redraw) this.scheduleDrawScene();
    }
 
    private setTrainActionButtonsDisabled(disabled: boolean) {

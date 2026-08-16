@@ -195,6 +195,14 @@ export class Renderer {
       this._trainRouteRenderer.renderAll(routes);
    }
 
+   public setIncomingTrain(exitId: number, label: string | null): void {
+      this._trackRenderer.setIncomingTrain(exitId, label);
+   }
+
+   public clearIncomingTrains(): void {
+      this._trackRenderer.clearIncomingTrains();
+   }
+
    public clear(): void {
       this._trackRenderer.clear();
       this._platformRenderer.clear();

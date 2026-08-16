@@ -11,7 +11,20 @@ namespace TrainDispatcherGame.Server.Models
         public string? Category { get; set; } = null;
         public double SpeedMax { get; set; }//m/s
         public int Cars { get; set; }
-        public TrainEventBase? TrainEvent { get; set; }
+        private TrainEventBase? _trainEvent;
+        public TrainEventBase? TrainEvent
+        {
+            get => _trainEvent;
+            set
+            {
+                if (_trainEvent != null && !_trainEvent.Processed)
+                    _trainEvent.Processed = true;
+                if (value != null)
+                    Events.Add(value);
+                _trainEvent = value;
+            }
+        }
+        public List<TrainEventBase> Events { get; } = new();
         public List<TrainWayPoint> Route { get; set; } = new();
         public int CurrentWaypointIndex { get; set; } = 0;
         public string? CurrentLocation { get; set; }
@@ -93,6 +106,12 @@ namespace TrainDispatcherGame.Server.Models
         public int GetTravelTime(int distance)
         {
             return (int)(distance / SpeedMax);
+        }
+
+        public void Record(TrainEventBase evt)
+        {
+            evt.Processed = true;
+            Events.Add(evt);
         }
 
         public void Reset()

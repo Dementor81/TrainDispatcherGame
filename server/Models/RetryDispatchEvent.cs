@@ -4,8 +4,11 @@ namespace TrainDispatcherGame.Server.Models
 {
     public class RetryDispatchEvent : TrainEventBase
     {
-        public RetryDispatchEvent(DateTime scheduledTime) : base(scheduledTime)
+        public string BlockingTrainNumber { get; set; } = string.Empty;
+
+        public RetryDispatchEvent(DateTime scheduledTime, string blockingTrainNumber) : base(scheduledTime)
         {
+            BlockingTrainNumber = blockingTrainNumber;
         }
     }
 }

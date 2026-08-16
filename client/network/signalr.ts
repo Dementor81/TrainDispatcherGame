@@ -165,6 +165,10 @@ export class SignalRManager {
             this.handleExitBlockStatusChanged(data);
         });
 
+        this.connection.on('ApprovalRequested', (data) => {
+            this._eventManager.emit('approvalRequested', data);
+        });
+
     }
 
     public async connect(): Promise<void> {
@@ -372,6 +376,19 @@ export class SignalRManager {
         }
     }
 
+    public async respondApproval(trainNumber: string, fromStationId: string, approved: boolean): Promise<void> {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+            throw new Error('SignalR connection not established');
+        }
+
+        try {
+            await this.connection.invoke('RespondApproval', trainNumber, fromStationId, approved);
+        } catch (error) {
+            console.error('Failed to respond to approval:', error);
+            throw error;
+        }
+    }
+
     public async setExitBlockStatus(exitId: number, blocked: boolean): Promise<void> {
         if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
             throw new Error('SignalR connection not established');
@@ -462,7 +479,7 @@ export class SignalRManager {
     }
 
     private handleExitBlockStatusChanged(data: any): void {        
-        this._eventManager.emit('exitBlockStatusChanged', data.exitId, data.blocked);
+        this._eventManager.emit('exitBlockStatusChanged', data.exitId, data.blocked, data.trainNumber, data.category);
     }
 
     private handleTrainDelayUpdated(data: TrainDelayUpdatedNotificationDto): void {
