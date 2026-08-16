@@ -94,7 +94,7 @@ export class TrainStationHandler {
 
          if (train.speedCurrent > 0) {
             if(train.state === TrainState.BRAKING_FOR_STATION) return false;
-            const stoppingPoint = train.position!.track.length / 2 + train.length / 2 * train.movingDirection;
+            const stoppingPoint = this.getStationStoppingPoint(train);
             const remainingDistanceToStop = Math.abs(stoppingPoint - train.position!.km);
             if (remainingDistanceToStop < SimulationConfig.trainLookaheadDistance) {
                //train is still moving, so we need to brake
@@ -118,6 +118,19 @@ console.log(`Train ${train.number} stopped at station, departure time: ${train.d
       }
 
       return false;
+   }
+
+   private getStationStoppingPoint(train: Train): number {
+      const track = train.position!.track;
+      const dir = train.movingDirection;
+      const length = train.length;
+      const platform = this._trackLayoutManager.platforms.find(p => p.track === track.id);
+      const mid = platform ? (platform.from_km + platform.to_km) / 2 : track.length / 2;
+      const desired = mid + (length / 2) * dir;
+      if (length >= track.length) return desired;
+      const minHead = dir > 0 ? length : 0;
+      const maxHead = dir > 0 ? track.length : track.length - length;
+      return Math.min(maxHead, Math.max(minHead, desired));
    }
 
    checkTrainEnding(train: Train) {
