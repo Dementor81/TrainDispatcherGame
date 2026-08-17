@@ -420,6 +420,12 @@ namespace TrainDispatcherGame.Server.Endpoints
                     if (handed.ExitPointId.HasValue)
                         dto.Data["exitPointId"] = handed.ExitPointId.Value;
                     break;
+                case TrainReturnedFromPlayerEvent returned:
+                    dto.Type = "ReturnedFromPlayer";
+                    dto.Data["station"] = returned.Station;
+                    if (returned.ExitPointId.HasValue)
+                        dto.Data["exitPointId"] = returned.ExitPointId.Value;
+                    break;
                 case TrainStoppedEvent stopped:
                     dto.Type = "Stopped";
                     dto.Data["station"] = stopped.Station;

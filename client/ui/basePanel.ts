@@ -19,6 +19,8 @@ export abstract class BasePanel {
   private static readonly POSITION_STORAGE_PREFIX = "panel-position:";
   private static readonly MIN_PANEL_WIDTH = 180;
   private static readonly MIN_PANEL_HEIGHT = 100;
+  private static readonly BASE_Z_INDEX = 1000;
+  private static readonly focusStack: BasePanel[] = [];
 
   protected container: HTMLDivElement;
   protected isVisible = false;
@@ -157,6 +159,10 @@ export abstract class BasePanel {
     this.beginResize(touch.clientX, touch.clientY);
   };
 
+  private readonly onPointerActivate = (): void => {
+    this.bringToFront();
+  };
+
   private readonly onWindowResize = (): void => {
     if (!this.isVisible) {
       return;
@@ -208,6 +214,8 @@ export abstract class BasePanel {
     }
     this.restorePanelState();
     window.addEventListener("resize", this.onWindowResize);
+    this.container.addEventListener("mousedown", this.onPointerActivate);
+    this.container.addEventListener("touchstart", this.onPointerActivate);
     if (this.panelTitle) {
       this.setupDragging();
     }
@@ -247,7 +255,7 @@ export abstract class BasePanel {
     container.id = this.constructor.name;
     container.className = "position-absolute p-1 base-panel text-light rounded shadow-lg";
     const containerStyles: Partial<CSSStyleDeclaration> = {
-      zIndex: "1000",
+      zIndex: String(BasePanel.BASE_Z_INDEX),
       display: "none",
       width: this.toPx(options.width),
       height: this.toPx(options.height) ?? "auto",
@@ -492,7 +500,20 @@ export abstract class BasePanel {
     }
   }
 
+  public bringToFront(): void {
+    const stack = BasePanel.focusStack;
+    const index = stack.indexOf(this);
+    if (index >= 0) {
+      stack.splice(index, 1);
+    }
+    stack.push(this);
+    stack.forEach((panel, i) => {
+      panel.container.style.zIndex = String(BasePanel.BASE_Z_INDEX + i);
+    });
+  }
+
   public show(): void {
+    this.bringToFront();
     if (this.isVisible) {
       return;
     }
@@ -562,6 +583,12 @@ export abstract class BasePanel {
     this.stopUpdates();
     window.removeEventListener("resize", this.onWindowResize);
     this.removeDragging();
+    this.container.removeEventListener("mousedown", this.onPointerActivate);
+    this.container.removeEventListener("touchstart", this.onPointerActivate);
+    const index = BasePanel.focusStack.indexOf(this);
+    if (index >= 0) {
+      BasePanel.focusStack.splice(index, 1);
+    }
     if (this.container.parentNode) {
       this.container.parentNode.removeChild(this.container);
     }

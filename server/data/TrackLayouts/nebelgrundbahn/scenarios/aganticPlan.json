@@ -4979,11 +4979,11 @@
         {
           "station": "landing",
           "arrival": "01:00:11",
-          "departure": "01:00:53"
+          "departure": "01:00:11"
         },
         {
           "station": "westerhausen",
-          "arrival": "01:03:17",
+          "arrival": "01:02:35",
           "departure": ""
         }
       ],
@@ -5025,11 +5025,11 @@
         {
           "station": "landing",
           "arrival": "01:18:42",
-          "departure": "01:20:33"
+          "departure": "01:18:42"
         },
         {
           "station": "westerhausen",
-          "arrival": "01:22:57",
+          "arrival": "01:21:06",
           "departure": ""
         }
       ],
@@ -5456,6 +5456,73 @@
         {
           "station": "ostermünde",
           "arrival": "01:05:37",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "77348",
+      "type": "MultipleUnit",
+      "category": "LZ",
+      "speedMax": 160,
+      "cars": 10,
+      "path": [],
+      "timetable": [
+        {
+          "station": "unterberg",
+          "arrival": "",
+          "departure": "00:05:11"
+        },
+        {
+          "station": "finnhof",
+          "arrival": "00:06:41",
+          "departure": "00:06:41"
+        },
+        {
+          "station": "langenfelde",
+          "arrival": "00:08:11",
+          "departure": "00:08:11"
+        },
+        {
+          "station": "dospen",
+          "arrival": "00:09:41",
+          "departure": "00:09:41"
+        },
+        {
+          "station": "landing",
+          "arrival": "00:11:11",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": "77349"
+    },
+    {
+      "number": "77349",
+      "type": "MultipleUnit",
+      "category": "LZ",
+      "speedMax": 160,
+      "cars": 10,
+      "path": [],
+      "timetable": [
+        {
+          "station": "landing",
+          "arrival": "",
+          "departure": "00:27:22"
+        },
+        {
+          "station": "dospen",
+          "arrival": "00:28:52",
+          "departure": "00:35:12"
+        },
+        {
+          "station": "hohenbrunn",
+          "arrival": "00:36:42",
+          "departure": "00:38:01"
+        },
+        {
+          "station": "kreuztal",
+          "arrival": "00:39:31",
           "departure": ""
         }
       ],

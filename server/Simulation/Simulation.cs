@@ -350,7 +350,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 var connection = _trackLayoutService.GetConnection(train.CurrentLocation, exitId, out bool isReversed);
                 if (connection == null) throw new Exception($"No connection found for train {train.Number} at {train.CurrentLocation} at Exit {exitId}");
 
-
+                train.Record(new TrainReturnedFromPlayerEvent(SimulationTime, train.CurrentLocation, exitId));
                 train.controlledByPlayer = false;
                 train.CurrentLocation = null;
 
@@ -429,6 +429,7 @@ namespace TrainDispatcherGame.Server.Simulation
 
                 foreach (var train in trainsToReturn)
                 {
+                    train.Record(new TrainReturnedFromPlayerEvent(SimulationTime, normalizedStationId));
                     train.controlledByPlayer = false;
                     train.CurrentLocation = null;
                     _openLineTracks.RemoveTrainFromAllTracks(train);
@@ -445,28 +446,34 @@ namespace TrainDispatcherGame.Server.Simulation
 
         public void ReceiveApproval(string trainNumber, string fromStationId, bool approved)
         {
-            try
+            lock (_simulationLock)
             {
-                var train = _trains.FirstOrDefault(t => t.Number == trainNumber);
-                if (train == null)
+                try
                 {
-                    ServerLogger.Instance.LogWarning(Ctx(trainNumber), $"Approval for unknown train {trainNumber}");
-                    return;
-                }
-                var sendApprovalEvent = train.TrainEvent as SendApprovalEvent;
-                if (sendApprovalEvent == null) throw new Exception($"Train {train.Number} next event is not a send approval event");
+                    var train = _trains.FirstOrDefault(t => t.Number == trainNumber);
+                    if (train == null)
+                    {
+                        ServerLogger.Instance.LogWarning(Ctx(trainNumber), $"Approval for unknown train {trainNumber}");
+                        return;
+                    }
+                    if (train.TrainEvent is not SendApprovalEvent)
+                    {
+                        ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Approval for train {train.Number} ignored because next event is {train.TrainEvent?.GetType().Name ?? "none"}");
+                        return;
+                    }
 
-                if (!approved)
+                    if (!approved)
+                    {
+                        train.TrainEvent = new SendApprovalEvent(SimulationTime.AddMinutes(1));
+                        return;
+                    }
+
+                    _eventProcessor.AdvanceTrainToNextStation(train);
+                }
+                catch (Exception ex)
                 {
-                    sendApprovalEvent.ApprovalDenied(SimulationTime.AddSeconds(60));
-                    return;
+                    ServerLogger.Instance.LogError(Ctx(trainNumber), $"Error processing approval: {ex.Message}");
                 }
-
-                _eventProcessor.AdvanceTrainToNextStation(train);
-            }
-            catch (Exception ex)
-            {
-                ServerLogger.Instance.LogError(Ctx(trainNumber), $"Error processing approval: {ex.Message}");
             }
         }
 
@@ -677,6 +684,18 @@ namespace TrainDispatcherGame.Server.Simulation
         }
 
         /// <summary>
+        /// Records that a destination exit is owned by a train the server just put on the open line.
+        /// </summary>
+        public void MarkExitBlocked(string stationId, int exitId)
+        {
+            var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+            lock (_blockedExitsLock)
+            {
+                _blockedExits.Add((normalizedStationId, exitId));
+            }
+        }
+
+        /// <summary>
         /// Handles the report of a station exit being blocked or unblocked by a train route.
         /// It will notify the neighboring station so it can extend the train route to the other station.
         /// </summary>
@@ -706,22 +725,27 @@ namespace TrainDispatcherGame.Server.Simulation
                     return;
                 }
 
-                // Remove train from open-line track when exit is unblocked
                 if (!blocked)
                 {
                     lock (_blockedExitsLock)
                     {
                         _blockedExits.Remove((normalizedStationId, exitId));
                     }
-                    _openLineTracks.RemoveTrain(connection);
+
+                    // Only free the line once the occupying train has already been handed to the player.
+                    // An in-transit train must stay on the open line and will still spawn.
+                    if (_openLineTracks.TryGet(connection, out var openLine)
+                        && openLine.TrainOnTrack != null
+                        && openLine.TrainOnTrack.controlledByPlayer)
+                    {
+                        _openLineTracks.RemoveTrain(connection);
+                    }
+
                     _eventProcessor.DispatchWaitingTrain(connection);
                 }
                 else
                 {
-                    lock (_blockedExitsLock)
-                    {
-                        _blockedExits.Add((normalizedStationId, exitId));
-                    }
+                    MarkExitBlocked(normalizedStationId, exitId);
                 }
 
                 // Determine the other side of the connection

@@ -124,7 +124,7 @@
          "signals": [
             {
                "type": "main",
-               "position": 60,
+               "position": 35,
                "direction": -1
             },
             {
@@ -212,7 +212,7 @@
          "signals": [
             {
                "type": "main",
-               "position": 133,
+               "position": 85,
                "direction": -1
             },
             {
@@ -416,7 +416,7 @@
             "y": 225.0
          },
          "end": {
-            "x": 1750.0,
+            "x": 1900.0,
             "y": 225.0
          },
          "signals": [
@@ -444,7 +444,7 @@
             "y": 275.0
          },
          "end": {
-            "x": 1750.0,
+            "x": 1900.0,
             "y": 275.0
          },
          "signals": [
@@ -656,6 +656,11 @@
                "type": "main",
                "position": 13,
                "direction": -1
+            },
+            {
+               "type": "main",
+               "position": 484,
+               "direction": 1
             }
          ],
          "switches": [
@@ -725,34 +730,6 @@
          ]
       },
       {
-         "id": 403,
-         "start": {
-            "x": -1750.0,
-            "y": 275.0
-         },
-         "end": {
-            "x": -950.0,
-            "y": 275.0
-         },
-         "signals": [
-            {
-               "type": "main",
-               "position": 609,
-               "direction": 1
-            }
-         ],
-         "switches": [
-            {
-               "type": "Exit",
-               "id": 6
-            },
-            {
-               "type": "Switch",
-               "id": 43
-            }
-         ]
-      },
-      {
          "id": 404,
          "start": {
             "x": -950.0,
@@ -781,34 +758,6 @@
          ]
       },
       {
-         "id": 405,
-         "start": {
-            "x": -1750.0,
-            "y": 225.0
-         },
-         "end": {
-            "x": -900.0,
-            "y": 225.0
-         },
-         "signals": [
-            {
-               "type": "main",
-               "position": 602,
-               "direction": 1
-            }
-         ],
-         "switches": [
-            {
-               "type": "Exit",
-               "id": 4
-            },
-            {
-               "type": "Switch",
-               "id": 42
-            }
-         ]
-      },
-      {
          "id": 406,
          "start": {
             "x": -900.0,
@@ -827,6 +776,62 @@
             {
                "type": "Switch",
                "id": 41
+            }
+         ]
+      },
+      {
+         "id": 409,
+         "start": {
+            "x": -1900.0,
+            "y": 275.0
+         },
+         "end": {
+            "x": -950.0,
+            "y": 275.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 747,
+               "direction": 1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Exit",
+               "id": 6
+            },
+            {
+               "type": "Switch",
+               "id": 43
+            }
+         ]
+      },
+      {
+         "id": 410,
+         "start": {
+            "x": -1900.0,
+            "y": 225.0
+         },
+         "end": {
+            "x": -900.0,
+            "y": 225.0
+         },
+         "signals": [
+            {
+               "type": "main",
+               "position": 753,
+               "direction": 1
+            }
+         ],
+         "switches": [
+            {
+               "type": "Exit",
+               "id": 4
+            },
+            {
+               "type": "Switch",
+               "id": 42
             }
          ]
       }
@@ -1009,7 +1014,7 @@
          },
          "tracks": [
             406,
-            405,
+            410,
             402,
             null
          ]
@@ -1021,7 +1026,7 @@
             "y": 275.0
          },
          "tracks": [
-            403,
+            409,
             404,
             402,
             null
@@ -1030,24 +1035,24 @@
    ],
    "platforms": [
       {
-         "track": 404,
-         "from_km": 958,
-         "to_km": 1518
-      },
-      {
-         "track": 401,
-         "from_km": 1404,
-         "to_km": 863
-      },
-      {
          "track": 350,
-         "from_km": 112,
-         "to_km": 641
+         "from_km": 95,
+         "to_km": 632
       },
       {
          "track": 355,
-         "from_km": 740,
-         "to_km": 211
+         "from_km": 733,
+         "to_km": 195
+      },
+      {
+         "track": 345,
+         "from_km": 158,
+         "to_km": 525
+      },
+      {
+         "track": 347,
+         "from_km": 573,
+         "to_km": 208
       }
    ]
 }

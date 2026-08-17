@@ -290,25 +290,6 @@
          ]
       },
       {
-         "id": 248,
-         "start": {
-            "x": -725.0,
-            "y": -50.0
-         },
-         "end": {
-            "x": -375.0,
-            "y": -50.0
-         },
-         "signals": [],
-         "switches": [
-            null,
-            {
-               "type": "Switch",
-               "id": 79
-            }
-         ]
-      },
-      {
          "id": 249,
          "start": {
             "x": -375.0,
@@ -340,7 +321,18 @@
             "x": 475.0,
             "y": 0.0
          },
-         "signals": [],
+         "signals": [
+            {
+               "type": "main",
+               "position": 115,
+               "direction": -1
+            },
+            {
+               "type": "main",
+               "position": 791,
+               "direction": 1
+            }
+         ],
          "switches": [
             {
                "type": "Switch",
@@ -406,7 +398,13 @@
             "x": -475.0,
             "y": 0.0
          },
-         "signals": [],
+         "signals": [
+            {
+               "type": "main",
+               "position": 604,
+               "direction": 1
+            }
+         ],
          "switches": [
             {
                "type": "Exit",
@@ -477,6 +475,11 @@
                "type": "main",
                "position": 30,
                "direction": -1
+            },
+            {
+               "type": "main",
+               "position": 519,
+               "direction": 1
             }
          ],
          "switches": [
@@ -505,6 +508,11 @@
                "type": "main",
                "position": 96,
                "direction": -1
+            },
+            {
+               "type": "main",
+               "position": 585,
+               "direction": 1
             }
          ],
          "switches": [
@@ -528,7 +536,13 @@
             "x": -525.0,
             "y": 50.0
          },
-         "signals": [],
+         "signals": [
+            {
+               "type": "main",
+               "position": 602,
+               "direction": 1
+            }
+         ],
          "switches": [
             {
                "type": "Exit",
@@ -537,6 +551,25 @@
             {
                "type": "Switch",
                "id": 82
+            }
+         ]
+      },
+      {
+         "id": 264,
+         "start": {
+            "x": -975.0,
+            "y": -50.0
+         },
+         "end": {
+            "x": -375.0,
+            "y": -50.0
+         },
+         "signals": [],
+         "switches": [
+            null,
+            {
+               "type": "Switch",
+               "id": 79
             }
          ]
       }
@@ -628,7 +661,7 @@
          },
          "tracks": [
             249,
-            248,
+            264,
             247,
             null
          ]

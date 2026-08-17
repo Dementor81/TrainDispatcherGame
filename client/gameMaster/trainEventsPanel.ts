@@ -55,11 +55,8 @@ export class TrainEventsPanel extends BasePanel {
   public showTrain(trainNumber: string): void {
     this.trainNumber = trainNumber;
     this.setTitle(`Ereignisse ${trainNumber}`);
-    if (this.isVisible) {
-      void this.Updates();
-    } else {
-      this.show();
-    }
+    this.show();
+    void this.Updates();
   }
 
   protected async Updates(): Promise<void> {

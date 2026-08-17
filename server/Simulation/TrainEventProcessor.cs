@@ -215,16 +215,21 @@ namespace TrainDispatcherGame.Server.Simulation
             if (connection == null) throw new Exception($"No regular connection found for train {train.Number} from {currentWaypoint.Station} to {nextWaypoint.Station}");
             if (layout != null) distanceToExit = layout.MaxExitDistance / 2;
 
-            // Check if track is occupied
-            if (_openLineTracks.TryGet(connection, out var track) && track.TrainOnTrack != null)
+            var headingStation = isReversed ? connection.FromStation : connection.ToStation;
+            var headingExitId = isReversed ? connection.FromExitId : connection.ToExitId;
+            _openLineTracks.TryGet(connection, out var track);
+            var lineOccupied = track?.TrainOnTrack != null;
+            var exitBlocked = _playerManager.IsStationControlled(headingStation)
+                && _simulation.IsExitBlocked(headingStation, headingExitId);
+
+            if (lineOccupied || exitBlocked)
             {
-                // Check if a waiting train is stored and still waiting. If not, save the current train.
-                if (GetWaitingTrain(track.WaitingTrainNumber) == null)
+                if (track != null && GetWaitingTrain(track.WaitingTrainNumber) == null)
                     track.WaitingTrainNumber = train.Number;
 
-                var blockingTrain = track.TrainOnTrack;
-                var retryTime = blockingTrain.TrainEvent?.ScheduledTime.AddSeconds(20) ?? _simulation.SimulationTime.AddSeconds(20);
-                train.TrainEvent = new RetryDispatchEvent(retryTime, blockingTrain.Number);
+                var blockingTrain = track?.TrainOnTrack;
+                var retryTime = blockingTrain?.TrainEvent?.ScheduledTime.AddSeconds(20) ?? _simulation.SimulationTime.AddSeconds(20);
+                train.TrainEvent = new RetryDispatchEvent(retryTime, blockingTrain?.Number ?? string.Empty);
                 train.CurrentLocation = currentWaypoint.Station;
 
                 var heldDelay = (int)Math.Max(0, (_simulation.SimulationTime - currentWaypoint.DepartureTime).TotalSeconds);
@@ -239,12 +244,10 @@ namespace TrainDispatcherGame.Server.Simulation
 
             var spawn = CreateSpawnFromConnection(train, connection, isReversed, distanceToExit, currentWaypoint.DepartureTime);
 
-            var headingStation = spawn.HeadingStation;
-
             if (_playerManager.IsStationControlled(headingStation))
             {
-                // Notify the player at the station that the exit is now blocked
-                _notificationManager.SendExitBlockStatus(headingStation, spawn.HeadingExitId, true, train.Number, train.Category).Wait();
+                _simulation.MarkExitBlocked(headingStation, headingExitId);
+                _notificationManager.SendExitBlockStatus(headingStation, headingExitId, true, train.Number, train.Category).Wait();
             }
 
             train.TrainEvent = spawn;
