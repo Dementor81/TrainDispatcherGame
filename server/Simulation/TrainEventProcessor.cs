@@ -101,6 +101,7 @@ namespace TrainDispatcherGame.Server.Simulation
                     if (_playerManager.IsStationControlled(fromStation))
                     {
                         // Notify the player at fromStation that the exit to station is unblocked
+                        _simulation.ClearExitBlocked(fromStation, spawn.CommingFromExitId);
                         await _notificationManager.SendExitBlockStatus(fromStation, spawn.CommingFromExitId, false);
                     }
                 }

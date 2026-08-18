@@ -12,6 +12,7 @@ import ScenarioSelectionDialog from "./scenarioSelectionDialog";
 import TrainsPanel from "./trainsPanel";
 import TrainEventsPanel from "./trainEventsPanel";
 import OpenLinePanel from "./openLinePanel";
+import BlockedExitsPanel from "./blockedExitsPanel";
 import LogsPanel from "./logsPanel";
 import PlayersPanel from "./playersPanel";
 import GameCodePanel from "./gameCodePanel";
@@ -39,10 +40,11 @@ window.addEventListener("load", async () => {
   const trainEvents = new TrainEventsPanel();
   const trains = new TrainsPanel(snapshotPoller, (trainNumber) => trainEvents.showTrain(trainNumber));
   const openline = new OpenLinePanel(snapshotPoller);
+  const blockedExits = new BlockedExitsPanel(app);
   const logs = new LogsPanel();
   const players = new PlayersPanel(snapshotPoller);
   const gameCode = new GameCodePanel();
 
-  (window as any).gameMaster = { app, hud, panel, scenario, trains, trainEvents, openline, logs, players, gameCode, snapshotPoller };
+  (window as any).gameMaster = { app, hud, panel, scenario, trains, trainEvents, openline, blockedExits, logs, players, gameCode, snapshotPoller };
 });
 

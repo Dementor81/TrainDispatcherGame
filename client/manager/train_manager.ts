@@ -98,6 +98,7 @@ export class TrainManager {
                console.warn(`Train ${train.number} derailed at switch ${result.element.id}`);
                this._eventManager.emit("trainDerailed", train, result.element);
                train.setState(TrainState.DERAILEMENT, 0);
+               this._signalHandler.enforceSignalsBehindHead(train);
                return;
             }
 
@@ -106,6 +107,7 @@ export class TrainManager {
                this._eventManager.emit("trainCollision", train, blockingTrain);
                train.setState(TrainState.COLLISION, 0);
                blockingTrain.setState(TrainState.COLLISION, 0);
+               this._signalHandler.enforceSignalsBehindHead(train);
                return;
             }
 
@@ -116,11 +118,13 @@ export class TrainManager {
             }
 
             this._signalHandler.checkSignalsPassed(train, previousTrack, previousKm, result.element, result.km);
+            this._signalHandler.enforceSignalsBehindHead(train);
             return;
          } else if (result.element instanceof Exit) {
             const exit = result.element;
             const boundaryKm = train.movingDirection > 0 ? train.position.track.length : 0;
             train.setPosition(train.position.track, boundaryKm);
+            this._signalHandler.enforceSignalsBehindHead(train);
             this._movementHandler.updateTailPosition(train);
             if (train.state === TrainState.MANUAL_CONTROL) {
                train.setState(TrainState.END_OF_TRACK, 0);

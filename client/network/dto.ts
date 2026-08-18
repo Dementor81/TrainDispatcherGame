@@ -97,6 +97,10 @@ export interface TrainRemovedNotificationDto {
   trainNumber: string;
 }
 
+export interface BlockedExitsChangedNotificationDto {
+  stations: Record<string, number[]>;
+}
+
 export interface TrainWayPointDto {
   station: string;
   arrivalTime?: string | null;

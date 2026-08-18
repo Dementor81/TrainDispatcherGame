@@ -128,25 +128,36 @@ export class TrainSignalHandler {
       }
    }
 
-   private checkSignalsPassedOnTrack(train: Train, track: Track, startKm: number, endKm: number): void {
-      const minKm = Math.min(startKm, endKm);
-      const maxKm = Math.max(startKm, endKm);
+   enforceSignalsBehindHead(train: Train): void {
+      const position = train.position;
+      if (!position) return;
 
+      const dir = train.movingDirection;
+      for (const signal of position.track.signals) {
+         if (signal.direction !== dir || !signal.state) continue;
+         const passed = dir > 0
+            ? position.km >= signal.position
+            : position.km <= signal.position;
+         if (passed) this.emitTrainPassedSignal(train, signal);
+      }
+   }
+
+   private checkSignalsPassedOnTrack(train: Train, track: Track, startKm: number, endKm: number): void {
       for (const signal of track.signals) {
          if (signal.direction !== train.movingDirection) continue;
 
-         let signalPassed = false;
-         if (train.movingDirection > 0) {
-            signalPassed = signal.position > startKm && signal.position < endKm;
-         } else {
-            signalPassed = signal.position < startKm && signal.position > endKm;
-         }
+         const signalPassed = train.movingDirection > 0
+            ? signal.position > startKm && signal.position <= endKm
+            : signal.position < startKm && signal.position >= endKm;
 
-         if (signalPassed) {
-            console.log(`Train ${train.number} passed signal at km ${signal.position} on track ${track.id}`);
-            this._eventManager.emit("trainPassedSignal", train, signal);
-         }
+         if (signalPassed) this.emitTrainPassedSignal(train, signal);
       }
+   }
+
+   private emitTrainPassedSignal(train: Train, signal: Signal): void {
+      if (!signal.state) return;
+      console.log(`Train ${train.number} passed signal at km ${signal.position} on track ${signal.track?.id}`);
+      this._eventManager.emit("trainPassedSignal", train, signal);
    }
 }
 

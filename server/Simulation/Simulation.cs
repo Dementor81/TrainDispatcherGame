@@ -89,6 +89,7 @@ namespace TrainDispatcherGame.Server.Simulation
             {
                 _blockedExits.Clear();
             }
+            NotifyBlockedExitsChanged();
 
             _openLineTracks.Initialize();
             this.CreateInitialStartEvents();
@@ -683,15 +684,59 @@ namespace TrainDispatcherGame.Server.Simulation
             }
         }
 
+        public BlockedExitsChangedNotification GetBlockedExitsSnapshot()
+        {
+            List<(string stationId, int exitId)> snapshot;
+            lock (_blockedExitsLock)
+            {
+                snapshot = _blockedExits.ToList();
+            }
+
+            var stations = snapshot
+                .GroupBy(e => e.stationId)
+                .OrderBy(g => g.Key)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(e => e.exitId).OrderBy(id => id).ToList());
+
+            return new BlockedExitsChangedNotification { Stations = stations };
+        }
+
+        private void NotifyBlockedExitsChanged()
+        {
+            _ = _notificationManager.SendBlockedExitsChanged(GetBlockedExitsSnapshot());
+        }
+
         /// <summary>
         /// Records that a destination exit is owned by a train the server just put on the open line.
         /// </summary>
         public void MarkExitBlocked(string stationId, int exitId)
         {
             var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+            bool added;
             lock (_blockedExitsLock)
             {
-                _blockedExits.Add((normalizedStationId, exitId));
+                added = _blockedExits.Add((normalizedStationId, exitId));
+            }
+
+            if (added)
+            {
+                NotifyBlockedExitsChanged();
+            }
+        }
+
+        public void ClearExitBlocked(string stationId, int exitId)
+        {
+            var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+            bool removed;
+            lock (_blockedExitsLock)
+            {
+                removed = _blockedExits.Remove((normalizedStationId, exitId));
+            }
+
+            if (removed)
+            {
+                NotifyBlockedExitsChanged();
             }
         }
 
@@ -727,10 +772,7 @@ namespace TrainDispatcherGame.Server.Simulation
 
                 if (!blocked)
                 {
-                    lock (_blockedExitsLock)
-                    {
-                        _blockedExits.Remove((normalizedStationId, exitId));
-                    }
+                    ClearExitBlocked(normalizedStationId, exitId);
 
                     // Only free the line once the occupying train has already been handed to the player.
                     // An in-transit train must stay on the open line and will still spawn.

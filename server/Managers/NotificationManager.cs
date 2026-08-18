@@ -59,6 +59,11 @@ namespace TrainDispatcherGame.Server.Managers
             return $"session_{_sessionId}";
         }
 
+        private string SessionGmGroup()
+        {
+            return $"session_{_sessionId}_gm";
+        }
+
         private string Ctx(string context)
         {
             return SessionLogContext.Prefix(_sessionId, context);
@@ -182,6 +187,11 @@ namespace TrainDispatcherGame.Server.Managers
             }
 
             await _hubContext.Clients.Group(SessionGroup()).SendAsync("TrainRemoved", payload);
+        }
+
+        public async Task SendBlockedExitsChanged(BlockedExitsChangedNotification payload)
+        {
+            await _hubContext.Clients.Group(SessionGmGroup()).SendAsync("BlockedExitsChanged", payload);
         }
 
     }
