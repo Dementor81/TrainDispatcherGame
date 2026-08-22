@@ -1,6 +1,8 @@
 import * as bootstrap from "bootstrap";
 
-function showInvalidSessionModal(): void {
+export type GmSessionState = "missing-code" | "active" | "pending";
+
+export function showInvalidSessionModal(): void {
   const existingModal = document.getElementById("invalidSessionModal");
   if (existingModal) {
     const modal = new bootstrap.Modal(existingModal, {
@@ -51,19 +53,22 @@ function showInvalidSessionModal(): void {
   modal.show();
 }
 
-async function hasValidSessionCode(storageKey: string): Promise<boolean> {
-  let gameCode = (sessionStorage.getItem(storageKey) || "").trim();
-  if (!gameCode) {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("testing") === "true") {
-      gameCode = "DEV101";
-      sessionStorage.setItem(storageKey, gameCode);
-    }
-    else {
-      return false;
-    }
+const DEVELOPMENT_GAME_CODE = "DEV101";
+
+function isTestingMode(): boolean {
+  return new URLSearchParams(window.location.search).get("testing") === "true";
+}
+
+function resolveStoredGameCode(storageKey: string): string {
+  if (isTestingMode()) {
+    sessionStorage.setItem(storageKey, DEVELOPMENT_GAME_CODE);
+    return DEVELOPMENT_GAME_CODE;
   }
 
+  return (sessionStorage.getItem(storageKey) || "").trim();
+}
+
+async function fetchSessionStatus(gameCode: string): Promise<number | null> {
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), 5000);
 
@@ -75,16 +80,50 @@ async function hasValidSessionCode(storageKey: string): Promise<boolean> {
       cache: "no-store",
       signal: controller.signal,
     });
-
-    if (response.ok) {
-      sessionStorage.setItem("gameCode", gameCode);
-    }
-    return response.ok;
+    return response.status;
   } catch {
-    return false;
+    return null;
   } finally {
     window.clearTimeout(timeoutId);
   }
+}
+
+export async function probeGmSession(): Promise<GmSessionState> {
+  if (isTestingMode()) {
+    sessionStorage.setItem("gmGameCode", DEVELOPMENT_GAME_CODE);
+    return "pending";
+  }
+
+  const gameCode = resolveStoredGameCode("gmGameCode");
+  if (!gameCode) {
+    return "missing-code";
+  }
+
+  const status = await fetchSessionStatus(gameCode);
+  if (status === 200) {
+    sessionStorage.setItem("gameCode", gameCode);
+    return "active";
+  }
+  if (status === 404) {
+    return "pending";
+  }
+
+  return "missing-code";
+}
+
+async function hasValidSessionCode(storageKey: string): Promise<boolean> {
+  const gameCode = resolveStoredGameCode(storageKey);
+  if (!gameCode) {
+    return false;
+  }
+
+  const status = await fetchSessionStatus(gameCode);
+  if (status === 200) {
+    sessionStorage.setItem("gameCode", gameCode);
+    return true;
+  }
+
+  return false;
 }
 
 export async function ensureValidSessionOrShowModal(storageKey: string): Promise<boolean> {

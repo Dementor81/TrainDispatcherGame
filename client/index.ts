@@ -168,7 +168,7 @@ window.addEventListener("DOMContentLoaded", () => {
       licenceKeyModal.hide();
       window.location.href = "gameMaster.html";
     } catch (error) {
-      console.error("Failed to create game session", error);
+      console.error("Failed to issue game code", error);
       const message = error instanceof Error ? error.message : "Neues Spiel konnte nicht gestartet werden.";
       alert(`Neues Spiel konnte nicht gestartet werden.\n${message}`);
     } finally {

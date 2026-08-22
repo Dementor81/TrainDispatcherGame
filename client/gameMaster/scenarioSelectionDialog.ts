@@ -1,24 +1,25 @@
-import {
-   fetchScenarios,
-   getCurrentScenario,
-   setScenario,
-} from "../network/api";
+import { fetchScenarios, startGameSession } from "../network/api";
 import { UI } from "../utils/ui";
 
 export class ScenarioSelectionDialog {
    private allNetworks: string[] = [];
    private allScenarios: Array<{ id: string; title: string; networkId: string }> = [];
-   private currentScenarioId: string = "";
    private networkSelect: HTMLSelectElement;
    private scenarioSelect: HTMLSelectElement;
+   private confirmButton: HTMLButtonElement;
+   private errorElement: HTMLParagraphElement;
    private modalElement: HTMLDivElement;
    private modalInstance: any;
+   private created = false;
+   private submitting = false;
 
-   constructor() {
+   constructor(private readonly options: { gameCode: string; onCreated: (gameCode: string) => void }) {
       const ui = this.createModal();
       this.modalElement = ui.modal;
       this.networkSelect = ui.networkSelect;
       this.scenarioSelect = ui.scenarioSelect;
+      this.confirmButton = ui.confirmButton;
+      this.errorElement = ui.errorElement;
       document.body.appendChild(this.modalElement);
 
       this.modalInstance = new (window as any).bootstrap.Modal(this.modalElement, {
@@ -26,15 +27,16 @@ export class ScenarioSelectionDialog {
          keyboard: false
       });
       this.modalElement.addEventListener("hide.bs.modal", (event: Event) => {
-         if (!this.isSelectionComplete()) {
+         if (!this.created) {
             event.preventDefault();
          }
       });
+      this.modalElement.addEventListener("hidden.bs.modal", () => {
+         if (this.created) {
+            this.options.onCreated(this.options.gameCode);
+         }
+      });
       void this.loadData();
-      this.show();
-   }
-
-   public show(): void {
       this.modalInstance.show();
    }
 
@@ -42,6 +44,8 @@ export class ScenarioSelectionDialog {
       modal: HTMLDivElement;
       networkSelect: HTMLSelectElement;
       scenarioSelect: HTMLSelectElement;
+      confirmButton: HTMLButtonElement;
+      errorElement: HTMLParagraphElement;
    } {
       const modal = document.createElement("div");
       modal.className = "modal fade";
@@ -64,6 +68,11 @@ export class ScenarioSelectionDialog {
       const body = document.createElement("div");
       body.className = "modal-body d-flex flex-column gap-3";
 
+      const help = document.createElement("p");
+      help.className = "text-secondary small mb-0";
+      help.textContent = "Platzhalter: Das Szenario wird erst beim Bestätigen geladen und kann danach nicht mehr geändert werden.";
+      body.appendChild(help);
+
       const networkRow = document.createElement("div");
       networkRow.className = "d-flex align-items-center gap-2";
       const networkLabel = document.createElement("label");
@@ -74,7 +83,7 @@ export class ScenarioSelectionDialog {
       networkSelect.className = "form-select form-select-sm flex-grow-1";
       networkSelect.addEventListener("change", () => {
          this.updateScenarioDropdown();
-         void this.applySelectedScenario();
+         this.syncConfirmEnabled();
       });
       networkRow.appendChild(networkLabel);
       networkRow.appendChild(networkSelect);
@@ -84,27 +93,29 @@ export class ScenarioSelectionDialog {
       const scenarioLabel = document.createElement("label");
       scenarioLabel.className = "text-secondary small";
       scenarioLabel.style.width = "120px";
-      scenarioLabel.textContent = "Scenario:";
+      scenarioLabel.textContent = "Szenario:";
       const scenarioSelect = document.createElement("select");
       scenarioSelect.className = "form-select form-select-sm flex-grow-1";
       scenarioSelect.addEventListener("change", () => {
-         void this.applySelectedScenario();
+         this.syncConfirmEnabled();
       });
       scenarioRow.appendChild(scenarioLabel);
       scenarioRow.appendChild(scenarioSelect);
 
+      const errorElement = document.createElement("p");
+      errorElement.className = "text-danger small mb-0 d-none";
+
       body.appendChild(networkRow);
       body.appendChild(scenarioRow);
+      body.appendChild(errorElement);
 
       const footer = document.createElement("div");
       footer.className = "modal-footer border-secondary";
-      const closeFooter = UI.createButton("btn-secondary btn-sm", "Start Simulation", async () => {
-         await this.applySelectedScenario();
-         if (this.isSelectionComplete()) {
-            this.modalInstance.hide();
-         }
+      const confirmButton = UI.createButton("btn-primary btn-sm", "Szenario wählen", () => {
+         void this.confirmSelection();
       });
-      footer.appendChild(closeFooter);
+      confirmButton.disabled = true;
+      footer.appendChild(confirmButton);
 
       content.appendChild(header);
       content.appendChild(body);
@@ -112,17 +123,13 @@ export class ScenarioSelectionDialog {
       dialog.appendChild(content);
       modal.appendChild(dialog);
 
-      return { modal, networkSelect, scenarioSelect };
+      return { modal, networkSelect, scenarioSelect, confirmButton, errorElement };
    }
 
    private async loadData(): Promise<void> {
       try {
-         const [scenarios, curr] = await Promise.all([
-            fetchScenarios(),
-            getCurrentScenario().catch(() => ({ id: "" }))
-         ]);
+         const scenarios = await fetchScenarios();
 
-         this.currentScenarioId = curr?.id ?? "";
          this.allScenarios = scenarios.map(s => {
             const parts = s.id.split("/", 2);
             return {
@@ -142,8 +149,10 @@ export class ScenarioSelectionDialog {
 
          this.updateNetworkDropdown();
          this.updateScenarioDropdown();
+         this.syncConfirmEnabled();
       } catch (e) {
          console.error("Failed to load data", e);
+         this.showError("Szenarien konnten nicht geladen werden.");
       }
    }
 
@@ -151,21 +160,13 @@ export class ScenarioSelectionDialog {
       this.networkSelect.innerHTML = "";
       const emptyOpt = document.createElement("option");
       emptyOpt.value = "";
-      emptyOpt.textContent = "-- Select Track Network --";
+      emptyOpt.textContent = "-- Spielnetz wählen --";
       this.networkSelect.appendChild(emptyOpt);
 
       for (const network of this.allNetworks) {
          const opt = document.createElement("option");
          opt.value = network;
          opt.textContent = network;
-
-         if (this.currentScenarioId) {
-            const parts = this.currentScenarioId.split("/", 2);
-            if (parts[0] === network) {
-               opt.selected = true;
-            }
-         }
-
          this.networkSelect.appendChild(opt);
       }
    }
@@ -177,7 +178,7 @@ export class ScenarioSelectionDialog {
       if (!selectedNetworkId) {
          const emptyOpt = document.createElement("option");
          emptyOpt.value = "";
-         emptyOpt.textContent = "-- Select Track Network First --";
+         emptyOpt.textContent = "-- Zuerst Spielnetz wählen --";
          this.scenarioSelect.appendChild(emptyOpt);
          return;
       }
@@ -187,45 +188,69 @@ export class ScenarioSelectionDialog {
       if (filteredScenarios.length === 0) {
          const emptyOpt = document.createElement("option");
          emptyOpt.value = "";
-         emptyOpt.textContent = "-- No Scenarios Available --";
+         emptyOpt.textContent = "-- Keine Szenarien vorhanden --";
          this.scenarioSelect.appendChild(emptyOpt);
          return;
       }
 
-      let matched = false;
       for (const scenario of filteredScenarios) {
          const opt = document.createElement("option");
          opt.value = scenario.id;
          opt.textContent = scenario.title;
-         if (scenario.id === this.currentScenarioId) {
-            opt.selected = true;
-            matched = true;
-         }
          this.scenarioSelect.appendChild(opt);
       }
 
-      // Changing network rebuilds options; browser shows the first item but does not fire change.
-      if (!matched) {
-         this.scenarioSelect.value = filteredScenarios[0].id;
-      }
+      this.scenarioSelect.value = filteredScenarios[0].id;
    }
 
-   private async applySelectedScenario(): Promise<void> {
-      const id = this.scenarioSelect.value;
-      if (!id || id === this.currentScenarioId) {
+   private async confirmSelection(): Promise<void> {
+      if (this.submitting || !this.isSelectionComplete()) {
          return;
       }
 
+      const scenarioId = this.scenarioSelect.value;
+      this.submitting = true;
+      this.setFormDisabled(true);
+      this.clearError();
+
       try {
-         await setScenario(id);
-         this.currentScenarioId = id;
+         await startGameSession(this.options.gameCode, scenarioId);
+         this.created = true;
+         this.modalInstance.hide();
       } catch (e) {
-         console.error("Failed to set scenario", e);
+         const message = e instanceof Error ? e.message : "Sitzung konnte nicht erstellt werden.";
+         this.showError(message);
+         this.submitting = false;
+         this.setFormDisabled(false);
+         this.syncConfirmEnabled();
       }
+   }
+
+   private setFormDisabled(disabled: boolean): void {
+      this.networkSelect.disabled = disabled;
+      this.scenarioSelect.disabled = disabled;
+      this.confirmButton.disabled = disabled;
+   }
+
+   private syncConfirmEnabled(): void {
+      if (this.submitting) {
+         return;
+      }
+      this.confirmButton.disabled = !this.isSelectionComplete();
    }
 
    private isSelectionComplete(): boolean {
       return this.networkSelect.value.trim().length > 0 && this.scenarioSelect.value.trim().length > 0;
+   }
+
+   private showError(message: string): void {
+      this.errorElement.textContent = message;
+      this.errorElement.classList.remove("d-none");
+   }
+
+   private clearError(): void {
+      this.errorElement.textContent = "";
+      this.errorElement.classList.add("d-none");
    }
 }
 

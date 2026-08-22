@@ -18,9 +18,18 @@ namespace TrainDispatcherGame.Server.Endpoints
                 }
 
                 var code = new string(chars);
-                if (!sessionManager.TryGet(code, out _))
+                if (!sessionManager.IsGameCodeInUse(code))
                 {
                     return code;
+                }
+            }
+
+            for (int attempt = 0; attempt < 20; attempt++)
+            {
+                var fallback = Guid.NewGuid().ToString("N")[..codeLength].ToUpperInvariant();
+                if (!sessionManager.IsGameCodeInUse(fallback))
+                {
+                    return fallback;
                 }
             }
 

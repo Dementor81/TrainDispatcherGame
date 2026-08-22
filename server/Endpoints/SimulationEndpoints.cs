@@ -158,41 +158,6 @@ namespace TrainDispatcherGame.Server.Endpoints
                 return Results.Ok(new { id = simulation.ScenarioId });
             });
 
-            app.MapPost("/api/simulation/scenario", async (HttpRequest req, GameSessionManager sessionManager) =>
-            {
-                var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
-                if (sessionError != null)
-                {
-                    return sessionError;
-                }
-
-                var simulation = session!.Simulation;
-                try
-                {
-                    using var reader = new StreamReader(req.Body);
-                    var body = await reader.ReadToEndAsync();
-                    var json = System.Text.Json.JsonDocument.Parse(body);
-                    if (!json.RootElement.TryGetProperty("id", out var idEl) || idEl.ValueKind != System.Text.Json.JsonValueKind.String)
-                    {
-                        return Results.BadRequest(new { message = "Missing or invalid 'id'" });
-                    }
-
-                    var id = idEl.GetString() ?? string.Empty;
-                    Console.WriteLine($"[DEBUG] Setting scenario to {id}");
-                    if (string.Equals(id, simulation.ScenarioId, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return Results.Ok(new { message = "Scenario unchanged", id });
-                    }
-
-                    await simulation.SetScenario(id);
-                    return Results.Ok(new { message = "Scenario changed", id });
-                }
-                catch (Exception ex)
-                {
-                    return Results.Problem(ex.Message);
-                }
-            });
-
             app.MapGet("/api/simulation/trains", (HttpRequest req, GameSessionManager sessionManager) =>
             {
                 var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);

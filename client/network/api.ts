@@ -251,23 +251,28 @@ export async function fetchNetwork(layoutId?: string): Promise<NetworkDto> {
   return response.json();
 }
 
-// Scenario selection on running simulation
-export async function getCurrentScenario(): Promise<{ id: string }> {
-  const response = await fetch(withGameCode(`${API_BASE_URL}/simulation/scenario`));
-  if (!response.ok) {
-    throw new Error(`Failed to get current scenario: ${response.statusText}`);
-  }
-  return response.json();
-}
-
-export async function setScenario(id: string): Promise<{ message: string; id: string }> {
-  const response = await fetch(withGameCode(`${API_BASE_URL}/simulation/scenario`), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id })
+export async function startGameSession(
+  gameCode: string,
+  scenarioId: string
+): Promise<{ gameCode: string; scenarioId: string }> {
+  const url = new URL(`${API_BASE_URL}/games/start`, window.location.origin);
+  url.searchParams.set("gameCode", gameCode);
+  const response = await fetch(url.toString(), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ scenarioId }),
   });
   if (!response.ok) {
-    throw new Error(`Failed to set scenario: ${response.statusText}`);
+    let message = `Failed to start game: ${response.statusText}`;
+    try {
+      const payload = await response.json() as { message?: string };
+      if (payload.message?.trim()) {
+        message = payload.message.trim();
+      }
+    } catch {
+      // keep fallback message
+    }
+    throw new Error(message);
   }
   return response.json();
 }

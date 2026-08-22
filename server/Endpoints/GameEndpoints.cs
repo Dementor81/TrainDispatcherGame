@@ -18,29 +18,54 @@ namespace TrainDispatcherGame.Server.Endpoints
 
                 if (sessionManager.ActiveGameSessionCount >= sessionManager.MaxConcurrentSessions)
                 {
-                    return Results.Json(new
-                    {
-                        message = "Maximum number of active game sessions reached.",
-                        activeSessions = sessionManager.ActiveGameSessionCount,
-                        maxSessions = sessionManager.MaxConcurrentSessions
-                    }, statusCode: StatusCodes.Status429TooManyRequests);
+                    return TooManySessions(sessionManager);
                 }
 
                 var gameCode = EndpointSessionResolver.GenerateGameCode(sessionManager);
-                if (!sessionManager.TryGetOrCreateWithinLimit(gameCode, out _))
+                if (!sessionManager.TryReserveGameCode(gameCode))
                 {
-                    return Results.Json(new
+                    gameCode = EndpointSessionResolver.GenerateGameCode(sessionManager);
+                    if (!sessionManager.TryReserveGameCode(gameCode))
                     {
-                        message = "Maximum number of active game sessions reached.",
-                        activeSessions = sessionManager.ActiveGameSessionCount,
-                        maxSessions = sessionManager.MaxConcurrentSessions
-                    }, statusCode: StatusCodes.Status429TooManyRequests);
+                        return Results.Json(new { message = "Game code could not be issued." }, statusCode: StatusCodes.Status500InternalServerError);
+                    }
                 }
 
                 return Results.Ok(new { gameCode });
             });
 
+            app.MapPost("/api/games/start", (HttpRequest req, StartGameRequest request, GameSessionManager sessionManager) =>
+            {
+                if (!EndpointSessionResolver.TryResolveGameCode(req, out var gameCode))
+                {
+                    return Results.BadRequest(new { message = "Missing or invalid 'gameCode' query parameter." });
+                }
+
+                var status = sessionManager.TryCreateSession(gameCode, request.ScenarioId, out var session);
+                return status switch
+                {
+                    SessionCreateStatus.Created => Results.Ok(new { gameCode, scenarioId = session!.Simulation.ScenarioId }),
+                    SessionCreateStatus.AlreadyExists => Results.Json(
+                        new { message = "Eine Sitzung mit diesem Game-Code existiert bereits." },
+                        statusCode: StatusCodes.Status409Conflict),
+                    SessionCreateStatus.NotReserved => Results.NotFound(new { message = "Invalid game code." }),
+                    SessionCreateStatus.InvalidScenario => Results.BadRequest(new { message = "Missing or invalid 'scenarioId'." }),
+                    SessionCreateStatus.AtCapacity => TooManySessions(sessionManager),
+                    _ => Results.Problem()
+                };
+            });
+
             return app;
+        }
+
+        private static IResult TooManySessions(GameSessionManager sessionManager)
+        {
+            return Results.Json(new
+            {
+                message = "Maximum number of active game sessions reached.",
+                activeSessions = sessionManager.ActiveGameSessionCount,
+                maxSessions = sessionManager.MaxConcurrentSessions
+            }, statusCode: StatusCodes.Status429TooManyRequests);
         }
     }
 }

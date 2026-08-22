@@ -15,21 +15,22 @@ namespace TrainDispatcherGame.Server.Sessions
         public static readonly TimeSpan PlayerTeardownGracePeriod = TimeSpan.FromSeconds(30);
 
         private readonly ConcurrentDictionary<string, GameSession> _sessions = new(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, DateTime> _reservedCodes = new(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentDictionary<string, string> _connectionToSession = new(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentDictionary<string, string> _connectionToPlayer = new(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentDictionary<string, CancellationTokenSource> _pendingTeardowns = new(StringComparer.OrdinalIgnoreCase);
         private readonly IHubContext<GameHub> _hubContext;
-        private readonly string _defaultScenarioId;
         private readonly object _sessionCreateLock = new();
         private DateTime _lastCleanupUtc = DateTime.MinValue;
         private readonly object _cleanupLock = new();
         private readonly int _maxConcurrentSessions;
+        private readonly bool _allowDevelopmentGameCode;
 
-        public GameSessionManager(IHubContext<GameHub> hubContext, IConfiguration configuration)
+        public GameSessionManager(IHubContext<GameHub> hubContext, IConfiguration configuration, IWebHostEnvironment env)
         {
             _hubContext = hubContext;
-            _defaultScenarioId = ScenarioService.ListScenarios().Last().Id;
             _maxConcurrentSessions = Math.Max(1, configuration.GetValue<int?>("GameSessions:MaxConcurrentSessions") ?? 20);
+            _allowDevelopmentGameCode = env.IsDevelopment();
         }
 
         public int MaxConcurrentSessions => _maxConcurrentSessions;
@@ -59,49 +60,83 @@ namespace TrainDispatcherGame.Server.Sessions
             return normalizedSessionId;
         }
 
-        public GameSession GetOrCreate(string? sessionId)
-        {
-            SweepInactiveSessionsIfNeeded();
-            var normalizedSessionId = NormalizeSessionId(sessionId);
-            var session = _sessions.GetOrAdd(normalizedSessionId, CreateSession);
-            session.Touch();
-            return session;
-        }
-
-        public bool TryGetOrCreateWithinLimit(string? sessionId, out GameSession? session)
+        public bool IsGameCodeInUse(string? sessionId)
         {
             SweepInactiveSessionsIfNeeded();
             if (!TryNormalizeSessionId(sessionId, out var normalizedSessionId))
             {
-                session = null;
                 return false;
             }
-            if (_sessions.TryGetValue(normalizedSessionId, out var existing))
+
+            return _sessions.ContainsKey(normalizedSessionId) || _reservedCodes.ContainsKey(normalizedSessionId);
+        }
+
+        public bool TryReserveGameCode(string? sessionId)
+        {
+            SweepInactiveSessionsIfNeeded();
+            if (!TryNormalizeSessionId(sessionId, out var normalizedSessionId))
             {
-                existing.Touch();
-                session = existing;
-                return true;
+                return false;
             }
 
             lock (_sessionCreateLock)
             {
-                if (_sessions.TryGetValue(normalizedSessionId, out existing))
+                if (_sessions.ContainsKey(normalizedSessionId) || _reservedCodes.ContainsKey(normalizedSessionId))
                 {
-                    existing.Touch();
-                    session = existing;
-                    return true;
+                    return false;
+                }
+
+                _reservedCodes[normalizedSessionId] = DateTime.UtcNow;
+                return true;
+            }
+        }
+
+        public SessionCreateStatus TryCreateSession(string? sessionId, string? scenarioId, out GameSession? session)
+        {
+            session = null;
+            SweepInactiveSessionsIfNeeded();
+            if (!TryNormalizeSessionId(sessionId, out var normalizedSessionId))
+            {
+                return SessionCreateStatus.NotReserved;
+            }
+
+            if (string.IsNullOrWhiteSpace(scenarioId) || ScenarioService.GetScenarioById(scenarioId) == null)
+            {
+                return SessionCreateStatus.InvalidScenario;
+            }
+
+            var chosenScenarioId = scenarioId.Trim();
+
+            var isDevelopmentCode = _allowDevelopmentGameCode && IsDevelopmentGameCode(normalizedSessionId);
+
+            lock (_sessionCreateLock)
+            {
+                if (_sessions.TryGetValue(normalizedSessionId, out var existing))
+                {
+                    if (!isDevelopmentCode)
+                    {
+                        existing.Touch();
+                        session = existing;
+                        return SessionCreateStatus.AlreadyExists;
+                    }
+
+                    DiscardSession(normalizedSessionId, existing);
+                }
+
+                if (!isDevelopmentCode && !_reservedCodes.ContainsKey(normalizedSessionId))
+                {
+                    return SessionCreateStatus.NotReserved;
                 }
 
                 if (_sessions.Count >= _maxConcurrentSessions)
                 {
-                    session = null;
-                    return false;
+                    return SessionCreateStatus.AtCapacity;
                 }
 
-                session = CreateSession(normalizedSessionId);
+                session = CreateSession(normalizedSessionId, chosenScenarioId);
                 _sessions[normalizedSessionId] = session;
                 session.Touch();
-                return true;
+                return SessionCreateStatus.Created;
             }
         }
 
@@ -249,8 +284,23 @@ namespace TrainDispatcherGame.Server.Sessions
             return _pendingTeardowns.ContainsKey(TeardownKey(normalizedSessionId, playerId));
         }
 
-        private GameSession CreateSession(string sessionId)
+        private static bool IsDevelopmentGameCode(string normalizedSessionId)
         {
+            return string.Equals(normalizedSessionId, "dev101", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void DiscardSession(string sessionId, GameSession session)
+        {
+            session.Simulation.Stop();
+            session.PlayerManager.ClearAllPlayers();
+            ServerLogger.Instance.ClearSession(sessionId);
+            _sessions.TryRemove(sessionId, out _);
+        }
+
+        private GameSession CreateSession(string sessionId, string scenarioId)
+        {
+            _reservedCodes.TryRemove(sessionId, out _);
+
             var playerManager = new PlayerManager();
             var notificationManager = new NotificationManager(_hubContext, playerManager, sessionId);
 
@@ -262,7 +312,7 @@ namespace TrainDispatcherGame.Server.Sessions
             });
 
             var sessionTrackLayoutService = new TrackLayoutService();
-            var simulation = new TrainDispatcherGame.Server.Simulation.Simulation(notificationManager, sessionTrackLayoutService, playerManager, _defaultScenarioId, sessionId);
+            var simulation = new TrainDispatcherGame.Server.Simulation.Simulation(notificationManager, sessionTrackLayoutService, playerManager, scenarioId, sessionId);
             return new GameSession(sessionId, simulation, playerManager, notificationManager, sessionTrackLayoutService);
         }
 
@@ -297,11 +347,17 @@ namespace TrainDispatcherGame.Server.Sessions
                         continue;
                     }
 
-                    if (_sessions.TryRemove(sessionId, out var removedSession))
+                    if (_sessions.TryGetValue(sessionId, out var removedSession))
                     {
-                        removedSession.Simulation.Stop();
-                        removedSession.PlayerManager.ClearAllPlayers();
-                        ServerLogger.Instance.ClearSession(sessionId);
+                        DiscardSession(sessionId, removedSession);
+                    }
+                }
+
+                foreach (var reservation in _reservedCodes)
+                {
+                    if (now - reservation.Value > SessionInactivityTimeout)
+                    {
+                        _reservedCodes.TryRemove(reservation.Key, out _);
                     }
                 }
 

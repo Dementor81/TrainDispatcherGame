@@ -95,34 +95,6 @@ namespace TrainDispatcherGame.Server.Simulation
             this.CreateInitialStartEvents();
         }
 
-        public async Task SetScenario(string scenarioId)
-        {
-            if (string.IsNullOrWhiteSpace(scenarioId))
-            {
-                throw new ArgumentException("Scenario id must not be empty", nameof(scenarioId));
-            }
-
-            // Validate before switching
-            var exists = ScenarioService.GetScenarioById(scenarioId) != null;
-            if (!exists)
-            {
-                throw new Exception($"Scenario '{scenarioId}' not found");
-            }
-
-            _scenarioId = scenarioId;
-
-            // Stop will also Reset to the new scenario and broadcast state
-            this.Stop();
-            this.Reset();
-
-            // If previously paused, Stop() will set state to Stopped and reset.
-            // Ensure clients receive current state
-            await NotifySimulationStateChanged();
-
-            ServerLogger.Instance.LogDebug(Ctx(scenarioId), $"Scenario set to {scenarioId}");
-        }
-
-
         /// <summary>
         /// Create initial start events for all trains
         /// it creates a TrainStartEvent for each train, with the departure time minus 60 seconds of the first waypoint.

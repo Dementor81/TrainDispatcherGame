@@ -17,24 +17,16 @@ import LogsPanel from "./logsPanel";
 import PlayersPanel from "./playersPanel";
 import GameCodePanel from "./gameCodePanel";
 import { GmSnapshotPoller } from "./gmSnapshotPoller";
-import { ensureValidSessionOrShowModal } from "../core/sessionGuard";
+import { probeGmSession, showInvalidSessionModal } from "../core/sessionGuard";
 import { renderAppVersionBadge } from "../ui/appVersionBadge";
 
-window.addEventListener("load", async () => {
-  void renderAppVersionBadge();
-
-  const validSessionCode = await ensureValidSessionOrShowModal("gmGameCode");
-  if (!validSessionCode) {
-    return;
-  }
-
+function bootGmUi(): void {
   const app = new GameMasterApplication();
   const hud = new HUDPanel(app as any);
   hud.show();
 
   const panel = new ControlPanel(app as any);
   panel.show();
-  const scenario = new ScenarioSelectionDialog();
   const snapshotPoller = new GmSnapshotPoller();
   snapshotPoller.start();
   const trainEvents = new TrainEventsPanel();
@@ -45,6 +37,34 @@ window.addEventListener("load", async () => {
   const players = new PlayersPanel(snapshotPoller);
   const gameCode = new GameCodePanel();
 
-  (window as any).gameMaster = { app, hud, panel, scenario, trains, trainEvents, openline, blockedExits, logs, players, gameCode, snapshotPoller };
-});
+  (window as any).gameMaster = { app, hud, panel, trains, trainEvents, openline, blockedExits, logs, players, gameCode, snapshotPoller };
+}
 
+window.addEventListener("load", async () => {
+  void renderAppVersionBadge();
+
+  const sessionState = await probeGmSession();
+  if (sessionState === "missing-code") {
+    showInvalidSessionModal();
+    return;
+  }
+
+  if (sessionState === "active") {
+    bootGmUi();
+    return;
+  }
+
+  const pendingGameCode = (sessionStorage.getItem("gmGameCode") || "").trim();
+  if (!pendingGameCode) {
+    showInvalidSessionModal();
+    return;
+  }
+
+  new ScenarioSelectionDialog({
+    gameCode: pendingGameCode,
+    onCreated: (gameCode) => {
+      sessionStorage.setItem("gameCode", gameCode);
+      bootGmUi();
+    },
+  });
+});
