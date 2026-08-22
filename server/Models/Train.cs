@@ -33,6 +33,8 @@ namespace TrainDispatcherGame.Server.Models
         // Seconds late (positive) or early (negative) vs schedule.
         public int delay { get; set; } = 0;
         public bool damaged { get; set; } = false;
+        // Manual remove by a player (not a normal finish or accident).
+        public bool removed { get; set; } = false;
         // If true, this train is skipped by the server event loop after a fatal update error.
         public bool updateFailed { get; set; } = false;
         public string? PredecessorTrainNumber { get; set; }

@@ -25,11 +25,6 @@ namespace TrainDispatcherGame.Server.Hubs
             return $"session_{sessionId}";
         }
 
-        private static string SessionGmGroup(string sessionId)
-        {
-            return $"session_{sessionId}_gm";
-        }
-
         private static string Ctx(string sessionId, string context)
         {
             return SessionLogContext.Prefix(sessionId, context);
@@ -140,7 +135,6 @@ namespace TrainDispatcherGame.Server.Hubs
             if (!string.IsNullOrWhiteSpace(sessionId))
             {
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, SessionGroup(sessionId));
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, SessionGmGroup(sessionId));
             }
 
             _sessionManager.UnbindConnection(Context.ConnectionId);
@@ -351,14 +345,12 @@ namespace TrainDispatcherGame.Server.Hubs
 
             _sessionManager.BindConnection(Context.ConnectionId, session.SessionId);
             await Groups.AddToGroupAsync(Context.ConnectionId, SessionGroup(session.SessionId));
-            await Groups.AddToGroupAsync(Context.ConnectionId, SessionGmGroup(session.SessionId));
 
             await Clients.Caller.SendAsync("SessionJoined", new
             {
                 success = true,
                 sessionId = session.SessionId
             });
-            await Clients.Caller.SendAsync("BlockedExitsChanged", session.Simulation.GetBlockedExitsSnapshot());
         }
 
         public async Task LeaveStation()
@@ -549,7 +541,7 @@ namespace TrainDispatcherGame.Server.Hubs
                     return;
                 }
 
-                session.Simulation.HandleCollision(trainA, trainB);
+                session.Simulation.HandleCollision(trainA, trainB, stationId);
             }
             catch (Exception ex)
             {
@@ -619,9 +611,7 @@ namespace TrainDispatcherGame.Server.Hubs
                     return;
                 }
 
-                train.completed = true;
-                train.controlledByPlayer = false;
-                session.Simulation.NotifyTrainRemoved(train);
+                session.Simulation.HandleTrainRemoved(train, stationId);
             }
             catch (Exception ex)
             {

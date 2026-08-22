@@ -2,7 +2,7 @@ import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } fro
 import Train from '../sim/train';
 import Switch from '../sim/switch';
 import { EventManager } from '../manager/event_manager';
-import { SimulationStatusDto, TrainDelayUpdatedNotificationDto, TrainRemovedNotificationDto, BlockedExitsChangedNotificationDto } from './dto';
+import { SimulationStatusDto, TrainDelayUpdatedNotificationDto, TrainRemovedNotificationDto, MajorEventDto } from './dto';
 import type { ApplicationContext } from '@core/applicationContext';
 
 export class JoinRejectedError extends Error {
@@ -159,8 +159,8 @@ export class SignalRManager {
             this.handleTrainRemoved(data);
         });
 
-        this.connection.on('BlockedExitsChanged', (data) => {
-            this.handleBlockedExitsChanged(data);
+        this.connection.on('MajorEventOccurred', (data) => {
+            this.handleMajorEventOccurred(data);
         });
 
         this.connection.on('ExitBlockStatusChanged', (data) => {
@@ -493,8 +493,8 @@ export class SignalRManager {
         this._eventManager.emit('trainRemoved', data);
     }
 
-    private handleBlockedExitsChanged(data: BlockedExitsChangedNotificationDto): void {
-        this._eventManager.emit('blockedExitsChanged', data);
+    private handleMajorEventOccurred(data: MajorEventDto): void {
+        this._eventManager.emit('majorEventOccurred', data);
     }
 
     public get connectionState(): string {

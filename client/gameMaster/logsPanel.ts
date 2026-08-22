@@ -1,13 +1,11 @@
 import { fetchLogs } from "../network/api";
 import { LogEntryDto, LogLevel } from "../network/dto";
 import { BasePanel } from "../ui/basePanel";
-import { UI } from "../utils/ui";
 
 export class LogsPanel extends BasePanel {
-  private filterInput?: HTMLInputElement;
-  private lastFilterKey: string = "";
   private lastSeenId: number = 0;
   private autoScroll: boolean = true;
+  private userScrolling: boolean = false;
   private autoScrollBtn?: HTMLButtonElement;
 
   constructor() {
@@ -18,53 +16,52 @@ export class LogsPanel extends BasePanel {
 
   protected createContent(): HTMLDivElement {
     const section = document.createElement("div");
-    section.className = "d-flex flex-column gap-2 rounded p-2";
+    section.className = "d-flex flex-column rounded p-2";
     section.style.height = "100%";
+    section.style.minHeight = "0";
 
-    const filterRow = document.createElement("div");
-    filterRow.className = "d-flex align-items-center gap-2";
-    const filterLabel = document.createElement("label");
-    filterLabel.className = "text-secondary small";
-    filterLabel.textContent = "Filter: ";
-    filterLabel.setAttribute("for", "logsFilterInput");
-    filterLabel.style.width = "130px";
-    const filterInput = document.createElement("input");
-    filterInput.id = "logsFilterInput";
-    filterInput.type = "text";
-    filterInput.className = "form-control form-control-sm";
-    filterInput.placeholder = "Bahnhof oder Zugnummer";
-    filterInput.addEventListener("input", () => this.Updates());
-    this.filterInput = filterInput;
-
-    this.autoScrollBtn = UI.createButton("btn-sm", null, () => {
-      this.autoScroll = !this.autoScroll;
-      if (this.autoScroll) this.scrollToBottom();
-      this.updateAutoScrollButton();
-    });
-    this.autoScrollBtn.title = "nach unten scrollen";
-    this.autoScrollBtn.innerHTML = "<i class=\"bi bi-caret-down-square\"></i>";
-    
-
-    filterRow.appendChild(filterLabel);
-    filterRow.appendChild(filterInput);
-    filterRow.appendChild(this.autoScrollBtn);
+    const wrap = document.createElement("div");
+    wrap.className = "position-relative";
+    wrap.style.flex = "1 1 auto";
+    wrap.style.minHeight = "0";
 
     const output = document.createElement("div");
     output.id = "logsOutput";
-    output.className = "form-control form-control-sm bg-dark no-drag";
-    output.style.flex = "1 1 auto";
+    output.className = "form-control form-control-sm bg-dark no-drag h-100";
     output.style.overflow = "auto";
     output.style.whiteSpace = "pre-wrap";
     output.style.fontFamily = "monospace";
     output.style.fontSize = "small";
+    const followUserScroll = () => {
+      this.autoScroll = this.isAtBottom(output);
+      this.updateAutoScrollButton();
+    };
+
+    output.addEventListener("wheel", () => requestAnimationFrame(followUserScroll), { passive: true });
+    output.addEventListener("touchmove", followUserScroll, { passive: true });
+    output.addEventListener("pointerdown", (event) => {
+      this.userScrolling = event.offsetX >= output.clientWidth;
+    });
     output.addEventListener("scroll", () => {
-      const atBottom = output.scrollHeight - output.clientHeight - output.scrollTop < 10;
-      if (!atBottom) this.autoScroll = false;
+      if (this.userScrolling) followUserScroll();
+    });
+    window.addEventListener("pointerup", () => { this.userScrolling = false; });
+
+    const autoScrollBtn = document.createElement("button");
+    autoScrollBtn.type = "button";
+    autoScrollBtn.className = "btn btn-sm btn-secondary position-absolute bottom-0 end-0 m-2 shadow-sm z-1 d-none";
+    autoScrollBtn.title = "nach unten scrollen";
+    autoScrollBtn.setAttribute("aria-label", "nach unten scrollen");
+    autoScrollBtn.innerHTML = '<i class="bi bi-caret-down-square"></i>';
+    autoScrollBtn.addEventListener("click", () => {
+      this.autoScroll = true;
+      this.scrollToBottom();
       this.updateAutoScrollButton();
     });
+    this.autoScrollBtn = autoScrollBtn;
 
-    section.appendChild(filterRow);
-    section.appendChild(output);
+    wrap.append(output, autoScrollBtn);
+    section.appendChild(wrap);
     this.updateAutoScrollButton();
     return section;
   }
@@ -74,17 +71,7 @@ export class LogsPanel extends BasePanel {
       const output = this.container.querySelector("#logsOutput") as HTMLElement | null;
       if (!output) return;
 
-      const contexts = this.getFilterContexts();
-      const filterKey = contexts.join("|");
-      const filterChanged = filterKey !== this.lastFilterKey;
-      if (filterChanged) {
-        output.innerHTML = "";
-        this.lastFilterKey = filterKey;
-        this.lastSeenId = 0;
-      }
-
-      const afterId = filterChanged ? undefined : this.lastSeenId;
-      const logs = await fetchLogs(contexts, afterId);
+      const logs = await fetchLogs(this.lastSeenId);
 
       if (!logs || logs.length === 0) {
         if (this.lastSeenId === 0 && output.childElementCount === 0) {
@@ -111,10 +98,17 @@ export class LogsPanel extends BasePanel {
         }
       }
 
-      if (this.autoScroll) this.scrollToBottom();
+      if (this.autoScroll) {
+        this.scrollToBottom();
+        requestAnimationFrame(() => this.scrollToBottom());
+      }
     } catch (err) {
       console.error("LogsPanel: failed to update", err);
     }
+  }
+
+  private isAtBottom(output: HTMLElement): boolean {
+    return output.scrollHeight - output.clientHeight - output.scrollTop < 10;
   }
 
   private scrollToBottom(): void {
@@ -123,17 +117,7 @@ export class LogsPanel extends BasePanel {
   }
 
   private updateAutoScrollButton(): void {
-    if (!this.autoScrollBtn) return;
-    this.autoScrollBtn.title = this.autoScroll ? "Auto-scroll active (click to pause)" : "Auto-scroll paused (click to resume)";
-    this.autoScrollBtn.className = this.autoScroll ? "btn btn-sm btn-secondary" : "btn btn-sm btn-outline-secondary";
-  }
-
-  private getFilterContexts(): string[] {
-    const value = this.filterInput?.value ?? "";
-    return value
-      .split(",")
-      .map(v => v.trim())
-      .filter(v => v.length > 0);
+    this.autoScrollBtn?.classList.toggle("d-none", this.autoScroll);
   }
 
   private normalizeEntry(entry: any): LogEntryDto {

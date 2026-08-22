@@ -70,7 +70,7 @@ export class ScenarioSelectionDialog {
 
       const help = document.createElement("p");
       help.className = "text-secondary small mb-0";
-      help.textContent = "Platzhalter: Das Szenario wird erst beim Bestätigen geladen und kann danach nicht mehr geändert werden.";
+      help.textContent = "Wähle das Streckennetz und das Szenario, das du spielen möchtest. Anschließend können die Spieler dem Spiel beitreten.";
       body.appendChild(help);
 
       const networkRow = document.createElement("div");

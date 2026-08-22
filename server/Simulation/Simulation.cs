@@ -21,6 +21,7 @@ namespace TrainDispatcherGame.Server.Simulation
         private SimulationState _state = SimulationState.Stopped;
         private string? _errorMessage;
         private List<Train> _trains = new();
+        private readonly List<MajorEvent> _majorEvents = new();
         private readonly NotificationManager _notificationManager;
         private readonly PlayerManager _playerManager;
         private readonly TrackLayoutService _trackLayoutService;
@@ -89,7 +90,7 @@ namespace TrainDispatcherGame.Server.Simulation
             {
                 _blockedExits.Clear();
             }
-            NotifyBlockedExitsChanged();
+            _majorEvents.Clear();
 
             _openLineTracks.Initialize();
             this.CreateInitialStartEvents();
@@ -176,7 +177,7 @@ namespace TrainDispatcherGame.Server.Simulation
 
         public async void Start()
         {
-            ServerLogger.Instance.LogWarning(Ctx(_scenarioId ?? string.Empty), $"Session simulation started. Previous logs remain global; use session filter in /api/logs.");
+            ServerLogger.Instance.LogWarning(Ctx(_scenarioId ?? string.Empty), "Session simulation started.");
             if (_state == SimulationState.Running)
             {
                 return; // Already running
@@ -340,6 +341,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 if (currentWayPoint.Stops && !currentWayPoint.Processed && train.Type != TrainType.Freight)
                 {
                     train.Record(new TrainMissedStopEvent(SimulationTime, currentWayPoint.Station));
+                    RecordMajorEvent(MajorEventType.MissedStop, train.Number, station: currentWayPoint.Station);
                 }
 
                 var nextWaypoint = train.AdvanceToNextWayPoint();
@@ -362,11 +364,17 @@ namespace TrainDispatcherGame.Server.Simulation
                 var arrivalTime = SimulationTime.AddSeconds(train.GetTravelTime(connection.Distance));
                 var nextSpawn = new TrainSpawnEvent(arrivalTime, connection, isReversed);
                 train.TrainEvent = nextSpawn;
+                string? occupyingTrainNumber = null;
+                if (_openLineTracks.TryGet(connection, out var occupiedTrack))
+                {
+                    occupyingTrainNumber = occupiedTrack.TrainOnTrack?.Number;
+                }
                 if (!_openLineTracks.AddTrain(connection, train))
                 {
                     ServerLogger.Instance.LogEmergency(Ctx(train.Number), $"Train {train.Number} collision detected on track from {connection.FromStation} to {connection.ToStation}");
                     train.completed = true;
                     train.damaged = true;
+                    RecordMajorEvent(MajorEventType.Collision, train.Number, occupyingTrainNumber, connection.FromStation);
                 }
 
                 NotifyTrainDelayUpdated(train);
@@ -540,8 +548,7 @@ namespace TrainDispatcherGame.Server.Simulation
             }
         }
 
-        // Mark both trains as completed after a client-reported collision. No broadcast back to clients.
-        public void HandleCollision(Train trainA, Train trainB)
+        public void HandleCollision(Train trainA, Train trainB, string? stationId = null)
         {
             try
             {
@@ -550,6 +557,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 trainB.damaged = true;
                 trainA.completed = true;
                 trainB.completed = true;
+                RecordMajorEvent(MajorEventType.Collision, trainA.Number, trainB.Number, stationId);
             }
             catch (Exception ex)
             {
@@ -557,7 +565,6 @@ namespace TrainDispatcherGame.Server.Simulation
             }
         }
 
-        // Mark train as completed after a client-reported derailment. No broadcast back to clients.
         public void HandleDerailment(Train train, string stationId, int? switchId)
         {
             try
@@ -567,12 +574,72 @@ namespace TrainDispatcherGame.Server.Simulation
                 train.completed = true;
                 var switchInfo = switchId.HasValue ? $" at switch {switchId.Value}" : string.Empty;
                 ServerLogger.Instance.LogEmergency(Ctx(train.Number), $"Derailment: train {train.Number} removed by client report at station {normalizedStationId}{switchInfo}");
-
+                RecordMajorEvent(MajorEventType.Derailed, train.Number, station: normalizedStationId);
             }
             catch (Exception ex)
             {
                 ServerLogger.Instance.LogError(Ctx(train.Number), $"Error handling derailment: {ex.Message}");
             }
+        }
+
+        public void HandleTrainRemoved(Train train, string? stationId = null)
+        {
+            var station = !string.IsNullOrWhiteSpace(stationId) ? stationId : train.CurrentLocation;
+            train.controlledByPlayer = false;
+            if (train.completed || train.damaged)
+            {
+                NotifyTrainRemoved(train);
+                return;
+            }
+
+            train.completed = true;
+            train.removed = true;
+            RecordMajorEvent(MajorEventType.Removed, train.Number, station: station);
+            NotifyTrainRemoved(train);
+        }
+
+        public List<MajorEvent> GetMajorEventsNewestFirst()
+        {
+            var copy = new List<MajorEvent>(_majorEvents);
+            copy.Reverse();
+            return copy;
+        }
+
+        public (int runningCount, int finishedCount, int removedCount, int accidentCount, int causedDelaySeconds) ComputeTrainStats()
+        {
+            int running = 0, finished = 0, removed = 0, accidents = 0, delay = 0;
+            foreach (var train in _trains)
+            {
+                delay += Math.Max(0, train.delay);
+                if (train.damaged) accidents++;
+                else if (train.removed) removed++;
+                else if (train.completed) finished++;
+                else if (train.TrainEvent is not TrainStartEvent) running++;
+            }
+            return (running, finished, removed, accidents, delay);
+        }
+
+        private void RecordMajorEvent(MajorEventType type, string trainNumber, string? otherTrainNumber = null, string? station = null)
+        {
+            var evt = new MajorEvent
+            {
+                SimulationTime = SimulationTime,
+                Type = type,
+                TrainNumber = trainNumber,
+                OtherTrainNumber = otherTrainNumber,
+                Station = station,
+                PlayerName = ResolvePlayerName(station)
+            };
+            _majorEvents.Add(evt);
+            _ = _notificationManager.SendMajorEventOccurred(evt);
+        }
+
+        private string? ResolvePlayerName(string? station)
+        {
+            if (string.IsNullOrWhiteSpace(station)) return null;
+            var player = _playerManager.GetPlayerByStation(station);
+            if (player == null) return null;
+            return string.IsNullOrWhiteSpace(player.Name) ? player.Id : player.Name;
         }
 
         internal void NotifyTrainDelayUpdated(Train train)
@@ -656,59 +723,24 @@ namespace TrainDispatcherGame.Server.Simulation
             }
         }
 
-        public BlockedExitsChangedNotification GetBlockedExitsSnapshot()
-        {
-            List<(string stationId, int exitId)> snapshot;
-            lock (_blockedExitsLock)
-            {
-                snapshot = _blockedExits.ToList();
-            }
-
-            var stations = snapshot
-                .GroupBy(e => e.stationId)
-                .OrderBy(g => g.Key)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(e => e.exitId).OrderBy(id => id).ToList());
-
-            return new BlockedExitsChangedNotification { Stations = stations };
-        }
-
-        private void NotifyBlockedExitsChanged()
-        {
-            _ = _notificationManager.SendBlockedExitsChanged(GetBlockedExitsSnapshot());
-        }
-
         /// <summary>
         /// Records that a destination exit is owned by a train the server just put on the open line.
         /// </summary>
         public void MarkExitBlocked(string stationId, int exitId)
         {
             var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
-            bool added;
             lock (_blockedExitsLock)
             {
-                added = _blockedExits.Add((normalizedStationId, exitId));
-            }
-
-            if (added)
-            {
-                NotifyBlockedExitsChanged();
+                _blockedExits.Add((normalizedStationId, exitId));
             }
         }
 
         public void ClearExitBlocked(string stationId, int exitId)
         {
             var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
-            bool removed;
             lock (_blockedExitsLock)
             {
-                removed = _blockedExits.Remove((normalizedStationId, exitId));
-            }
-
-            if (removed)
-            {
-                NotifyBlockedExitsChanged();
+                _blockedExits.Remove((normalizedStationId, exitId));
             }
         }
 

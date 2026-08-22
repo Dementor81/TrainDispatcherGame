@@ -33,33 +33,6 @@ namespace TrainDispatcherGame.Server.Logging
             }
         }
 
-        public IReadOnlyList<LogEntry> GetLogs(IEnumerable<string> contexts)
-        {
-            var allowedContexts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            if (contexts != null)
-            {
-                foreach (var context in contexts)
-                {
-                    if (!string.IsNullOrWhiteSpace(context))
-                    {
-                        allowedContexts.Add(context);
-                    }
-                }
-            }
-
-            lock (_lock)
-            {
-                if (allowedContexts.Count == 0)
-                {
-                    return _entries.ToList();
-                }
-
-                return _entries
-                    .Where(entry => allowedContexts.Contains(entry.Context))
-                    .ToList();
-            }
-        }
-
         public void Clear()
         {
             lock (_lock)

@@ -5,7 +5,7 @@ export class GameCodePanel extends BasePanel {
   private static readonly QR_POPUP_NAME = "game-code-qr";
 
   constructor() {
-    super(null as any, { width: 280, height: 88, top: 600, right: 850, title: 'Game-Code' });
+    super(null as any, { width: 320, height: 88, top: 600, right: 850, title: 'Game-Code' });
     this.show();
   }
 
@@ -30,14 +30,26 @@ export class GameCodePanel extends BasePanel {
       void this.copyToClipboard(code.textContent ?? "");
     });
     copyButton.innerHTML = '<i class="bi bi-clipboard"></i>';
+    copyButton.title = "Game-Code kopieren";
+
+    const copyUrlButton = UI.createButton("btn-sm btn-outline-light no-drag", "", () => {
+      const joinUrl = this.resolveJoinUrl(code.textContent ?? "");
+      if (joinUrl) {
+        void this.copyToClipboard(joinUrl);
+      }
+    });
+    copyUrlButton.innerHTML = '<i class="bi bi-link-45deg"></i>';
+    copyUrlButton.title = "Spiel-URL kopieren";
 
     const qrButton = UI.createButton("btn-sm btn-outline-light no-drag", '', () => {
       this.openQrCodePopup(code.textContent ?? "");
     });
     qrButton.innerHTML = '<i class="bi bi-qr-code"></i>';
+    qrButton.title = "QR-Code anzeigen";
 
     row.appendChild(code);
     row.appendChild(copyButton);
+    row.appendChild(copyUrlButton);
     row.appendChild(qrButton);
     section.appendChild(title);
     section.appendChild(row);
@@ -47,6 +59,16 @@ export class GameCodePanel extends BasePanel {
   private resolveGameCode(): string {
     const stored = sessionStorage.getItem("gameCode")?.trim();
     return stored && stored.length > 0 ? stored : "-";
+  }
+
+  private resolveJoinUrl(gameCode: string): string | null {
+    if (!gameCode || gameCode === "-") {
+      return null;
+    }
+
+    const landingUrl = new URL("../index.html", window.location.href);
+    landingUrl.searchParams.set("gamecode", gameCode);
+    return landingUrl.toString();
   }
 
   private async copyToClipboard(value: string): Promise<void> {
@@ -62,13 +84,10 @@ export class GameCodePanel extends BasePanel {
   }
 
   private openQrCodePopup(gameCode: string): void {
-    if (!gameCode || gameCode === "-") {
+    const targetUrl = this.resolveJoinUrl(gameCode);
+    if (!targetUrl) {
       return;
     }
-
-    const landingUrl = new URL("../index.html", window.location.href);
-    landingUrl.searchParams.set("gamecode", gameCode);
-    const targetUrl = landingUrl.toString();
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(targetUrl)}`;
     const features = "popup=yes,width=420,height=520,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=no";
     const popup = window.open("", GameCodePanel.QR_POPUP_NAME, features);

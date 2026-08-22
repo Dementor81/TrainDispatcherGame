@@ -293,15 +293,8 @@ export async function fetchGameMasterSnapshot(): Promise<GameMasterSnapshotDto> 
   return response.json();
 }
 
-export async function fetchLogs(contexts?: string[], afterId?: number): Promise<LogEntryDto[]> {
+export async function fetchLogs(afterId?: number): Promise<LogEntryDto[]> {
   const url = new URL(withGameCode(`${API_BASE_URL}/logs`));
-  if (contexts && contexts.length > 0) {
-    for (const context of contexts) {
-      if (context.trim().length > 0) {
-        url.searchParams.append('context', context);
-      }
-    }
-  }
   if (afterId != null && afterId > 0) {
     url.searchParams.set('afterId', String(afterId));
   }

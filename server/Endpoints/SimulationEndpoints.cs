@@ -187,12 +187,19 @@ namespace TrainDispatcherGame.Server.Endpoints
                         StationId = p.StationId
                     })
                     .ToList();
+                var stats = simulation.ComputeTrainStats();
 
                 return Results.Ok(new
                 {
                     trains = BuildTrainList(simulation),
                     openLineTracks = simulation.GetOpenLineTrackStatuses(),
-                    controlledStations
+                    controlledStations,
+                    majorEvents = simulation.GetMajorEventsNewestFirst(),
+                    runningCount = stats.runningCount,
+                    finishedCount = stats.finishedCount,
+                    removedCount = stats.removedCount,
+                    accidentCount = stats.accidentCount,
+                    causedDelaySeconds = stats.causedDelaySeconds
                 });
             });
 

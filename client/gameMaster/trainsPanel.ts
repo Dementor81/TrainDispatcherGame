@@ -3,6 +3,9 @@ import { BasePanel } from "../ui/basePanel";
 
 export class TrainsPanel extends BasePanel {
   private unsubscribe: (() => void) | null = null;
+  private filterInput?: HTMLInputElement;
+  private clearBtn?: HTMLButtonElement;
+  private lastTrains: any[] = [];
 
   constructor(
     private readonly poller: GmSnapshotPoller,
@@ -14,9 +17,44 @@ export class TrainsPanel extends BasePanel {
 
   protected createContent(): HTMLDivElement {
     const section = document.createElement("div");
-    section.className = "rounded p-2";
+    section.className = "d-flex flex-column rounded p-2";
     section.style.height = "100%";
-    section.style.overflow = "auto";
+    section.style.minHeight = "0";
+
+    const filterWrap = document.createElement("div");
+    filterWrap.className = "position-relative mb-2";
+    filterWrap.style.maxWidth = "180px";
+    filterWrap.setAttribute("data-bs-theme", "dark");
+
+    const searchIcon = document.createElement("i");
+    searchIcon.className = "bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-secondary";
+    searchIcon.style.pointerEvents = "none";
+
+    const filterInput = document.createElement("input");
+    filterInput.type = "text";
+    filterInput.inputMode = "numeric";
+    filterInput.pattern = "[0-9]*";
+    filterInput.className = "form-control form-control-sm ps-4 pe-4";
+    filterInput.placeholder = "Zugnummer";
+    filterInput.autocomplete = "off";
+    filterInput.spellcheck = false;
+    filterInput.addEventListener("input", () => this.applyFilterInput());
+    this.filterInput = filterInput;
+
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.className = "btn position-absolute top-50 end-0 translate-middle-y p-0 me-2 border-0 bg-transparent text-secondary d-none";
+    clearBtn.title = "Clear";
+    clearBtn.setAttribute("aria-label", "Clear");
+    clearBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+    clearBtn.addEventListener("click", () => {
+      filterInput.value = "";
+      this.applyFilterInput();
+      filterInput.focus();
+    });
+    this.clearBtn = clearBtn;
+
+    filterWrap.append(searchIcon, filterInput, clearBtn);
 
     const header = document.createElement("div");
     header.className = "d-flex flex-row gap-2 text-secondary small pb-1 border-bottom border-secondary";
@@ -31,9 +69,11 @@ export class TrainsPanel extends BasePanel {
     const body = document.createElement("div");
     body.id = "trainsListBody";
     body.className = "pt-1 small";
+    body.style.flex = "1 1 auto";
+    body.style.minHeight = "0";
+    body.style.overflow = "auto";
 
-    section.appendChild(header);
-    section.appendChild(body);
+    section.append(filterWrap, header, body);
     return section;
   }
 
@@ -50,7 +90,19 @@ export class TrainsPanel extends BasePanel {
     super.hide();
   }
 
+  private applyFilterInput(): void {
+    if (this.filterInput) {
+      const digits = this.filterInput.value.replace(/\D/g, "");
+      if (this.filterInput.value !== digits) {
+        this.filterInput.value = digits;
+      }
+    }
+    this.clearBtn?.classList.toggle("d-none", !(this.filterInput?.value));
+    this.renderTrains(this.lastTrains);
+  }
+
   private renderTrains(trains: any[]): void {
+    this.lastTrains = trains;
     if (!this.isVisible) return;
 
     try {
@@ -74,9 +126,14 @@ export class TrainsPanel extends BasePanel {
         return ta - tb;
       });
 
+      const query = (this.filterInput?.value ?? "").trim().toLowerCase();
+      const visible = query
+        ? normalized.filter((t) => String(t.number).toLowerCase().includes(query))
+        : normalized;
+
       listEl.innerHTML = "";
 
-      if (normalized.length === 0) {
+      if (visible.length === 0) {
         const empty = document.createElement("div");
         empty.className = "text-muted";
         empty.textContent = "No trains available";
@@ -84,7 +141,7 @@ export class TrainsPanel extends BasePanel {
         return;
       }
 
-      for (const t of normalized) {
+      for (const t of visible) {
         let locationText = t.currentLocation ? `At ${t.currentLocation}` : (t.headingForStation ? `To ${t.headingForStation}` : "-");
         const nextEventDate = t.nextEventTime ?? undefined;
         const nextEventText = nextEventDate ? new Date(nextEventDate).toLocaleTimeString() : "-";

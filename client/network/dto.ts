@@ -97,10 +97,6 @@ export interface TrainRemovedNotificationDto {
   trainNumber: string;
 }
 
-export interface BlockedExitsChangedNotificationDto {
-  stations: Record<string, number[]>;
-}
-
 export interface TrainWayPointDto {
   station: string;
   arrivalTime?: string | null;
@@ -212,4 +208,21 @@ export interface GameMasterSnapshotDto {
   trains: any[];
   openLineTracks: OpenLineTrackStatusDto[];
   controlledStations: PlayerControlledStationDto[];
+  majorEvents: MajorEventDto[];
+  runningCount: number;
+  finishedCount: number;
+  removedCount: number;
+  accidentCount: number;
+  causedDelaySeconds: number;
+}
+
+export type MajorEventType = "MissedStop" | "Derailed" | "Collision" | "Removed";
+
+export interface MajorEventDto {
+  simulationTime: string;
+  type: MajorEventType;
+  trainNumber: string;
+  otherTrainNumber?: string | null;
+  station?: string | null;
+  playerName?: string | null;
 }
