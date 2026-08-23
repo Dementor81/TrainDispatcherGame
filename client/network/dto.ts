@@ -67,6 +67,7 @@ export interface SimulationStatusDto {
   currentTime: string;
   speed: number;
   timestamp?: string;
+  scenarioId?: string;
 }
 
 export interface TrainDto {

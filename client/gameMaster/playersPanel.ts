@@ -7,7 +7,7 @@ export class PlayersPanel extends BasePanel {
   private listEl!: HTMLDivElement;
 
   constructor(private readonly poller: GmSnapshotPoller) {
-    super(null, { width: 620, height: 260, right: 0, top: 0, title: 'Alle Spieler', resizable: true });
+    super(null, { width: 620, height: 260, right: 0, top: 0, title: 'Alle Spieler', resizable: true, closeable: true });
     this.show();
   }
 

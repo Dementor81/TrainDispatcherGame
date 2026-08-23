@@ -3,6 +3,7 @@ import { ControlPanel } from "../ui/controlPanel";
 import { TrainOverviewPanel } from "../ui/trainOverviewPanel";
 import { TestingPanel } from "../ui/testingPanel";
 import { HUDPanel } from "../ui/hudPanel";
+import { TIME_DISTANCE_MENU_ITEM, HudMenuItem } from "../ui/hudMenu";
 import { TrainDetailsPanel } from "../ui/trainDetailsPanel";
 import NotificationModal from "../ui/notificationModal";
 import ApprovalToast from "../ui/approvalToast";
@@ -31,6 +32,7 @@ export class UIManager {
     init() {
         this._controlPanel = new ControlPanel(this._application);
         this._hud = new HUDPanel(this._application);
+        this._hud.setMenuItems(() => this.buildPlayerMenuItems());
         this._hud.show();
         if (Tools.isQueryParamTrue('testing')) {
             this._controlPanel.show();
@@ -154,6 +156,34 @@ export class UIManager {
 
     hideTrainDetailsPanel(): void {
         this._trainDetailsPanel?.hide();
+    }
+
+    hideStationPlayUi(): void {
+        ApprovalToast.clearAll();
+        this.hideTrainOverviewPanel();
+        this.hideTrainDetailsPanel();
+    }
+
+    private buildPlayerMenuItems(): HudMenuItem[] {
+        const soundEnabled = this._application.soundsManager.enabled;
+        return [
+            {
+                id: "sound",
+                label: soundEnabled ? "Ton aus" : "Ton ein",
+                icon: soundEnabled ? "bi-volume-up" : "bi-volume-mute",
+                onSelect: () => this._application.soundsManager.setEnabled(!soundEnabled),
+            },
+            {
+                id: "leave-station",
+                label: "Station verlassen",
+                icon: "bi-box-arrow-left",
+                disabled: !this._application.currentStationId,
+                onSelect: () => {
+                    void this._application.leaveCurrentStation();
+                },
+            },
+            TIME_DISTANCE_MENU_ITEM,
+        ];
     }
 
    

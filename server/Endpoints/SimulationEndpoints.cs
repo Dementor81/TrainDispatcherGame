@@ -129,7 +129,8 @@ namespace TrainDispatcherGame.Server.Endpoints
                     errorMessage = simulation.ErrorMessage,
                     elapsedSeconds = simulation.ElapsedSeconds,
                     currentTime = simulation.SimulationTime,
-                    speed = simulation.Speed
+                    speed = simulation.Speed,
+                    scenarioId = simulation.ScenarioId
                 });
             });
 

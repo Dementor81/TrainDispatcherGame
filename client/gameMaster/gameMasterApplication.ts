@@ -1,4 +1,5 @@
 import type { ApplicationContext } from "../core/applicationContext";
+import { handleSessionEnded } from "../core/sessionGuard";
 import { ClientSimulation } from "../core/clientSimulation";
 import { EventManager } from "../manager/event_manager";
 import { SignalRManager } from "../network/signalr";
@@ -12,8 +13,10 @@ export class GameMasterApplication implements ApplicationContext {
     this.eventManager = new EventManager();
     this.signalRManager = new SignalRManager(this);
     this.clientSimulation = new ClientSimulation(this.eventManager);
+    this.eventManager.on("sessionEnded", () => {
+      handleSessionEnded();
+    });
 
-    // Connect to SignalR to receive server broadcasts
     this.connect();
   }
 

@@ -21,6 +21,7 @@ import Exit from "../sim/exit";
 import SoundsManager from "../manager/sounds_manager";
 import Tools from "./utils";
 import type { ApplicationContext } from "./applicationContext";
+import { handleSessionEnded } from "./sessionGuard";
 
 export class Application implements ApplicationContext {
    private _uiManager: UIManager;
@@ -292,6 +293,10 @@ export class Application implements ApplicationContext {
          );
       });
 
+      this._eventManager.on('sessionEnded', () => {
+         handleSessionEnded();
+      });
+
       console.log("Event listeners setup complete");
    }
 
@@ -408,6 +413,10 @@ export class Application implements ApplicationContext {
       return this._renderer;
    }
 
+   get soundsManager(): SoundsManager {
+      return this._soundsManager;
+   }
+
    public async handleReconnection(): Promise<void> {
       const lastStationInfo = this._signalRManager.lastStationInfo;
       if (lastStationInfo.playerId && lastStationInfo.stationId) {
@@ -420,25 +429,31 @@ export class Application implements ApplicationContext {
       }
    }
 
+   public async leaveCurrentStation(): Promise<void> {
+      try {
+         await this._signalRManager.leaveStation();
+      } catch (error) {
+         console.warn("Application: Failed to leave station", error);
+      }
+
+      this._uiManager.hideStationPlayUi();
+      this._trainManager.clearAllTrains();
+      await this.resetToStartScreen();
+   }
+
    // Reset app UI and state to start screen (used on final disconnect)
    public async resetToStartScreen(): Promise<void> {
       try {
-         // Stop any running simulation and clear trains
-         this._clientSimulation.stopSimulation();
-
-         // Clear canvas contents
          if (this._renderer) {
             this._renderer.clearIncomingTrains();
             this._renderer.clear();
          }
          this.setMainCanvasVisible(false);
 
-         // Reset current selections/state
          this._currentPlayerId = null;
          this._currentStationId = null;
          this._currentGameCode = null;
 
-         // Show station selection again
          const playerId = this.ensureSessionPlayerId();
          this._uiManager.showStationSelectionScreen(async (layout: string, playerId: string, playerName?: string) => {
             await this.handleStationSelection(layout, playerId, playerName);

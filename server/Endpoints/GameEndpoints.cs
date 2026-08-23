@@ -55,6 +55,21 @@ namespace TrainDispatcherGame.Server.Endpoints
                 };
             });
 
+            app.MapPost("/api/games/end", async (HttpRequest req, GameSessionManager sessionManager) =>
+            {
+                if (!EndpointSessionResolver.TryResolveGameCode(req, out var gameCode))
+                {
+                    return Results.BadRequest(new { message = "Missing or invalid 'gameCode' query parameter." });
+                }
+
+                if (!await sessionManager.TryEndSession(gameCode))
+                {
+                    return Results.NotFound(new { message = "Invalid game code." });
+                }
+
+                return Results.Ok(new { gameCode });
+            });
+
             return app;
         }
 

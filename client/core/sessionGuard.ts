@@ -40,9 +40,66 @@ export function showInvalidSessionModal(): void {
   document.body.appendChild(modalElement);
   const returnButton = modalElement.querySelector("#returnToLandingButton") as HTMLButtonElement;
   returnButton.addEventListener("click", () => {
-    sessionStorage.removeItem("gameCode");
-    sessionStorage.removeItem("playerGameCode");
-    sessionStorage.removeItem("gmGameCode");
+    clearSessionCodes();
+    window.location.href = "index.html";
+  });
+
+  const modal = new bootstrap.Modal(modalElement, {
+    backdrop: "static",
+    keyboard: false,
+  });
+  modal.show();
+}
+
+export function handleSessionEnded(options?: { redirectImmediately?: boolean }): void {
+  if (sessionEndedHandled) {
+    return;
+  }
+  sessionEndedHandled = true;
+  clearSessionCodes();
+
+  if (options?.redirectImmediately) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  showSessionEndedModal();
+}
+
+function clearSessionCodes(): void {
+  sessionStorage.removeItem("gameCode");
+  sessionStorage.removeItem("playerGameCode");
+  sessionStorage.removeItem("gmGameCode");
+}
+
+function showSessionEndedModal(): void {
+  const modalElement = document.createElement("div");
+  modalElement.className = "modal fade";
+  modalElement.id = "sessionEndedModal";
+  modalElement.tabIndex = -1;
+  modalElement.setAttribute("aria-hidden", "true");
+  modalElement.setAttribute("data-bs-backdrop", "static");
+  modalElement.setAttribute("data-bs-keyboard", "false");
+
+  modalElement.innerHTML = `
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Sitzung beendet</h5>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0">Der Spielleiter hat das Spiel beendet.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="sessionEndedLandingButton">Zur Startseite</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modalElement);
+  const returnButton = modalElement.querySelector("#sessionEndedLandingButton") as HTMLButtonElement;
+  returnButton.addEventListener("click", () => {
     window.location.href = "index.html";
   });
 
@@ -54,6 +111,7 @@ export function showInvalidSessionModal(): void {
 }
 
 const DEVELOPMENT_GAME_CODE = "DEV101";
+let sessionEndedHandled = false;
 
 function isTestingMode(): boolean {
   return new URLSearchParams(window.location.search).get("testing") === "true";

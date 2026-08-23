@@ -245,6 +245,16 @@ export async function startGameSession(
   return response.json();
 }
 
+export async function endGameSession(): Promise<void> {
+  const response = await fetch(withGameCode(`${API_BASE_URL}/games/end`), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to end game session: ${response.statusText}`);
+  }
+}
+
 export async function fetchGameMasterSnapshot(): Promise<GameMasterSnapshotDto> {
   const response = await fetch(withGameCode(`${API_BASE_URL}/gamemaster/snapshot`));
   if (!response.ok) {

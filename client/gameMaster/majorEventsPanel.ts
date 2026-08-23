@@ -26,7 +26,7 @@ export class MajorEventsPanel extends BasePanel {
     private readonly poller: GmSnapshotPoller,
     private readonly onTrainClick: (trainNumber: string) => void,
   ) {
-    super(app, { width: 620, height: 400, right: 0, top: 270, title: "Störungen", resizable: true });
+    super(app, { width: 620, height: 400, right: 0, top: 270, title: "Störungen", resizable: true, closeable: true });
     this.show();
   }
 

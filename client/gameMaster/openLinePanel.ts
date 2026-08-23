@@ -7,7 +7,7 @@ export class OpenLinePanel extends BasePanel {
   private listEl!: HTMLDivElement;
 
   constructor(private readonly poller: GmSnapshotPoller) {
-    super(null, { width: 620, height: 400, top: 0, left: 630, title: 'Offene Strecken', resizable: true });
+    super(null, { width: 620, height: 400, top: 0, left: 630, title: 'Offene Strecken', resizable: true, closeable: true });
     this.show();
   }
 

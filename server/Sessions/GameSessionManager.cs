@@ -239,6 +239,45 @@ namespace TrainDispatcherGame.Server.Sessions
             }
         }
 
+        public async Task<bool> TryEndSession(string? sessionId)
+        {
+            SweepInactiveSessionsIfNeeded();
+            if (!TryNormalizeSessionId(sessionId, out var normalizedSessionId))
+            {
+                return false;
+            }
+
+            if (!_sessions.TryGetValue(normalizedSessionId, out var session) || session == null)
+            {
+                return false;
+            }
+
+            await _hubContext.Clients.Group($"session_{normalizedSessionId}").SendAsync("SessionEnded");
+
+            foreach (var connectionId in _connectionToSession
+                .Where(kvp => string.Equals(kvp.Value, normalizedSessionId, StringComparison.OrdinalIgnoreCase))
+                .Select(kvp => kvp.Key)
+                .ToArray())
+            {
+                UnbindConnection(connectionId);
+            }
+
+            var teardownPrefix = $"{normalizedSessionId}:";
+            foreach (var key in _pendingTeardowns.Keys
+                .Where(k => k.StartsWith(teardownPrefix, StringComparison.OrdinalIgnoreCase))
+                .ToArray())
+            {
+                if (_pendingTeardowns.TryRemove(key, out var cts))
+                {
+                    cts.Cancel();
+                    cts.Dispose();
+                }
+            }
+
+            DiscardSession(normalizedSessionId, session);
+            return true;
+        }
+
         private static string TeardownKey(string sessionId, string playerId) => $"{sessionId}:{playerId}";
 
         public void SchedulePlayerTeardown(string sessionId, string playerId, Func<Task> action, TimeSpan delay)

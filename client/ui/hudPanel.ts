@@ -2,6 +2,7 @@ import { EventManager } from "../manager/event_manager";
 import type { ApplicationContext } from "../core/applicationContext";
 import { BasePanel, BasePanelOptions } from "./basePanel";
 import { SimulationStatusDto } from "../network/dto";
+import { HudMenu, HudMenuItem, HudMenuItemsProvider } from "./hudMenu";
 
 export class HUDPanel extends BasePanel {
     private timeRow!: HTMLDivElement;
@@ -9,11 +10,12 @@ export class HUDPanel extends BasePanel {
     private stateIcon!: HTMLElement;
     private connectionIcon!: HTMLElement;
     private clockIcon!: HTMLElement;
+    private hudMenu!: HudMenu;
 
     constructor(application: ApplicationContext) {
         super(application, {
             updateIntervalMs: 1000,
-            width: 200
+            width: 240
         });
         this.setupEventListeners(application.eventManager);
         this.updateConnectionStatus(application.signalRManager.connected, false);
@@ -37,25 +39,42 @@ export class HUDPanel extends BasePanel {
         const container = super.createContainer(options);
         container.id = "hud";
         container.className = "position-fixed p-2 base-panel text-light";
-        container.style.minWidth = "200px";
+        container.style.minWidth = "240px";
         container.style.top = "0";
         container.style.left = "0";
         return container;
     }
 
+    public setMenuItems(items: HudMenuItem[] | HudMenuItemsProvider): void {
+        this.hudMenu.setItems(items);
+    }
+
+    public override destroy(): void {
+        this.hudMenu.destroy();
+        super.destroy();
+    }
+
     protected createContent(): HTMLDivElement {
-        const { row, timeText, stateIcon, connectionIcon, clockIcon } = this.createTimeAndStateRow();
+        const { row, timeText, stateIcon, connectionIcon, clockIcon, menuButton } = this.createTimeAndStateRow();
         this.timeRow = row;
         this.timeText = timeText;
         this.stateIcon = stateIcon;
         this.connectionIcon = connectionIcon;
         this.clockIcon = clockIcon;
+        this.hudMenu = new HudMenu(menuButton);
         return this.timeRow;
     }
 
-    private createTimeAndStateRow(): { row: HTMLDivElement, timeText: HTMLSpanElement, stateIcon: HTMLElement, connectionIcon: HTMLElement, clockIcon: HTMLElement } {
+    private createTimeAndStateRow(): {
+        row: HTMLDivElement;
+        timeText: HTMLSpanElement;
+        stateIcon: HTMLElement;
+        connectionIcon: HTMLElement;
+        clockIcon: HTMLElement;
+        menuButton: HTMLButtonElement;
+    } {
         const row = document.createElement("div");
-        row.className = "d-flex align-items-center justify-content-start gap-3";
+        row.className = "d-flex align-items-center justify-content-between gap-3";
 
         const left = document.createElement("div");
         left.className = "d-flex align-items-center gap-2";
@@ -83,9 +102,17 @@ export class HUDPanel extends BasePanel {
         left.appendChild(clockIcon);
         left.appendChild(timeText);
 
+        const menuButton = document.createElement("button");
+        menuButton.type = "button";
+        menuButton.className = "btn btn-link text-light p-0 no-drag hud-menu-button";
+        menuButton.title = "Menü";
+        menuButton.setAttribute("aria-label", "Menü");
+        menuButton.innerHTML = '<i class="bi bi-list"></i>';
+
+        row.appendChild(menuButton);
         row.appendChild(left);
 
-        return { row, timeText, stateIcon, connectionIcon, clockIcon };
+        return { row, timeText, stateIcon, connectionIcon, clockIcon, menuButton };
     }
 
     public updateConnectionStatus(isConnected: boolean, isReconnecting: boolean = false): void {

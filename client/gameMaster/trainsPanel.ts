@@ -13,7 +13,7 @@ export class TrainsPanel extends BasePanel {
     private readonly poller: GmSnapshotPoller,
     private readonly onTrainClick: (trainNumber: string) => void,
   ) {
-    super(null, { width: 620, height: 720, left: 0, top: 60, title: 'Alle Züge', resizable: true });
+    super(null, { width: 620, height: 720, left: 0, top: 60, title: 'Alle Züge', resizable: true, closeable: true });
     this.show();
   }
 

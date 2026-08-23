@@ -9,7 +9,7 @@ export class LogsPanel extends BasePanel {
   private autoScrollBtn?: HTMLButtonElement;
 
   constructor() {
-    super(null, { width: 620, height: 320, bottom: 0, right: 0, updateIntervalMs: 5000, title: 'Nachrichten', resizable: true });
+    super(null, { width: 620, height: 320, bottom: 0, right: 0, updateIntervalMs: 5000, title: 'Nachrichten', resizable: true, closeable: true });
 
     this.show();
   }

@@ -14,6 +14,7 @@ module.exports = (env, argv) => {
          main: "./main.ts",
          networkEditor: "./networkEditor/main.ts",
          scenarioEditor: "./scenarioEditor/main.ts",
+         timeDistanceView: "./timeDistanceView/main.ts",
          gameMaster: "./gameMaster/main.ts",
       },
       output: {
@@ -80,6 +81,13 @@ module.exports = (env, argv) => {
             inject: "head",
             scriptLoading: "blocking",
             chunks: ["scenarioEditor"],
+         }),
+         new HtmlWebpackPlugin({
+            template: "timeDistanceView/main.html",
+            filename: "timeDistance.html",
+            inject: "head",
+            scriptLoading: "blocking",
+            chunks: ["timeDistanceView"],
          }),
          new HtmlWebpackPlugin({
             template: "networkEditor/main.html",

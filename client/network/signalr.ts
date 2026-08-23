@@ -172,6 +172,10 @@ export class SignalRManager {
             this._eventManager.emit('approvalRequested', data);
         });
 
+        this.connection.on('SessionEnded', () => {
+            this._eventManager.emit('sessionEnded');
+        });
+
     }
 
     public async connect(): Promise<void> {
