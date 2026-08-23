@@ -66,19 +66,6 @@ namespace TrainDispatcherGame.Server.Endpoints
                 return Results.Ok(new { message = "Simulation resumed", state = simulation.State.ToString() });
             });
 
-            app.MapPost("/api/simulation/reset", (HttpRequest req, GameSessionManager sessionManager) =>
-            {
-                var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
-                if (sessionError != null)
-                {
-                    return sessionError;
-                }
-
-                var simulation = session!.Simulation;
-                simulation.Stop();
-                return Results.Ok(new { message = "Simulation reset", state = simulation.State.ToString() });
-            });
-
             app.MapPost("/api/simulation/advance-minute", async (HttpRequest req, GameSessionManager sessionManager) =>
             {
                 var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
@@ -146,29 +133,6 @@ namespace TrainDispatcherGame.Server.Endpoints
                 });
             });
 
-            app.MapGet("/api/simulation/scenario", (HttpRequest req, GameSessionManager sessionManager) =>
-            {
-                var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
-                if (sessionError != null)
-                {
-                    return sessionError;
-                }
-
-                var simulation = session!.Simulation;
-                return Results.Ok(new { id = simulation.ScenarioId });
-            });
-
-            app.MapGet("/api/simulation/trains", (HttpRequest req, GameSessionManager sessionManager) =>
-            {
-                var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
-                if (sessionError != null)
-                {
-                    return sessionError;
-                }
-
-                return Results.Ok(BuildTrainList(session!.Simulation));
-            });
-
             app.MapGet("/api/gamemaster/snapshot", (HttpRequest req, GameSessionManager sessionManager) =>
             {
                 var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
@@ -187,20 +151,8 @@ namespace TrainDispatcherGame.Server.Endpoints
                         StationId = p.StationId
                     })
                     .ToList();
-                var stats = simulation.ComputeTrainStats();
 
-                return Results.Ok(new
-                {
-                    trains = BuildTrainList(simulation),
-                    openLineTracks = simulation.GetOpenLineTrackStatuses(),
-                    controlledStations,
-                    majorEvents = simulation.GetMajorEventsNewestFirst(),
-                    runningCount = stats.runningCount,
-                    finishedCount = stats.finishedCount,
-                    removedCount = stats.removedCount,
-                    accidentCount = stats.accidentCount,
-                    causedDelaySeconds = stats.causedDelaySeconds
-                });
+                return Results.Ok(BuildGameMasterSnapshot(simulation, controlledStations));
             });
 
             app.MapGet("/api/trains/{trainNumber}/waypoints", (string trainNumber, HttpRequest req, GameSessionManager sessionManager) =>
@@ -276,19 +228,6 @@ namespace TrainDispatcherGame.Server.Endpoints
                 });
             });
 
-            app.MapGet("/api/openline/tracks", (HttpRequest req, GameSessionManager sessionManager) =>
-            {
-                var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
-                if (sessionError != null)
-                {
-                    return sessionError;
-                }
-
-                var simulation = session!.Simulation;
-                var list = simulation.GetOpenLineTrackStatuses();
-                return Results.Ok(list);
-            });
-
             app.MapGet("/api/stations/{stationId}/upcoming-trains", (string stationId, HttpRequest req, GameSessionManager sessionManager) =>
             {
                 var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
@@ -329,27 +268,58 @@ namespace TrainDispatcherGame.Server.Endpoints
             return app;
         }
 
-        private static object BuildTrainList(Simulation.Simulation simulation)
+        private static GameMasterSnapshotDto BuildGameMasterSnapshot(
+            Simulation.Simulation simulation,
+            List<PlayerControlledStationDto> controlledStations)
         {
-            return simulation.Trains.Select(t => new
+            var trains = new List<GameMasterTrainDto>(simulation.Trains.Count);
+            int running = 0, finished = 0, removed = 0, accidents = 0, delay = 0;
+
+            foreach (var t in simulation.Trains)
             {
-                number = t.Number,
-                category = t.Category,
-                type = t.Type,
-                completed = t.completed,
-                damaged = t.damaged,
-                currentLocation = t.CurrentLocation,
-                headingForStation = t.TrainEvent is TrainSpawnEvent sp1 ? sp1.HeadingStation : null,
-                delay = t.delay,
-                nextEventTime = t.TrainEvent?.ScheduledTime,
-                nextEventType = t.TrainEvent is TrainSpawnEvent ? "Spawn"
+                trains.Add(ToGameMasterTrainDto(t));
+                delay += Math.Max(0, t.delay);
+                if (t.damaged) accidents++;
+                else if (t.removed) removed++;
+                else if (t.completed) finished++;
+                else if (t.TrainEvent is not TrainStartEvent) running++;
+            }
+
+            return new GameMasterSnapshotDto
+            {
+                Trains = trains,
+                OpenLineTracks = simulation.GetOpenLineTrackStatuses(),
+                ControlledStations = controlledStations,
+                MajorEvents = simulation.GetMajorEventsNewestFirst(),
+                RunningCount = running,
+                FinishedCount = finished,
+                RemovedCount = removed,
+                AccidentCount = accidents,
+                CausedDelaySeconds = delay
+            };
+        }
+
+        private static GameMasterTrainDto ToGameMasterTrainDto(Train t)
+        {
+            return new GameMasterTrainDto
+            {
+                Number = t.Number,
+                Category = t.Category,
+                Type = t.Type,
+                Completed = t.completed,
+                Damaged = t.damaged,
+                CurrentLocation = t.CurrentLocation,
+                HeadingForStation = t.TrainEvent is TrainSpawnEvent spawn ? spawn.HeadingStation : null,
+                Delay = t.delay,
+                NextEventTime = t.TrainEvent?.ScheduledTime,
+                NextEventType = t.TrainEvent is TrainSpawnEvent ? "Spawn"
                     : t.TrainEvent is SendApprovalEvent ? "Approval"
                     : t.TrainEvent is TrainStartEvent ? "Start"
                     : t.TrainEvent is RetryDispatchEvent ? "Retry"
                     : t.TrainEvent is TrainWaitEvent ? "Wait"
                     : null,
-                spawnStation = (t.TrainEvent as TrainSpawnEvent)?.Connection.ToStation
-            }).ToList();
+                SpawnStation = (t.TrainEvent as TrainSpawnEvent)?.Connection.ToStation
+            };
         }
 
         private static TrainEventDto ToTrainEventDto(TrainEventBase evt)

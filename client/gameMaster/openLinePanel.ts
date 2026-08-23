@@ -4,9 +4,10 @@ import { BasePanel } from "../ui/basePanel";
 
 export class OpenLinePanel extends BasePanel {
   private unsubscribe: (() => void) | null = null;
+  private listEl!: HTMLDivElement;
 
   constructor(private readonly poller: GmSnapshotPoller) {
-    super(null as any, { width: 620, height: 400, top: 0, left: 630, title: 'Offene Strecken', resizable: true });
+    super(null, { width: 620, height: 400, top: 0, left: 630, title: 'Offene Strecken', resizable: true });
     this.show();
   }
 
@@ -24,12 +25,11 @@ export class OpenLinePanel extends BasePanel {
     const h4 = document.createElement("div"); h4.style.flex = "1 1 auto"; h4.textContent = "Zug";
     header.appendChild(h1); header.appendChild(h2); header.appendChild(h3); header.appendChild(h4);
 
-    const body = document.createElement("div");
-    body.id = "openLineListBody";
-    body.className = "pt-1";
+    this.listEl = document.createElement("div");
+    this.listEl.className = "pt-1";
 
     section.appendChild(header);
-    section.appendChild(body);
+    section.appendChild(this.listEl);
     return section;
   }
 
@@ -50,16 +50,13 @@ export class OpenLinePanel extends BasePanel {
     if (!this.isVisible) return;
 
     try {
-      const listEl = this.container.querySelector("#openLineListBody") as HTMLElement | null;
-      if (!listEl) return;
-
-      listEl.innerHTML = "";
+      this.listEl.replaceChildren();
 
       if (!tracks || tracks.length === 0) {
         const empty = document.createElement("div");
         empty.className = "text-muted";
         empty.textContent = "No open line tracks available";
-        listEl.appendChild(empty);
+        this.listEl.appendChild(empty);
         return;
       }
 
@@ -94,12 +91,8 @@ export class OpenLinePanel extends BasePanel {
         train.style.flex = "1 1 auto";
         train.textContent = t.trainNumber ?? "-";
 
-        row.appendChild(from);
-        row.appendChild(to);
-        row.appendChild(mode);
-        row.appendChild(train);
-
-        listEl.appendChild(row);
+        row.append(from, to, mode, train);
+        this.listEl.appendChild(row);
       }
     } catch (err) {
       console.error("OpenLinePanel: failed to update", err);

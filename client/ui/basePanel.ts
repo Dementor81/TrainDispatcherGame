@@ -1,4 +1,4 @@
-import { Application } from "../core/application";
+import type { ApplicationContext } from "../core/applicationContext";
 import { UI } from "../utils/ui";
 
 export interface BasePanelOptions {
@@ -26,7 +26,7 @@ export abstract class BasePanel {
   protected isVisible = false;
   protected updateIntervalMs: number | null = null;
   protected updateTimerId: number | null = null;
-  protected application: Application;
+  protected application: ApplicationContext | null;
   private readonly isResizable: boolean;
   private readonly isCloseable: boolean;
   private panelTitle: string | null;
@@ -177,7 +177,7 @@ export abstract class BasePanel {
     }
   };
 
-  constructor(application: Application, options: BasePanelOptions = {}) {
+  constructor(application: ApplicationContext | null, options: BasePanelOptions = {}) {
     this.application = application;
     this.updateIntervalMs = options.updateIntervalMs ?? null;
     this.isResizable = options.resizable === true;

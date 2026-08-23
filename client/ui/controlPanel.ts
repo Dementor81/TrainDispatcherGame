@@ -8,13 +8,13 @@ import {
 } from "../network/api";
 import { SimulationState, SimulationStatusDto } from "../network/dto";
 import { BasePanel } from "./basePanel";
-import { Application } from "../core/application";
+import type { ApplicationContext } from "../core/applicationContext";
 import { UI } from "../utils/ui";
 import EventManager from "../manager/event_manager";
 
 export class ControlPanel extends BasePanel {
 
-   constructor(application: Application) {
+   constructor(application: ApplicationContext) {
       super(application, {
          width: 550,
          bottom: 0,

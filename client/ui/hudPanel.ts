@@ -1,5 +1,5 @@
 import { EventManager } from "../manager/event_manager";
-import { Application } from "../core/application";
+import type { ApplicationContext } from "../core/applicationContext";
 import { BasePanel, BasePanelOptions } from "./basePanel";
 import { SimulationStatusDto } from "../network/dto";
 
@@ -10,14 +10,14 @@ export class HUDPanel extends BasePanel {
     private connectionIcon!: HTMLElement;
     private clockIcon!: HTMLElement;
 
-    constructor(application: Application) {
+    constructor(application: ApplicationContext) {
         super(application, {
             updateIntervalMs: 1000,
             width: 200
         });
         this.setupEventListeners(application.eventManager);
-        this.updateConnectionStatus(this.application.signalRManager.connected, false);
-        this.updateSimulationState(this.application.clientSimulation.simulationState);
+        this.updateConnectionStatus(application.signalRManager.connected, false);
+        this.updateSimulationState(application.clientSimulation.simulationState);
         this.updateSimulationTime();
     }
 
@@ -104,7 +104,7 @@ export class HUDPanel extends BasePanel {
     }
 
     public updateSimulationTime(): void {
-        const date = this.application.clientSimulation.currentSimulationTime;
+        const date = this.application?.clientSimulation.currentSimulationTime;
         if (date == null || this.timeText == null) return;
         this.timeText.textContent = date.toLocaleTimeString();
     }

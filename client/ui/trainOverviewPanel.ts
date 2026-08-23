@@ -10,8 +10,8 @@ export class TrainOverviewPanel extends BasePanel {
   private static readonly FULL_REFRESH_INTERVAL_MS = 300_000;
   private _loading: boolean = false;
 
-  constructor(application: Application) {
-    super(application, {
+  constructor(private readonly app: Application) {
+    super(app, {
       updateIntervalMs: TrainOverviewPanel.FULL_REFRESH_INTERVAL_MS,
       width: 630,
       height: 300,
@@ -20,7 +20,7 @@ export class TrainOverviewPanel extends BasePanel {
       resizable: true,
       title: 'Alle Züge',
     });
-    application.eventManager.on('simulationStatusChanged', (status: SimulationStatusDto) => {
+    this.app.eventManager.on('simulationStatusChanged', (status: SimulationStatusDto) => {
       if (status.state.toLowerCase() === 'running') {
         this.clearTrains();
         if (this.isVisible) {
@@ -28,27 +28,27 @@ export class TrainOverviewPanel extends BasePanel {
         }
       }
     });
-    application.eventManager.on('trainDelayUpdated', (payload: TrainDelayUpdatedNotificationDto) => {
+    this.app.eventManager.on('trainDelayUpdated', (payload: TrainDelayUpdatedNotificationDto) => {
       this.applyTrainDelayUpdate(payload);
     });
-    application.eventManager.on('trainRemoved', (payload: TrainRemovedNotificationDto) => {
+    this.app.eventManager.on('trainRemoved', (payload: TrainRemovedNotificationDto) => {
       this.applyTrainRemoved(payload);
     });
-    application.eventManager.on('trainStoppedBySignal', (train: Train | undefined) => {
+    this.app.eventManager.on('trainStoppedBySignal', (train: Train | undefined) => {
       this.applySignalStopStatusUpdate(train?.number);
     });
-    application.eventManager.on('trainContinuedAfterSignalStop', (train: Train | undefined) => {
+    this.app.eventManager.on('trainContinuedAfterSignalStop', (train: Train | undefined) => {
       this.applySignalStopStatusUpdate(train?.number);
     });
-    application.eventManager.on('trainStateChanged', (train: any, _previousState: TrainState, nextState: TrainState) => {
+    this.app.eventManager.on('trainStateChanged', (train: any, _previousState: TrainState, nextState: TrainState) => {
       if ((nextState === TrainState.EXITING || nextState === TrainState.ENDED) && typeof train?.number === 'string') {
         this.removeTrainByNumber(train.number);
       }
     });
-    application.eventManager.on('stationJoinedFull', () => {
+    this.app.eventManager.on('stationJoinedFull', () => {
       this.refreshAfterSessionContextChange();
     });
-    application.eventManager.on('sessionContextRestored', () => {
+    this.app.eventManager.on('sessionContextRestored', () => {
       this.refreshAfterSessionContextChange();
     });
   }
@@ -75,7 +75,7 @@ export class TrainOverviewPanel extends BasePanel {
       const row = el?.closest?.('tr[data-train-number]') as HTMLElement | null;
       const trainNumber = row?.dataset?.trainNumber;
       if (trainNumber) {
-        this.application.eventManager.emit('trainClicked', trainNumber);
+        this.app.eventManager.emit('trainClicked', trainNumber);
       }
     });
 
@@ -87,7 +87,7 @@ export class TrainOverviewPanel extends BasePanel {
   }
 
   private async ensureCurrentStationLoaded(): Promise<void> {
-    const currentStationId = this.application.currentStationId?.toLowerCase();
+    const currentStationId = this.app.currentStationId?.toLowerCase();
     if (!currentStationId) {
       this.clearTrains();
       return;
@@ -152,7 +152,7 @@ export class TrainOverviewPanel extends BasePanel {
       return;
     }
 
-    const isStoppedBySignal = this.application.trains.some(
+    const isStoppedBySignal = this.app.trains.some(
       (train) => train.number === trainNumber && train.stoppedBySignal
     );
     trainCell.classList.toggle('text-danger', isStoppedBySignal);
@@ -280,7 +280,7 @@ export class TrainOverviewPanel extends BasePanel {
 
   private updateTrainRow(row: HTMLTableRowElement, train: StationTimetableEventDto): void {
     const delayInfo = this.formatDelay(train.currentDelay);
-    const isStoppedBySignal = this.application.trains.some(t => t.number === train.trainNumber && t.stoppedBySignal);
+    const isStoppedBySignal = this.app.trains.some(t => t.number === train.trainNumber && t.stoppedBySignal);
 
     row.innerHTML = `
       <td class="small fw-bold ${isStoppedBySignal ? 'text-danger' : ''}">${train.category} ${train.trainNumber}</td>

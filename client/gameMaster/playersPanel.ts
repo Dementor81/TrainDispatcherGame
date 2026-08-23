@@ -4,9 +4,10 @@ import { BasePanel } from "../ui/basePanel";
 
 export class PlayersPanel extends BasePanel {
   private unsubscribe: (() => void) | null = null;
+  private listEl!: HTMLDivElement;
 
   constructor(private readonly poller: GmSnapshotPoller) {
-    super(null as any, { width: 620, height: 260, right: 0, top: 0, title: 'Alle Spieler', resizable: true });
+    super(null, { width: 620, height: 260, right: 0, top: 0, title: 'Alle Spieler', resizable: true });
     this.show();
   }
 
@@ -22,12 +23,11 @@ export class PlayersPanel extends BasePanel {
     const h2 = document.createElement("div"); h2.style.flex = "1 1 auto"; h2.textContent = "Station";
     header.appendChild(h1); header.appendChild(h2);
 
-    const body = document.createElement("div");
-    body.id = "playersListBody";
-    body.className = "pt-1";
+    this.listEl = document.createElement("div");
+    this.listEl.className = "pt-1";
 
     section.appendChild(header);
-    section.appendChild(body);
+    section.appendChild(this.listEl);
     return section;
   }
 
@@ -48,16 +48,13 @@ export class PlayersPanel extends BasePanel {
     if (!this.isVisible) return;
 
     try {
-      const listEl = this.container.querySelector("#playersListBody") as HTMLElement | null;
-      if (!listEl) return;
-
-      listEl.innerHTML = "";
+      this.listEl.replaceChildren();
 
       if (!players || players.length === 0) {
         const empty = document.createElement("div");
         empty.className = "text-muted";
         empty.textContent = "No connected players";
-        listEl.appendChild(empty);
+        this.listEl.appendChild(empty);
         return;
       }
 
@@ -75,9 +72,8 @@ export class PlayersPanel extends BasePanel {
         station.style.flex = "1 1 auto";
         station.textContent = p.stationId || "-";
 
-        row.appendChild(name);
-        row.appendChild(station);
-        listEl.appendChild(row);
+        row.append(name, station);
+        this.listEl.appendChild(row);
       }
     } catch (err) {
       console.error("PlayersPanel: failed to update", err);

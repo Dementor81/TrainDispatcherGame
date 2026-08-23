@@ -1,6 +1,5 @@
 import type { ScenarioTrainDto, TrainType } from "../network/dto";
 import { BasePanel } from "../ui/basePanel";
-import type { Application } from "../core/application";
 import { UI } from "../utils/ui";
 
 export type CreateTrainResult = {
@@ -42,7 +41,7 @@ export class TrainEditorPanel extends BasePanel {
 
    constructor() {
       // The scenario editor only needs the shared BasePanel chrome, not the full main Application.
-      super({} as Application, {
+      super(null, {
          title: "Train",
          width: 360,
          top: 72,

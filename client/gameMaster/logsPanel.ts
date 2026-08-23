@@ -9,7 +9,7 @@ export class LogsPanel extends BasePanel {
   private autoScrollBtn?: HTMLButtonElement;
 
   constructor() {
-    super(null as any, { width: 620, height: 320, bottom: 0, right: 0, updateIntervalMs: 5000, title: 'Nachrichten', resizable: true });
+    super(null, { width: 620, height: 320, bottom: 0, right: 0, updateIntervalMs: 5000, title: 'Nachrichten', resizable: true });
 
     this.show();
   }
@@ -87,8 +87,7 @@ export class LogsPanel extends BasePanel {
         output.innerHTML = "";
       }
 
-      for (const raw of logs) {
-        const entry = this.normalizeEntry(raw);
+      for (const entry of logs) {
         const line = document.createElement("div");
         line.style.color = this.levelColor(entry.level);
         line.textContent = this.formatEntry(entry);
@@ -118,16 +117,6 @@ export class LogsPanel extends BasePanel {
 
   private updateAutoScrollButton(): void {
     this.autoScrollBtn?.classList.toggle("d-none", this.autoScroll);
-  }
-
-  private normalizeEntry(entry: any): LogEntryDto {
-    return {
-      id: entry.id ?? entry.Id,
-      simulationTime: entry.simulationTime ?? entry.SimulationTime ?? entry.simulation_time ?? entry.simulationTimeUtc,
-      level: entry.level ?? entry.Level ?? "Debug",
-      context: entry.context ?? entry.Context ?? "",
-      message: entry.message ?? entry.Message ?? "",
-    };
   }
 
   private levelColor(level: LogLevel): string {

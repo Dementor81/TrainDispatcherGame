@@ -22,6 +22,7 @@ namespace TrainDispatcherGame.Server.Simulation
         private string? _errorMessage;
         private List<Train> _trains = new();
         private readonly List<MajorEvent> _majorEvents = new();
+        private const int MaxMajorEvents = 200;
         private readonly NotificationManager _notificationManager;
         private readonly PlayerManager _playerManager;
         private readonly TrackLayoutService _trackLayoutService;
@@ -605,20 +606,6 @@ namespace TrainDispatcherGame.Server.Simulation
             return copy;
         }
 
-        public (int runningCount, int finishedCount, int removedCount, int accidentCount, int causedDelaySeconds) ComputeTrainStats()
-        {
-            int running = 0, finished = 0, removed = 0, accidents = 0, delay = 0;
-            foreach (var train in _trains)
-            {
-                delay += Math.Max(0, train.delay);
-                if (train.damaged) accidents++;
-                else if (train.removed) removed++;
-                else if (train.completed) finished++;
-                else if (train.TrainEvent is not TrainStartEvent) running++;
-            }
-            return (running, finished, removed, accidents, delay);
-        }
-
         private void RecordMajorEvent(MajorEventType type, string trainNumber, string? otherTrainNumber = null, string? station = null)
         {
             var evt = new MajorEvent
@@ -631,6 +618,10 @@ namespace TrainDispatcherGame.Server.Simulation
                 PlayerName = ResolvePlayerName(station)
             };
             _majorEvents.Add(evt);
+            if (_majorEvents.Count > MaxMajorEvents)
+            {
+                _majorEvents.RemoveAt(0);
+            }
             _ = _notificationManager.SendMajorEventOccurred(evt);
         }
 

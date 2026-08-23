@@ -7,7 +7,7 @@ export class TrainEventsPanel extends BasePanel {
   private listEl!: HTMLDivElement;
 
   constructor() {
-    super(null as any, {
+    super(null, {
       width: 620,
       height: 400,
       left: 630,
@@ -82,10 +82,10 @@ export class TrainEventsPanel extends BasePanel {
     }
 
     for (const raw of events) {
-      const type = raw.type ?? (raw as any).Type ?? "-";
-      const scheduledTime = raw.scheduledTime ?? (raw as any).ScheduledTime;
-      const processed = raw.processed ?? (raw as any).Processed ?? false;
-      const data = raw.data ?? (raw as any).Data ?? {};
+      const type = raw.type ?? "-";
+      const scheduledTime = raw.scheduledTime;
+      const processed = raw.processed ?? false;
+      const data = raw.data ?? {};
 
       const row = document.createElement("div");
       row.className = "d-flex flex-row gap-2 align-items-start py-1 border-bottom border-secondary";

@@ -22,11 +22,8 @@ namespace TrainDispatcherGame.Server.Endpoints
                 }
 
                 var prefix = SessionLogContext.SessionPrefix(session!.SessionId);
-                var logs = ServerLogger.Instance.GetLogs()
-                    .Where(entry => entry.Context.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                    .Where(entry => entry.Id > afterId);
-
-                return Results.Json(logs.ToList());
+                var logs = ServerLogger.Instance.GetLogsAfter(prefix, afterId);
+                return Results.Json(logs);
             });
 
             return app;

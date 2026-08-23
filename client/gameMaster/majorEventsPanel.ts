@@ -19,15 +19,14 @@ export class MajorEventsPanel extends BasePanel {
 
   private readonly onMajorEvent = (event: MajorEventDto): void => {
     this.prependEvent(event);
-    this.poller.refresh();
   };
 
   constructor(
-    app: GameMasterApplication,
+    private readonly app: GameMasterApplication,
     private readonly poller: GmSnapshotPoller,
     private readonly onTrainClick: (trainNumber: string) => void,
   ) {
-    super(app as any, { width: 620, height: 400, right: 0, top: 270, title: "Störungen", resizable: true });
+    super(app, { width: 620, height: 400, right: 0, top: 270, title: "Störungen", resizable: true });
     this.show();
   }
 
@@ -74,13 +73,13 @@ export class MajorEventsPanel extends BasePanel {
       this.unsubscribe = this.poller.subscribe((snapshot) => this.applySnapshot(snapshot));
     }
     if (!wasVisible) {
-      this.application.eventManager.on("majorEventOccurred", this.onMajorEvent);
+      this.app.eventManager.on("majorEventOccurred", this.onMajorEvent);
     }
   }
 
   public override hide(): void {
     if (this.isVisible) {
-      this.application.eventManager.off("majorEventOccurred", this.onMajorEvent);
+      this.app.eventManager.off("majorEventOccurred", this.onMajorEvent);
     }
     this.unsubscribe?.();
     this.unsubscribe = null;

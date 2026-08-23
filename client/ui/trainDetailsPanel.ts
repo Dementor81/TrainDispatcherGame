@@ -47,8 +47,8 @@ export class TrainDetailsPanel extends BasePanel {
   private metaSpeedValue!: HTMLSpanElement;
   private metaStatusValue!: HTMLSpanElement;
 
-  constructor(application: Application) {
-    super(application, {
+  constructor(private readonly app: Application) {
+    super(app, {
       bottom: 0,
       left: 0,
       width: 280,
@@ -56,13 +56,13 @@ export class TrainDetailsPanel extends BasePanel {
       closeable: true,
     });
 
-    this.application.eventManager.on('trainTransformed', (train: any, oldNumber: string, newNumber: string) => {
+    this.app.eventManager.on('trainTransformed', (train: any, oldNumber: string, newNumber: string) => {
       if (this._trainNumber === oldNumber) {
         this.selectTrain(newNumber, train);
       }
     });
 
-    this.application.eventManager.on('trainStateChanged', (train: Train) => {
+    this.app.eventManager.on('trainStateChanged', (train: Train) => {
       if (!this._trainNumber || train.number !== this._trainNumber) return;
       if (train.state == TrainState.EXITING) {
         this.hide();
@@ -128,7 +128,7 @@ export class TrainDetailsPanel extends BasePanel {
 
   private selectTrain(trainNumber: string, train?: Train | null): void {
     this._trainNumber = trainNumber;
-    this._train = train ?? this.application.trainManager.getTrain(trainNumber) ?? null;
+    this._train = train ?? this.app.trainManager.getTrain(trainNumber) ?? null;
     this._trainDetails = null;
     this.updateTrainMeta();
     this.renderTimetable([], null);
@@ -225,7 +225,7 @@ export class TrainDetailsPanel extends BasePanel {
 
   private handleToggleManualMode(): void {
     if (this._train!.state === TrainState.MANUAL_CONTROL) {
-      void this.application.trainManager.continueTrainAfterManualControl(this._train!);
+      void this.app.trainManager.continueTrainAfterManualControl(this._train!);
     } else {
       this._train!.startManualControl();
     }
@@ -241,7 +241,7 @@ export class TrainDetailsPanel extends BasePanel {
   }
 
   private async handleRemove(): Promise<void> {
-    await this.application.removeTrainAndReport(this._trainNumber!);
+    await this.app.removeTrainAndReport(this._trainNumber!);
     this.hide();
   }
 

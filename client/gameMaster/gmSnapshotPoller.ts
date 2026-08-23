@@ -40,14 +40,6 @@ export class GmSnapshotPoller {
     return () => this.listeners.delete(listener);
   }
 
-  refresh(): void {
-    void this.tick();
-  }
-
-  getLast(): GameMasterSnapshotDto | null {
-    return this.lastSnapshot;
-  }
-
   private async tick(): Promise<void> {
     if (document.hidden) return;
     if (this.inFlight) return this.inFlight;

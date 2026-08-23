@@ -3,8 +3,8 @@ import { BasePanel } from './basePanel';
 import Toast from './toast';
 
 export class TestingPanel extends BasePanel {
-  constructor(application: Application) {
-    super(application, {
+  constructor(private readonly app: Application) {
+    super(app, {
       bottom: 0,
       left: 0,
       title: 'Testing',
@@ -30,7 +30,7 @@ export class TestingPanel extends BasePanel {
     addTrainBtn.className = 'btn btn-warning btn-sm';
     addTrainBtn.textContent = 'Add local train';
     addTrainBtn.onclick = () => {
-      const train = this.application.trainManager.spawnLocalTestTrain();
+      const train = this.app.trainManager.spawnLocalTestTrain();
       if (!train) {
         Toast.show('Cannot spawn test train (no track layout loaded?)', 'warning');
         return;

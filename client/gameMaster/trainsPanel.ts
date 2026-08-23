@@ -1,17 +1,19 @@
 import { GmSnapshotPoller } from "./gmSnapshotPoller";
+import { GameMasterTrainDto } from "../network/dto";
 import { BasePanel } from "../ui/basePanel";
 
 export class TrainsPanel extends BasePanel {
   private unsubscribe: (() => void) | null = null;
   private filterInput?: HTMLInputElement;
   private clearBtn?: HTMLButtonElement;
-  private lastTrains: any[] = [];
+  private listEl!: HTMLDivElement;
+  private lastTrains: GameMasterTrainDto[] = [];
 
   constructor(
     private readonly poller: GmSnapshotPoller,
     private readonly onTrainClick: (trainNumber: string) => void,
   ) {
-    super(null as any, { width: 620, height: 720, left: 0, top: 60, title: 'Alle Züge', resizable: true });
+    super(null, { width: 620, height: 720, left: 0, top: 60, title: 'Alle Züge', resizable: true });
     this.show();
   }
 
@@ -66,14 +68,13 @@ export class TrainsPanel extends BasePanel {
     const h6 = document.createElement("div"); h6.style.width = "60px"; h6.textContent = "verspätung";
     header.appendChild(h1); header.appendChild(h2); header.appendChild(h3); header.appendChild(h4); header.appendChild(h5); header.appendChild(h6);
 
-    const body = document.createElement("div");
-    body.id = "trainsListBody";
-    body.className = "pt-1 small";
-    body.style.flex = "1 1 auto";
-    body.style.minHeight = "0";
-    body.style.overflow = "auto";
+    this.listEl = document.createElement("div");
+    this.listEl.className = "pt-1 small";
+    this.listEl.style.flex = "1 1 auto";
+    this.listEl.style.minHeight = "0";
+    this.listEl.style.overflow = "auto";
 
-    section.append(filterWrap, header, body);
+    section.append(filterWrap, header, this.listEl);
     return section;
   }
 
@@ -101,26 +102,12 @@ export class TrainsPanel extends BasePanel {
     this.renderTrains(this.lastTrains);
   }
 
-  private renderTrains(trains: any[]): void {
+  private renderTrains(trains: GameMasterTrainDto[]): void {
     this.lastTrains = trains;
     if (!this.isVisible) return;
 
     try {
-      const listEl = this.container.querySelector("#trainsListBody") as HTMLElement | null;
-      if (!listEl) return;
-
-      const normalized: Array<any> = trains.map((t: any) => ({
-        number: t.number ?? t.Number ?? "-",
-        completed: t.completed ?? t.Completed ?? false,
-        damaged: t.damaged ?? t.Damaged ?? false,
-        currentLocation: t.currentLocation ?? t.CurrentLocation ?? undefined,
-        headingForStation: t.headingForStation ?? t.HeadingForStation ?? undefined,
-        delay: t.delay ?? t.Delay ?? undefined,
-        nextEventTime: t.nextEventTime ?? t.NextEventTime ?? t.next_event_time,
-        nextEventType: t.nextEventType ?? t.NextEventType ?? t.next_event_type,
-      }));
-
-      normalized.sort((a, b) => {
+      const sorted = [...trains].sort((a, b) => {
         const ta = a.nextEventTime ? new Date(a.nextEventTime).getTime() : Infinity;
         const tb = b.nextEventTime ? new Date(b.nextEventTime).getTime() : Infinity;
         return ta - tb;
@@ -128,23 +115,22 @@ export class TrainsPanel extends BasePanel {
 
       const query = (this.filterInput?.value ?? "").trim().toLowerCase();
       const visible = query
-        ? normalized.filter((t) => String(t.number).toLowerCase().includes(query))
-        : normalized;
+        ? sorted.filter((t) => String(t.number).toLowerCase().includes(query))
+        : sorted;
 
-      listEl.innerHTML = "";
+      this.listEl.replaceChildren();
 
       if (visible.length === 0) {
         const empty = document.createElement("div");
         empty.className = "text-muted";
         empty.textContent = "No trains available";
-        listEl.appendChild(empty);
+        this.listEl.appendChild(empty);
         return;
       }
 
       for (const t of visible) {
         let locationText = t.currentLocation ? `At ${t.currentLocation}` : (t.headingForStation ? `To ${t.headingForStation}` : "-");
-        const nextEventDate = t.nextEventTime ?? undefined;
-        const nextEventText = nextEventDate ? new Date(nextEventDate).toLocaleTimeString() : "-";
+        const nextEventText = t.nextEventTime ? new Date(t.nextEventTime).toLocaleTimeString() : "-";
         let eventType = t.nextEventType ?? "-";
 
         if (t.completed) {
@@ -195,14 +181,8 @@ export class TrainsPanel extends BasePanel {
         delay.style.width = "60px";
         delay.textContent = (t.delay != null) ? `${t.delay}s` : "-";
 
-        row.appendChild(id);
-        row.appendChild(state);
-        row.appendChild(location);
-        row.appendChild(schedule);
-        row.appendChild(evtType);
-        row.appendChild(delay);
-
-        listEl.appendChild(row);
+        row.append(id, state, location, schedule, evtType, delay);
+        this.listEl.appendChild(row);
       }
     } catch (err) {
       console.error("TrainsPanel: failed to update", err);

@@ -204,8 +204,22 @@ export interface OpenLineTrackStatusDto {
   trainNumber: string | null;
 }
 
+export interface GameMasterTrainDto {
+  number: string;
+  category?: string | null;
+  type?: TrainType;
+  completed: boolean;
+  damaged: boolean;
+  currentLocation?: string | null;
+  headingForStation?: string | null;
+  delay?: number;
+  nextEventTime?: string | null;
+  nextEventType?: string | null;
+  spawnStation?: string | null;
+}
+
 export interface GameMasterSnapshotDto {
-  trains: any[];
+  trains: GameMasterTrainDto[];
   openLineTracks: OpenLineTrackStatusDto[];
   controlledStations: PlayerControlledStationDto[];
   majorEvents: MajorEventDto[];

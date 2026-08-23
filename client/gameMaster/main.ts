@@ -22,10 +22,10 @@ import { renderAppVersionBadge } from "../ui/appVersionBadge";
 
 function bootGmUi(): void {
   const app = new GameMasterApplication();
-  const hud = new HUDPanel(app as any);
+  const hud = new HUDPanel(app);
   hud.show();
 
-  const panel = new ControlPanel(app as any);
+  const panel = new ControlPanel(app);
   panel.show();
   const snapshotPoller = new GmSnapshotPoller();
   snapshotPoller.start();

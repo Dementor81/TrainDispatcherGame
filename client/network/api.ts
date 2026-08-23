@@ -1,4 +1,4 @@
-import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto, OpenLineTrackStatusDto, TrainWayPointDto, TrainDetailsDto, TrainEventDto, LogEntryDto, PlayerControlledStationDto, GameMasterSnapshotDto } from "./dto";
+import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto, TrainWayPointDto, TrainDetailsDto, TrainEventDto, LogEntryDto, PlayerControlledStationDto, GameMasterSnapshotDto } from "./dto";
 
 const API_BASE_URL = "/api";
 
@@ -29,12 +29,6 @@ export async function fetchAvailableStations(): Promise<StationInfo[]> {
     throw new Error(`Failed to fetch station list: ${response.statusText}`);
   }
   return response.json();
-}
-
-// Keep the old function for backward compatibility
-export async function fetchAvailableLayouts(): Promise<string[]> {
-  const stations = await fetchAvailableStations();
-  return stations.map(station => station.id);
 }
 
 export async function fetchLayout(name: string): Promise<TrackLayoutDto> {
@@ -98,32 +92,10 @@ export async function resumeSimulation(): Promise<any> {
   return response.json();
 }
 
-export async function resetSimulation(): Promise<any> {
-  const response = await fetch(withGameCode(`${API_BASE_URL}/simulation/reset`), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  if (!response.ok) {
-    throw new Error(`Failed to reset simulation: ${response.statusText}`);
-  }
-  return response.json();
-}
-
 export async function getSimulationStatus(): Promise<any> {
   const response = await fetch(withGameCode(`${API_BASE_URL}/simulation/status`));
   if (!response.ok) {
     throw new Error(`Failed to get simulation status: ${response.statusText}`);
-  }
-  return response.json();
-}
-
-// All trains (active + completed)
-export async function getAllTrains(): Promise<any[]> {
-  const response = await fetch(withGameCode(`${API_BASE_URL}/simulation/trains`));
-  if (!response.ok) {
-    throw new Error(`Failed to get trains: ${response.statusText}`);
   }
   return response.json();
 }
@@ -161,7 +133,6 @@ export async function getTrainEvents(trainNumber: string): Promise<TrainEventDto
 }
 
 export default {
-  fetchAvailableLayouts,
   fetchAvailableStations,
   fetchLayout,
   fetchScenarios,
@@ -171,16 +142,13 @@ export default {
   stopSimulation,
   pauseSimulation,
   resumeSimulation,
-  resetSimulation,
   getSimulationStatus,
   setSimulationSpeed,
-  getAllTrains,
   getUpcomingTrains,
   getTrainWaypoints,
   getTrainDetails,
   getTrainEvents,
   fetchNetwork,
-  fetchOpenLineTracks,
   fetchLogs,
   fetchControlledStations,
 };
@@ -273,14 +241,6 @@ export async function startGameSession(
       // keep fallback message
     }
     throw new Error(message);
-  }
-  return response.json();
-}
-
-export async function fetchOpenLineTracks(): Promise<OpenLineTrackStatusDto[]> {
-  const response = await fetch(withGameCode(`${API_BASE_URL}/openline/tracks`));
-  if (!response.ok) {
-    throw new Error(`Failed to fetch open line tracks: ${response.statusText}`);
   }
   return response.json();
 }

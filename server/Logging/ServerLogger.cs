@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TrainDispatcherGame.Server.Logging
 {
@@ -25,11 +24,18 @@ namespace TrainDispatcherGame.Server.Logging
             _simulationTimeProvider = provider;
         }
 
-        public IReadOnlyList<LogEntry> GetLogs()
+        public List<LogEntry> GetLogsAfter(string sessionPrefix, long afterId)
         {
             lock (_lock)
             {
-                return _entries.ToList();
+                var logs = new List<LogEntry>();
+                foreach (var entry in _entries)
+                {
+                    if (entry.Id <= afterId) continue;
+                    if (!entry.Context.StartsWith(sessionPrefix, StringComparison.OrdinalIgnoreCase)) continue;
+                    logs.Add(entry);
+                }
+                return logs;
             }
         }
 
