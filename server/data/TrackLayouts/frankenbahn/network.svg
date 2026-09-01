@@ -1,32 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1330 354" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1214 264" role="img">
   <title>Rail network diagram</title>
   <rect width="100%" height="100%" fill="#f8f9fa"/>
-  <line x1="115" y1="171" x2="335" y2="171" stroke="#495057" stroke-width="4"/>
-  <line x1="115" y1="183" x2="335" y2="183" stroke="#495057" stroke-width="4"/>
-  <line x1="555" y1="183" x2="335" y2="183" stroke="#495057" stroke-width="4"/>
-  <line x1="555" y1="171" x2="335" y2="171" stroke="#495057" stroke-width="4"/>
-  <line x1="555" y1="287" x2="335" y2="177" stroke="#495057" stroke-width="4"/>
-  <line x1="775" y1="183" x2="555" y2="183" stroke="#495057" stroke-width="4"/>
-  <line x1="775" y1="171" x2="555" y2="171" stroke="#495057" stroke-width="4"/>
-  <line x1="775" y1="177" x2="555" y2="67" stroke="#495057" stroke-width="4"/>
-  <line x1="775" y1="171" x2="995" y2="171" stroke="#495057" stroke-width="4"/>
-  <line x1="775" y1="183" x2="995" y2="183" stroke="#495057" stroke-width="4"/>
-  <line x1="995" y1="171" x2="1215" y2="171" stroke="#495057" stroke-width="4"/>
-  <line x1="995" y1="183" x2="1215" y2="183" stroke="#495057" stroke-width="4"/>
-  <rect x="700" y="150" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="775" y="183" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Burghausen</text>
-  <rect x="480" y="40" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
-  <text x="555" y="73" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">golm</text>
-  <rect x="40" y="150" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
-  <text x="115" y="183" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">linksdorf</text>
-  <rect x="480" y="260" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
-  <text x="555" y="293" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">me&#223;bach</text>
-  <rect x="480" y="150" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="555" y="183" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Neustadt</text>
-  <rect x="920" y="150" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="995" y="183" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Ostheim</text>
-  <rect x="1140" y="150" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
-  <text x="1215" y="183" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">rechtsheim</text>
-  <rect x="260" y="150" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="335" y="183" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Weststadt</text>
+  <path d="M 170 85.33 L 236 85.33" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 236 62.67 L 170 62.67" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 366 74 L 399.33 74 Q 405 74 405 79.67 L 405 79.67 Q 405 85.33 410.67 85.33 L 444 85.33" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 444 62.67 L 392.83 62.67 Q 390 62.67 390 59.83 L 390 59.83 Q 390 57 387.17 57 L 366 57" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 366 91 L 411 91 Q 420 91 420 100 L 420 181 Q 420 190 429 190 L 444 190" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 574 85.33 L 607.33 85.33 Q 613 85.33 613 79.67 L 613 79.67 Q 613 74 618.67 74 L 652 74" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 652 57 L 600.83 57 Q 598 57 598 59.83 L 598 59.83 Q 598 62.67 595.17 62.67 L 574 62.67" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 652 91 L 637 91 Q 628 91 628 100 L 628 181 Q 628 190 637 190 L 652 190" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 782 85.33 L 848 85.33" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 848 62.67 L 782 62.67" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 978 85.33 L 1044 85.33" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 1044 62.67 L 978 62.67" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="652" y="40" width="130" height="68" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+  <text x="717" y="79.95" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Burghausen</text>
+  <rect x="652" y="156" width="130" height="68" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
+  <text x="717" y="195.95" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">golm</text>
+  <rect x="40" y="40" width="130" height="68" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
+  <text x="105" y="79.95" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">linksdorf</text>
+  <rect x="444" y="156" width="130" height="68" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
+  <text x="509" y="195.95" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">me&#223;bach</text>
+  <rect x="444" y="40" width="130" height="68" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+  <text x="509" y="79.95" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Neustadt</text>
+  <rect x="848" y="40" width="130" height="68" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+  <text x="913" y="79.95" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Ostheim</text>
+  <rect x="1044" y="40" width="130" height="68" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
+  <text x="1109" y="79.95" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">rechtsheim</text>
+  <rect x="236" y="40" width="130" height="68" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+  <text x="301" y="79.95" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Weststadt</text>
 </svg>

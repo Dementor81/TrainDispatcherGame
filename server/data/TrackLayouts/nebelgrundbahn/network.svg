@@ -1,60 +1,60 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1550 464" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1954.5 431" role="img">
   <title>Rail network diagram</title>
   <rect width="100%" height="100%" fill="#f8f9fa"/>
-  <line x1="555" y1="183" x2="335" y2="183" stroke="#495057" stroke-width="4"/>
-  <line x1="555" y1="171" x2="335" y2="171" stroke="#495057" stroke-width="4"/>
-  <line x1="555" y1="171" x2="775" y2="171" stroke="#495057" stroke-width="4"/>
-  <line x1="555" y1="183" x2="775" y2="183" stroke="#495057" stroke-width="4"/>
-  <line x1="555" y1="177" x2="775" y2="67" stroke="#495057" stroke-width="4"/>
-  <line x1="775" y1="287" x2="995" y2="177" stroke="#495057" stroke-width="4"/>
-  <line x1="995" y1="183" x2="775" y2="183" stroke="#495057" stroke-width="4"/>
-  <line x1="995" y1="171" x2="775" y2="171" stroke="#495057" stroke-width="4"/>
-  <line x1="995" y1="171" x2="1215" y2="171" stroke="#495057" stroke-width="4"/>
-  <line x1="995" y1="183" x2="1215" y2="183" stroke="#495057" stroke-width="4"/>
-  <line x1="555" y1="61" x2="775" y2="61" stroke="#495057" stroke-width="4"/>
-  <line x1="555" y1="73" x2="775" y2="73" stroke="#495057" stroke-width="4"/>
-  <line x1="555" y1="73" x2="335" y2="73" stroke="#495057" stroke-width="4"/>
-  <line x1="555" y1="61" x2="335" y2="61" stroke="#495057" stroke-width="4"/>
-  <line x1="555" y1="67" x2="335" y2="287" stroke="#495057" stroke-width="4"/>
-  <line x1="775" y1="287" x2="555" y2="287" stroke="#495057" stroke-width="4"/>
-  <line x1="555" y1="287" x2="775" y2="397" stroke="#495057" stroke-width="4"/>
-  <line x1="781" y1="67" x2="781" y2="177" stroke="#495057" stroke-width="4"/>
-  <line x1="769" y1="67" x2="769" y2="177" stroke="#495057" stroke-width="4"/>
-  <line x1="1215" y1="171" x2="1435" y2="171" stroke="#495057" stroke-width="4"/>
-  <line x1="1215" y1="183" x2="1435" y2="183" stroke="#495057" stroke-width="4"/>
-  <line x1="335" y1="73" x2="115" y2="73" stroke="#495057" stroke-width="4"/>
-  <line x1="335" y1="61" x2="115" y2="61" stroke="#495057" stroke-width="4"/>
-  <line x1="555" y1="287" x2="335" y2="287" stroke="#495057" stroke-width="4"/>
-  <line x1="115" y1="171" x2="335" y2="171" stroke="#495057" stroke-width="4"/>
-  <line x1="115" y1="183" x2="335" y2="183" stroke="#495057" stroke-width="4"/>
-  <rect x="480" y="150" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="555" y="183" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Aurich</text>
-  <rect x="700" y="260" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="775" y="293" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Bernau</text>
-  <rect x="920" y="150" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="995" y="183" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">camberg</text>
-  <rect x="480" y="40" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="555" y="73" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Dospen</text>
-  <rect x="480" y="260" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="555" y="293" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Finnhof</text>
-  <rect x="700" y="40" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="775" y="73" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Hohenbrunn</text>
-  <rect x="1140" y="150" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="1215" y="183" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Horb</text>
-  <rect x="700" y="150" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="775" y="183" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Kreuztal</text>
-  <rect x="260" y="40" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="335" y="73" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Landing</text>
-  <rect x="260" y="260" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="335" y="293" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Langenfelde</text>
-  <rect x="40" y="150" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
-  <text x="115" y="183" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">nordendorf</text>
-  <rect x="1360" y="150" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
-  <text x="1435" y="183" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">osterm&#252;nde</text>
-  <rect x="700" y="370" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
-  <text x="775" y="403" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">unterberg</text>
-  <rect x="40" y="40" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
-  <text x="115" y="73" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">westerhausen</text>
-  <rect x="260" y="150" width="150" height="54" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="335" y="183" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Wingst</text>
+  <path d="M 384 68.33 L 404.67 68.33 Q 408 68.33 408 71.67 L 408 71.67 Q 408 75 411.33 75 L 627.67 75 Q 631 75 631 71.67 L 631 71.67 Q 631 68.33 634.33 68.33 L 719.25 68.33" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 849.25 82.5 L 888.25 82.5 Q 892.5 82.5 892.5 78.25 L 892.5 78.25 Q 892.5 74 896.75 74 L 961.5 74" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 849.25 103.75 L 913.5 103.75 Q 922.5 103.75 922.5 112.75 L 922.5 185.25 Q 922.5 194.25 913.5 194.25 L 849.25 194.25" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 1314.5 215.5 L 1359.5 215.5 Q 1368.5 215.5 1368.5 206.5 L 1368.5 112.75 Q 1368.5 103.75 1377.5 103.75 L 1392.5 103.75" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 1091.5 68.33 L 1112.17 68.33 Q 1115.5 68.33 1115.5 71.67 L 1115.5 71.67 Q 1115.5 75 1118.83 75 L 1331.63 75 Q 1338.5 75 1338.5 68.13 L 1338.5 68.13 Q 1338.5 61.25 1345.38 61.25 L 1392.5 61.25" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 1522.5 96.67 L 1588.5 96.67" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 607 215.5 L 668.92 215.5 Q 676 215.5 676 222.58 L 676 222.58 Q 676 229.67 683.08 229.67 L 719.25 229.67" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 477 215.5 L 445.08 215.5 Q 438 215.5 438 208.42 L 438 208.42 Q 438 201.33 430.92 201.33 L 384 201.33" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 607 236.75 L 682 236.75 Q 691 236.75 691 245.75 L 691 339.5 Q 691 348.5 700 348.5 L 715 348.5" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 1091.5 334.33 L 1136.5 334.33 Q 1145.5 334.33 1145.5 325.33 L 1145.5 224.5 Q 1145.5 215.5 1154.5 215.5 L 1184.5 215.5" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 1091.5 362.67 L 1153.42 362.67 Q 1160.5 362.67 1160.5 355.58 L 1160.5 355.58 Q 1160.5 348.5 1167.58 348.5 L 1184.5 348.5" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 849.25 236.75 L 928.5 236.75 Q 937.5 236.75 937.5 227.75 L 937.5 117 Q 937.5 108 946.5 108 L 961.5 108" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 719.25 201.33 L 664.54 201.33 Q 661 201.33 661 197.79 L 661 197.79 Q 661 194.25 657.46 194.25 L 607 194.25" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 1588.5 68.33 L 1522.5 68.33" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 1718.5 96.67 L 1784.5 96.67" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 961.5 57 L 879.63 57 Q 877.5 57 877.5 59.13 L 877.5 59.13 Q 877.5 61.25 875.38 61.25 L 849.25 61.25" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 1091.5 96.67 L 1127.17 96.67 Q 1130.5 96.67 1130.5 93.33 L 1130.5 93.33 Q 1130.5 90 1133.83 90 L 1349.75 90 Q 1353.5 90 1353.5 86.25 L 1353.5 86.25 Q 1353.5 82.5 1357.25 82.5 L 1392.5 82.5" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 961.5 91 L 916.5 91 Q 907.5 91 907.5 100 L 907.5 206.5 Q 907.5 215.5 898.5 215.5 L 849.25 215.5" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 384 229.67 L 445.92 229.67 Q 453 229.67 453 222.58 L 453 222.58 Q 453 215.5 460.08 215.5 L 477 215.5" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 254 201.33 L 188 201.33" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 853.5 348.5 L 961.5 348.5" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 179 96.67 L 254 96.67" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 1784.5 68.33 L 1718.5 68.33" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 188 229.67 L 254 229.67" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 384 96.67 L 419.67 96.67 Q 423 96.67 423 93.33 L 423 93.33 Q 423 90 426.33 90 L 642.67 90 Q 646 90 646 93.33 L 646 93.33 Q 646 96.67 649.33 96.67 L 719.25 96.67" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 254 68.33 L 179 68.33" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="719.25" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+  <text x="784.25" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Aurich</text>
+  <rect x="1184.5" y="173" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+  <text x="1249.5" y="221.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Bernau</text>
+  <rect x="1392.5" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+  <text x="1457.5" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">camberg</text>
+  <rect x="477" y="173" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+  <text x="542" y="221.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Dospen</text>
+  <rect x="961.5" y="306" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+  <text x="1026.5" y="354.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Finnhof</text>
+  <rect x="719.25" y="173" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+  <text x="784.25" y="221.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Hohenbrunn</text>
+  <rect x="1588.5" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+  <text x="1653.5" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Horb</text>
+  <rect x="961.5" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+  <text x="1026.5" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Kreuztal</text>
+  <rect x="254" y="173" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+  <text x="319" y="221.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Landing</text>
+  <rect x="715" y="306" width="138.5" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+  <text x="784.25" y="354.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Langenfelde</text>
+  <rect x="49" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
+  <text x="114" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">nordendorf</text>
+  <rect x="1784.5" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
+  <text x="1849.5" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">osterm&#252;nde</text>
+  <rect x="1184.5" y="306" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
+  <text x="1249.5" y="354.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">unterberg</text>
+  <rect x="40" y="173" width="148" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
+  <text x="114" y="221.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">westerhausen</text>
+  <rect x="254" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+  <text x="319" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Wingst</text>
 </svg>
