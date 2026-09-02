@@ -644,13 +644,41 @@ public class NetworkLayout
 
         foreach (var (edge, waypoints) in _edgeWaypoints)
         {
-            var spread = (edge.ParallelIndex - (edge.ParallelCount - 1) / 2.0) * ParallelTrackPitch;
             edge.WaypointYs.Clear();
-            edge.WaypointYs.AddRange(waypoints.Select(node =>
-                Margin + _nodeRow[node] * rowPitch + boxHeight / 2.0 + spread));
+            edge.WaypointYs.AddRange(waypoints.Select(node => WaypointY(
+                edge,
+                Margin + _nodeRow[node] * rowPitch + boxHeight / 2.0,
+                boxHeight)));
         }
 
         var rows = _graph.Stations.Select(station => station.Row).Concat(_nodeRow).DefaultIfEmpty(0).Max();
         Height = Margin * 2 + (rows + 1) * rowPitch - RowGap;
+    }
+
+    /// <summary>
+    /// A waypoint only has to stay inside the band of its row, so it is put at
+    /// the height of one of the two ports whenever that fits. The line then runs
+    /// straight through and only steps once, at the station whose port sits
+    /// elsewhere. Rows are further apart than a box is tall, so a height inside
+    /// the band can never meet a line belonging to another row.
+    /// </summary>
+    private static double WaypointY(NetworkEdge edge, double rowCentre, double boxHeight)
+    {
+        var top = rowCentre - boxHeight / 2;
+        var bottom = rowCentre + boxHeight / 2;
+        var start = edge.Start.PortY(edge.StartExitId);
+        var end = edge.End.PortY(edge.EndExitId);
+
+        if (start >= top && start <= bottom)
+        {
+            return start;
+        }
+
+        if (end >= top && end <= bottom)
+        {
+            return end;
+        }
+
+        return rowCentre + (edge.ParallelIndex - (edge.ParallelCount - 1) / 2.0) * ParallelTrackPitch;
     }
 }

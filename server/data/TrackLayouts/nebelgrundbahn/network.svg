@@ -1,60 +1,93 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1954.5 431" role="img">
-  <title>Rail network diagram</title>
-  <rect width="100%" height="100%" fill="#f8f9fa"/>
-  <path d="M 384 68.33 L 404.67 68.33 Q 408 68.33 408 71.67 L 408 71.67 Q 408 75 411.33 75 L 627.67 75 Q 631 75 631 71.67 L 631 71.67 Q 631 68.33 634.33 68.33 L 719.25 68.33" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 849.25 82.5 L 888.25 82.5 Q 892.5 82.5 892.5 78.25 L 892.5 78.25 Q 892.5 74 896.75 74 L 961.5 74" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 849.25 103.75 L 913.5 103.75 Q 922.5 103.75 922.5 112.75 L 922.5 185.25 Q 922.5 194.25 913.5 194.25 L 849.25 194.25" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 1314.5 215.5 L 1359.5 215.5 Q 1368.5 215.5 1368.5 206.5 L 1368.5 112.75 Q 1368.5 103.75 1377.5 103.75 L 1392.5 103.75" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 1091.5 68.33 L 1112.17 68.33 Q 1115.5 68.33 1115.5 71.67 L 1115.5 71.67 Q 1115.5 75 1118.83 75 L 1331.63 75 Q 1338.5 75 1338.5 68.13 L 1338.5 68.13 Q 1338.5 61.25 1345.38 61.25 L 1392.5 61.25" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 1522.5 96.67 L 1588.5 96.67" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 607 215.5 L 668.92 215.5 Q 676 215.5 676 222.58 L 676 222.58 Q 676 229.67 683.08 229.67 L 719.25 229.67" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 477 215.5 L 445.08 215.5 Q 438 215.5 438 208.42 L 438 208.42 Q 438 201.33 430.92 201.33 L 384 201.33" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 607 236.75 L 682 236.75 Q 691 236.75 691 245.75 L 691 339.5 Q 691 348.5 700 348.5 L 715 348.5" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 1091.5 334.33 L 1136.5 334.33 Q 1145.5 334.33 1145.5 325.33 L 1145.5 224.5 Q 1145.5 215.5 1154.5 215.5 L 1184.5 215.5" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 1091.5 362.67 L 1153.42 362.67 Q 1160.5 362.67 1160.5 355.58 L 1160.5 355.58 Q 1160.5 348.5 1167.58 348.5 L 1184.5 348.5" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 849.25 236.75 L 928.5 236.75 Q 937.5 236.75 937.5 227.75 L 937.5 117 Q 937.5 108 946.5 108 L 961.5 108" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 719.25 201.33 L 664.54 201.33 Q 661 201.33 661 197.79 L 661 197.79 Q 661 194.25 657.46 194.25 L 607 194.25" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 1588.5 68.33 L 1522.5 68.33" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 1718.5 96.67 L 1784.5 96.67" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 961.5 57 L 879.63 57 Q 877.5 57 877.5 59.13 L 877.5 59.13 Q 877.5 61.25 875.38 61.25 L 849.25 61.25" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 1091.5 96.67 L 1127.17 96.67 Q 1130.5 96.67 1130.5 93.33 L 1130.5 93.33 Q 1130.5 90 1133.83 90 L 1349.75 90 Q 1353.5 90 1353.5 86.25 L 1353.5 86.25 Q 1353.5 82.5 1357.25 82.5 L 1392.5 82.5" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 961.5 91 L 916.5 91 Q 907.5 91 907.5 100 L 907.5 206.5 Q 907.5 215.5 898.5 215.5 L 849.25 215.5" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 384 229.67 L 445.92 229.67 Q 453 229.67 453 222.58 L 453 222.58 Q 453 215.5 460.08 215.5 L 477 215.5" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 254 201.33 L 188 201.33" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 853.5 348.5 L 961.5 348.5" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 179 96.67 L 254 96.67" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 1784.5 68.33 L 1718.5 68.33" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 188 229.67 L 254 229.67" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 384 96.67 L 419.67 96.67 Q 423 96.67 423 93.33 L 423 93.33 Q 423 90 426.33 90 L 642.67 90 Q 646 90 646 93.33 L 646 93.33 Q 646 96.67 649.33 96.67 L 719.25 96.67" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 254 68.33 L 179 68.33" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="719.25" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="784.25" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Aurich</text>
-  <rect x="1184.5" y="173" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="1249.5" y="221.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Bernau</text>
-  <rect x="1392.5" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="1457.5" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">camberg</text>
-  <rect x="477" y="173" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="542" y="221.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Dospen</text>
-  <rect x="961.5" y="306" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="1026.5" y="354.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Finnhof</text>
-  <rect x="719.25" y="173" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="784.25" y="221.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Hohenbrunn</text>
-  <rect x="1588.5" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="1653.5" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Horb</text>
-  <rect x="961.5" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="1026.5" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Kreuztal</text>
-  <rect x="254" y="173" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="319" y="221.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Landing</text>
-  <rect x="715" y="306" width="138.5" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="784.25" y="354.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Langenfelde</text>
-  <rect x="49" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
-  <text x="114" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">nordendorf</text>
-  <rect x="1784.5" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
-  <text x="1849.5" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">osterm&#252;nde</text>
-  <rect x="1184.5" y="306" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
-  <text x="1249.5" y="354.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">unterberg</text>
-  <rect x="40" y="173" width="148" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
-  <text x="114" y="221.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">westerhausen</text>
-  <rect x="254" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
-  <text x="319" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Wingst</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1870.5 431" class="network-plan" data-network="nebelgrundbahn">
+  <title>nebelgrundbahn network plan</title>
+  <g class="connections" fill="none" stroke="#495057" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="connection" data-from="aurich" data-from-exit="0" data-to="wingst" data-to-exit="1" d="M 384 68.33 L 662.25 68.33"/>
+    <path class="connection" data-from="aurich" data-from-exit="3" data-to="kreuztal" data-to-exit="2" d="M 792.25 82.5 L 846.25 82.5 Q 850.5 82.5 850.5 78.25 L 850.5 78.25 Q 850.5 74 854.75 74 L 904.5 74"/>
+    <path class="connection" data-from="aurich" data-from-exit="5" data-to="hohenbrunn" data-to-exit="1" d="M 792.25 103.75 L 811.5 103.75 Q 820.5 103.75 820.5 112.75 L 820.5 185.25 Q 820.5 194.25 811.5 194.25 L 792.25 194.25"/>
+    <path class="connection" data-from="bernau" data-from-exit="1" data-to="camberg" data-to-exit="4" d="M 1230.5 215.5 L 1275.5 215.5 Q 1284.5 215.5 1284.5 206.5 L 1284.5 112.75 Q 1284.5 103.75 1293.5 103.75 L 1308.5 103.75"/>
+    <path class="connection" data-from="camberg" data-from-exit="0" data-to="kreuztal" data-to-exit="1" d="M 1034.5 68.33 L 1250.96 68.33 Q 1254.5 68.33 1254.5 64.79 L 1254.5 64.79 Q 1254.5 61.25 1258.04 61.25 L 1308.5 61.25"/>
+    <path class="connection" data-from="camberg" data-from-exit="3" data-to="horb" data-to-exit="2" d="M 1438.5 96.67 L 1504.5 96.67"/>
+    <path class="connection" data-from="dospen" data-from-exit="3" data-to="hohenbrunn" data-to-exit="2" d="M 580 215.5 L 611.92 215.5 Q 619 215.5 619 222.58 L 619 222.58 Q 619 229.67 626.08 229.67 L 662.25 229.67"/>
+    <path class="connection" data-from="dospen" data-from-exit="0" data-to="landing" data-to-exit="1" d="M 450 215.5 L 416.58 215.5 Q 409.5 215.5 409.5 208.42 L 409.5 208.42 Q 409.5 201.33 402.42 201.33 L 384 201.33"/>
+    <path class="connection" data-from="dospen" data-from-exit="5" data-to="langenfelde" data-to-exit="0" d="M 580 236.75 L 625 236.75 Q 634 236.75 634 245.75 L 634 339.5 Q 634 348.5 643 348.5 L 658 348.5"/>
+    <path class="connection" data-from="finnhof" data-from-exit="1" data-to="bernau" data-to-exit="0" d="M 1034.5 334.33 L 1051 334.33 Q 1060 334.33 1060 325.33 L 1060 224.5 Q 1060 215.5 1069 215.5 L 1100.5 215.5"/>
+    <path class="connection" data-from="finnhof" data-from-exit="3" data-to="unterberg" data-to-exit="0" d="M 1034.5 362.67 L 1067.92 362.67 Q 1075 362.67 1075 355.58 L 1075 355.58 Q 1075 348.5 1082.08 348.5 L 1100.5 348.5"/>
+    <path class="connection" data-from="hohenbrunn" data-from-exit="5" data-to="kreuztal" data-to-exit="6" d="M 792.25 236.75 L 871.5 236.75 Q 880.5 236.75 880.5 227.75 L 880.5 117 Q 880.5 108 889.5 108 L 904.5 108"/>
+    <path class="connection" data-from="hohenbrunn" data-from-exit="0" data-to="dospen" data-to-exit="1" d="M 662.25 201.33 L 607.54 201.33 Q 604 201.33 604 197.79 L 604 197.79 Q 604 194.25 600.46 194.25 L 580 194.25"/>
+    <path class="connection" data-from="horb" data-from-exit="0" data-to="camberg" data-to-exit="1" d="M 1504.5 68.33 L 1438.5 68.33"/>
+    <path class="connection" data-from="horb" data-from-exit="3" data-to="osterm&#252;nde" data-to-exit="2" d="M 1634.5 96.67 L 1700.5 96.67"/>
+    <path class="connection" data-from="kreuztal" data-from-exit="0" data-to="aurich" data-to-exit="1" d="M 904.5 57 L 837.63 57 Q 835.5 57 835.5 59.13 L 835.5 59.13 Q 835.5 61.25 833.38 61.25 L 792.25 61.25"/>
+    <path class="connection" data-from="kreuztal" data-from-exit="3" data-to="camberg" data-to-exit="2" d="M 1034.5 96.67 L 1262.42 96.67 Q 1269.5 96.67 1269.5 89.58 L 1269.5 89.58 Q 1269.5 82.5 1276.58 82.5 L 1308.5 82.5"/>
+    <path class="connection" data-from="kreuztal" data-from-exit="4" data-to="hohenbrunn" data-to-exit="3" d="M 904.5 91 L 874.5 91 Q 865.5 91 865.5 100 L 865.5 206.5 Q 865.5 215.5 856.5 215.5 L 792.25 215.5"/>
+    <path class="connection" data-from="landing" data-from-exit="3" data-to="dospen" data-to-exit="0" d="M 384 229.67 L 417.42 229.67 Q 424.5 229.67 424.5 222.58 L 424.5 222.58 Q 424.5 215.5 431.58 215.5 L 450 215.5"/>
+    <path class="connection" data-from="landing" data-from-exit="0" data-to="westerhausen" data-to-exit="1" d="M 254 201.33 L 188 201.33"/>
+    <path class="connection" data-from="langenfelde" data-from-exit="1" data-to="finnhof" data-to-exit="0" d="M 796.5 348.5 L 904.5 348.5"/>
+    <path class="connection" data-from="nordendorf" data-from-exit="3" data-to="wingst" data-to-exit="2" d="M 179 96.67 L 254 96.67"/>
+    <path class="connection" data-from="osterm&#252;nde" data-from-exit="0" data-to="horb" data-to-exit="1" d="M 1700.5 68.33 L 1634.5 68.33"/>
+    <path class="connection" data-from="westerhausen" data-from-exit="3" data-to="landing" data-to-exit="2" d="M 188 229.67 L 254 229.67"/>
+    <path class="connection" data-from="wingst" data-from-exit="3" data-to="aurich" data-to-exit="2" d="M 384 96.67 L 662.25 96.67"/>
+    <path class="connection" data-from="wingst" data-from-exit="0" data-to="nordendorf" data-to-exit="1" d="M 254 68.33 L 179 68.33"/>
+  </g>
+  <g class="stations">
+    <g class="station" id="station-aurich" data-station-id="aurich" data-station-name="Aurich" data-external="false" data-x="662.25" data-y="40" data-width="130" data-height="85">
+      <rect class="station-box" x="662.25" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+      <text class="station-label" x="727.25" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Aurich</text>
+    </g>
+    <g class="station" id="station-bernau" data-station-id="bernau" data-station-name="Bernau" data-external="false" data-x="1100.5" data-y="173" data-width="130" data-height="85">
+      <rect class="station-box" x="1100.5" y="173" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+      <text class="station-label" x="1165.5" y="221.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Bernau</text>
+    </g>
+    <g class="station" id="station-camberg" data-station-id="camberg" data-station-name="camberg" data-external="false" data-x="1308.5" data-y="40" data-width="130" data-height="85">
+      <rect class="station-box" x="1308.5" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+      <text class="station-label" x="1373.5" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">camberg</text>
+    </g>
+    <g class="station" id="station-dospen" data-station-id="dospen" data-station-name="Dospen" data-external="false" data-x="450" data-y="173" data-width="130" data-height="85">
+      <rect class="station-box" x="450" y="173" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+      <text class="station-label" x="515" y="221.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Dospen</text>
+    </g>
+    <g class="station" id="station-finnhof" data-station-id="finnhof" data-station-name="Finnhof" data-external="false" data-x="904.5" data-y="306" data-width="130" data-height="85">
+      <rect class="station-box" x="904.5" y="306" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+      <text class="station-label" x="969.5" y="354.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Finnhof</text>
+    </g>
+    <g class="station" id="station-hohenbrunn" data-station-id="hohenbrunn" data-station-name="Hohenbrunn" data-external="false" data-x="662.25" data-y="173" data-width="130" data-height="85">
+      <rect class="station-box" x="662.25" y="173" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+      <text class="station-label" x="727.25" y="221.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Hohenbrunn</text>
+    </g>
+    <g class="station" id="station-horb" data-station-id="horb" data-station-name="Horb" data-external="false" data-x="1504.5" data-y="40" data-width="130" data-height="85">
+      <rect class="station-box" x="1504.5" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+      <text class="station-label" x="1569.5" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Horb</text>
+    </g>
+    <g class="station" id="station-kreuztal" data-station-id="kreuztal" data-station-name="Kreuztal" data-external="false" data-x="904.5" data-y="40" data-width="130" data-height="85">
+      <rect class="station-box" x="904.5" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+      <text class="station-label" x="969.5" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Kreuztal</text>
+    </g>
+    <g class="station" id="station-landing" data-station-id="landing" data-station-name="Landing" data-external="false" data-x="254" data-y="173" data-width="130" data-height="85">
+      <rect class="station-box" x="254" y="173" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+      <text class="station-label" x="319" y="221.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Landing</text>
+    </g>
+    <g class="station" id="station-langenfelde" data-station-id="langenfelde" data-station-name="Langenfelde" data-external="false" data-x="658" data-y="306" data-width="138.5" data-height="85">
+      <rect class="station-box" x="658" y="306" width="138.5" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+      <text class="station-label" x="727.25" y="354.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Langenfelde</text>
+    </g>
+    <g class="station" id="station-nordendorf" data-station-id="nordendorf" data-station-name="nordendorf" data-external="true" data-x="49" data-y="40" data-width="130" data-height="85">
+      <rect class="station-box" x="49" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
+      <text class="station-label" x="114" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">nordendorf</text>
+    </g>
+    <g class="station" id="station-osterm&#252;nde" data-station-id="osterm&#252;nde" data-station-name="osterm&#252;nde" data-external="true" data-x="1700.5" data-y="40" data-width="130" data-height="85">
+      <rect class="station-box" x="1700.5" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
+      <text class="station-label" x="1765.5" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">osterm&#252;nde</text>
+    </g>
+    <g class="station" id="station-unterberg" data-station-id="unterberg" data-station-name="unterberg" data-external="true" data-x="1100.5" data-y="306" data-width="130" data-height="85">
+      <rect class="station-box" x="1100.5" y="306" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
+      <text class="station-label" x="1165.5" y="354.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">unterberg</text>
+    </g>
+    <g class="station" id="station-westerhausen" data-station-id="westerhausen" data-station-name="westerhausen" data-external="true" data-x="40" data-y="173" data-width="148" data-height="85">
+      <rect class="station-box" x="40" y="173" width="148" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3" stroke-dasharray="7 5"/>
+      <text class="station-label" x="114" y="221.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">westerhausen</text>
+    </g>
+    <g class="station" id="station-wingst" data-station-id="wingst" data-station-name="Wingst" data-external="false" data-x="254" data-y="40" data-width="130" data-height="85">
+      <rect class="station-box" x="254" y="40" width="130" height="85" rx="14" fill="#ffffff" stroke="#212529" stroke-width="3"/>
+      <text class="station-label" x="319" y="88.45" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#212529">Wingst</text>
+    </g>
+  </g>
 </svg>

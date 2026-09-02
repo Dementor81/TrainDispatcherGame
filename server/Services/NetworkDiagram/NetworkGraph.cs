@@ -13,6 +13,7 @@ public class NetworkGraph
 
     public NetworkGraph(NetworkDto network)
     {
+        Name = network.Name;
         foreach (var station in network.Stations)
         {
             if (string.IsNullOrWhiteSpace(station.Id))
@@ -54,6 +55,8 @@ public class NetworkGraph
         Stations = _stations.Values.OrderBy(station => station.Id, StringComparer.Ordinal).ToList();
         Edges = edges;
     }
+
+    public string Name { get; }
 
     public IReadOnlyList<StationNode> Stations { get; }
 
