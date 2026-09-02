@@ -93,7 +93,8 @@ public class OrthogonalRouter
                 .Where(crossing => blockedBy[crossing].All(blocker => !remaining.Contains(blocker)))
                 .ToList();
             var next = (ready.Count > 0 ? ready : remaining)
-                .OrderBy(crossing => Math.Min(crossing.EntryY, crossing.ExitY))
+                .OrderBy(crossing => crossing.Reach)
+                .ThenBy(crossing => Math.Min(crossing.EntryY, crossing.ExitY))
                 .ThenBy(crossing => crossing.Order)
                 .First();
             next.Lane = lane++;

@@ -41,6 +41,15 @@ public class ChannelCrossing
 
     public bool NeedsLane => Math.Abs(EntryY - ExitY) > Tolerance;
 
+    /// <summary>
+    /// How far across the channel the line has to reach: 0 when it only touches
+    /// the column on the left, 2 when it only touches the one on the right, and
+    /// 1 when it crosses from one to the other. Keeping the lanes in that order
+    /// makes a turn-back hug its own column instead of cutting through the
+    /// lines that pass by.
+    /// </summary>
+    public int Reach => EntryFromLeft == ExitFromLeft ? (EntryFromLeft ? 0 : 2) : 1;
+
     public IEnumerable<double> LeftAttachYs => Attachments(true);
 
     public IEnumerable<double> RightAttachYs => Attachments(false);
