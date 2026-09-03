@@ -1138,41 +1138,41 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:14:10"
+          "departure": "00:14:36"
         },
         {
           "station": "horb",
-          "arrival": "00:15:53",
-          "departure": "00:16:58"
+          "arrival": "00:16:19",
+          "departure": "00:17:24"
         },
         {
           "station": "camberg",
-          "arrival": "00:18:41",
-          "departure": "00:18:41"
+          "arrival": "00:19:07",
+          "departure": "00:19:07"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:20:24",
-          "departure": "00:21:24"
+          "arrival": "00:20:50",
+          "departure": "00:21:50"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:23:07",
-          "departure": "00:24:07"
+          "arrival": "00:23:33",
+          "departure": "00:24:33"
         },
         {
           "station": "dospen",
-          "arrival": "00:25:50",
-          "departure": "00:25:50"
+          "arrival": "00:26:16",
+          "departure": "00:26:16"
         },
         {
           "station": "landing",
-          "arrival": "00:27:33",
-          "departure": "00:28:33"
+          "arrival": "00:27:59",
+          "departure": "00:28:59"
         },
         {
           "station": "westerhausen",
-          "arrival": "00:30:16",
+          "arrival": "00:30:42",
           "departure": ""
         }
       ],
@@ -1781,11 +1781,11 @@
         {
           "station": "wingst",
           "arrival": "01:23:16",
-          "departure": "01:24:16"
+          "departure": "01:26:37"
         },
         {
           "station": "nordendorf",
-          "arrival": "01:26:16",
+          "arrival": "01:28:37",
           "departure": ""
         }
       ],
@@ -5526,7 +5526,7 @@
           "departure": ""
         }
       ],
-      "followingTrainNumber": null
+      "followingTrainNumber": "1098"
     },
     {
       "number": "40308",
@@ -5569,6 +5569,37 @@
         {
           "station": "nordendorf",
           "arrival": "00:53:56",
+          "departure": ""
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "1098",
+      "type": "MultipleUnit",
+      "category": "ICE",
+      "speedMax": 160,
+      "cars": 10,
+      "path": [],
+      "timetable": [
+        {
+          "station": "kreuztal",
+          "arrival": "",
+          "departure": "01:21:48"
+        },
+        {
+          "station": "aurich",
+          "arrival": "01:23:18",
+          "departure": "01:23:18"
+        },
+        {
+          "station": "wingst",
+          "arrival": "01:24:48",
+          "departure": "01:24:48"
+        },
+        {
+          "station": "nordendorf",
+          "arrival": "01:26:18",
           "departure": ""
         }
       ],

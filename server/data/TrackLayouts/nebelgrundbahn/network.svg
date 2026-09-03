@@ -8,7 +8,7 @@
     <path class="connection" data-from="camberg" data-from-exit="0" data-to="kreuztal" data-to-exit="1" d="M 1034.5 68.33 L 1250.96 68.33 Q 1254.5 68.33 1254.5 64.79 L 1254.5 64.79 Q 1254.5 61.25 1258.04 61.25 L 1308.5 61.25"/>
     <path class="connection" data-from="camberg" data-from-exit="3" data-to="horb" data-to-exit="2" d="M 1438.5 96.67 L 1504.5 96.67"/>
     <path class="connection" data-from="dospen" data-from-exit="3" data-to="hohenbrunn" data-to-exit="2" d="M 580 215.5 L 611.92 215.5 Q 619 215.5 619 222.58 L 619 222.58 Q 619 229.67 626.08 229.67 L 662.25 229.67"/>
-    <path class="connection" data-from="dospen" data-from-exit="0" data-to="landing" data-to-exit="1" d="M 450 215.5 L 416.58 215.5 Q 409.5 215.5 409.5 208.42 L 409.5 208.42 Q 409.5 201.33 402.42 201.33 L 384 201.33"/>
+    <path class="connection" data-from="dospen" data-from-exit="0" data-to="landing" data-to-exit="1" d="M 450 201.33 L 384 201.33"/>
     <path class="connection" data-from="dospen" data-from-exit="5" data-to="langenfelde" data-to-exit="0" d="M 580 236.75 L 625 236.75 Q 634 236.75 634 245.75 L 634 339.5 Q 634 348.5 643 348.5 L 658 348.5"/>
     <path class="connection" data-from="finnhof" data-from-exit="1" data-to="bernau" data-to-exit="0" d="M 1034.5 334.33 L 1051 334.33 Q 1060 334.33 1060 325.33 L 1060 224.5 Q 1060 215.5 1069 215.5 L 1100.5 215.5"/>
     <path class="connection" data-from="finnhof" data-from-exit="3" data-to="unterberg" data-to-exit="0" d="M 1034.5 362.67 L 1067.92 362.67 Q 1075 362.67 1075 355.58 L 1075 355.58 Q 1075 348.5 1082.08 348.5 L 1100.5 348.5"/>
@@ -19,7 +19,7 @@
     <path class="connection" data-from="kreuztal" data-from-exit="0" data-to="aurich" data-to-exit="1" d="M 904.5 57 L 837.63 57 Q 835.5 57 835.5 59.13 L 835.5 59.13 Q 835.5 61.25 833.38 61.25 L 792.25 61.25"/>
     <path class="connection" data-from="kreuztal" data-from-exit="3" data-to="camberg" data-to-exit="2" d="M 1034.5 96.67 L 1262.42 96.67 Q 1269.5 96.67 1269.5 89.58 L 1269.5 89.58 Q 1269.5 82.5 1276.58 82.5 L 1308.5 82.5"/>
     <path class="connection" data-from="kreuztal" data-from-exit="4" data-to="hohenbrunn" data-to-exit="3" d="M 904.5 91 L 874.5 91 Q 865.5 91 865.5 100 L 865.5 206.5 Q 865.5 215.5 856.5 215.5 L 792.25 215.5"/>
-    <path class="connection" data-from="landing" data-from-exit="3" data-to="dospen" data-to-exit="0" d="M 384 229.67 L 417.42 229.67 Q 424.5 229.67 424.5 222.58 L 424.5 222.58 Q 424.5 215.5 431.58 215.5 L 450 215.5"/>
+    <path class="connection" data-from="landing" data-from-exit="3" data-to="dospen" data-to-exit="2" d="M 384 229.67 L 450 229.67"/>
     <path class="connection" data-from="landing" data-from-exit="0" data-to="westerhausen" data-to-exit="1" d="M 254 201.33 L 188 201.33"/>
     <path class="connection" data-from="langenfelde" data-from-exit="1" data-to="finnhof" data-to-exit="0" d="M 796.5 348.5 L 904.5 348.5"/>
     <path class="connection" data-from="nordendorf" data-from-exit="3" data-to="wingst" data-to-exit="2" d="M 179 96.67 L 254 96.67"/>

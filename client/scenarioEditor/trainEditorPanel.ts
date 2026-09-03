@@ -38,6 +38,7 @@ export class TrainEditorPanel extends BasePanel {
    private isClosingProgrammatically = false;
    private scenarioTrains: ScenarioTrainDto[] = [];
    private excludeTrainNumber: string | undefined;
+   private currentTerminus: string | undefined;
 
    constructor() {
       // The scenario editor only needs the shared BasePanel chrome, not the full main Application.
@@ -62,7 +63,6 @@ export class TrainEditorPanel extends BasePanel {
       this.numEl = this.createInput("Train number", "text", true);
       this.typeEl = this.createSelect("Type", ["Passenger", "Freight", "MultipleUnit"]);
       this.catEl = this.createInput("Category", "text", false, "e.g., ICE, Freight, Regional");
-      this.catEl.addEventListener("input", () => this.populateFollowingTrains());
       this.followingEl = document.createElement("select");
       this.followingEl.className = "form-select no-drag";
       this.followingEl.ariaLabel = "Following Train Number";
@@ -82,6 +82,7 @@ export class TrainEditorPanel extends BasePanel {
       endCol.appendChild(this.wrapField("Terminus", this.endSel = document.createElement("select")));
       this.startSel.className = "form-select no-drag";
       this.endSel.className = "form-select no-drag";
+      this.endSel.addEventListener("change", () => this.populateFollowingTrains());
       this.startEndRow.append(startCol, endCol);
 
       const speedCarsRow = UI.createDiv("row g-2", null);
@@ -150,8 +151,9 @@ export class TrainEditorPanel extends BasePanel {
       this.carsEl.value = "6";
       this.scenarioTrains = trains;
       this.excludeTrainNumber = undefined;
-      this.populateFollowingTrains("");
+      this.currentTerminus = undefined;
       this.populateStations(stationOrder);
+      this.populateFollowingTrains("");
       this.startSel.required = true;
       this.endSel.required = true;
    }
@@ -168,25 +170,34 @@ export class TrainEditorPanel extends BasePanel {
       this.carsEl.value = String(train.cars ?? 6);
       this.scenarioTrains = trains;
       this.excludeTrainNumber = train.number;
+      const lastStop = train.timetable?.[train.timetable.length - 1];
+      this.currentTerminus = lastStop?.station;
       this.populateFollowingTrains(train.followingTrainNumber || "");
       this.startSel.required = false;
       this.endSel.required = false;
    }
 
-   private normalizeCategory(category?: string | null): string {
-      return (category || "").trim().toLowerCase();
+   private normalizeStation(station?: string | null): string {
+      return (station || "").trim().toLowerCase();
+   }
+
+   private getTerminus(): string {
+      if (this.startEndRow.classList.contains("d-none")) {
+         return this.normalizeStation(this.currentTerminus);
+      }
+      return this.normalizeStation(this.endSel.value);
    }
 
    private populateFollowingTrains(preferred?: string) {
       const previous = preferred ?? this.followingEl.value;
-      const category = this.normalizeCategory(this.catEl.value);
+      const terminus = this.getTerminus();
       this.followingEl.innerHTML = "";
       this.followingEl.appendChild(new Option("", ""));
 
       const numbers = this.scenarioTrains
          .filter((train) => {
             if (this.excludeTrainNumber && train.number === this.excludeTrainNumber) return false;
-            return this.normalizeCategory(train.category) === category;
+            return this.normalizeStation(train.timetable?.[0]?.station) === terminus;
          })
          .map((train) => train.number);
 
