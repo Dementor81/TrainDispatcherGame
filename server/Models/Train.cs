@@ -35,8 +35,9 @@ namespace TrainDispatcherGame.Server.Models
         public bool damaged { get; set; } = false;
         // Manual remove by a player (not a normal finish or accident).
         public bool removed { get; set; } = false;
-        // If true, this train is skipped by the server event loop after a fatal update error.
+        // If true, this train is skipped by the server event loop after being retired.
         public bool updateFailed { get; set; } = false;
+        public int updateFailCount { get; set; } = 0;
         public string? PredecessorTrainNumber { get; set; }
         public string? FollowingTrainNumber { get; set; }
 
@@ -107,7 +108,8 @@ namespace TrainDispatcherGame.Server.Models
 
         public int GetTravelTime(int distance)
         {
-            return (int)(distance / SpeedMax);
+            var speed = SpeedMax > 0 ? SpeedMax : 1d;
+            return (int)(distance / speed);
         }
 
         public void Record(TrainEventBase evt)

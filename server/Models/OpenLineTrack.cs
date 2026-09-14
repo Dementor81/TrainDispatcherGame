@@ -15,7 +15,7 @@ namespace TrainDispatcherGame.Server.Models
 
         public bool AddTrain(Train train)
         {
-            if (this.TrainOnTrack != null) return false;
+            if (this.TrainOnTrack != null && this.TrainOnTrack != train) return false;
             this.TrainOnTrack = train;
             return true;
         }

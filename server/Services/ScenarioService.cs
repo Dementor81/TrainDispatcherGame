@@ -1,5 +1,6 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using TrainDispatcherGame.Server.Logging;
 using TrainDispatcherGame.Server.Models;
 using TrainDispatcherGame.Server.Models.DTOs;
 
@@ -222,6 +223,12 @@ namespace TrainDispatcherGame.Server.Services
                     FollowingTrainNumber = trainSchedule.FollowingTrainNumber
                 };
 
+                if (train.SpeedMax <= 0)
+                {
+                    ServerLogger.Instance.LogWarning(scenarioId, $"Train {trainSchedule.Number} has invalid SpeedMax {trainSchedule.SpeedMax}; using 1 m/s");
+                    train.SpeedMax = 1;
+                }
+
                 foreach (var timetableEntry in trainSchedule.Timetable)
                 {
                     DateTime arrivalTime = DateTime.MinValue;
@@ -243,7 +250,13 @@ namespace TrainDispatcherGame.Server.Services
                         }
                     }
 
-                    train.Route.Add(new TrainWayPoint(timetableEntry.Station, arrivalTime, departureTime));
+                    var station = timetableEntry.Station?.ToLowerInvariant() ?? string.Empty;
+                    train.Route.Add(new TrainWayPoint(station, arrivalTime, departureTime));
+                }
+
+                if (train.Route.Count == 0)
+                {
+                    throw new Exception($"Train {trainSchedule.Number} has no timetable");
                 }
 
                 train.Route.Last().IsLast = true; //save if the waypoint is the last waypoint, in order to make it easier to detect if the train has completed all waypoints.

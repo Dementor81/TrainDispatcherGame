@@ -74,53 +74,149 @@ body {
     pointer-events: auto;
 }
 
-/* Station selector carousel */
+/* Station selector */
 .station-select-modal-dialog {
-    max-width: 1200px;
+    max-width: 96vw;
+    width: 96vw;
+    max-height: 94vh;
+    min-height: 0;
+    margin: 3vh auto;
 }
 
 #stationSelectModal .modal-content {
-    background-color: #2a2b2e;
+    background: rgba(20, 27, 35, 0.94);
     color: #f8f9fa;
+    max-height: 94vh;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 1rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
 }
 
 #stationSelectModal .modal-body {
     padding: 0;
 }
 
-#stationSelectModal .player-list {
-    padding: 0 1rem 0rem 1rem;
-}
-
-#stationSelectModal h5{
-    font-size: clamp(0.5rem, 1.25rem, 2vh);
+#stationSelectModal h5 {
+    font-size: 1.25rem;
 }
 
 #stationSelectModal p, #stationSelectModal td, #stationSelectModal label {
-    font-size: clamp(0.2rem, 1rem, 2vh);
+    font-size: 0.95rem;
 }
 
-.modal-header {
-    padding: 2vh;
+.station-select-body {
+    display: flex;
+    width: 100%;
 }
 
-#stationCarousel {
-    overflow: hidden;
-    padding-bottom: 2.25rem; /* for the carousel indicators */
+.station-select-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
 }
 
-.carousel-control-prev-icon, .carousel-control-next-icon {
-    background-size: 200% 200%;
-    margin-bottom: 3rem;
+.station-network-title {
+    margin: 0;
+    padding: 1rem 1.25rem 0.5rem;
+    font-weight: 600;
 }
 
-.station-carousel-slide {
-    min-height: clamp(180px, 40vh, 400px);
-    color: #f8f9fa;
-    position: relative;
+.station-network-plan {
+    margin: 0 1.25rem 1rem;
     padding: 1rem;
+    background: rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.75rem;
+}
+
+.station-network-plan svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.station-network-plan .connection {
+    stroke: #9eb3cc;
+}
+
+.station-network-plan .station-box,
+.station-network-plan .station-label {
+    transition: fill 0.15s ease, stroke 0.15s ease;
+}
+
+.station-network-plan .station-box {
+    fill: #1a2836;
+    stroke: #8aa0bc;
+}
+
+.station-network-plan .station-label {
+    fill: #f1f5f9;
+}
+
+.station-network-plan .station.playable {
+    cursor: pointer;
+}
+
+.station-network-plan .station.playable:not(.selected):not(.taken):hover {
+    filter: drop-shadow(0 0 6px rgba(126, 184, 255, 0.4));
+}
+
+.station-network-plan .station.playable:not(.taken):hover .station-box {
+    fill: #243b55;
+    stroke: #c9d6e8;
+}
+
+.station-network-plan .station.selected {
+    filter: drop-shadow(0 0 8px rgba(126, 184, 255, 0.55));
+}
+
+.station-network-plan .station.selected:not(.taken) .station-box {
+    fill: #1e4a73;
+    stroke: #7eb8ff;
+    stroke-width: 5;
+}
+
+.station-network-plan .station.taken .station-box {
+    fill: #6b1c24;
+    stroke: #e35d6a;
+}
+
+.station-network-plan .station.taken .station-label {
+    fill: #ffd6d6;
+}
+
+.station-network-plan .station.taken.selected .station-box {
+    stroke: #7eb8ff;
+    stroke-width: 5;
+}
+
+.station-network-plan .station[data-external="true"] {
+    pointer-events: none;
+    opacity: 0.45;
+}
+
+.station-preview-panel {
+    display: flex;
+    align-items: stretch;
+    gap: 1.25rem;
+    padding: 1rem 1.25rem 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.station-preview-card {
+    flex: 0 0 42%;
+    max-width: 560px;
+    min-width: 320px;
+    height: 24vh;
+    min-height: 180px;
+    position: relative;
     overflow: hidden;
-    background-size: 120% auto;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 0.75rem;
+    background-color: #0f1419;
+    background-size: contain;
     background-position: center center;
     background-repeat: no-repeat;
 }
@@ -131,57 +227,55 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.75rem;
+    padding: 0.5rem;
     text-align: center;
     color: rgba(248, 249, 250, 0.9);
     font-size: 0.9rem;
 }
 
-.station-carousel-caption {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1;
-    padding: 1rem 1.25rem 1.1rem;
+.station-preview-meta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-.station-carousel-caption h5 {
+.station-preview-meta h5 {
     font-weight: 600;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+    margin-bottom: 0.35rem;
 }
 
-.station-carousel-caption p {
-    color: rgba(248, 249, 250, 0.9);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+.station-preview-meta p {
+    color: rgba(248, 249, 250, 0.85);
 }
 
-#stationCarousel .carousel-control-prev,
-#stationCarousel .carousel-control-next {
-    width: 50px;
-    align-items: end;
+#stationSelectModal .station-preview-label {
+    margin: 0 0 0.35rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(248, 249, 250, 0.55);
 }
 
-#stationCarousel .carousel-indicators [data-bs-target] {
-    background-color: rgba(255, 255, 255, 0.8);
+#startButton {
+    width: 160px;
+    margin-left: auto;
+    align-self: flex-end;
 }
 
-#stationCarousel .carousel-indicators [data-bs-target].station-indicator-available {
-    background-color: rgba(255, 255, 255, 0.9);
-}
-
-#stationCarousel .carousel-indicators [data-bs-target].station-indicator-taken {
-    background-color: rgba(220, 53, 69, 0.95);
-}
-
-#stationCarousel .carousel-indicators {
-    bottom: 0.25rem;
-    margin-bottom: 0;
+#stationSelectModal .player-list {
+    flex: 0 0 340px;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 1.25rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .station-player-table {
-    margin-top: 0.75rem;
-    max-height: 180px;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
 }
 
 .station-player-table-content {
@@ -202,19 +296,18 @@ body {
     border: none;
 }
 
-.station-player-table-content .text-muted {
-    color: rgba(233, 236, 239, 0.75) !important;
+.station-player-table-content tr.occupied td:first-child {
+    box-shadow: inset 3px 0 0 #e35d6a;
+    padding-left: 0.65rem;
 }
 
-#startButton {
-    width: 200px;
+.station-player-table-content .text-muted {
+    color: rgba(233, 236, 239, 0.75) !important;
 }
 
 .base-panel-content {
     font-size: small;
 }
-
-
 
 /* Responsive adjustments */
 @media (max-width: 1200px) {
@@ -223,9 +316,8 @@ body {
     }
 
     .station-select-modal-dialog {
-        margin: 1rem;
+        max-width: calc(100vw - 1rem);
+        width: calc(100vw - 1rem);
+        margin: 0.5rem auto;
     }
-
-
-
 }

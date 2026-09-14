@@ -6,6 +6,7 @@ namespace TrainDispatcherGame.Server.Sessions
         AlreadyExists,
         NotReserved,
         InvalidScenario,
-        AtCapacity
+        AtCapacity,
+        Failed
     }
 }

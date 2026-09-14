@@ -1,29 +1,26 @@
-import { fetchAvailableStations, fetchControlledStations } from "../network/api";
+import { fetchAvailableStations, fetchControlledStations, fetchSessionNetworkDiagram, StationInfo } from "../network/api";
 import { EventManager } from "../manager/event_manager";
 import { PlayerControlledStationDto } from "../network/dto";
 import { StationPreviewService } from "./stationPreviewService";
 
-type StationPreviewElements = {
-  card: HTMLDivElement;
-  status: HTMLDivElement;
-};
-
 export class stationSelectorDialog {
   private modal: HTMLElement | null = null;
-  private carousel: HTMLElement | null = null;
-  private carouselInner: HTMLElement | null = null;
-  private carouselIndicators: HTMLElement | null = null;
-  private carouselPrev: HTMLButtonElement | null = null;
-  private carouselNext: HTMLButtonElement | null = null;
-  private selectedPlayerName: HTMLElement | null = null;
+  private networkPlan: HTMLElement | null = null;
+  private previewCard: HTMLDivElement | null = null;
+  private previewStatus: HTMLDivElement | null = null;
+  private previewName: HTMLElement | null = null;
+  private previewDescription: HTMLElement | null = null;
   private startButton: HTMLButtonElement | null = null;
   private stationPlayersTableBody: HTMLElement | null = null;
   private onStationSelected: ((layout: string, playerId: string, playerName?: string) => void) | null = null;
   private playerId: string | null = null;
-  private readonly stationPreviewService: StationPreviewService;
-  private stationOrder: string[] = [];
-  private takenStationIds: Set<string> = new Set();
   private playerName: string | null = null;
+  private selectedStationId = '';
+  private takenStationIds: Set<string> = new Set();
+  private stationsById: Map<string, StationInfo> = new Map();
+  private playableStationIds: Set<string> = new Set();
+  private previewUrls: Map<string, string> = new Map();
+  private readonly stationPreviewService: StationPreviewService;
   private readonly eventManager: EventManager;
   private readonly onPlayerStationChanged = (): void => {
     if (this.isModalVisible()) {
@@ -40,22 +37,19 @@ export class stationSelectorDialog {
 
   private initializeElements(): void {
     this.modal = document.getElementById('stationSelectModal');
-    this.carousel = document.getElementById('stationCarousel');
-    this.carouselInner = document.getElementById('stationCarouselInner');
-    this.carouselIndicators = document.getElementById('stationCarouselIndicators');
-    this.carouselPrev = document.getElementById('stationCarouselPrev') as HTMLButtonElement;
-    this.carouselNext = document.getElementById('stationCarouselNext') as HTMLButtonElement;
-    this.selectedPlayerName = document.getElementById('selectedPlayerName');
+    this.networkPlan = document.getElementById('stationNetworkPlan');
+    this.previewCard = document.getElementById('stationPreviewCard') as HTMLDivElement;
+    this.previewStatus = document.getElementById('stationPreviewStatus') as HTMLDivElement;
+    this.previewName = document.getElementById('stationPreviewName');
+    this.previewDescription = document.getElementById('stationPreviewDescription');
     this.startButton = document.getElementById('startButton') as HTMLButtonElement;
     this.stationPlayersTableBody = document.getElementById('stationPlayersTableBody');
   }
 
   private setupEventListeners(): void {
-    if (this.startButton) {
-      this.startButton.addEventListener('click', () => this.handleStartClick());
-    }
+    this.startButton?.addEventListener('click', () => this.handleStartClick());
+    this.networkPlan?.addEventListener('click', (event) => this.handlePlanClick(event));
 
-    // Show modal when it's shown
     if (this.modal) {
       this.modal.addEventListener('shown.bs.modal', () => {
         void this.loadStations();
@@ -64,72 +58,117 @@ export class stationSelectorDialog {
       this.modal.addEventListener('hidden.bs.modal', () => {
         this.eventManager.off('playerStationChanged', this.onPlayerStationChanged);
         this.stationPreviewService.clearCache();
-      });
-    }
-
-    if (this.carousel) {
-      this.carousel.addEventListener('slide.bs.carousel', (event: Event) => {
-        const slideEvent = event as any;
-        const targetItem = slideEvent.relatedTarget as HTMLElement | null;
-        if (targetItem) {
-          this.updateStartButtonForStation(targetItem.dataset.stationId ?? '');
-          void this.loadPreviewForSlideItem(targetItem);
-          return;
-        }
+        this.previewUrls.clear();
       });
     }
   }
 
   private async loadStations(): Promise<void> {
-    if (!this.carouselInner || !this.carouselIndicators) return;
+    if (!this.networkPlan) return;
+
+    this.selectedStationId = '';
+    this.stationsById.clear();
+    this.playableStationIds.clear();
+    this.setStartEnabled(false);
+    this.networkPlan.replaceChildren();
 
     try {
-      this.carouselInner.innerHTML = '';
-      this.carouselIndicators.innerHTML = '';
-      this.stationOrder = [];
-      this.setStartEnabled(false);
+      const [svgText, stations, controlledStations] = await Promise.all([
+        fetchSessionNetworkDiagram(),
+        fetchAvailableStations(),
+        fetchControlledStations().catch((error) => {
+          console.error('Failed to load controlled stations:', error);
+          return [] as PlayerControlledStationDto[];
+        }),
+      ]);
 
-      const stations = await fetchAvailableStations();
-      const controlledStations = await this.refreshControlledStations();
+      stations.forEach((station) => {
+        if (station.id) {
+          this.stationsById.set(station.id, station);
+          this.playableStationIds.add(station.id);
+        }
+      });
 
-      if (stations.length === 0) {
-        this.ShowError();
+      if (this.playableStationIds.size === 0) {
+        this.showError();
         return;
       }
 
-      const indicatorsFragment = document.createDocumentFragment();
-      const slidesFragment = document.createDocumentFragment();
-
-      stations.forEach((station, index) => {
-        const stationId = station.id || '';
-        const indicator = this.createCarouselIndicator(index, stationId);
-        const slide = this.createStationSlide(station.id, station.name, station.description, index === 0);
-        indicatorsFragment.appendChild(indicator);
-        slidesFragment.appendChild(slide);
-        this.stationOrder.push(stationId);
-      });
-
-      this.carouselIndicators.appendChild(indicatorsFragment);
-      this.carouselInner.appendChild(slidesFragment);
-
-      this.updateStationIndicators(controlledStations);
-      this.updateStartButtonForCurrentSelection();
-      const activeItem = this.carouselInner.querySelector('.carousel-item.active') as HTMLElement | null;
-      if (activeItem) {
-        void this.loadPreviewForSlideItem(activeItem);
-      }
+      this.inlineDiagram(svgText);
+      this.markPlayableStations();
+      this.renderControlledStations(controlledStations);
+      this.applyTakenStyles(controlledStations);
+      this.autoSelectStation();
     } catch (error) {
       console.error('Failed to load stations:', error);
-      this.ShowError();
+      this.showError();
     }
+  }
+
+  private inlineDiagram(svgText: string): void {
+    if (!this.networkPlan) return;
+
+    const parsed = new DOMParser().parseFromString(svgText, 'image/svg+xml');
+    const svg = parsed.documentElement;
+    if (svg.querySelector('parsererror') || svg.localName !== 'svg') {
+      throw new Error('Invalid network diagram');
+    }
+
+    this.networkPlan.replaceChildren(document.importNode(svg, true));
+  }
+
+  private markPlayableStations(): void {
+    this.forEachStation((station, stationId) => {
+      const playable = this.playableStationIds.has(stationId) && station.dataset.external !== 'true';
+      station.classList.toggle('playable', playable);
+    });
+  }
+
+  private handlePlanClick(event: Event): void {
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+
+    const station = target.closest('g.station');
+    if (!station || !station.classList.contains('playable')) {
+      return;
+    }
+
+    const stationId = station.getAttribute('data-station-id') ?? '';
+    if (stationId) {
+      this.selectStation(stationId);
+    }
+  }
+
+  private autoSelectStation(): void {
+    const playable = this.getStationGroups().filter((station) => station.classList.contains('playable'));
+    const available = playable.find((station) => {
+      const stationId = station.getAttribute('data-station-id') ?? '';
+      return stationId.length > 0 && !this.takenStationIds.has(stationId);
+    });
+    const initial = available ?? playable[0];
+    const stationId = initial?.getAttribute('data-station-id') ?? '';
+    if (stationId) {
+      this.selectStation(stationId);
+    }
+  }
+
+  private selectStation(stationId: string): void {
+    this.selectedStationId = stationId;
+    this.forEachStation((station, id) => {
+      station.classList.toggle('selected', id === stationId);
+    });
+    this.updateStartButtonForStation(stationId);
+    this.updatePreviewCaption(stationId);
+    void this.loadPreview(stationId);
   }
 
   private handleStartClick(): void {
     if (!this.onStationSelected || !this.playerId) return;
-    const selectedStation = this.getSelectedStationId();
+    const selectedStation = this.selectedStationId;
+    if (!selectedStation || this.takenStationIds.has(selectedStation)) return;
     this.onStationSelected(selectedStation, this.playerId, this.playerName!);
-    
-    // Hide the modal
     this.hideModal();
   }
 
@@ -137,9 +176,7 @@ export class stationSelectorDialog {
     this.onStationSelected = onStationSelected;
     this.playerId = playerId;
     this.loadJoinContext();
-    this.updateJoinContextDisplay();
-    
-    // Use Bootstrap's modal API to show the modal
+
     if (this.modal) {
       const bootstrapModal = new (window as any).bootstrap.Modal(this.modal);
       bootstrapModal.show();
@@ -151,12 +188,6 @@ export class stationSelectorDialog {
     this.playerName = storedPlayerName || null;
   }
 
-  private updateJoinContextDisplay(): void {
-    if (this.selectedPlayerName) {
-      this.selectedPlayerName.textContent = this.playerName ?? '-';
-    }
-  }
-
   public hideModal(): void {
     if (this.modal) {
       const bootstrapModal = (window as any).bootstrap.Modal.getInstance(this.modal);
@@ -166,21 +197,10 @@ export class stationSelectorDialog {
     }
   }
 
-  private getSelectedStationId(): string {
-    if (!this.carouselInner) {
-      return '';
+  private showError(): void {
+    if (this.networkPlan) {
+      this.networkPlan.textContent = 'Beim Laden der Bahnhöfe ist ein Fehler aufgetreten.';
     }
-
-    const activeItem = this.carouselInner.querySelector('.carousel-item.active') as HTMLElement | null;
-    return activeItem?.dataset.stationId ?? '';
-  }
-
-  private ShowError(): void {
-    if (!this.carouselInner) {
-      return;
-    }
-    this.carouselInner.innerHTML = 'Beim Laden der Bahnhöfe ist ein Fehler aufgetreten.';
-    
     this.setStartEnabled(false);
   }
 
@@ -194,12 +214,12 @@ export class stationSelectorDialog {
     try {
       const controlledStations = await fetchControlledStations();
       this.renderControlledStations(controlledStations);
-      this.updateStationIndicators(controlledStations);
+      this.applyTakenStyles(controlledStations);
       return controlledStations;
     } catch (error) {
       console.error('Failed to load controlled stations:', error);
       this.renderControlledStations([]);
-      this.updateStationIndicators([]);
+      this.applyTakenStyles([]);
       return [];
     }
   }
@@ -227,41 +247,44 @@ export class stationSelectorDialog {
 
     controlledStations.forEach((entry) => {
       const row = document.createElement('tr');
+      row.className = 'occupied';
       const playerCell = document.createElement('td');
       playerCell.textContent = entry.playerName || entry.playerId || '-';
       const stationCell = document.createElement('td');
-      stationCell.textContent = entry.stationId || '-';
+      stationCell.textContent = this.stationDisplayName(entry.stationId || '');
       row.appendChild(playerCell);
       row.appendChild(stationCell);
       this.stationPlayersTableBody!.appendChild(row);
     });
   }
 
-  private updateStationIndicators(controlledStations: PlayerControlledStationDto[]): void {
-    if (!this.carouselIndicators) {
-      return;
-    }
-
-    const takenStations = new Set(
+  private applyTakenStyles(controlledStations: PlayerControlledStationDto[]): void {
+    const occupants = new Map(
       controlledStations
-        .map((entry) => entry.stationId || '')
-        .filter((stationId) => stationId.length > 0)
+        .filter((entry) => entry.stationId)
+        .map((entry) => [entry.stationId, entry.playerName || entry.playerId || ''])
     );
-    this.takenStationIds = takenStations;
+    this.takenStationIds = new Set(occupants.keys());
 
-    const indicators = Array.from(this.carouselIndicators.querySelectorAll('button[data-bs-slide-to]')) as HTMLButtonElement[];
-    indicators.forEach((indicator, index) => {
-      const stationId = this.stationOrder[index] || indicator.dataset.stationId || '';
-      const isTaken = stationId.length > 0 && takenStations.has(stationId);
-      indicator.classList.toggle('station-indicator-taken', isTaken);
-      indicator.classList.toggle('station-indicator-available', !isTaken);
+    this.forEachStation((station, stationId) => {
+      const occupant = occupants.get(stationId) ?? '';
+      station.classList.toggle('taken', occupant.length > 0);
+      if (occupant) {
+        station.setAttribute('title', occupant);
+      } else {
+        station.removeAttribute('title');
+      }
     });
-
-    this.updateStartButtonForCurrentSelection();
+    this.updateStartButtonForStation(this.selectedStationId);
   }
 
-  private updateStartButtonForCurrentSelection(): void {
-    this.updateStartButtonForStation(this.getSelectedStationId());
+  private stationDisplayName(stationId: string): string {
+    if (!stationId) {
+      return '-';
+    }
+    return this.getStationGroup(stationId)?.getAttribute('data-station-name')
+      || this.stationsById.get(stationId)?.name
+      || stationId;
   }
 
   private updateStartButtonForStation(stationId: string): void {
@@ -273,108 +296,80 @@ export class stationSelectorDialog {
     this.setStartEnabled(!this.takenStationIds.has(stationId));
   }
 
+  private updatePreviewCaption(stationId: string): void {
+    if (this.previewName) {
+      this.previewName.textContent = this.stationDisplayName(stationId);
+    }
+    if (this.previewDescription) {
+      this.previewDescription.textContent = this.stationsById.get(stationId)?.description?.trim() || 'Keine Beschreibung verfügbar.';
+    }
+  }
 
-
-
-
-  private async loadPreviewForSlideItem(slideItem: HTMLElement): Promise<void> {
-    const stationId = slideItem.dataset.stationId ?? '';
-    if (!stationId) {
+  private async loadPreview(stationId: string): Promise<void> {
+    const cached = this.previewUrls.get(stationId);
+    if (cached) {
+      this.showPreviewImage(cached);
       return;
     }
 
-    const preview = this.getPreviewElements(slideItem);
-    if (!preview) {
-      return;
-    }
-
-    if (this.hasRenderedPreview(preview)) {
-      return;
-    }
-
-    this.showPreviewLoading(preview, 'Vorschau wird geladen...');
+    this.showPreviewLoading('Vorschau wird geladen...');
     try {
       const previewUrl = await this.stationPreviewService.loadPreview(stationId);
-      this.showPreviewImage(preview, previewUrl);
+      this.previewUrls.set(stationId, previewUrl);
+      if (this.selectedStationId !== stationId) {
+        return;
+      }
+      this.showPreviewImage(previewUrl);
     } catch (error) {
       console.error(`Failed to generate preview for station ${stationId}:`, error);
-      this.showPreviewError(preview, 'Vorschau konnte nicht geladen werden');
+      if (this.selectedStationId !== stationId) {
+        return;
+      }
+      this.showPreviewError('Vorschau konnte nicht geladen werden');
     }
   }
 
-  private getPreviewElements(slideItem: HTMLElement): StationPreviewElements | null {
-    const card = slideItem.querySelector('.station-carousel-slide') as HTMLDivElement | null;
-    const status = slideItem.querySelector('.station-preview-status') as HTMLDivElement | null;
-    if (!card || !status) {
-      return null;
+  private showPreviewLoading(text: string): void {
+    if (this.previewCard) {
+      this.previewCard.style.backgroundImage = '';
     }
-
-    return { card, status };
-  }
-
-  private showPreviewLoading(preview: StationPreviewElements, text: string): void {
-    preview.status.classList.remove('d-none');
-    preview.status.textContent = text;
-  }
-
-  private showPreviewImage(preview: StationPreviewElements, imageUrl: string): void {
-    preview.card.style.backgroundImage = `url("${imageUrl}")`;
-    preview.status.classList.add('d-none');
-  }
-
-  private showPreviewError(preview: StationPreviewElements, text: string): void {
-    preview.card.style.backgroundImage = '';
-    preview.status.classList.remove('d-none');
-    preview.status.textContent = text;
-  }
-
-  private hasRenderedPreview(preview: StationPreviewElements): boolean {
-    return preview.card.style.backgroundImage.length > 0;
-  }
-
-  private createCarouselIndicator(index: number, stationId: string): HTMLButtonElement {
-    const indicator = document.createElement('button');
-    indicator.type = 'button';
-    indicator.setAttribute('data-bs-target', '#stationCarousel');
-    indicator.setAttribute('data-bs-slide-to', index.toString());
-    indicator.setAttribute('aria-label', `Station ${index + 1}`);
-    if (index === 0) {
-      indicator.classList.add('active');
-      indicator.setAttribute('aria-current', 'true');
+    if (this.previewStatus) {
+      this.previewStatus.classList.remove('d-none');
+      this.previewStatus.textContent = text;
     }
-    indicator.dataset.stationId = stationId;
-    return indicator;
   }
 
-  private createStationSlide(stationId: string, stationName: string | undefined, stationDescription: string | undefined, isActive: boolean): HTMLDivElement {
-    const item = document.createElement('div');
-    item.className = `carousel-item${isActive ? ' active' : ''}`;
-    item.dataset.stationId = stationId;
+  private showPreviewImage(imageUrl: string): void {
+    if (this.previewCard) {
+      this.previewCard.style.backgroundImage = `url("${imageUrl}")`;
+    }
+    this.previewStatus?.classList.add('d-none');
+  }
 
-    const card = document.createElement('div');
-    card.className = 'station-carousel-slide';
+  private showPreviewError(text: string): void {
+    if (this.previewCard) {
+      this.previewCard.style.backgroundImage = '';
+    }
+    if (this.previewStatus) {
+      this.previewStatus.classList.remove('d-none');
+      this.previewStatus.textContent = text;
+    }
+  }
 
-    const previewStatus = document.createElement('div');
-    previewStatus.className = 'station-preview-status';
-    previewStatus.textContent = 'Vorschau bereit zum Laden';
+  private getStationGroups(): SVGGElement[] {
+    if (!this.networkPlan) {
+      return [];
+    }
+    return Array.from(this.networkPlan.querySelectorAll('g.station'));
+  }
 
-    const caption = document.createElement('div');
-    caption.className = 'station-carousel-caption text-center';
+  private getStationGroup(stationId: string): SVGGElement | null {
+    return this.getStationGroups().find((station) => station.getAttribute('data-station-id') === stationId) ?? null;
+  }
 
-    const title = document.createElement('h5');
-    title.className = 'mb-2';
-    title.textContent = stationName || stationId;
-
-    const description = document.createElement('p');
-    description.className = 'mb-0';
-    description.textContent = stationDescription?.trim() || 'Keine Beschreibung verfügbar.';
-
-    caption.appendChild(title);
-    caption.appendChild(description);
-    card.appendChild(previewStatus);
-    card.appendChild(caption);
-    item.appendChild(card);
-
-    return item;
+  private forEachStation(callback: (station: SVGGElement, stationId: string) => void): void {
+    this.getStationGroups().forEach((station) => {
+      callback(station, station.getAttribute('data-station-id') ?? '');
+    });
   }
 }

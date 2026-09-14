@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using TrainDispatcherGame.Server.Managers;
 using TrainDispatcherGame.Server.Models;
 using TrainDispatcherGame.Server.Services;
@@ -33,12 +32,6 @@ namespace TrainDispatcherGame.Server.Simulation
         /// <summary>
         /// Creates a new train spawn event from a connection. Also calculates delay (seconds; negative if early).
         /// </summary>
-        /// <param name="train">The train to spawn.</param>
-        /// <param name="connection">The connection to spawn the train on.</param>
-        /// <param name="isReversed">Whether the train is traveling in the reverse direction of the connection.</param>
-        /// <param name="additionalDistance">the distance to travel before the train reaches the connection. Only used for uncontrolled stations because the train doesnt actually moves to the exit point</param>
-        /// <param name="planedDepartureTime">The planned departure time of the train.</param>
-        /// <returns>The new train spawn event.</returns>
         public TrainSpawnEvent CreateSpawnFromConnection(Train train, NetworkConnection connection, bool isReversed, int additionalDistance, DateTime planedDepartureTime)
         {
             var simTime = _simulation.SimulationTime;
@@ -50,27 +43,28 @@ namespace TrainDispatcherGame.Server.Simulation
             return new TrainSpawnEvent(arrivalTime, connection, isReversed);
         }
 
-        public async Task HandleTrainEvent(Train train)
+        public void HandleTrainEvent(Train train)
         {
             if (train.TrainEvent == null) throw new Exception($"Train {train.Number} has no train event");
 
-            if (train.TrainEvent.IsDue(_simulation.SimulationTime))
+            if (!train.TrainEvent.IsDue(_simulation.SimulationTime))
             {
-                train.TrainEvent.Processed = true;
-                if (train.TrainEvent is TrainSpawnEvent)
-                    await this.HandleTrainSpawn(train);
-                else if (train.TrainEvent is SendApprovalEvent)
-                    await this.HandleSendApproval(train);
-                else if (train.TrainEvent is TrainStartEvent)
-                    this.HandleTrainStart(train);
-                else if (train.TrainEvent is RetryDispatchEvent)
-                    AdvanceTrainToNextStation(train);
-                else if (train.TrainEvent is TrainWaitEvent)
-                    DispatchTrainByServer(train);
+                return;
             }
+
+            if (train.TrainEvent is TrainSpawnEvent)
+                HandleTrainSpawn(train);
+            else if (train.TrainEvent is SendApprovalEvent)
+                HandleSendApproval(train);
+            else if (train.TrainEvent is TrainStartEvent)
+                HandleTrainStart(train);
+            else if (train.TrainEvent is RetryDispatchEvent)
+                AdvanceTrainToNextStation(train);
+            else if (train.TrainEvent is TrainWaitEvent)
+                DispatchTrainByServer(train);
         }
 
-        public async Task HandleTrainSpawn(Train train)
+        public void HandleTrainSpawn(Train train)
         {
             if (train.TrainEvent is not TrainSpawnEvent spawn) throw new Exception($"Train {train.Number} next event is not a spawn event");
 
@@ -82,55 +76,50 @@ namespace TrainDispatcherGame.Server.Simulation
                 // DO NOT remove train from open-line track yet
                 // Will be removed when client reports exit is unblocked
                 if (exitPointId == -1) throw new Exception($"Train {train.Number} has invalid exit point id -1 for player controlled station");
-                await _notificationManager.SendTrain(station, train, exitPointId);
+                if (train.GetCurrentWayPoint() == null) throw new Exception($"Train {train.Number} has no current way point");
+                _ = _notificationManager.SendTrain(station, train, exitPointId);
                 train.controlledByPlayer = true;
                 train.CurrentLocation = station?.ToLowerInvariant() ?? string.Empty;
                 train.Record(new TrainHandedToPlayerEvent(_simulation.SimulationTime, station ?? string.Empty, exitPointId));
                 train.TrainEvent = null;
                 return;
             }
-            else
+
+            _openLineTracks.RemoveTrain(spawn.Connection);
+            DispatchWaitingTrain(spawn.Connection);
+            // If the train is coming from a player controlled station, notify the player that its exit is unblocked
+            var previousWaypoint = train.GetPreviousWayPoint();
+            if (previousWaypoint != null)
             {
-                _openLineTracks.RemoveTrain(spawn.Connection);
-                DispatchWaitingTrain(spawn.Connection);
-                // If the train is coming from a player controlled station, notify the player that its exit is unblocked
-                var previousWaypoint = train.GetPreviousWayPoint();
-                if (previousWaypoint != null)
+                string fromStation = previousWaypoint.Station;
+                if (_playerManager.IsStationControlled(fromStation))
                 {
-                    string fromStation = previousWaypoint.Station;
-                    if (_playerManager.IsStationControlled(fromStation))
-                    {
-                        // Notify the player at fromStation that the exit to station is unblocked
-                        _simulation.ClearExitBlocked(fromStation, spawn.CommingFromExitId);
-                        await _notificationManager.SendExitBlockStatus(fromStation, spawn.CommingFromExitId, false);
-                    }
+                    _simulation.ClearExitBlocked(fromStation, spawn.CommingFromExitId);
+                    _ = _notificationManager.SendExitBlockStatus(fromStation, spawn.CommingFromExitId, false);
                 }
-                var currentWaypoint = train.GetCurrentWayPoint();
-                if (currentWaypoint != null)
+            }
+            var currentWaypoint = train.GetCurrentWayPoint();
+            if (currentWaypoint != null)
+            {
+                if (currentWaypoint.IsLast)
                 {
-                    if (currentWaypoint.IsLast)
-                    {
-                        train.Record(new TrainCompletedEvent(_simulation.SimulationTime));
-                        train.completed = true;
-                        return;
-                    }
-                    if (currentWaypoint.DepartureTime > _simulation.SimulationTime)
-                    {
-                        train.TrainEvent = new TrainWaitEvent(currentWaypoint.DepartureTime, currentWaypoint.Station);
-                        return;
-                    }
-                    else
-                    {
-                        DispatchTrainByServer(train);
-                    }
-                }
-                else
-                {
-                    ServerLogger.Instance.LogError(Ctx(train.Number), $"Train {train.Number} has no current waypoint");
+                    train.Record(new TrainCompletedEvent(_simulation.SimulationTime));
                     train.completed = true;
-                    train.damaged = true;
                     return;
                 }
+                if (currentWaypoint.DepartureTime > _simulation.SimulationTime)
+                {
+                    train.TrainEvent = new TrainWaitEvent(currentWaypoint.DepartureTime, currentWaypoint.Station);
+                    return;
+                }
+
+                DispatchTrainByServer(train);
+            }
+            else
+            {
+                ServerLogger.Instance.LogError(Ctx(train.Number), $"Train {train.Number} has no current waypoint");
+                train.completed = true;
+                train.damaged = true;
             }
         }
 
@@ -148,6 +137,7 @@ namespace TrainDispatcherGame.Server.Simulation
 
                 if (firstWaypoint != null && _playerManager.IsStationControlled(firstWaypoint.Station))
                 {
+                    _ = _notificationManager.SendTrain(firstWaypoint.Station, train);
                     train.Record(new TrainHandedToPlayerEvent(_simulation.SimulationTime, firstWaypoint.Station));
                     train.TrainEvent = null;
                     train.controlledByPlayer = true;
@@ -159,11 +149,15 @@ namespace TrainDispatcherGame.Server.Simulation
             DispatchTrainByServer(train);
         }
 
-        public async Task HandleSendApproval(Train train)
+        public void HandleSendApproval(Train train)
         {
             var sendApprovalEvent = train.TrainEvent as SendApprovalEvent;
             if (sendApprovalEvent == null) throw new Exception($"Train {train.Number} next event is not a send approval event");
-            if (sendApprovalEvent.ApprovalSent) return;
+            if (sendApprovalEvent.ApprovalSent)
+            {
+                sendApprovalEvent.Processed = true;
+                return;
+            }
 
             var currentWaypoint = train.GetCurrentWayPoint();
             var nextWaypoint = train.GetNextWayPoint();
@@ -193,16 +187,15 @@ namespace TrainDispatcherGame.Server.Simulation
                 return;
             }
 
-            await _notificationManager.SendApprovalRequest(nextWaypoint.Station, currentWaypoint.Station, train.Number);
+            _ = _notificationManager.SendApprovalRequest(nextWaypoint.Station, currentWaypoint.Station, train.Number);
             sendApprovalEvent.ApprovalSent = true;
+            sendApprovalEvent.Processed = true;
         }
 
         /// <summary>
         /// Called when a train moves from an uncontrolled station to the next station.
         /// Its not being called when a train moves from a player controlled station to the next station.
         /// </summary>
-        /// <param name="train"></param>
-        /// <exception cref="Exception"></exception>
         public void AdvanceTrainToNextStation(Train train)
         {
             var currentWaypoint = train.GetCurrentWayPoint();
@@ -210,36 +203,29 @@ namespace TrainDispatcherGame.Server.Simulation
             if (currentWaypoint == null || nextWaypoint == null) throw new Exception($"Train {train.Number} waypoints invalid");
 
             var layout = _trackLayoutService.GetTrackLayout(currentWaypoint.Station); //layout could be null if the train is at a virtual station at the margin of the map
-            bool isReversed;
-            var connection = _trackLayoutService.GetRegularConnectionToStation(currentWaypoint.Station, nextWaypoint.Station, out isReversed);
-            var distanceToExit = 0;
+            var connection = _trackLayoutService.GetRegularConnectionToStation(currentWaypoint.Station, nextWaypoint.Station, out bool isReversed);
             if (connection == null) throw new Exception($"No regular connection found for train {train.Number} from {currentWaypoint.Station} to {nextWaypoint.Station}");
-            if (layout != null) distanceToExit = layout.MaxExitDistance / 2;
+            if (!_openLineTracks.TryGet(connection, out var track))
+            {
+                throw new Exception($"No open line track found for train {train.Number} from {connection.FromStation} to {connection.ToStation}");
+            }
 
+            var distanceToExit = layout != null ? layout.MaxExitDistance / 2 : 0;
             var headingStation = isReversed ? connection.FromStation : connection.ToStation;
             var headingExitId = isReversed ? connection.FromExitId : connection.ToExitId;
-            _openLineTracks.TryGet(connection, out var track);
-            var lineOccupied = track?.TrainOnTrack != null;
+            var lineOccupied = track.TrainOnTrack != null && track.TrainOnTrack != train;
             var exitBlocked = _playerManager.IsStationControlled(headingStation)
                 && _simulation.IsExitBlocked(headingStation, headingExitId);
 
             if (lineOccupied || exitBlocked)
             {
-                if (track != null && GetWaitingTrain(track.WaitingTrainNumber) == null)
-                    track.WaitingTrainNumber = train.Number;
+                HoldTrainForRetry(train, currentWaypoint, track, track.TrainOnTrack);
+                return;
+            }
 
-                var blockingTrain = track?.TrainOnTrack;
-                var retryTime = blockingTrain?.TrainEvent?.ScheduledTime.AddSeconds(20) ?? _simulation.SimulationTime.AddSeconds(20);
-                train.TrainEvent = new RetryDispatchEvent(retryTime, blockingTrain?.Number ?? string.Empty);
-                train.CurrentLocation = currentWaypoint.Station;
-
-                var heldDelay = (int)Math.Max(0, (_simulation.SimulationTime - currentWaypoint.DepartureTime).TotalSeconds);
-                if (heldDelay != train.delay)
-                {
-                    train.delay = heldDelay;
-                    _simulation.NotifyTrainDelayUpdated(train);
-                }
-
+            if (!_openLineTracks.AddTrain(connection, train))
+            {
+                HoldTrainForRetry(train, currentWaypoint, track, track.TrainOnTrack);
                 return;
             }
 
@@ -248,16 +234,31 @@ namespace TrainDispatcherGame.Server.Simulation
             if (_playerManager.IsStationControlled(headingStation))
             {
                 _simulation.MarkExitBlocked(headingStation, headingExitId);
-                _notificationManager.SendExitBlockStatus(headingStation, headingExitId, true, train.Number, train.Category).Wait();
+                _ = _notificationManager.SendExitBlockStatus(headingStation, headingExitId, true, train.Number, train.Category);
             }
 
             train.TrainEvent = spawn;
-            train.AdvanceToNextWayPoint(); //advance to the next waypoint
+            train.AdvanceToNextWayPoint();
             train.CurrentLocation = null;
-            _openLineTracks.AddTrain(connection, train); //add the train to the track registry
-            // Clear the waiting slot if this train was the one stored there.
-            if (_openLineTracks.TryGet(connection, out var taken) && taken.WaitingTrainNumber == train.Number)
-                taken.WaitingTrainNumber = null;
+            if (track.WaitingTrainNumber == train.Number)
+                track.WaitingTrainNumber = null;
+        }
+
+        private void HoldTrainForRetry(Train train, TrainWayPoint currentWaypoint, OpenLineTrack track, Train? blockingTrain)
+        {
+            if (GetWaitingTrain(track.WaitingTrainNumber) == null)
+                track.WaitingTrainNumber = train.Number;
+
+            var retryTime = blockingTrain?.TrainEvent?.ScheduledTime.AddSeconds(20) ?? _simulation.SimulationTime.AddSeconds(20);
+            train.TrainEvent = new RetryDispatchEvent(retryTime, blockingTrain?.Number ?? string.Empty);
+            train.CurrentLocation = currentWaypoint.Station;
+
+            var heldDelay = (int)Math.Max(0, (_simulation.SimulationTime - currentWaypoint.DepartureTime).TotalSeconds);
+            if (heldDelay != train.delay)
+            {
+                train.delay = heldDelay;
+                _simulation.NotifyTrainDelayUpdated(train);
+            }
         }
 
         /// <summary>

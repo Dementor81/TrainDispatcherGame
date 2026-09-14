@@ -31,6 +31,14 @@ export async function fetchAvailableStations(): Promise<StationInfo[]> {
   return response.json();
 }
 
+export async function fetchSessionNetworkDiagram(): Promise<string> {
+  const response = await fetch(withGameCode(`${API_BASE_URL}/network/diagram.svg`));
+  if (!response.ok) {
+    throw new Error(`Failed to fetch network diagram: ${response.statusText}`);
+  }
+  return response.text();
+}
+
 export async function fetchLayout(name: string): Promise<TrackLayoutDto> {
   const response = await fetch(withGameCode(`${API_BASE_URL}/layouts/${encodeURIComponent(name)}`));
   if (!response.ok) {
@@ -134,6 +142,7 @@ export async function getTrainEvents(trainNumber: string): Promise<TrainEventDto
 
 export default {
   fetchAvailableStations,
+  fetchSessionNetworkDiagram,
   fetchLayout,
   fetchScenarios,
   fetchScenario,

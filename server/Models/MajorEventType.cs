@@ -8,6 +8,7 @@ namespace TrainDispatcherGame.Server.Models
         MissedStop,
         Derailed,
         Collision,
-        Removed
+        Removed,
+        Failed
     }
 }

@@ -79,69 +79,97 @@ namespace TrainDispatcherGame.Server.Hubs
             var sessionId = _sessionManager.GetSessionIdForConnection(Context.ConnectionId);
             var playerId = _sessionManager.GetPlayerIdForConnection(Context.ConnectionId);
             GameSession? session = null;
-            if (sessionId != null)
+            try
             {
-                _sessionManager.TryGet(sessionId, out session);
-            }
-
-            if (session != null)
-            {
-                ServerLogger.Instance.LogDebug(Ctx(session.SessionId, Context.ConnectionId), $"Client disconnected: {Context.ConnectionId}");
-                Player? player = null;
-                if (!string.IsNullOrWhiteSpace(playerId))
+                if (sessionId != null)
                 {
-                    player = session.PlayerManager.GetPlayer(playerId);
+                    _sessionManager.TryGet(sessionId, out session);
                 }
 
-                player ??= session.PlayerManager.GetPlayerByConnectionId(Context.ConnectionId);
-                if (player != null)
+                if (session != null)
                 {
-                    if (!string.IsNullOrWhiteSpace(player.StationId))
+                    ServerLogger.Instance.LogDebug(Ctx(session.SessionId, Context.ConnectionId), $"Client disconnected: {Context.ConnectionId}");
+                    Player? player = null;
+                    if (!string.IsNullOrWhiteSpace(playerId))
                     {
-                        await Groups.RemoveFromGroupAsync(Context.ConnectionId, SessionStationGroup(session.SessionId, player.StationId));
+                        player = session.PlayerManager.GetPlayer(playerId);
                     }
 
-                    if (string.IsNullOrWhiteSpace(player.StationId))
+                    player ??= session.PlayerManager.GetPlayerByConnectionId(Context.ConnectionId);
+                    if (player != null)
                     {
-                        session.PlayerManager.DisconnectPlayer(player.Id);
-                    }
-                    else
-                    {
-                        // Capture state for the deferred teardown closure
-                        var capturedSession = session;
-                        var capturedPlayer = player;
-                        var capturedStationId = player.StationId;
-                        var capturedPlayerName = player.Name;
-
-                        ServerLogger.Instance.LogDebug(Ctx(session.SessionId, player.Id), $"Player {player.Id} disconnected — grace period started ({GameSessionManager.PlayerTeardownGracePeriod.TotalSeconds}s)");
-
-                        _sessionManager.SchedulePlayerTeardown(session.SessionId, player.Id, async () =>
+                        if (!string.IsNullOrWhiteSpace(player.StationId))
                         {
-                            ServerLogger.Instance.LogDebug(Ctx(capturedSession.SessionId, capturedPlayer.Id), $"Grace period expired for player {capturedPlayer.Id}, tearing down station {capturedStationId}");
-                            if (!string.IsNullOrWhiteSpace(capturedStationId))
+                            await Groups.RemoveFromGroupAsync(Context.ConnectionId, SessionStationGroup(session.SessionId, player.StationId));
+                        }
+
+                        if (string.IsNullOrWhiteSpace(player.StationId))
+                        {
+                            session.PlayerManager.DisconnectPlayer(player.Id);
+                        }
+                        else
+                        {
+                            var capturedSession = session;
+                            var capturedPlayer = player;
+                            var capturedStationId = player.StationId;
+                            var capturedPlayerName = player.Name;
+
+                            ServerLogger.Instance.LogDebug(Ctx(session.SessionId, player.Id), $"Player {player.Id} disconnected — grace period started ({GameSessionManager.PlayerTeardownGracePeriod.TotalSeconds}s)");
+
+                            _sessionManager.SchedulePlayerTeardown(session.SessionId, player.Id, async () =>
                             {
-                                await capturedSession.Simulation.ReturnTrainsAtStation(capturedStationId);
-                            }
-                            capturedSession.PlayerManager.DisconnectPlayer(capturedPlayer.Id);
-                            if (!string.IsNullOrWhiteSpace(capturedStationId))
-                            {
-                                await NotifyPlayerLeftSessionStation(capturedSession.SessionId, capturedPlayer.Id, capturedPlayerName, capturedStationId);
-                            }
-                        }, GameSessionManager.PlayerTeardownGracePeriod);
+                                try
+                                {
+                                    ServerLogger.Instance.LogDebug(Ctx(capturedSession.SessionId, capturedPlayer.Id), $"Grace period expired for player {capturedPlayer.Id}, tearing down station {capturedStationId}");
+                                    if (!string.IsNullOrWhiteSpace(capturedStationId))
+                                    {
+                                        await capturedSession.Simulation.ReturnTrainsAtStation(capturedStationId);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    ServerLogger.Instance.LogError(Ctx(capturedSession.SessionId, capturedPlayer.Id), $"Error returning trains during teardown: {ex.Message}");
+                                }
+
+                                capturedSession.PlayerManager.DisconnectPlayer(capturedPlayer.Id);
+                                if (!string.IsNullOrWhiteSpace(capturedStationId))
+                                {
+                                    try
+                                    {
+                                        await NotifyPlayerLeftSessionStation(capturedSession.SessionId, capturedPlayer.Id, capturedPlayerName, capturedStationId);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        ServerLogger.Instance.LogError(Ctx(capturedSession.SessionId, capturedPlayer.Id), $"Error notifying player left during teardown: {ex.Message}");
+                                    }
+                                }
+                            }, GameSessionManager.PlayerTeardownGracePeriod);
+                        }
                     }
                 }
-            }
 
-            if (!string.IsNullOrWhiteSpace(sessionId))
+                if (!string.IsNullOrWhiteSpace(sessionId))
+                {
+                    await Groups.RemoveFromGroupAsync(Context.ConnectionId, SessionGroup(sessionId));
+                }
+            }
+            catch (Exception ex)
             {
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, SessionGroup(sessionId));
+                ServerLogger.Instance.LogError(SessionLogContext.Prefix(sessionId ?? "default", Context.ConnectionId), $"Error handling client disconnect: {ex.Message}");
             }
 
             _sessionManager.UnbindConnection(Context.ConnectionId);
 
             if (!string.IsNullOrWhiteSpace(sessionId) && session != null && _sessionManager.GetActiveConnectionCount(sessionId) == 0)
             {
-                session.Simulation.Pause();
+                try
+                {
+                    await session.Simulation.Pause();
+                }
+                catch (Exception ex)
+                {
+                    ServerLogger.Instance.LogError(Ctx(session.SessionId, Context.ConnectionId), $"Error pausing simulation after last client disconnect: {ex.Message}");
+                }
             }
 
             await base.OnDisconnectedAsync(exception);
@@ -285,10 +313,20 @@ namespace TrainDispatcherGame.Server.Hubs
                 }
             }
 
+            var player = session.PlayerManager.GetPlayer(resolvedPlayerId);
+            var previousStationId = player?.StationId;
+
             var success = session.PlayerManager.TakeControlOfStation(resolvedPlayerId, normalizedStationId, Context.ConnectionId);
 
             if (success)
             {
+                if (!string.IsNullOrWhiteSpace(previousStationId) &&
+                    !string.Equals(previousStationId, normalizedStationId, StringComparison.OrdinalIgnoreCase))
+                {
+                    await Groups.RemoveFromGroupAsync(Context.ConnectionId, SessionStationGroup(session.SessionId, previousStationId));
+                    await session.Simulation.ReturnTrainsAtStation(previousStationId);
+                    await NotifyPlayerLeftSessionStation(session.SessionId, resolvedPlayerId, player?.Name ?? string.Empty, previousStationId);
+                }
                 _sessionManager.BindConnection(Context.ConnectionId, session.SessionId, resolvedPlayerId);
                 await Groups.AddToGroupAsync(Context.ConnectionId, SessionGroup(session.SessionId));
                 await Groups.AddToGroupAsync(Context.ConnectionId, SessionStationGroup(session.SessionId, normalizedStationId));
@@ -377,7 +415,8 @@ namespace TrainDispatcherGame.Server.Hubs
             }
 
             var playerBeforeRelease = session.PlayerManager.GetPlayer(resolvedPlayerId);
-            if (playerBeforeRelease == null || string.IsNullOrWhiteSpace(playerBeforeRelease.StationId))
+            var stationId = playerBeforeRelease?.StationId;
+            if (playerBeforeRelease == null || string.IsNullOrWhiteSpace(stationId))
             {
                 await Clients.Caller.SendAsync("StationLeft", new
                 {
@@ -387,18 +426,13 @@ namespace TrainDispatcherGame.Server.Hubs
                 return;
             }
 
+            await session.Simulation.ReturnTrainsAtStation(stationId);
             var success = session.PlayerManager.ReleaseStation(resolvedPlayerId);
 
             if (success)
             {
-                if (playerBeforeRelease != null && !string.IsNullOrWhiteSpace(playerBeforeRelease.StationId))
-                {
-                    await Groups.RemoveFromGroupAsync(Context.ConnectionId, SessionStationGroup(session.SessionId, playerBeforeRelease.StationId));
-                }
-                if (playerBeforeRelease != null && !string.IsNullOrWhiteSpace(playerBeforeRelease.StationId))
-                {
-                    await NotifyPlayerLeftSessionStation(session.SessionId, playerBeforeRelease.Id, playerBeforeRelease.Name, playerBeforeRelease.StationId);
-                }
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, SessionStationGroup(session.SessionId, stationId));
+                await NotifyPlayerLeftSessionStation(session.SessionId, playerBeforeRelease.Id, playerBeforeRelease.Name, stationId);
 
                 await Clients.Caller.SendAsync("StationLeft", new
                 {

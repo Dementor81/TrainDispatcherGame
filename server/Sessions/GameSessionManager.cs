@@ -133,7 +133,17 @@ namespace TrainDispatcherGame.Server.Sessions
                     return SessionCreateStatus.AtCapacity;
                 }
 
-                session = CreateSession(normalizedSessionId, chosenScenarioId);
+                try
+                {
+                    session = CreateSession(normalizedSessionId, chosenScenarioId);
+                }
+                catch (Exception ex)
+                {
+                    ServerLogger.Instance.LogError(SessionLogContext.Prefix(normalizedSessionId, chosenScenarioId), $"Failed to create session: {ex.Message}");
+                    session = null;
+                    return SessionCreateStatus.Failed;
+                }
+
                 _sessions[normalizedSessionId] = session;
                 session.Touch();
                 return SessionCreateStatus.Created;
@@ -284,6 +294,11 @@ namespace TrainDispatcherGame.Server.Sessions
         {
             var key = TeardownKey(sessionId, playerId);
             var cts = new CancellationTokenSource();
+            if (_pendingTeardowns.TryRemove(key, out var existing))
+            {
+                existing.Cancel();
+                existing.Dispose();
+            }
             _pendingTeardowns[key] = cts;
 
             _ = Task.Run(async () =>
@@ -330,7 +345,7 @@ namespace TrainDispatcherGame.Server.Sessions
 
         private void DiscardSession(string sessionId, GameSession session)
         {
-            session.Simulation.Stop();
+            _ = session.Simulation.Stop();
             session.PlayerManager.ClearAllPlayers();
             ServerLogger.Instance.ClearSession(sessionId);
             _sessions.TryRemove(sessionId, out _);

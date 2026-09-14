@@ -51,6 +51,7 @@ namespace TrainDispatcherGame.Server.Endpoints
                     SessionCreateStatus.NotReserved => Results.NotFound(new { message = "Invalid game code." }),
                     SessionCreateStatus.InvalidScenario => Results.BadRequest(new { message = "Missing or invalid 'scenarioId'." }),
                     SessionCreateStatus.AtCapacity => TooManySessions(sessionManager),
+                    SessionCreateStatus.Failed => Results.Problem("Game session could not be created."),
                     _ => Results.Problem()
                 };
             });

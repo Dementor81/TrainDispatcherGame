@@ -9,6 +9,7 @@ const EVENT_LABELS: Record<MajorEventType, string> = {
   Derailed: "Entgleisung",
   Collision: "Kollision",
   Removed: "Entfernt",
+  Failed: "Ausgefallen",
 };
 
 export class MajorEventsPanel extends BasePanel {
@@ -192,7 +193,7 @@ export class MajorEventsPanel extends BasePanel {
 
   private eventTypeClass(type: MajorEventType): string {
     if (type === "Collision" || type === "Derailed") return "text-danger fw-bold";
-    if (type === "Removed") return "text-warning fw-bold";
+    if (type === "Removed" || type === "Failed") return "text-warning fw-bold";
     return "text-warning";
   }
 

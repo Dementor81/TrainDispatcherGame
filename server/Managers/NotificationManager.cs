@@ -76,7 +76,11 @@ namespace TrainDispatcherGame.Server.Managers
             }
 
             var currentEvent = train.GetCurrentWayPoint();
-            if (currentEvent == null) throw new Exception($"Train {train.Number} has no current way point");
+            if (currentEvent == null)
+            {
+                ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Train {train.Number} has no current way point");
+                return;
+            }
 
             var payload = new
             {

@@ -102,7 +102,7 @@ namespace TrainDispatcherGame.Server.Managers
 
         public bool ReleaseStation(string playerId)
         {
-            Player? player;
+            string releasedStationId;
             lock (_syncRoot)
             {
                 if (!_players.ContainsKey(playerId))
@@ -110,12 +110,13 @@ namespace TrainDispatcherGame.Server.Managers
                     return false;
                 }
 
-                player = _players[playerId];
+                var player = _players[playerId];
+                releasedStationId = player.StationId;
                 RemovePlayerFromStation(playerId);
                 player.StationId = string.Empty;
             }
             
-            Console.WriteLine($"Player {playerId} released control of station {player.StationId}");
+            Console.WriteLine($"Player {playerId} released control of station {releasedStationId}");
             return true;
         }
 

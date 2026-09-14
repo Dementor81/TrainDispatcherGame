@@ -14,7 +14,7 @@ namespace TrainDispatcherGame.Server.Endpoints
 
         public static IEndpointRouteBuilder MapSimulationEndpoints(this IEndpointRouteBuilder app)
         {
-            app.MapPost("/api/simulation/start", (HttpRequest req, GameSessionManager sessionManager) =>
+            app.MapPost("/api/simulation/start", async (HttpRequest req, GameSessionManager sessionManager) =>
             {
                 var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
                 if (sessionError != null)
@@ -23,11 +23,11 @@ namespace TrainDispatcherGame.Server.Endpoints
                 }
 
                 var simulation = session!.Simulation;
-                simulation.Start();
+                await simulation.Start();
                 return Results.Ok(new { message = "Simulation started", state = simulation.State.ToString() });
             });
 
-            app.MapPost("/api/simulation/stop", (HttpRequest req, GameSessionManager sessionManager) =>
+            app.MapPost("/api/simulation/stop", async (HttpRequest req, GameSessionManager sessionManager) =>
             {
                 var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
                 if (sessionError != null)
@@ -36,11 +36,11 @@ namespace TrainDispatcherGame.Server.Endpoints
                 }
 
                 var simulation = session!.Simulation;
-                simulation.Stop();
+                await simulation.Stop();
                 return Results.Ok(new { message = "Simulation stopped", state = simulation.State.ToString() });
             });
 
-            app.MapPost("/api/simulation/pause", (HttpRequest req, GameSessionManager sessionManager) =>
+            app.MapPost("/api/simulation/pause", async (HttpRequest req, GameSessionManager sessionManager) =>
             {
                 var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
                 if (sessionError != null)
@@ -49,7 +49,7 @@ namespace TrainDispatcherGame.Server.Endpoints
                 }
 
                 var simulation = session!.Simulation;
-                simulation.Pause();
+                await simulation.Pause();
                 return Results.Ok(new { message = "Simulation paused", state = simulation.State.ToString() });
             });
 

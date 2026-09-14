@@ -344,7 +344,12 @@ namespace TrainDispatcherGame.Server.Services
 
         public TrackLayout? GetTrackLayout(string stationId)
         {
-            return _trackLayouts.TryGetValue(stationId, out var layout) ? layout : null;
+            if (string.IsNullOrWhiteSpace(stationId))
+            {
+                return null;
+            }
+
+            return _trackLayouts.TryGetValue(stationId.ToLowerInvariant(), out var layout) ? layout : null;
         }
 
         public ExitPoint? GetExitPoint(string stationId, int exitId)
@@ -378,9 +383,10 @@ namespace TrainDispatcherGame.Server.Services
         }
 
         // Search for connection in both directions (fromStationId, fromExitId) and (toStationId, toExitId)
-        public NetworkConnection? GetConnection(string stationId, int exitId, out bool isReversed)
+        public NetworkConnection? GetConnection(string? stationId, int exitId, out bool isReversed)
         {
             isReversed = false;
+            stationId = stationId?.ToLowerInvariant() ?? string.Empty;
             // Try direct match
             if (_directedConnections.TryGetValue((stationId, exitId), out var conn))
                 return conn;
@@ -409,6 +415,8 @@ namespace TrainDispatcherGame.Server.Services
         public NetworkConnection? GetRegularConnectionToStation(string fromStationId, string toStationId, out bool isReversed)
         {
             isReversed = false;
+            fromStationId = fromStationId?.ToLowerInvariant() ?? string.Empty;
+            toStationId = toStationId?.ToLowerInvariant() ?? string.Empty;
             foreach (var conn in _directedConnections.Values)
             {
                 if (conn.FromStation == fromStationId && conn.ToStation == toStationId && (conn.Mode == NetworkConnection.TrackMode.DualTrack || conn.Mode == NetworkConnection.TrackMode.SingleTrack))
@@ -474,6 +482,9 @@ namespace TrainDispatcherGame.Server.Services
             {
                 return false;
             }
+
+            stationA = stationA.ToLowerInvariant();
+            stationB = stationB.ToLowerInvariant();
 
             foreach (var conn in _directedConnections.Values)
             {

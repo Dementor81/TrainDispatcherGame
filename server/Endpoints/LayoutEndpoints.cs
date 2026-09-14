@@ -85,7 +85,37 @@ namespace TrainDispatcherGame.Server.Endpoints
                 return Results.Json(exitPoint);
             });
 
-            app.MapGet("/api/network/{layoutId}", (string layoutId, TrackLayoutService trackLayoutService) =>
+            app.MapGet("/api/network/diagram.svg", (HttpRequest req, GameSessionManager sessionManager, NetworkDiagramService diagramService) =>
+            {
+                var sessionError = EndpointSessionResolver.TryResolveSession(req, sessionManager, out var session);
+                if (sessionError != null)
+                {
+                    return sessionError;
+                }
+
+                var layoutId = session!.TrackLayoutService.ActiveLayoutId;
+                if (string.IsNullOrWhiteSpace(layoutId))
+                {
+                    return Results.NotFound(new { message = "No active network layout for this session." });
+                }
+
+                try
+                {
+                    return Results.Text(
+                        diagramService.GetDiagram(layoutId),
+                        "image/svg+xml; charset=utf-8");
+                }
+                catch (FileNotFoundException ex)
+                {
+                    return Results.NotFound(new { message = ex.Message });
+                }
+                catch (Exception ex) when (ex is ArgumentException or InvalidDataException or System.Text.Json.JsonException)
+                {
+                    return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+                }
+            });
+
+            app.MapGet("/api/network/{layoutId:regex(^[A-Za-z0-9_-]+$)}", (string layoutId, TrackLayoutService trackLayoutService) =>
             {
                 try
                 {
@@ -106,7 +136,7 @@ namespace TrainDispatcherGame.Server.Endpoints
                 }
             });
 
-            app.MapGet("/api/network/{layoutId}/diagram.svg", (string layoutId, NetworkDiagramService diagramService) =>
+            app.MapGet("/api/network/{layoutId:regex(^[A-Za-z0-9_-]+$)}/diagram.svg", (string layoutId, NetworkDiagramService diagramService) =>
             {
                 try
                 {

@@ -37,7 +37,7 @@ namespace TrainDispatcherGame.Server.Simulation
 
         public bool AddTrain(NetworkConnection connection, Train train)
         {
-            if (!_openLineTracks.TryGetValue(connection, out var track)) throw new Exception($"for connection {connection.FromStation} to {connection.ToStation} no open line track found");
+            if (!_openLineTracks.TryGetValue(connection, out var track)) return false;
 
             foreach (var otherTrack in _openLineTracks.Values)
             {
@@ -53,11 +53,11 @@ namespace TrainDispatcherGame.Server.Simulation
             return track.AddTrain(train);
         }
 
-        public void RemoveTrain(NetworkConnection connection)
+        public bool RemoveTrain(NetworkConnection connection)
         {
-            if (!_openLineTracks.TryGetValue(connection, out var track)) throw new Exception($"for connection {connection.FromStation} to {connection.ToStation} no open line track found");
+            if (!_openLineTracks.TryGetValue(connection, out var track)) return false;
             track.RemoveTrain();
-
+            return true;
         }
 
         public IEnumerable<OpenLineTrack> GetAll()
@@ -66,22 +66,30 @@ namespace TrainDispatcherGame.Server.Simulation
         }
 
         /// <summary>
-        /// Remove a train from all open line tracks. Used when a player disconnects from a station.
+        /// Remove a train from all open line tracks and clear it from waiting slots.
+        /// Returns connections whose occupancy was released.
         /// </summary>
-        /// <param name="train">The train to remove.</param>
-        public void RemoveTrainFromAllTracks(Train train)
+        public List<NetworkConnection> ReleaseTrain(Train train)
         {
+            var released = new List<NetworkConnection>();
             foreach (var track in _openLineTracks.Values)
             {
                 if (track.TrainOnTrack == train)
                 {
                     track.RemoveTrain();
+                    released.Add(track.Connection);
+                }
+                if (track.WaitingTrainNumber == train.Number)
+                {
+                    track.WaitingTrainNumber = null;
                 }
             }
+            return released;
         }
 
-        
+        public void RemoveTrainFromAllTracks(Train train)
+        {
+            ReleaseTrain(train);
+        }
     }
 }
-
-
