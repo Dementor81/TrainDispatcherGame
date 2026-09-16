@@ -342,29 +342,50 @@ namespace TrainDispatcherGame.Server.Simulation
         {
             foreach (var train in _trains)
             {
-                if (train.completed || train.controlledByPlayer || train.updateFailed) continue;
+                if (train.updateFailed) continue;
 
-                try
+                if (!train.completed && !train.controlledByPlayer)
                 {
-                    _eventProcessor.HandleTrainEvent(train);
-                    train.updateFailCount = 0;
-                }
-                catch (Exception ex)
-                {
-                    train.updateFailCount++;
-                    ServerLogger.Instance.LogError(Ctx(train.Number), $"Train update error ({train.updateFailCount}/{MaxTrainUpdateFailures}): {ex.Message}");
-                    if (train.updateFailCount >= MaxTrainUpdateFailures)
+                    try
                     {
-                        RetireTrain(train);
+                        _eventProcessor.HandleTrainEvent(train);
+                        train.updateFailCount = 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        train.updateFailCount++;
+                        ServerLogger.Instance.LogError(Ctx(train.Number), $"Train update error ({train.updateFailCount}/{MaxTrainUpdateFailures}): {ex.Message}");
+                        if (train.updateFailCount >= MaxTrainUpdateFailures)
+                        {
+                            RetireTrain(train);
+                        }
                     }
                 }
+
+                RefreshTrainDelay(train);
             }
+        }
+
+        internal void RefreshTrainDelay(Train train, bool forceNotify = false)
+        {
+            if (train.completed || train.updateFailed)
+                return;
+
+            var computed = train.ComputeCurrentDelay(SimulationTime);
+            if (computed == train.delay)
+                return;
+
+            var minuteChanged = computed / 60 != train.delay / 60;
+            train.delay = computed;
+            if (forceNotify || minuteChanged)
+                NotifyTrainDelayUpdated(train);
         }
 
         internal void RetireTrain(Train train)
         {
             try
             {
+                RefreshTrainDelay(train);
                 train.damaged = true;
                 train.completed = true;
                 train.controlledByPlayer = false;
@@ -422,15 +443,9 @@ namespace TrainDispatcherGame.Server.Simulation
                         return Task.CompletedTask;
                     }
 
-                    var layout = _trackLayoutService.GetTrackLayout(currentWayPoint.Station);
-                    var extraDistance = layout != null ? layout.MaxExitDistance / 2 : 0;
-
                     train.Record(new TrainReturnedFromPlayerEvent(SimulationTime, train.CurrentLocation, exitId));
                     train.controlledByPlayer = false;
                     train.CurrentLocation = null;
-
-                    var expectedTimeAtExit = currentWayPoint.DepartureTime.AddSeconds(train.GetTravelTime(extraDistance));
-                    train.delay = (int)(SimulationTime - expectedTimeAtExit).TotalSeconds;
 
                     if (currentWayPoint.Stops && !currentWayPoint.Processed && train.Type != TrainType.Freight)
                     {
@@ -438,14 +453,16 @@ namespace TrainDispatcherGame.Server.Simulation
                         RecordMajorEvent(MajorEventType.MissedStop, train.Number, station: currentWayPoint.Station);
                     }
 
-                    var nextWaypoint = train.AdvanceToNextWayPoint();
-                    if (nextWaypoint == null)
+                    if (train.GetNextWayPoint() == null)
                     {
                         ServerLogger.Instance.LogWarning(Ctx(train.Number), $"This should not happend, probably a bug in train scheduling, Train {train.Number} has completed all events after it returned from a station");
+                        RefreshTrainDelay(train, forceNotify: true);
                         train.Record(new TrainCompletedEvent(SimulationTime));
                         train.completed = true;
                         return Task.CompletedTask;
                     }
+
+                    var nextWaypoint = train.AdvanceToNextWayPoint()!;
 
                     if (nextWaypoint.Station != connection.ToStation && !isReversed || nextWaypoint.Station != connection.FromStation && isReversed)
                     {
@@ -464,12 +481,13 @@ namespace TrainDispatcherGame.Server.Simulation
                     if (!_openLineTracks.AddTrain(connection, train))
                     {
                         ServerLogger.Instance.LogEmergency(Ctx(train.Number), $"Train {train.Number} collision detected on track from {connection.FromStation} to {connection.ToStation}");
+                        RefreshTrainDelay(train);
                         train.completed = true;
                         train.damaged = true;
                         RecordMajorEvent(MajorEventType.Collision, train.Number, occupyingTrainNumber, connection.FromStation);
                     }
 
-                    NotifyTrainDelayUpdated(train);
+                    RefreshTrainDelay(train, forceNotify: true);
                 }
                 catch (Exception ex)
                 {
@@ -582,15 +600,8 @@ namespace TrainDispatcherGame.Server.Simulation
                     }
 
                     currentWaypoint.Processed = true;
-                    var referenceArrivalTime = currentWaypoint.ArrivalTime == DateTime.MinValue
-                        ? currentWaypoint.DepartureTime
-                        : currentWaypoint.ArrivalTime;
-                    if (referenceArrivalTime == DateTime.MinValue)
-                    {
-                        referenceArrivalTime = SimulationTime;
-                    }
-
-                    train.delay = (int)(SimulationTime - referenceArrivalTime).TotalSeconds;
+                    currentWaypoint.ActualArrivalTime = SimulationTime;
+                    RefreshTrainDelay(train, forceNotify: true);
                     train.Record(new TrainStoppedEvent(SimulationTime, normalizedStationId, train.delay));
                     if (currentWaypoint.IsLast)
                     {
@@ -600,8 +611,6 @@ namespace TrainDispatcherGame.Server.Simulation
                         NotifyTrainRemoved(train);
                         return;
                     }
-
-                    NotifyTrainDelayUpdated(train);
                 }
                 catch (Exception ex)
                 {
@@ -636,9 +645,9 @@ namespace TrainDispatcherGame.Server.Simulation
                         return false;
                     }
 
-                    train.delay = (int)(SimulationTime - currentEvent.DepartureTime).TotalSeconds;
+                    currentEvent.ActualDepartureTime = SimulationTime;
+                    RefreshTrainDelay(train, forceNotify: true);
                     train.Record(new TrainDepartedEvent(SimulationTime, normalizedStationId, train.delay));
-                    NotifyTrainDelayUpdated(train);
                     return true;
                 }
                 catch (Exception ex)
@@ -656,6 +665,8 @@ namespace TrainDispatcherGame.Server.Simulation
                 try
                 {
                     ServerLogger.Instance.LogEmergency(Ctx(trainA.Number), $"Collision: trains {trainA.Number} and {trainB.Number} by client report");
+                    RefreshTrainDelay(trainA);
+                    RefreshTrainDelay(trainB);
                     trainA.damaged = true;
                     trainB.damaged = true;
                     trainA.completed = true;
@@ -683,6 +694,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 try
                 {
                     var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+                    RefreshTrainDelay(train);
                     train.damaged = true;
                     train.completed = true;
                     train.controlledByPlayer = false;
@@ -713,6 +725,7 @@ namespace TrainDispatcherGame.Server.Simulation
                         return;
                     }
 
+                    RefreshTrainDelay(train);
                     train.completed = true;
                     train.removed = true;
                     RecordMajorEvent(MajorEventType.Removed, train.Number, station: station);
@@ -782,7 +795,7 @@ namespace TrainDispatcherGame.Server.Simulation
 
         public List<StationTimetableEvent> GetStationTimetableEvents(string stationId)
         {
-            return _timetableService.BuildStationTimetableEvents(_trains, stationId);
+            return _timetableService.BuildStationTimetableEvents(_trains, stationId, SimulationTime);
         }
 
         // Manually advance simulation time by a number of seconds and process due events

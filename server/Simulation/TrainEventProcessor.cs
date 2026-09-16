@@ -37,8 +37,6 @@ namespace TrainDispatcherGame.Server.Simulation
             var simTime = _simulation.SimulationTime;
             var actualDepartureTime = planedDepartureTime > simTime ? planedDepartureTime : simTime;
             var arrivalTime = actualDepartureTime.AddSeconds(train.GetTravelTime(connection.Distance + additionalDistance));
-            train.delay = (int)(actualDepartureTime - planedDepartureTime).TotalSeconds;
-            _simulation.NotifyTrainDelayUpdated(train);
 
             return new TrainSpawnEvent(arrivalTime, connection, isReversed);
         }
@@ -101,8 +99,10 @@ namespace TrainDispatcherGame.Server.Simulation
             var currentWaypoint = train.GetCurrentWayPoint();
             if (currentWaypoint != null)
             {
+                currentWaypoint.ActualArrivalTime = _simulation.SimulationTime;
                 if (currentWaypoint.IsLast)
                 {
+                    _simulation.RefreshTrainDelay(train, forceNotify: true);
                     train.Record(new TrainCompletedEvent(_simulation.SimulationTime));
                     train.completed = true;
                     return;
@@ -110,6 +110,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 if (currentWaypoint.DepartureTime > _simulation.SimulationTime)
                 {
                     train.TrainEvent = new TrainWaitEvent(currentWaypoint.DepartureTime, currentWaypoint.Station);
+                    _simulation.RefreshTrainDelay(train, forceNotify: true);
                     return;
                 }
 
@@ -118,6 +119,7 @@ namespace TrainDispatcherGame.Server.Simulation
             else
             {
                 ServerLogger.Instance.LogError(Ctx(train.Number), $"Train {train.Number} has no current waypoint");
+                _simulation.RefreshTrainDelay(train);
                 train.completed = true;
                 train.damaged = true;
             }
@@ -242,6 +244,7 @@ namespace TrainDispatcherGame.Server.Simulation
             train.CurrentLocation = null;
             if (track.WaitingTrainNumber == train.Number)
                 track.WaitingTrainNumber = null;
+            _simulation.RefreshTrainDelay(train, forceNotify: true);
         }
 
         private void HoldTrainForRetry(Train train, TrainWayPoint currentWaypoint, OpenLineTrack track, Train? blockingTrain)
@@ -252,13 +255,7 @@ namespace TrainDispatcherGame.Server.Simulation
             var retryTime = blockingTrain?.TrainEvent?.ScheduledTime.AddSeconds(20) ?? _simulation.SimulationTime.AddSeconds(20);
             train.TrainEvent = new RetryDispatchEvent(retryTime, blockingTrain?.Number ?? string.Empty);
             train.CurrentLocation = currentWaypoint.Station;
-
-            var heldDelay = (int)Math.Max(0, (_simulation.SimulationTime - currentWaypoint.DepartureTime).TotalSeconds);
-            if (heldDelay != train.delay)
-            {
-                train.delay = heldDelay;
-                _simulation.NotifyTrainDelayUpdated(train);
-            }
+            _simulation.RefreshTrainDelay(train, forceNotify: true);
         }
 
         /// <summary>
@@ -289,6 +286,7 @@ namespace TrainDispatcherGame.Server.Simulation
             var nextWaypoint = train.GetNextWayPoint();
             if (nextWaypoint == null)
             {
+                _simulation.RefreshTrainDelay(train, forceNotify: true);
                 train.Record(new TrainCompletedEvent(_simulation.SimulationTime));
                 train.completed = true;
                 return;

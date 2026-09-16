@@ -112,6 +112,50 @@ namespace TrainDispatcherGame.Server.Models
             return (int)(distance / speed);
         }
 
+        /// <summary>
+        /// Frozen delay for finished trains; live delay vs timetable otherwise.
+        /// </summary>
+        public int GetDelay(DateTime simulationTime)
+        {
+            if (completed || damaged || removed || updateFailed)
+                return delay;
+            return ComputeCurrentDelay(simulationTime);
+        }
+
+        public int ComputeCurrentDelay(DateTime simulationTime)
+        {
+            var waypoint = GetCurrentWayPoint();
+            if (waypoint == null)
+                return delay;
+
+            if (TrainEvent is TrainStartEvent)
+            {
+                if (!waypoint.HasDepartureTime || simulationTime <= waypoint.DepartureTime)
+                    return 0;
+                return SecondsLate(simulationTime, waypoint.DepartureTime);
+            }
+
+            if (TrainEvent is TrainSpawnEvent spawn)
+                return SecondsLate(spawn.ScheduledTime, waypoint.ScheduledReferenceTime);
+
+            if (waypoint.HasActualDepartureTime)
+                return SecondsLate(simulationTime, waypoint.DepartureTime);
+
+            var arrivalActual = waypoint.HasActualArrivalTime ? waypoint.ActualArrivalTime : simulationTime;
+            var arrivalDelay = SecondsLate(arrivalActual, waypoint.ScheduledReferenceTime);
+            if (!waypoint.HasDepartureTime)
+                return arrivalDelay;
+
+            return Math.Max(arrivalDelay, SecondsLate(simulationTime, waypoint.DepartureTime));
+        }
+
+        private static int SecondsLate(DateTime actual, DateTime scheduled)
+        {
+            if (!TrainWayPoint.HasTime(scheduled))
+                return 0;
+            return (int)(actual - scheduled).TotalSeconds;
+        }
+
         public void Record(TrainEventBase evt)
         {
             evt.Processed = true;

@@ -198,7 +198,8 @@ export class MajorEventsPanel extends BasePanel {
   }
 
   private formatCausedDelay(seconds: number): string {
-    if (!Number.isFinite(seconds) || seconds < 60) return "0min";
+    if (!Number.isFinite(seconds) || seconds <= 0) return "0min";
+    if (seconds < 60) return "<1min";
     return `+${Math.trunc(seconds / 60)}min`;
   }
 }

@@ -275,11 +275,13 @@ namespace TrainDispatcherGame.Server.Endpoints
         {
             var trains = new List<GameMasterTrainDto>(simulation.Trains.Count);
             int running = 0, finished = 0, removed = 0, accidents = 0, delay = 0;
+            var simTime = simulation.SimulationTime;
 
             foreach (var t in simulation.Trains)
             {
-                trains.Add(ToGameMasterTrainDto(t));
-                delay += Math.Max(0, t.delay);
+                var currentDelay = t.GetDelay(simTime);
+                trains.Add(ToGameMasterTrainDto(t, currentDelay));
+                delay += Math.Max(0, currentDelay);
                 if (t.damaged) accidents++;
                 else if (t.removed) removed++;
                 else if (t.completed) finished++;
@@ -300,7 +302,7 @@ namespace TrainDispatcherGame.Server.Endpoints
             };
         }
 
-        private static GameMasterTrainDto ToGameMasterTrainDto(Train t)
+        private static GameMasterTrainDto ToGameMasterTrainDto(Train t, int delay)
         {
             return new GameMasterTrainDto
             {
@@ -311,7 +313,7 @@ namespace TrainDispatcherGame.Server.Endpoints
                 Damaged = t.damaged,
                 CurrentLocation = t.CurrentLocation,
                 HeadingForStation = t.TrainEvent is TrainSpawnEvent spawn ? spawn.HeadingStation : null,
-                Delay = t.delay,
+                Delay = delay,
                 NextEventTime = t.TrainEvent?.ScheduledTime,
                 NextEventType = t.TrainEvent is TrainSpawnEvent ? "Spawn"
                     : t.TrainEvent is SendApprovalEvent ? "Approval"

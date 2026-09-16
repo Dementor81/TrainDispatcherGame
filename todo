@@ -34,8 +34,8 @@ Bugs:
     
     ☐ the server dispatch does not calculate travel times within stations, from spawnpoint to stoppingpoint
     ☐ sending trains to a terminus track, that wants to go further breaks the game: train should check if there is a signal on departure
-    ☐ stopping and waiting trains do not increase delay time
-    ☐ global delay counter does not work at all, sometimes it shows some delay, sometimes its just zero
+    ✔ stopping and waiting trains do not increase delay time @done(26-09-16 19:13)
+    ✔ global delay counter does not work at all, sometimes it shows some delay, sometimes its just zero @done(26-09-16 19:13)
     ☐ some delays are not calculated at all, some trains reach the station to late but they are not counted as delayed trains
 
     ✔ train delays are not shown currectly for all players @done(26-04-24 20:29)
