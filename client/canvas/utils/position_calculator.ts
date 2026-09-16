@@ -25,34 +25,44 @@ export class PositionCalculator {
       km: number,
       nextTrack: Track
    ): { point: Point; rotation: number } {
-      // Determine the connection point between tracks
-      const connectionPoint = track.start.equals(nextTrack.end) ? track.start : track.end;
-
-      // Calculate distance from train car position to connection point
+      const connectionPoint = this.getConnectionPoint(track, nextTrack);
       const trainPosition = this.getPointFromPosition(track, km);
-      const distanceToConnection = Math.sqrt(
-         Math.pow(trainPosition.x - connectionPoint.x, 2) +
-            Math.pow(trainPosition.y - connectionPoint.y, 2)
-      );
-
-      // Define the transition zone (cars within this distance will use the curve)
-      const transitionZone = RendererConfig.curveTransitionZone;
-
-      // Calculate t based on proximity to connection point
-      // t = 0 when far from connection (use straight track)
-      // t = 1 when at connection point (use full curve)
-      let t = Math.max(0, Math.min(1, 1 - distanceToConnection / transitionZone));
-      t = t / 2;
-
-      if (distanceToConnection < transitionZone) {
-         const p0 = track.along(connectionPoint, transitionZone);
-         const p1 = nextTrack.along(connectionPoint, transitionZone);
-         const pointOnCurve = Geometry.getPointOnCurve(t, p0, connectionPoint, p1);
-         const rotationOnCurve = Geometry.getDegreeOfTangentOnCurve(t, p0, connectionPoint, p1);
-         return { point: pointOnCurve, rotation: rotationOnCurve };
+      if (!connectionPoint) {
+         return { point: trainPosition, rotation: track.rad };
       }
 
-      // Use regular straight track positioning when far from connection
-      return { point: this.getPointFromPosition(track, km), rotation: track.rad };
+      const distanceToConnection = Math.hypot(
+         trainPosition.x - connectionPoint.x,
+         trainPosition.y - connectionPoint.y
+      );
+      const transitionZone = RendererConfig.curveTransitionZone;
+      if (distanceToConnection >= transitionZone) {
+         return { point: trainPosition, rotation: track.rad };
+      }
+
+      // t=0 far from the joint, t=0.5 at the joint. The far side of the joint
+      // samples this Bezier with swapped endpoints, so the raw tangent is
+      // reversed and must be aligned back to the track heading.
+      const t = 0.5 * (1 - distanceToConnection / transitionZone);
+      const p0 = track.along(connectionPoint, transitionZone);
+      const p1 = nextTrack.along(connectionPoint, transitionZone);
+      return {
+         point: Geometry.getPointOnCurve(t, p0, connectionPoint, p1),
+         rotation: this.alignRotation(
+            Geometry.getDegreeOfTangentOnCurve(t, p0, connectionPoint, p1),
+            track.rad
+         ),
+      };
+   }
+
+   private static getConnectionPoint(track: Track, other: Track): Point | null {
+      if (track.start.equals(other.start) || track.start.equals(other.end)) return track.start;
+      if (track.end.equals(other.start) || track.end.equals(other.end)) return track.end;
+      return null;
+   }
+
+   private static alignRotation(angle: number, reference: number): number {
+      const delta = Math.atan2(Math.sin(angle - reference), Math.cos(angle - reference));
+      return Math.abs(delta) > Math.PI / 2 ? angle + Math.PI : angle;
    }
 } 

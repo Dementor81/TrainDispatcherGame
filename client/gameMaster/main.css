@@ -3,3 +3,32 @@
 body {
   background-color: #1e1e1e;
 }
+
+.gm-network-plan {
+  height: 100%;
+  overflow: auto;
+  padding: 0.5rem;
+}
+
+.gm-network-plan svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.gm-network-plan .connection {
+  stroke: #9eb3cc;
+}
+
+.gm-network-plan .station-box {
+  fill: #1a2836;
+  stroke: #8aa0bc;
+}
+
+.gm-network-plan .station-label {
+  fill: #f1f5f9;
+}
+
+.gm-network-plan .station[data-external="true"] {
+  opacity: 0.45;
+}

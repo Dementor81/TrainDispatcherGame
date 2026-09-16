@@ -16,6 +16,7 @@ import OpenLinePanel from "./openLinePanel";
 import LogsPanel from "./logsPanel";
 import PlayersPanel from "./playersPanel";
 import GameCodePanel from "./gameCodePanel";
+import NetworkPlanPanel from "./networkPlanPanel";
 import MajorEventsPanel from "./majorEventsPanel";
 import { GmSnapshotPoller } from "./gmSnapshotPoller";
 import { handleSessionEnded, probeGmSession, showInvalidSessionModal } from "../core/sessionGuard";
@@ -40,6 +41,7 @@ function bootGmUi(): void {
   const players = new PlayersPanel(snapshotPoller);
   const majorEvents = new MajorEventsPanel(app, snapshotPoller, (trainNumber) => trainEvents.showTrain(trainNumber));
   const gameCode = new GameCodePanel();
+  const networkPlan = new NetworkPlanPanel();
 
   hud.setMenuItems(() => buildGmMenuItems([
     { label: "Alle Züge", panel: trains },
@@ -48,9 +50,10 @@ function bootGmUi(): void {
     { label: "Alle Spieler", panel: players },
     { label: "Störungen", panel: majorEvents },
     { label: "Game-Code", panel: gameCode },
+    { label: "Netzplan", panel: networkPlan },
   ]));
 
-  (window as any).gameMaster = { app, hud, panel, trains, trainEvents, openline, logs, players, majorEvents, gameCode, snapshotPoller };
+  (window as any).gameMaster = { app, hud, panel, trains, trainEvents, openline, logs, players, majorEvents, gameCode, networkPlan, snapshotPoller };
 }
 
 function buildGmMenuItems(windows: { label: string; panel: BasePanel }[]): HudMenuItem[] {
