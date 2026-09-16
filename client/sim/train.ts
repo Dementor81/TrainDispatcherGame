@@ -50,6 +50,7 @@ export class Train {
     private _drawingDirection: number; // 1 = locomotive on right, -1 = locomotive on left
     private _movingDirection: number; // 1 = moving forward (increasing km), -1 = moving backward (decreasing km)
     private _stoppedBySignal: Signal | null = null; // Signal that currently stops this train
+    private _stoppedByEndOfTrack = false;
     private _action: TrainWayPointActionType = 'PassThrough'; // How the train acts at the current station
     private _arrivalTime: Date | null = null; // Scheduled arrival time at current station
     private _departureTime: Date | null = null; // Scheduled departure time at current station
@@ -161,6 +162,10 @@ export class Train {
 
     get stoppedBySignal(): Signal | null {
         return this._stoppedBySignal;
+    }
+
+    get stoppedByEndOfTrack(): boolean {
+        return this._stoppedByEndOfTrack;
     }
 
     get action(): TrainWayPointActionType {
@@ -302,12 +307,19 @@ export class Train {
 
     // Set the signal that is currently stopping this train
     setStoppedBySignal(signal: Signal | null, distanceToStop: number | null = null): void {
+        this._stoppedByEndOfTrack = false;
         this._stoppedBySignal = signal;
         if (signal) {
             this.setState(TrainState.BRAKING_FOR_SIGNAL, distanceToStop);
         } else {
             if (this._state != TrainState.MANUAL_CONTROL) this.setState(TrainState.RUNNING);
         }
+    }
+
+    setStoppedByEndOfTrack(distanceToStop: number): void {
+        this._stoppedBySignal = null;
+        this.setState(TrainState.BRAKING_FOR_SIGNAL, distanceToStop);
+        if (this._state === TrainState.BRAKING_FOR_SIGNAL) this._stoppedByEndOfTrack = true;
     }
 
 
@@ -348,6 +360,9 @@ export class Train {
             : Math.max(0, distanceToStop);
         this._speedAimed = nextState === TrainState.RUNNING ? this.maxAllowedSpeed : 0;
         if (Train.isHardStoppedState(nextState)) this._speedCurrent = 0;
+        if (nextState !== TrainState.BRAKING_FOR_SIGNAL && nextState !== TrainState.WAITING_AT_SIGNAL && nextState !== TrainState.MISROUTED) {
+            this._stoppedByEndOfTrack = false;
+        }
 
         if (previousState !== nextState) {
             this._eventManager.emit("trainStateChanged", this, previousState, nextState);

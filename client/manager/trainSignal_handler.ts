@@ -28,14 +28,49 @@ export class TrainSignalHandler {
                this._eventManager.emit("trainDepartedFromStation", train);
                return;
             }
-         } 
-      } else {
-         const stoppingSignal = this.checkSignalsAhead(train);
-         if (stoppingSignal) {
-            train.setStoppedBySignal(stoppingSignal, SimulationConfig.trainLookaheadDistance - SimulationConfig.saftyDistanceFromSignal);
-            this._eventManager.emit("trainStoppedBySignal", train, stoppingSignal);
          }
+         return;
       }
+
+      if (train.stoppedByEndOfTrack) {
+         if (train.state === TrainState.BRAKING_FOR_SIGNAL || train.state === TrainState.WAITING_AT_SIGNAL) return;
+      }
+
+      const stoppingSignal = this.checkSignalsAhead(train);
+      if (stoppingSignal) {
+         train.setStoppedBySignal(stoppingSignal, SimulationConfig.trainLookaheadDistance - SimulationConfig.saftyDistanceFromSignal);
+         this._eventManager.emit("trainStoppedBySignal", train, stoppingSignal);
+         return;
+      }
+
+      this.checkEndOfTrackAhead(train);
+   }
+
+   private shouldSkipBumperLookahead(train: Train): boolean {
+      if (train.isStationState()) return true;
+      const isFreightPassThrough = train.type === 'Freight' && train.action !== 'End';
+      return train.shouldStopAtCurrentStation && !!train.position?.track.halt && !isFreightPassThrough;
+   }
+
+   private checkEndOfTrackAhead(train: Train): void {
+      if (this.shouldSkipBumperLookahead(train)) return;
+      if (!train.position) return;
+
+      const bumperDist = this._trackLayoutManager.distanceToDeadEnd(
+         train.position.track,
+         train.position.km,
+         train.movingDirection,
+         SimulationConfig.trainLookaheadDistance
+      );
+      if (bumperDist === null) return;
+
+      if (bumperDist <= 0) {
+         train.setState(TrainState.MISROUTED, 0);
+         this._eventManager.emit("trainMisrouted", train);
+         return;
+      }
+
+      train.setStoppedByEndOfTrack(bumperDist);
    }
 
    checkSignalsAhead(train: Train): Signal | null {
@@ -45,11 +80,11 @@ export class TrainSignalHandler {
       const dir = train.movingDirection;
       const endKm = train.position.km + lookahead * dir;
 
+      const onCurrent = this.checkSignalsOnTrack(train.position.track, train.position.km, endKm, dir);
+      if (onCurrent) return onCurrent;
+
       try {
          const result = this._trackLayoutManager.followRailNetwork(train.position.track, train.position.km, lookahead * dir);
-
-         const onCurrent = this.checkSignalsOnTrack(train.position.track, train.position.km, endKm, dir);
-         if (onCurrent) return onCurrent;
 
          const nextTrack = result.element instanceof Track ? result.element : null;
          if (nextTrack && nextTrack !== train.position.track) {

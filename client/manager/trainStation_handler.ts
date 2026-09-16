@@ -54,11 +54,15 @@ export class TrainStationHandler {
                train.setStoppedBySignal(nextSignal, 0);
                this._eventManager.emit("trainStoppedBySignal", train, nextSignal);
                return false;
-            } else {
-               train.setState(TrainState.RUNNING);
-               this._eventManager.emit("trainDepartedFromStation", train);
-               return false;
             }
+            if (train.action !== 'End' && !nextSignal && this._trackLayoutManager.isDeadEnd(train.position!.track, train.movingDirection)) {
+               train.setState(TrainState.MISROUTED, 0);
+               this._eventManager.emit("trainMisrouted", train);
+               return true;
+            }
+            train.setState(TrainState.RUNNING);
+            this._eventManager.emit("trainDepartedFromStation", train);
+            return false;
          } else {
             //train is still waiting at the station, calculate the waiting progress
             const totalMs = Math.max(1, train.departureTime.getTime() - train.stationStopStartTime.getTime()); //prevents division by zero or negative values

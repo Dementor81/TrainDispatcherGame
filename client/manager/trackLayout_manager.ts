@@ -407,6 +407,48 @@ export class TrackLayoutManager {
       return null;
    }
 
+   isDeadEnd(track: Track, direction: number): boolean {
+      const switchIndex = direction > 0 ? 1 : 0;
+      return track.switches[switchIndex] == null;
+   }
+
+   /**
+    * Distance along the current switch path to a bumper, or null if none is within maxLookahead.
+    * Exits and blocking switches are not bumpers.
+    */
+   distanceToDeadEnd(track: Track, km: number, direction: number, maxLookahead: number): number | null {
+      const dir = direction > 0 ? 1 : -1;
+      let remainingToScan = maxLookahead;
+      let current = track;
+      let pos = km;
+      let total = 0;
+
+      for (let hops = 0; hops < 32 && remainingToScan >= 0; hops++) {
+         const endKm = dir > 0 ? current.length : 0;
+         const toEnd = Math.abs(endKm - pos);
+
+         if (this.isDeadEnd(current, dir)) {
+            return toEnd <= remainingToScan ? total + toEnd : null;
+         }
+
+         if (toEnd > remainingToScan) return null;
+
+         total += toEnd;
+         remainingToScan -= toEnd;
+
+         try {
+            const next = this.findNextTrack(current, dir);
+            if (!(next instanceof Track)) return null;
+            current = next;
+            pos = dir > 0 ? 0 : current.length;
+         } catch {
+            return total;
+         }
+      }
+
+      return null;
+   }
+
    /**
     * Finds the next element connected to the current track in the given direction
     * @returns The next element (Track/Switch/Exit), or throws MovementException for dead ends

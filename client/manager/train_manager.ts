@@ -3,7 +3,7 @@ import Track from "../sim/track";
 import Switch from "../sim/switch";
 import Exit from "../sim/exit";
 import { EventManager } from "./event_manager";
-import { TrackLayoutManager } from "./trackLayout_manager";
+import { MovementException, TrackLayoutManager } from "./trackLayout_manager";
 import Tools from "../core/utils";
 import { SignalRManager } from "../network/signalr";
 import { ClientSimulation } from "../core/clientSimulation";
@@ -143,16 +143,32 @@ export class TrainManager {
          }
       } catch (error) {
          console.error(`Train ${train.number} movement error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-         return;
+         if (!(error instanceof MovementException) || !train.position) return;
+
+         const boundaryKm = train.movingDirection > 0 ? train.position.track.length : 0;
+         train.setPosition(train.position.track, boundaryKm);
+         this._movementHandler.updateTailPosition(train);
+         if (train.state === TrainState.MANUAL_CONTROL) {
+            train.setState(TrainState.END_OF_TRACK, 0);
+         } else {
+            train.setState(TrainState.MISROUTED, 0);
+            this._eventManager.emit("trainMisrouted", train);
+         }
       }
    }
 
    private updateTrainStates(train: Train): void {
+      if (train.speedCurrent !== 0) return;
 
-      if (train.speedCurrent === 0) {
-         if (train.state === TrainState.EMERGENCY_BRAKING) train.setState(TrainState.EMERGENCY_STOP, 0);
-         if (train.state === TrainState.BRAKING_FOR_SIGNAL) train.setState(TrainState.WAITING_AT_SIGNAL, 0);
+      if (train.state === TrainState.EMERGENCY_BRAKING) train.setState(TrainState.EMERGENCY_STOP, 0);
+
+      if (train.stoppedByEndOfTrack && (train.state === TrainState.BRAKING_FOR_SIGNAL || train.state === TrainState.WAITING_AT_SIGNAL)) {
+         train.setState(TrainState.MISROUTED, 0);
+         this._eventManager.emit("trainMisrouted", train);
+         return;
       }
+
+      if (train.state === TrainState.BRAKING_FOR_SIGNAL) train.setState(TrainState.WAITING_AT_SIGNAL, 0);
    }
 
    private isMovementState(state: TrainState): boolean {
