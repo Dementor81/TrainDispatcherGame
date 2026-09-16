@@ -1,4 +1,4 @@
-﻿{
+{
   "title": "agantic plan",
   "layout": "nebelgrundbahn",
   "start_time": "00:00",
@@ -14,36 +14,36 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:00:00"
+          "departure": "00:00:30"
         },
         {
           "station": "landing",
-          "arrival": "00:01:43",
-          "departure": "00:02:43"
+          "arrival": "00:02:13",
+          "departure": "00:03:13"
         },
         {
           "station": "dospen",
-          "arrival": "00:04:26",
-          "departure": "00:05:26"
+          "arrival": "00:04:56",
+          "departure": "00:05:56"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:07:09",
-          "departure": "00:08:09"
+          "arrival": "00:07:39",
+          "departure": "00:08:39"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:09:52",
-          "departure": "00:10:52"
+          "arrival": "00:10:22",
+          "departure": "00:11:22"
         },
         {
           "station": "camberg",
-          "arrival": "00:12:35",
-          "departure": "00:13:35"
+          "arrival": "00:13:05",
+          "departure": "00:14:05"
         },
         {
           "station": "horb",
-          "arrival": "00:15:18",
+          "arrival": "00:15:48",
           "departure": ""
         }
       ],
@@ -60,36 +60,36 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:20:00"
+          "departure": "00:20:30"
         },
         {
           "station": "landing",
-          "arrival": "00:21:43",
-          "departure": "00:22:29"
+          "arrival": "00:22:13",
+          "departure": "00:22:59"
         },
         {
           "station": "dospen",
-          "arrival": "00:24:12",
-          "departure": "00:25:00"
+          "arrival": "00:24:42",
+          "departure": "00:25:30"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:26:43",
-          "departure": "00:27:35"
+          "arrival": "00:27:13",
+          "departure": "00:28:05"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:29:18",
-          "departure": "00:31:42"
+          "arrival": "00:29:48",
+          "departure": "00:32:12"
         },
         {
           "station": "camberg",
-          "arrival": "00:33:25",
-          "departure": "00:34:25"
+          "arrival": "00:33:55",
+          "departure": "00:34:55"
         },
         {
           "station": "horb",
-          "arrival": "00:36:08",
+          "arrival": "00:36:38",
           "departure": ""
         }
       ],
@@ -106,36 +106,36 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:40:00"
+          "departure": "00:40:30"
         },
         {
           "station": "landing",
-          "arrival": "00:41:43",
-          "departure": "00:42:43"
+          "arrival": "00:42:13",
+          "departure": "00:43:13"
         },
         {
           "station": "dospen",
-          "arrival": "00:44:26",
-          "departure": "00:45:26"
+          "arrival": "00:44:56",
+          "departure": "00:45:56"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:47:09",
-          "departure": "00:48:09"
+          "arrival": "00:47:39",
+          "departure": "00:48:39"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:49:52",
-          "departure": "00:50:52"
+          "arrival": "00:50:22",
+          "departure": "00:51:22"
         },
         {
           "station": "camberg",
-          "arrival": "00:52:35",
-          "departure": "00:54:26"
+          "arrival": "00:53:05",
+          "departure": "00:54:56"
         },
         {
           "station": "horb",
-          "arrival": "00:56:09",
+          "arrival": "00:56:39",
           "departure": ""
         }
       ],
@@ -152,36 +152,36 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "01:00:00"
+          "departure": "01:00:30"
         },
         {
           "station": "landing",
-          "arrival": "01:01:43",
-          "departure": "01:02:43"
+          "arrival": "01:02:13",
+          "departure": "01:03:13"
         },
         {
           "station": "dospen",
-          "arrival": "01:04:26",
-          "departure": "01:05:26"
+          "arrival": "01:04:56",
+          "departure": "01:05:56"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:07:09",
-          "departure": "01:08:09"
+          "arrival": "01:07:39",
+          "departure": "01:08:39"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:09:52",
-          "departure": "01:10:52"
+          "arrival": "01:10:22",
+          "departure": "01:11:22"
         },
         {
           "station": "camberg",
-          "arrival": "01:12:35",
-          "departure": "01:13:35"
+          "arrival": "01:13:05",
+          "departure": "01:14:05"
         },
         {
           "station": "horb",
-          "arrival": "01:15:18",
+          "arrival": "01:15:48",
           "departure": ""
         }
       ],
@@ -198,36 +198,36 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "01:20:00"
+          "departure": "01:20:30"
         },
         {
           "station": "landing",
-          "arrival": "01:21:43",
-          "departure": "01:22:43"
+          "arrival": "01:22:13",
+          "departure": "01:23:13"
         },
         {
           "station": "dospen",
-          "arrival": "01:24:26",
-          "departure": "01:25:26"
+          "arrival": "01:24:56",
+          "departure": "01:25:56"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:27:09",
-          "departure": "01:28:09"
+          "arrival": "01:27:39",
+          "departure": "01:28:39"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:29:52",
-          "departure": "01:30:52"
+          "arrival": "01:30:22",
+          "departure": "01:31:22"
         },
         {
           "station": "camberg",
-          "arrival": "01:32:35",
-          "departure": "01:33:35"
+          "arrival": "01:33:05",
+          "departure": "01:34:05"
         },
         {
           "station": "horb",
-          "arrival": "01:35:18",
+          "arrival": "01:35:48",
           "departure": ""
         }
       ],
@@ -244,36 +244,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:00:00"
+          "departure": "00:00:30"
         },
         {
           "station": "horb",
-          "arrival": "00:01:43",
-          "departure": "00:02:43"
+          "arrival": "00:02:13",
+          "departure": "00:03:13"
         },
         {
           "station": "camberg",
-          "arrival": "00:04:26",
-          "departure": "00:05:26"
+          "arrival": "00:04:56",
+          "departure": "00:05:56"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:07:09",
-          "departure": "00:08:09"
+          "arrival": "00:07:39",
+          "departure": "00:08:39"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:09:52",
-          "departure": "00:10:52"
+          "arrival": "00:10:22",
+          "departure": "00:11:22"
         },
         {
           "station": "dospen",
-          "arrival": "00:12:35",
-          "departure": "00:13:35"
+          "arrival": "00:13:05",
+          "departure": "00:14:05"
         },
         {
           "station": "landing",
-          "arrival": "00:15:18",
+          "arrival": "00:15:48",
           "departure": ""
         }
       ],
@@ -290,36 +290,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:20:00"
+          "departure": "00:20:30"
         },
         {
           "station": "horb",
-          "arrival": "00:21:43",
-          "departure": "00:22:43"
+          "arrival": "00:22:13",
+          "departure": "00:23:13"
         },
         {
           "station": "camberg",
-          "arrival": "00:24:26",
-          "departure": "00:25:26"
+          "arrival": "00:24:56",
+          "departure": "00:25:56"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:27:09",
-          "departure": "00:28:09"
+          "arrival": "00:27:39",
+          "departure": "00:28:39"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:29:52",
-          "departure": "00:30:52"
+          "arrival": "00:30:22",
+          "departure": "00:31:22"
         },
         {
           "station": "dospen",
-          "arrival": "00:32:35",
-          "departure": "00:33:35"
+          "arrival": "00:33:05",
+          "departure": "00:34:05"
         },
         {
           "station": "landing",
-          "arrival": "00:35:18",
+          "arrival": "00:35:48",
           "departure": ""
         }
       ],
@@ -336,36 +336,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:40:00"
+          "departure": "00:40:30"
         },
         {
           "station": "horb",
-          "arrival": "00:41:43",
-          "departure": "00:42:43"
+          "arrival": "00:42:13",
+          "departure": "00:43:13"
         },
         {
           "station": "camberg",
-          "arrival": "00:44:26",
-          "departure": "00:45:26"
+          "arrival": "00:44:56",
+          "departure": "00:45:56"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:47:09",
-          "departure": "00:48:09"
+          "arrival": "00:47:39",
+          "departure": "00:48:39"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:49:52",
-          "departure": "00:50:52"
+          "arrival": "00:50:22",
+          "departure": "00:51:22"
         },
         {
           "station": "dospen",
-          "arrival": "00:52:35",
-          "departure": "00:53:49"
+          "arrival": "00:53:05",
+          "departure": "00:54:19"
         },
         {
           "station": "landing",
-          "arrival": "00:55:32",
+          "arrival": "00:56:02",
           "departure": ""
         }
       ],
@@ -382,36 +382,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "01:00:00"
+          "departure": "01:00:30"
         },
         {
           "station": "horb",
-          "arrival": "01:01:43",
-          "departure": "01:02:43"
+          "arrival": "01:02:13",
+          "departure": "01:03:13"
         },
         {
           "station": "camberg",
-          "arrival": "01:04:26",
-          "departure": "01:05:26"
+          "arrival": "01:04:56",
+          "departure": "01:05:56"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:07:09",
-          "departure": "01:08:09"
+          "arrival": "01:07:39",
+          "departure": "01:08:39"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:09:52",
-          "departure": "01:10:52"
+          "arrival": "01:10:22",
+          "departure": "01:11:22"
         },
         {
           "station": "dospen",
-          "arrival": "01:12:35",
-          "departure": "01:13:35"
+          "arrival": "01:13:05",
+          "departure": "01:14:05"
         },
         {
           "station": "landing",
-          "arrival": "01:15:18",
+          "arrival": "01:15:48",
           "departure": ""
         }
       ],
@@ -428,36 +428,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "01:20:00"
+          "departure": "01:20:30"
         },
         {
           "station": "horb",
-          "arrival": "01:21:43",
-          "departure": "01:22:43"
+          "arrival": "01:22:13",
+          "departure": "01:23:13"
         },
         {
           "station": "camberg",
-          "arrival": "01:24:26",
-          "departure": "01:25:26"
+          "arrival": "01:24:56",
+          "departure": "01:25:56"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:27:09",
-          "departure": "01:28:09"
+          "arrival": "01:27:39",
+          "departure": "01:28:39"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:29:52",
-          "departure": "01:30:52"
+          "arrival": "01:30:22",
+          "departure": "01:31:22"
         },
         {
           "station": "dospen",
-          "arrival": "01:32:35",
-          "departure": "01:33:35"
+          "arrival": "01:33:05",
+          "departure": "01:34:05"
         },
         {
           "station": "landing",
-          "arrival": "01:35:18",
+          "arrival": "01:35:48",
           "departure": ""
         }
       ],
@@ -474,36 +474,36 @@
         {
           "station": "horb",
           "arrival": "",
-          "departure": "00:30:00"
+          "departure": "00:30:30"
         },
         {
           "station": "camberg",
-          "arrival": "00:31:43",
-          "departure": "00:32:43"
+          "arrival": "00:32:13",
+          "departure": "00:33:13"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:34:26",
-          "departure": "00:35:26"
+          "arrival": "00:34:56",
+          "departure": "00:35:56"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:37:09",
-          "departure": "00:38:09"
+          "arrival": "00:37:39",
+          "departure": "00:38:39"
         },
         {
           "station": "dospen",
-          "arrival": "00:39:52",
-          "departure": "00:41:00"
+          "arrival": "00:40:22",
+          "departure": "00:41:30"
         },
         {
           "station": "landing",
-          "arrival": "00:42:43",
-          "departure": "00:43:43"
+          "arrival": "00:43:13",
+          "departure": "00:44:13"
         },
         {
           "station": "westerhausen",
-          "arrival": "00:45:26",
+          "arrival": "00:45:56",
           "departure": ""
         }
       ],
@@ -520,36 +520,36 @@
         {
           "station": "horb",
           "arrival": "",
-          "departure": "00:50:00"
+          "departure": "00:50:30"
         },
         {
           "station": "camberg",
-          "arrival": "00:51:43",
-          "departure": "00:52:43"
+          "arrival": "00:52:13",
+          "departure": "00:53:13"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:54:26",
-          "departure": "00:55:26"
+          "arrival": "00:54:56",
+          "departure": "00:55:56"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:57:09",
-          "departure": "00:58:09"
+          "arrival": "00:57:39",
+          "departure": "00:58:39"
         },
         {
           "station": "dospen",
-          "arrival": "00:59:52",
-          "departure": "01:00:52"
+          "arrival": "01:00:22",
+          "departure": "01:01:22"
         },
         {
           "station": "landing",
-          "arrival": "01:02:35",
-          "departure": "01:03:35"
+          "arrival": "01:03:05",
+          "departure": "01:04:05"
         },
         {
           "station": "westerhausen",
-          "arrival": "01:05:18",
+          "arrival": "01:05:48",
           "departure": ""
         }
       ],
@@ -566,36 +566,36 @@
         {
           "station": "horb",
           "arrival": "",
-          "departure": "01:10:00"
+          "departure": "01:10:30"
         },
         {
           "station": "camberg",
-          "arrival": "01:11:43",
-          "departure": "01:12:43"
+          "arrival": "01:12:13",
+          "departure": "01:13:13"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:14:26",
-          "departure": "01:15:26"
+          "arrival": "01:14:56",
+          "departure": "01:15:56"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:17:09",
-          "departure": "01:18:30"
+          "arrival": "01:17:39",
+          "departure": "01:19:00"
         },
         {
           "station": "dospen",
-          "arrival": "01:20:13",
-          "departure": "01:21:08"
+          "arrival": "01:20:43",
+          "departure": "01:21:38"
         },
         {
           "station": "landing",
-          "arrival": "01:22:51",
-          "departure": "01:23:25"
+          "arrival": "01:23:21",
+          "departure": "01:23:55"
         },
         {
           "station": "westerhausen",
-          "arrival": "01:25:08",
+          "arrival": "01:25:38",
           "departure": ""
         }
       ],
@@ -612,36 +612,36 @@
         {
           "station": "horb",
           "arrival": "",
-          "departure": "01:30:00"
+          "departure": "01:30:30"
         },
         {
           "station": "camberg",
-          "arrival": "01:31:43",
-          "departure": "01:32:43"
+          "arrival": "01:32:13",
+          "departure": "01:33:13"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:34:26",
-          "departure": "01:35:26"
+          "arrival": "01:34:56",
+          "departure": "01:35:56"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:37:09",
-          "departure": "01:38:09"
+          "arrival": "01:37:39",
+          "departure": "01:38:39"
         },
         {
           "station": "dospen",
-          "arrival": "01:39:52",
-          "departure": "01:40:52"
+          "arrival": "01:40:22",
+          "departure": "01:41:22"
         },
         {
           "station": "landing",
-          "arrival": "01:42:35",
-          "departure": "01:43:35"
+          "arrival": "01:43:05",
+          "departure": "01:44:05"
         },
         {
           "station": "westerhausen",
-          "arrival": "01:45:18",
+          "arrival": "01:45:48",
           "departure": ""
         }
       ],
@@ -658,36 +658,36 @@
         {
           "station": "horb",
           "arrival": "",
-          "departure": "01:50:00"
+          "departure": "01:50:30"
         },
         {
           "station": "camberg",
-          "arrival": "01:51:43",
-          "departure": "01:52:43"
+          "arrival": "01:52:13",
+          "departure": "01:53:13"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:54:26",
-          "departure": "01:55:26"
+          "arrival": "01:54:56",
+          "departure": "01:55:56"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:57:09",
-          "departure": "01:58:09"
+          "arrival": "01:57:39",
+          "departure": "01:58:39"
         },
         {
           "station": "dospen",
-          "arrival": "01:59:52",
-          "departure": "02:00:52"
+          "arrival": "02:00:22",
+          "departure": "02:01:22"
         },
         {
           "station": "landing",
-          "arrival": "02:02:35",
-          "departure": "02:03:35"
+          "arrival": "02:03:05",
+          "departure": "02:04:05"
         },
         {
           "station": "westerhausen",
-          "arrival": "02:05:18",
+          "arrival": "02:05:48",
           "departure": ""
         }
       ],
@@ -704,36 +704,36 @@
         {
           "station": "landing",
           "arrival": "",
-          "departure": "00:30:31"
+          "departure": "00:31:01"
         },
         {
           "station": "dospen",
-          "arrival": "00:32:14",
-          "departure": "00:33:14"
+          "arrival": "00:32:44",
+          "departure": "00:33:44"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:34:57",
-          "departure": "00:35:57"
+          "arrival": "00:35:27",
+          "departure": "00:36:27"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:37:40",
-          "departure": "00:39:05"
+          "arrival": "00:38:10",
+          "departure": "00:39:35"
         },
         {
           "station": "camberg",
-          "arrival": "00:40:48",
-          "departure": "00:41:48"
+          "arrival": "00:41:18",
+          "departure": "00:42:18"
         },
         {
           "station": "horb",
-          "arrival": "00:43:31",
-          "departure": "00:44:31"
+          "arrival": "00:44:01",
+          "departure": "00:45:01"
         },
         {
           "station": "ostermünde",
-          "arrival": "00:46:14",
+          "arrival": "00:46:44",
           "departure": ""
         }
       ],
@@ -750,36 +750,36 @@
         {
           "station": "landing",
           "arrival": "",
-          "departure": "00:50:00"
+          "departure": "00:50:30"
         },
         {
           "station": "dospen",
-          "arrival": "00:51:43",
-          "departure": "00:52:43"
+          "arrival": "00:52:13",
+          "departure": "00:53:13"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:54:26",
-          "departure": "00:55:26"
+          "arrival": "00:54:56",
+          "departure": "00:55:56"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:57:09",
-          "departure": "00:58:09"
+          "arrival": "00:57:39",
+          "departure": "00:58:39"
         },
         {
           "station": "camberg",
-          "arrival": "00:59:52",
-          "departure": "01:00:52"
+          "arrival": "01:00:22",
+          "departure": "01:01:22"
         },
         {
           "station": "horb",
-          "arrival": "01:02:35",
-          "departure": "01:05:36"
+          "arrival": "01:03:05",
+          "departure": "01:06:06"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:07:19",
+          "arrival": "01:07:49",
           "departure": ""
         }
       ],
@@ -796,36 +796,36 @@
         {
           "station": "landing",
           "arrival": "",
-          "departure": "01:10:00"
+          "departure": "01:10:30"
         },
         {
           "station": "dospen",
-          "arrival": "01:11:43",
-          "departure": "01:12:43"
+          "arrival": "01:12:13",
+          "departure": "01:13:13"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:14:26",
-          "departure": "01:15:26"
+          "arrival": "01:14:56",
+          "departure": "01:15:56"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:17:09",
-          "departure": "01:18:09"
+          "arrival": "01:17:39",
+          "departure": "01:18:39"
         },
         {
           "station": "camberg",
-          "arrival": "01:19:52",
-          "departure": "01:20:52"
+          "arrival": "01:20:22",
+          "departure": "01:21:22"
         },
         {
           "station": "horb",
-          "arrival": "01:22:35",
-          "departure": "01:23:35"
+          "arrival": "01:23:05",
+          "departure": "01:24:05"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:25:18",
+          "arrival": "01:25:48",
           "departure": ""
         }
       ],
@@ -842,36 +842,36 @@
         {
           "station": "landing",
           "arrival": "",
-          "departure": "01:30:00"
+          "departure": "01:30:30"
         },
         {
           "station": "dospen",
-          "arrival": "01:31:43",
-          "departure": "01:32:43"
+          "arrival": "01:32:13",
+          "departure": "01:33:13"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:34:26",
-          "departure": "01:35:26"
+          "arrival": "01:34:56",
+          "departure": "01:35:56"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:37:09",
-          "departure": "01:38:09"
+          "arrival": "01:37:39",
+          "departure": "01:38:39"
         },
         {
           "station": "camberg",
-          "arrival": "01:39:52",
-          "departure": "01:40:52"
+          "arrival": "01:40:22",
+          "departure": "01:41:22"
         },
         {
           "station": "horb",
-          "arrival": "01:42:35",
-          "departure": "01:43:35"
+          "arrival": "01:43:05",
+          "departure": "01:44:05"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:45:18",
+          "arrival": "01:45:48",
           "departure": ""
         }
       ],
@@ -888,36 +888,36 @@
         {
           "station": "landing",
           "arrival": "",
-          "departure": "01:50:00"
+          "departure": "01:50:30"
         },
         {
           "station": "dospen",
-          "arrival": "01:51:43",
-          "departure": "01:52:43"
+          "arrival": "01:52:13",
+          "departure": "01:53:13"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:54:26",
-          "departure": "01:55:26"
+          "arrival": "01:54:56",
+          "departure": "01:55:56"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:57:09",
-          "departure": "01:58:09"
+          "arrival": "01:57:39",
+          "departure": "01:58:39"
         },
         {
           "station": "camberg",
-          "arrival": "01:59:52",
-          "departure": "02:00:52"
+          "arrival": "02:00:22",
+          "departure": "02:01:22"
         },
         {
           "station": "horb",
-          "arrival": "02:02:35",
-          "departure": "02:03:35"
+          "arrival": "02:03:05",
+          "departure": "02:04:05"
         },
         {
           "station": "ostermünde",
-          "arrival": "02:05:18",
+          "arrival": "02:05:48",
           "departure": ""
         }
       ],
@@ -934,41 +934,41 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:15:26"
+          "departure": "00:15:56"
         },
         {
           "station": "landing",
-          "arrival": "00:17:09",
-          "departure": "00:18:09"
+          "arrival": "00:17:39",
+          "departure": "00:18:39"
         },
         {
           "station": "dospen",
-          "arrival": "00:19:52",
-          "departure": "00:19:52"
+          "arrival": "00:20:22",
+          "departure": "00:20:22"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:21:35",
-          "departure": "00:22:35"
+          "arrival": "00:22:05",
+          "departure": "00:23:05"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:24:18",
-          "departure": "00:27:33"
+          "arrival": "00:24:48",
+          "departure": "00:28:03"
         },
         {
           "station": "camberg",
-          "arrival": "00:29:16",
-          "departure": "00:29:16"
+          "arrival": "00:29:46",
+          "departure": "00:29:46"
         },
         {
           "station": "horb",
-          "arrival": "00:30:59",
-          "departure": "00:31:56"
+          "arrival": "00:31:29",
+          "departure": "00:32:26"
         },
         {
           "station": "ostermünde",
-          "arrival": "00:33:39",
+          "arrival": "00:34:09",
           "departure": ""
         }
       ],
@@ -985,41 +985,41 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:44:10"
+          "departure": "00:44:40"
         },
         {
           "station": "landing",
-          "arrival": "00:45:53",
-          "departure": "00:47:01"
+          "arrival": "00:46:23",
+          "departure": "00:47:31"
         },
         {
           "station": "dospen",
-          "arrival": "00:48:44",
-          "departure": "00:48:44"
+          "arrival": "00:49:14",
+          "departure": "00:49:14"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:50:27",
-          "departure": "00:51:27"
+          "arrival": "00:50:57",
+          "departure": "00:51:57"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:53:10",
-          "departure": "00:54:31"
+          "arrival": "00:53:40",
+          "departure": "00:55:01"
         },
         {
           "station": "camberg",
-          "arrival": "00:56:14",
-          "departure": "00:56:14"
+          "arrival": "00:56:44",
+          "departure": "00:56:44"
         },
         {
           "station": "horb",
-          "arrival": "00:57:57",
-          "departure": "01:01:33"
+          "arrival": "00:58:27",
+          "departure": "01:02:03"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:03:16",
+          "arrival": "01:03:46",
           "departure": ""
         }
       ],
@@ -1036,41 +1036,41 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "01:14:10"
+          "departure": "01:14:40"
         },
         {
           "station": "landing",
-          "arrival": "01:15:53",
-          "departure": "01:16:53"
+          "arrival": "01:16:23",
+          "departure": "01:17:23"
         },
         {
           "station": "dospen",
-          "arrival": "01:18:36",
-          "departure": "01:18:36"
+          "arrival": "01:19:06",
+          "departure": "01:19:06"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:20:19",
-          "departure": "01:21:19"
+          "arrival": "01:20:49",
+          "departure": "01:21:49"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:23:02",
-          "departure": "01:24:02"
+          "arrival": "01:23:32",
+          "departure": "01:24:32"
         },
         {
           "station": "camberg",
-          "arrival": "01:25:45",
-          "departure": "01:25:45"
+          "arrival": "01:26:15",
+          "departure": "01:26:15"
         },
         {
           "station": "horb",
-          "arrival": "01:27:28",
-          "departure": "01:28:28"
+          "arrival": "01:27:58",
+          "departure": "01:28:58"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:30:11",
+          "arrival": "01:30:41",
           "departure": ""
         }
       ],
@@ -1087,41 +1087,41 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "01:44:10"
+          "departure": "01:44:40"
         },
         {
           "station": "landing",
-          "arrival": "01:45:53",
-          "departure": "01:46:53"
+          "arrival": "01:46:23",
+          "departure": "01:47:23"
         },
         {
           "station": "dospen",
-          "arrival": "01:48:36",
-          "departure": "01:48:36"
+          "arrival": "01:49:06",
+          "departure": "01:49:06"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:50:19",
-          "departure": "01:51:19"
+          "arrival": "01:50:49",
+          "departure": "01:51:49"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:53:02",
-          "departure": "01:54:02"
+          "arrival": "01:53:32",
+          "departure": "01:54:32"
         },
         {
           "station": "camberg",
-          "arrival": "01:55:45",
-          "departure": "01:55:45"
+          "arrival": "01:56:15",
+          "departure": "01:56:15"
         },
         {
           "station": "horb",
-          "arrival": "01:57:28",
-          "departure": "01:58:28"
+          "arrival": "01:57:58",
+          "departure": "01:58:58"
         },
         {
           "station": "ostermünde",
-          "arrival": "02:00:11",
+          "arrival": "02:00:41",
           "departure": ""
         }
       ],
@@ -1138,41 +1138,41 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:14:36"
+          "departure": "00:15:06"
         },
         {
           "station": "horb",
-          "arrival": "00:16:19",
-          "departure": "00:17:24"
+          "arrival": "00:16:49",
+          "departure": "00:17:54"
         },
         {
           "station": "camberg",
-          "arrival": "00:19:07",
-          "departure": "00:19:07"
+          "arrival": "00:19:37",
+          "departure": "00:19:37"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:20:50",
-          "departure": "00:21:50"
+          "arrival": "00:21:20",
+          "departure": "00:22:20"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:23:33",
-          "departure": "00:24:33"
+          "arrival": "00:24:03",
+          "departure": "00:25:03"
         },
         {
           "station": "dospen",
-          "arrival": "00:26:16",
-          "departure": "00:26:16"
+          "arrival": "00:26:46",
+          "departure": "00:26:46"
         },
         {
           "station": "landing",
-          "arrival": "00:27:59",
-          "departure": "00:28:59"
+          "arrival": "00:28:29",
+          "departure": "00:29:29"
         },
         {
           "station": "westerhausen",
-          "arrival": "00:30:42",
+          "arrival": "00:31:12",
           "departure": ""
         }
       ],
@@ -1189,41 +1189,41 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:44:10"
+          "departure": "00:44:40"
         },
         {
           "station": "horb",
-          "arrival": "00:45:53",
-          "departure": "00:46:53"
+          "arrival": "00:46:23",
+          "departure": "00:47:23"
         },
         {
           "station": "camberg",
-          "arrival": "00:48:36",
-          "departure": "00:48:36"
+          "arrival": "00:49:06",
+          "departure": "00:49:06"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:50:19",
-          "departure": "00:51:19"
+          "arrival": "00:50:49",
+          "departure": "00:51:49"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:53:02",
-          "departure": "00:54:02"
+          "arrival": "00:53:32",
+          "departure": "00:54:32"
         },
         {
           "station": "dospen",
-          "arrival": "00:55:45",
-          "departure": "00:55:45"
+          "arrival": "00:56:15",
+          "departure": "00:56:15"
         },
         {
           "station": "landing",
-          "arrival": "00:57:28",
-          "departure": "00:58:28"
+          "arrival": "00:57:58",
+          "departure": "00:58:58"
         },
         {
           "station": "westerhausen",
-          "arrival": "01:00:11",
+          "arrival": "01:00:41",
           "departure": ""
         }
       ],
@@ -1240,41 +1240,41 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "01:14:10"
+          "departure": "01:14:40"
         },
         {
           "station": "horb",
-          "arrival": "01:15:53",
-          "departure": "01:16:53"
+          "arrival": "01:16:23",
+          "departure": "01:17:23"
         },
         {
           "station": "camberg",
-          "arrival": "01:18:36",
-          "departure": "01:18:36"
+          "arrival": "01:19:06",
+          "departure": "01:19:06"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:20:19",
-          "departure": "01:21:19"
+          "arrival": "01:20:49",
+          "departure": "01:21:49"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:23:02",
-          "departure": "01:24:02"
+          "arrival": "01:23:32",
+          "departure": "01:24:32"
         },
         {
           "station": "dospen",
-          "arrival": "01:25:45",
-          "departure": "01:25:45"
+          "arrival": "01:26:15",
+          "departure": "01:26:15"
         },
         {
           "station": "landing",
-          "arrival": "01:27:28",
-          "departure": "01:28:28"
+          "arrival": "01:27:58",
+          "departure": "01:28:58"
         },
         {
           "station": "westerhausen",
-          "arrival": "01:30:11",
+          "arrival": "01:30:41",
           "departure": ""
         }
       ],
@@ -1291,41 +1291,41 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "01:44:10"
+          "departure": "01:44:40"
         },
         {
           "station": "horb",
-          "arrival": "01:45:53",
-          "departure": "01:46:53"
+          "arrival": "01:46:23",
+          "departure": "01:47:23"
         },
         {
           "station": "camberg",
-          "arrival": "01:48:36",
-          "departure": "01:48:36"
+          "arrival": "01:49:06",
+          "departure": "01:49:06"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:50:19",
-          "departure": "01:51:19"
+          "arrival": "01:50:49",
+          "departure": "01:51:49"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:53:02",
-          "departure": "01:54:02"
+          "arrival": "01:53:32",
+          "departure": "01:54:32"
         },
         {
           "station": "dospen",
-          "arrival": "01:55:45",
-          "departure": "01:55:45"
+          "arrival": "01:56:15",
+          "departure": "01:56:15"
         },
         {
           "station": "landing",
-          "arrival": "01:57:28",
-          "departure": "01:58:28"
+          "arrival": "01:57:58",
+          "departure": "01:58:58"
         },
         {
           "station": "westerhausen",
-          "arrival": "02:00:11",
+          "arrival": "02:00:41",
           "departure": ""
         }
       ],
@@ -1342,36 +1342,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:07:00"
+          "departure": "00:07:30"
         },
         {
           "station": "wingst",
-          "arrival": "00:08:43",
-          "departure": "00:08:43"
+          "arrival": "00:09:13",
+          "departure": "00:09:13"
         },
         {
           "station": "aurich",
-          "arrival": "00:10:26",
-          "departure": "00:11:26"
+          "arrival": "00:10:56",
+          "departure": "00:11:56"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:13:09",
-          "departure": "00:14:09"
+          "arrival": "00:13:39",
+          "departure": "00:14:39"
         },
         {
           "station": "camberg",
-          "arrival": "00:15:52",
-          "departure": "00:15:52"
+          "arrival": "00:16:22",
+          "departure": "00:16:22"
         },
         {
           "station": "horb",
-          "arrival": "00:17:35",
-          "departure": "00:18:35"
+          "arrival": "00:18:05",
+          "departure": "00:19:05"
         },
         {
           "station": "ostermünde",
-          "arrival": "00:20:18",
+          "arrival": "00:20:48",
           "departure": ""
         }
       ],
@@ -1388,36 +1388,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:37:00"
+          "departure": "00:37:30"
         },
         {
           "station": "wingst",
-          "arrival": "00:38:43",
-          "departure": "00:38:43"
+          "arrival": "00:39:13",
+          "departure": "00:39:13"
         },
         {
           "station": "aurich",
-          "arrival": "00:40:26",
-          "departure": "00:41:26"
+          "arrival": "00:40:56",
+          "departure": "00:41:56"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:43:09",
-          "departure": "00:45:07"
+          "arrival": "00:43:39",
+          "departure": "00:45:37"
         },
         {
           "station": "camberg",
-          "arrival": "00:46:50",
-          "departure": "00:46:50"
+          "arrival": "00:47:20",
+          "departure": "00:47:20"
         },
         {
           "station": "horb",
-          "arrival": "00:48:33",
-          "departure": "00:49:33"
+          "arrival": "00:49:03",
+          "departure": "00:50:03"
         },
         {
           "station": "ostermünde",
-          "arrival": "00:51:16",
+          "arrival": "00:51:46",
           "departure": ""
         }
       ],
@@ -1434,36 +1434,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "01:07:00"
+          "departure": "01:07:30"
         },
         {
           "station": "wingst",
-          "arrival": "01:08:43",
-          "departure": "01:08:43"
+          "arrival": "01:09:13",
+          "departure": "01:09:13"
         },
         {
           "station": "aurich",
-          "arrival": "01:10:26",
-          "departure": "01:11:26"
+          "arrival": "01:10:56",
+          "departure": "01:11:56"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:13:09",
-          "departure": "01:14:09"
+          "arrival": "01:13:39",
+          "departure": "01:14:39"
         },
         {
           "station": "camberg",
-          "arrival": "01:15:52",
-          "departure": "01:15:52"
+          "arrival": "01:16:22",
+          "departure": "01:16:22"
         },
         {
           "station": "horb",
-          "arrival": "01:17:35",
-          "departure": "01:18:35"
+          "arrival": "01:18:05",
+          "departure": "01:19:05"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:20:18",
+          "arrival": "01:20:48",
           "departure": ""
         }
       ],
@@ -1480,36 +1480,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "01:37:00"
+          "departure": "01:37:30"
         },
         {
           "station": "wingst",
-          "arrival": "01:38:43",
-          "departure": "01:38:43"
+          "arrival": "01:39:13",
+          "departure": "01:39:13"
         },
         {
           "station": "aurich",
-          "arrival": "01:40:26",
-          "departure": "01:41:26"
+          "arrival": "01:40:56",
+          "departure": "01:41:56"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:43:09",
-          "departure": "01:44:09"
+          "arrival": "01:43:39",
+          "departure": "01:44:39"
         },
         {
           "station": "camberg",
-          "arrival": "01:45:52",
-          "departure": "01:45:52"
+          "arrival": "01:46:22",
+          "departure": "01:46:22"
         },
         {
           "station": "horb",
-          "arrival": "01:47:35",
-          "departure": "01:48:35"
+          "arrival": "01:48:05",
+          "departure": "01:49:05"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:50:18",
+          "arrival": "01:50:48",
           "departure": ""
         }
       ],
@@ -1526,36 +1526,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:04:29"
+          "departure": "00:04:59"
         },
         {
           "station": "horb",
-          "arrival": "00:06:12",
-          "departure": "00:07:12"
+          "arrival": "00:06:42",
+          "departure": "00:07:42"
         },
         {
           "station": "camberg",
-          "arrival": "00:08:55",
-          "departure": "00:08:55"
+          "arrival": "00:09:25",
+          "departure": "00:09:25"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:10:38",
-          "departure": "00:11:38"
+          "arrival": "00:11:08",
+          "departure": "00:12:08"
         },
         {
           "station": "aurich",
-          "arrival": "00:13:21",
-          "departure": "00:14:21"
+          "arrival": "00:13:51",
+          "departure": "00:14:51"
         },
         {
           "station": "wingst",
-          "arrival": "00:16:04",
-          "departure": "00:16:04"
+          "arrival": "00:16:34",
+          "departure": "00:16:34"
         },
         {
           "station": "nordendorf",
-          "arrival": "00:17:47",
+          "arrival": "00:18:17",
           "departure": ""
         }
       ],
@@ -1572,36 +1572,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:35:10"
+          "departure": "00:35:40"
         },
         {
           "station": "horb",
-          "arrival": "00:36:53",
-          "departure": "00:37:53"
+          "arrival": "00:37:23",
+          "departure": "00:38:23"
         },
         {
           "station": "camberg",
-          "arrival": "00:39:36",
-          "departure": "00:39:36"
+          "arrival": "00:40:06",
+          "departure": "00:40:06"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:41:19",
-          "departure": "00:42:19"
+          "arrival": "00:41:49",
+          "departure": "00:42:49"
         },
         {
           "station": "aurich",
-          "arrival": "00:44:02",
-          "departure": "00:45:02"
+          "arrival": "00:44:32",
+          "departure": "00:45:32"
         },
         {
           "station": "wingst",
-          "arrival": "00:46:45",
-          "departure": "00:46:45"
+          "arrival": "00:47:15",
+          "departure": "00:47:15"
         },
         {
           "station": "nordendorf",
-          "arrival": "00:48:28",
+          "arrival": "00:48:58",
           "departure": ""
         }
       ],
@@ -1618,36 +1618,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "01:05:10"
+          "departure": "01:05:40"
         },
         {
           "station": "horb",
-          "arrival": "01:06:53",
-          "departure": "01:07:53"
+          "arrival": "01:07:23",
+          "departure": "01:08:23"
         },
         {
           "station": "camberg",
-          "arrival": "01:09:36",
-          "departure": "01:09:36"
+          "arrival": "01:10:06",
+          "departure": "01:10:06"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:11:19",
-          "departure": "01:12:19"
+          "arrival": "01:11:49",
+          "departure": "01:12:49"
         },
         {
           "station": "aurich",
-          "arrival": "01:14:02",
-          "departure": "01:15:02"
+          "arrival": "01:14:32",
+          "departure": "01:15:32"
         },
         {
           "station": "wingst",
-          "arrival": "01:16:45",
-          "departure": "01:16:45"
+          "arrival": "01:17:15",
+          "departure": "01:17:15"
         },
         {
           "station": "nordendorf",
-          "arrival": "01:18:28",
+          "arrival": "01:18:58",
           "departure": ""
         }
       ],
@@ -1664,36 +1664,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "01:35:10"
+          "departure": "01:35:40"
         },
         {
           "station": "horb",
-          "arrival": "01:36:53",
-          "departure": "01:37:53"
+          "arrival": "01:37:23",
+          "departure": "01:38:23"
         },
         {
           "station": "camberg",
-          "arrival": "01:39:36",
-          "departure": "01:39:36"
+          "arrival": "01:40:06",
+          "departure": "01:40:06"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:41:19",
-          "departure": "01:42:19"
+          "arrival": "01:41:49",
+          "departure": "01:42:49"
         },
         {
           "station": "aurich",
-          "arrival": "01:44:02",
-          "departure": "01:45:02"
+          "arrival": "01:44:32",
+          "departure": "01:45:32"
         },
         {
           "station": "wingst",
-          "arrival": "01:46:45",
-          "departure": "01:46:45"
+          "arrival": "01:47:15",
+          "departure": "01:47:15"
         },
         {
           "station": "nordendorf",
-          "arrival": "01:48:28",
+          "arrival": "01:48:58",
           "departure": ""
         }
       ],
@@ -1710,36 +1710,36 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:10:35"
+          "departure": "00:11:05"
         },
         {
           "station": "landing",
-          "arrival": "00:12:35",
-          "departure": "00:12:38"
+          "arrival": "00:13:05",
+          "departure": "00:13:08"
         },
         {
           "station": "dospen",
-          "arrival": "00:14:38",
-          "departure": "00:15:38"
+          "arrival": "00:15:08",
+          "departure": "00:16:08"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:17:38",
-          "departure": "00:18:38"
+          "arrival": "00:18:08",
+          "departure": "00:19:08"
         },
         {
           "station": "aurich",
-          "arrival": "00:20:38",
-          "departure": "00:21:38"
+          "arrival": "00:21:08",
+          "departure": "00:22:08"
         },
         {
           "station": "wingst",
-          "arrival": "00:23:38",
-          "departure": "00:24:38"
+          "arrival": "00:24:08",
+          "departure": "00:25:08"
         },
         {
           "station": "nordendorf",
-          "arrival": "00:26:38",
+          "arrival": "00:27:08",
           "departure": ""
         }
       ],
@@ -1756,36 +1756,36 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "01:09:10"
+          "departure": "01:09:40"
         },
         {
           "station": "landing",
-          "arrival": "01:11:10",
-          "departure": "01:12:10"
+          "arrival": "01:11:40",
+          "departure": "01:12:40"
         },
         {
           "station": "dospen",
-          "arrival": "01:14:10",
-          "departure": "01:15:10"
+          "arrival": "01:14:40",
+          "departure": "01:15:40"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:17:10",
-          "departure": "01:18:16"
+          "arrival": "01:17:40",
+          "departure": "01:18:46"
         },
         {
           "station": "aurich",
-          "arrival": "01:20:16",
-          "departure": "01:21:16"
+          "arrival": "01:20:46",
+          "departure": "01:21:46"
         },
         {
           "station": "wingst",
-          "arrival": "01:23:16",
-          "departure": "01:26:37"
+          "arrival": "01:23:46",
+          "departure": "01:27:07"
         },
         {
           "station": "nordendorf",
-          "arrival": "01:28:37",
+          "arrival": "01:29:07",
           "departure": ""
         }
       ],
@@ -1802,36 +1802,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:33:20"
+          "departure": "00:33:50"
         },
         {
           "station": "wingst",
-          "arrival": "00:35:20",
-          "departure": "00:36:20"
+          "arrival": "00:35:50",
+          "departure": "00:36:50"
         },
         {
           "station": "aurich",
-          "arrival": "00:38:20",
-          "departure": "00:39:20"
+          "arrival": "00:38:50",
+          "departure": "00:39:50"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:41:20",
-          "departure": "00:42:20"
+          "arrival": "00:41:50",
+          "departure": "00:42:50"
         },
         {
           "station": "dospen",
-          "arrival": "00:44:20",
-          "departure": "00:45:20"
+          "arrival": "00:44:50",
+          "departure": "00:45:50"
         },
         {
           "station": "landing",
-          "arrival": "00:47:20",
-          "departure": "00:50:30"
+          "arrival": "00:47:50",
+          "departure": "00:51:00"
         },
         {
           "station": "westerhausen",
-          "arrival": "00:52:30",
+          "arrival": "00:53:00",
           "departure": ""
         }
       ],
@@ -1848,36 +1848,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "01:33:20"
+          "departure": "01:33:50"
         },
         {
           "station": "wingst",
-          "arrival": "01:35:20",
-          "departure": "01:36:20"
+          "arrival": "01:35:50",
+          "departure": "01:36:50"
         },
         {
           "station": "aurich",
-          "arrival": "01:38:20",
-          "departure": "01:39:20"
+          "arrival": "01:38:50",
+          "departure": "01:39:50"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:41:20",
-          "departure": "01:42:20"
+          "arrival": "01:41:50",
+          "departure": "01:42:50"
         },
         {
           "station": "dospen",
-          "arrival": "01:44:20",
-          "departure": "01:45:20"
+          "arrival": "01:44:50",
+          "departure": "01:45:50"
         },
         {
           "station": "landing",
-          "arrival": "01:47:20",
-          "departure": "01:48:20"
+          "arrival": "01:47:50",
+          "departure": "01:48:50"
         },
         {
           "station": "westerhausen",
-          "arrival": "01:50:20",
+          "arrival": "01:50:50",
           "departure": ""
         }
       ],
@@ -1894,36 +1894,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:19:21"
+          "departure": "00:19:51"
         },
         {
           "station": "wingst",
-          "arrival": "00:20:51",
-          "departure": "00:20:51"
+          "arrival": "00:21:21",
+          "departure": "00:21:21"
         },
         {
           "station": "aurich",
-          "arrival": "00:22:21",
-          "departure": "00:22:21"
+          "arrival": "00:22:51",
+          "departure": "00:22:51"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:23:51",
-          "departure": "00:26:00"
+          "arrival": "00:24:21",
+          "departure": "00:26:30"
         },
         {
           "station": "camberg",
-          "arrival": "00:27:30",
-          "departure": "00:27:30"
+          "arrival": "00:28:00",
+          "departure": "00:28:00"
         },
         {
           "station": "horb",
-          "arrival": "00:29:00",
-          "departure": "00:29:00"
+          "arrival": "00:29:30",
+          "departure": "00:29:30"
         },
         {
           "station": "ostermünde",
-          "arrival": "00:30:30",
+          "arrival": "00:31:00",
           "departure": ""
         }
       ],
@@ -1940,36 +1940,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "01:23:00"
+          "departure": "01:23:30"
         },
         {
           "station": "wingst",
-          "arrival": "01:24:30",
-          "departure": "01:24:30"
+          "arrival": "01:25:00",
+          "departure": "01:25:00"
         },
         {
           "station": "aurich",
-          "arrival": "01:26:00",
-          "departure": "01:26:00"
+          "arrival": "01:26:30",
+          "departure": "01:26:30"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:27:30",
-          "departure": "01:29:00"
+          "arrival": "01:28:00",
+          "departure": "01:29:30"
         },
         {
           "station": "camberg",
-          "arrival": "01:30:30",
-          "departure": "01:30:30"
+          "arrival": "01:31:00",
+          "departure": "01:31:00"
         },
         {
           "station": "horb",
-          "arrival": "01:32:00",
-          "departure": "01:32:00"
+          "arrival": "01:32:30",
+          "departure": "01:32:30"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:33:30",
+          "arrival": "01:34:00",
           "departure": ""
         }
       ],
@@ -1986,41 +1986,41 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:55:10"
+          "departure": "00:55:40"
         },
         {
           "station": "horb",
-          "arrival": "00:56:40",
-          "departure": "00:56:40"
+          "arrival": "00:57:10",
+          "departure": "00:57:10"
         },
         {
           "station": "camberg",
-          "arrival": "00:58:10",
-          "departure": "00:58:10"
+          "arrival": "00:58:40",
+          "departure": "00:58:40"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:59:40",
-          "departure": "01:01:10"
+          "arrival": "01:00:10",
+          "departure": "01:01:40"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:02:40",
-          "departure": "01:02:40"
+          "arrival": "01:03:10",
+          "departure": "01:03:10"
         },
         {
           "station": "dospen",
-          "arrival": "01:04:10",
-          "departure": "01:04:10"
+          "arrival": "01:04:40",
+          "departure": "01:04:40"
         },
         {
           "station": "landing",
-          "arrival": "01:05:40",
-          "departure": "01:05:40"
+          "arrival": "01:06:10",
+          "departure": "01:06:10"
         },
         {
           "station": "westerhausen",
-          "arrival": "01:07:10",
+          "arrival": "01:07:40",
           "departure": ""
         }
       ],
@@ -2037,41 +2037,41 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "01:55:10"
+          "departure": "01:55:40"
         },
         {
           "station": "horb",
-          "arrival": "01:56:40",
-          "departure": "01:56:40"
+          "arrival": "01:57:10",
+          "departure": "01:57:10"
         },
         {
           "station": "camberg",
-          "arrival": "01:58:10",
-          "departure": "01:58:10"
+          "arrival": "01:58:40",
+          "departure": "01:58:40"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:59:40",
-          "departure": "02:01:10"
+          "arrival": "02:00:10",
+          "departure": "02:01:40"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "02:02:40",
-          "departure": "02:02:40"
+          "arrival": "02:03:10",
+          "departure": "02:03:10"
         },
         {
           "station": "dospen",
-          "arrival": "02:04:10",
-          "departure": "02:04:10"
+          "arrival": "02:04:40",
+          "departure": "02:04:40"
         },
         {
           "station": "landing",
-          "arrival": "02:05:40",
-          "departure": "02:05:40"
+          "arrival": "02:06:10",
+          "departure": "02:06:10"
         },
         {
           "station": "westerhausen",
-          "arrival": "02:07:10",
+          "arrival": "02:07:40",
           "departure": ""
         }
       ],
@@ -2088,41 +2088,41 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:22:34"
+          "departure": "00:23:04"
         },
         {
           "station": "landing",
-          "arrival": "00:24:58",
-          "departure": "00:24:58"
+          "arrival": "00:25:28",
+          "departure": "00:25:28"
         },
         {
           "station": "dospen",
-          "arrival": "00:27:22",
-          "departure": "00:27:22"
+          "arrival": "00:27:52",
+          "departure": "00:27:52"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:29:46",
-          "departure": "00:29:46"
+          "arrival": "00:30:16",
+          "departure": "00:30:16"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:32:10",
-          "departure": "00:36:38"
+          "arrival": "00:32:40",
+          "departure": "00:37:08"
         },
         {
           "station": "camberg",
-          "arrival": "00:39:02",
-          "departure": "00:49:02"
+          "arrival": "00:39:32",
+          "departure": "00:49:32"
         },
         {
           "station": "horb",
-          "arrival": "00:51:26",
-          "departure": "00:51:26"
+          "arrival": "00:51:56",
+          "departure": "00:51:56"
         },
         {
           "station": "ostermünde",
-          "arrival": "00:53:50",
+          "arrival": "00:54:20",
           "departure": ""
         }
       ],
@@ -2139,41 +2139,41 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "01:23:40"
+          "departure": "01:24:10"
         },
         {
           "station": "landing",
-          "arrival": "01:26:04",
-          "departure": "01:26:04"
+          "arrival": "01:26:34",
+          "departure": "01:26:34"
         },
         {
           "station": "dospen",
-          "arrival": "01:28:28",
-          "departure": "01:28:28"
+          "arrival": "01:28:58",
+          "departure": "01:28:58"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:30:52",
-          "departure": "01:30:52"
+          "arrival": "01:31:22",
+          "departure": "01:31:22"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:33:16",
-          "departure": "01:33:16"
+          "arrival": "01:33:46",
+          "departure": "01:33:46"
         },
         {
           "station": "camberg",
-          "arrival": "01:35:40",
-          "departure": "01:35:40"
+          "arrival": "01:36:10",
+          "departure": "01:36:10"
         },
         {
           "station": "horb",
-          "arrival": "01:38:04",
-          "departure": "01:38:04"
+          "arrival": "01:38:34",
+          "departure": "01:38:34"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:40:28",
+          "arrival": "01:40:58",
           "departure": ""
         }
       ],
@@ -2190,36 +2190,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:09:55"
+          "departure": "00:10:25"
         },
         {
           "station": "horb",
-          "arrival": "00:12:19",
-          "departure": "00:24:49"
+          "arrival": "00:12:49",
+          "departure": "00:25:19"
         },
         {
           "station": "camberg",
-          "arrival": "00:27:13",
-          "departure": "00:27:13"
+          "arrival": "00:27:43",
+          "departure": "00:27:43"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:29:37",
-          "departure": "00:29:37"
+          "arrival": "00:30:07",
+          "departure": "00:30:07"
         },
         {
           "station": "aurich",
-          "arrival": "00:32:01",
-          "departure": "00:32:01"
+          "arrival": "00:32:31",
+          "departure": "00:32:31"
         },
         {
           "station": "wingst",
-          "arrival": "00:34:25",
-          "departure": "00:34:25"
+          "arrival": "00:34:55",
+          "departure": "00:34:55"
         },
         {
           "station": "nordendorf",
-          "arrival": "00:36:49",
+          "arrival": "00:37:19",
           "departure": ""
         }
       ],
@@ -2236,36 +2236,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "01:22:50"
+          "departure": "01:23:20"
         },
         {
           "station": "horb",
-          "arrival": "01:25:14",
-          "departure": "01:25:14"
+          "arrival": "01:25:44",
+          "departure": "01:25:44"
         },
         {
           "station": "camberg",
-          "arrival": "01:27:38",
-          "departure": "01:27:38"
+          "arrival": "01:28:08",
+          "departure": "01:28:08"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:30:02",
-          "departure": "01:30:02"
+          "arrival": "01:30:32",
+          "departure": "01:30:32"
         },
         {
           "station": "aurich",
-          "arrival": "01:32:26",
-          "departure": "01:32:26"
+          "arrival": "01:32:56",
+          "departure": "01:32:56"
         },
         {
           "station": "wingst",
-          "arrival": "01:34:50",
-          "departure": "01:34:50"
+          "arrival": "01:35:20",
+          "departure": "01:35:20"
         },
         {
           "station": "nordendorf",
-          "arrival": "01:37:14",
+          "arrival": "01:37:44",
           "departure": ""
         }
       ],
@@ -2282,36 +2282,36 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:06:15"
+          "departure": "00:06:45"
         },
         {
           "station": "landing",
-          "arrival": "00:08:15",
-          "departure": "00:09:35"
+          "arrival": "00:08:45",
+          "departure": "00:10:05"
         },
         {
           "station": "dospen",
-          "arrival": "00:11:35",
-          "departure": "00:12:35"
+          "arrival": "00:12:05",
+          "departure": "00:13:05"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:14:35",
-          "departure": "00:16:15"
+          "arrival": "00:15:05",
+          "departure": "00:16:45"
         },
         {
           "station": "finnhof",
-          "arrival": "00:18:15",
-          "departure": "00:19:15"
+          "arrival": "00:18:45",
+          "departure": "00:19:45"
         },
         {
           "station": "bernau",
-          "arrival": "00:21:15",
-          "departure": "00:22:15"
+          "arrival": "00:21:45",
+          "departure": "00:22:45"
         },
         {
           "station": "camberg",
-          "arrival": "00:24:15",
+          "arrival": "00:24:45",
           "departure": ""
         }
       ],
@@ -2328,31 +2328,31 @@
         {
           "station": "camberg",
           "arrival": "",
-          "departure": "00:31:00"
+          "departure": "00:31:30"
         },
         {
           "station": "bernau",
-          "arrival": "00:33:00",
-          "departure": "00:34:00"
+          "arrival": "00:33:30",
+          "departure": "00:34:30"
         },
         {
           "station": "finnhof",
-          "arrival": "00:36:00",
-          "departure": "00:37:00"
+          "arrival": "00:36:30",
+          "departure": "00:37:30"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:39:00",
-          "departure": "00:40:00"
+          "arrival": "00:39:30",
+          "departure": "00:40:30"
         },
         {
           "station": "dospen",
-          "arrival": "00:42:00",
-          "departure": "00:43:00"
+          "arrival": "00:42:30",
+          "departure": "00:43:30"
         },
         {
           "station": "landing",
-          "arrival": "00:45:00",
+          "arrival": "00:45:30",
           "departure": ""
         }
       ],
@@ -2369,31 +2369,31 @@
         {
           "station": "landing",
           "arrival": "",
-          "departure": "01:05:02"
+          "departure": "01:05:32"
         },
         {
           "station": "dospen",
-          "arrival": "01:07:02",
-          "departure": "01:08:02"
+          "arrival": "01:07:32",
+          "departure": "01:08:32"
         },
         {
           "station": "langenfelde",
-          "arrival": "01:10:02",
-          "departure": "01:11:02"
+          "arrival": "01:10:32",
+          "departure": "01:11:32"
         },
         {
           "station": "finnhof",
-          "arrival": "01:13:02",
-          "departure": "01:14:02"
+          "arrival": "01:13:32",
+          "departure": "01:14:32"
         },
         {
           "station": "bernau",
-          "arrival": "01:16:02",
-          "departure": "01:17:02"
+          "arrival": "01:16:32",
+          "departure": "01:17:32"
         },
         {
           "station": "camberg",
-          "arrival": "01:19:02",
+          "arrival": "01:19:32",
           "departure": ""
         }
       ],
@@ -2410,31 +2410,31 @@
         {
           "station": "camberg",
           "arrival": "",
-          "departure": "01:31:00"
+          "departure": "01:31:30"
         },
         {
           "station": "bernau",
-          "arrival": "01:33:00",
-          "departure": "01:34:00"
+          "arrival": "01:33:30",
+          "departure": "01:34:30"
         },
         {
           "station": "finnhof",
-          "arrival": "01:36:00",
-          "departure": "01:37:00"
+          "arrival": "01:36:30",
+          "departure": "01:37:30"
         },
         {
           "station": "langenfelde",
-          "arrival": "01:39:00",
-          "departure": "01:40:00"
+          "arrival": "01:39:30",
+          "departure": "01:40:30"
         },
         {
           "station": "dospen",
-          "arrival": "01:42:00",
-          "departure": "01:43:00"
+          "arrival": "01:42:30",
+          "departure": "01:43:30"
         },
         {
           "station": "landing",
-          "arrival": "01:45:00",
+          "arrival": "01:45:30",
           "departure": ""
         }
       ],
@@ -2451,41 +2451,41 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:06:09"
+          "departure": "00:06:39"
         },
         {
           "station": "horb",
-          "arrival": "00:08:09",
-          "departure": "00:13:14"
+          "arrival": "00:08:39",
+          "departure": "00:13:44"
         },
         {
           "station": "camberg",
-          "arrival": "00:15:14",
-          "departure": "00:16:14"
+          "arrival": "00:15:44",
+          "departure": "00:16:44"
         },
         {
           "station": "bernau",
-          "arrival": "00:18:14",
-          "departure": "00:22:26"
+          "arrival": "00:18:44",
+          "departure": "00:22:56"
         },
         {
           "station": "finnhof",
-          "arrival": "00:24:26",
-          "departure": "00:26:41"
+          "arrival": "00:24:56",
+          "departure": "00:27:11"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:28:41",
-          "departure": "00:29:41"
+          "arrival": "00:29:11",
+          "departure": "00:30:11"
         },
         {
           "station": "dospen",
-          "arrival": "00:31:41",
-          "departure": "00:38:04"
+          "arrival": "00:32:11",
+          "departure": "00:38:34"
         },
         {
           "station": "landing",
-          "arrival": "00:40:04",
+          "arrival": "00:40:34",
           "departure": ""
         }
       ],
@@ -2502,31 +2502,31 @@
         {
           "station": "landing",
           "arrival": "",
-          "departure": "00:36:58"
+          "departure": "00:37:28"
         },
         {
           "station": "dospen",
-          "arrival": "00:38:58",
-          "departure": "00:44:00"
+          "arrival": "00:39:28",
+          "departure": "00:44:30"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:46:00",
-          "departure": "00:47:00"
+          "arrival": "00:46:30",
+          "departure": "00:47:30"
         },
         {
           "station": "finnhof",
-          "arrival": "00:49:00",
-          "departure": "00:50:00"
+          "arrival": "00:49:30",
+          "departure": "00:50:30"
         },
         {
           "station": "bernau",
-          "arrival": "00:52:00",
-          "departure": "00:53:00"
+          "arrival": "00:52:30",
+          "departure": "00:53:30"
         },
         {
           "station": "camberg",
-          "arrival": "00:55:00",
+          "arrival": "00:55:30",
           "departure": ""
         }
       ],
@@ -2543,31 +2543,31 @@
         {
           "station": "camberg",
           "arrival": "",
-          "departure": "01:05:00"
+          "departure": "01:05:30"
         },
         {
           "station": "bernau",
-          "arrival": "01:07:00",
-          "departure": "01:08:00"
+          "arrival": "01:07:30",
+          "departure": "01:08:30"
         },
         {
           "station": "finnhof",
-          "arrival": "01:10:00",
-          "departure": "01:13:02"
+          "arrival": "01:10:30",
+          "departure": "01:13:32"
         },
         {
           "station": "langenfelde",
-          "arrival": "01:15:02",
-          "departure": "01:16:02"
+          "arrival": "01:15:32",
+          "departure": "01:16:32"
         },
         {
           "station": "dospen",
-          "arrival": "01:18:02",
-          "departure": "01:19:05"
+          "arrival": "01:18:32",
+          "departure": "01:19:35"
         },
         {
           "station": "landing",
-          "arrival": "01:21:05",
+          "arrival": "01:21:35",
           "departure": ""
         }
       ],
@@ -2584,31 +2584,31 @@
         {
           "station": "landing",
           "arrival": "",
-          "departure": "01:37:00"
+          "departure": "01:37:30"
         },
         {
           "station": "dospen",
-          "arrival": "01:39:00",
-          "departure": "01:40:00"
+          "arrival": "01:39:30",
+          "departure": "01:40:30"
         },
         {
           "station": "langenfelde",
-          "arrival": "01:42:00",
-          "departure": "01:43:00"
+          "arrival": "01:42:30",
+          "departure": "01:43:30"
         },
         {
           "station": "finnhof",
-          "arrival": "01:45:00",
-          "departure": "01:46:00"
+          "arrival": "01:45:30",
+          "departure": "01:46:30"
         },
         {
           "station": "bernau",
-          "arrival": "01:48:00",
-          "departure": "01:49:00"
+          "arrival": "01:48:30",
+          "departure": "01:49:30"
         },
         {
           "station": "camberg",
-          "arrival": "01:51:00",
+          "arrival": "01:51:30",
           "departure": ""
         }
       ],
@@ -2625,31 +2625,31 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:30:06"
+          "departure": "00:30:36"
         },
         {
           "station": "landing",
-          "arrival": "00:32:30",
-          "departure": "00:32:30"
+          "arrival": "00:33:00",
+          "departure": "00:33:00"
         },
         {
           "station": "dospen",
-          "arrival": "00:34:54",
-          "departure": "00:34:54"
+          "arrival": "00:35:24",
+          "departure": "00:35:24"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:37:18",
-          "departure": "00:41:25"
+          "arrival": "00:37:48",
+          "departure": "00:41:55"
         },
         {
           "station": "finnhof",
-          "arrival": "00:43:49",
-          "departure": "00:43:49"
+          "arrival": "00:44:19",
+          "departure": "00:44:19"
         },
         {
           "station": "unterberg",
-          "arrival": "00:46:13",
+          "arrival": "00:46:43",
           "departure": ""
         }
       ],
@@ -2666,31 +2666,31 @@
         {
           "station": "unterberg",
           "arrival": "",
-          "departure": "00:46:13"
+          "departure": "00:46:43"
         },
         {
           "station": "finnhof",
-          "arrival": "00:48:37",
-          "departure": "00:50:18"
+          "arrival": "00:49:07",
+          "departure": "00:50:48"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:52:42",
-          "departure": "00:59:36"
+          "arrival": "00:53:12",
+          "departure": "01:00:06"
         },
         {
           "station": "dospen",
-          "arrival": "01:02:00",
-          "departure": "01:09:54"
+          "arrival": "01:02:30",
+          "departure": "01:10:24"
         },
         {
           "station": "landing",
-          "arrival": "01:12:18",
-          "departure": "01:12:18"
+          "arrival": "01:12:48",
+          "departure": "01:12:48"
         },
         {
           "station": "westerhausen",
-          "arrival": "01:14:42",
+          "arrival": "01:15:12",
           "departure": ""
         }
       ],
@@ -2707,31 +2707,31 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "01:31:00"
+          "departure": "01:31:30"
         },
         {
           "station": "landing",
-          "arrival": "01:33:24",
-          "departure": "01:34:21"
+          "arrival": "01:33:54",
+          "departure": "01:34:51"
         },
         {
           "station": "dospen",
-          "arrival": "01:36:45",
-          "departure": "01:36:45"
+          "arrival": "01:37:15",
+          "departure": "01:37:15"
         },
         {
           "station": "langenfelde",
-          "arrival": "01:39:09",
-          "departure": "01:39:09"
+          "arrival": "01:39:39",
+          "departure": "01:39:39"
         },
         {
           "station": "finnhof",
-          "arrival": "01:41:33",
-          "departure": "01:41:33"
+          "arrival": "01:42:03",
+          "departure": "01:42:03"
         },
         {
           "station": "unterberg",
-          "arrival": "01:43:57",
+          "arrival": "01:44:27",
           "departure": ""
         }
       ],
@@ -2748,31 +2748,31 @@
         {
           "station": "unterberg",
           "arrival": "",
-          "departure": "01:43:30"
+          "departure": "01:44:00"
         },
         {
           "station": "finnhof",
-          "arrival": "01:45:54",
-          "departure": "01:45:54"
+          "arrival": "01:46:24",
+          "departure": "01:46:24"
         },
         {
           "station": "langenfelde",
-          "arrival": "01:48:18",
-          "departure": "01:48:18"
+          "arrival": "01:48:48",
+          "departure": "01:48:48"
         },
         {
           "station": "dospen",
-          "arrival": "01:50:42",
-          "departure": "01:50:42"
+          "arrival": "01:51:12",
+          "departure": "01:51:12"
         },
         {
           "station": "landing",
-          "arrival": "01:53:06",
-          "departure": "01:53:06"
+          "arrival": "01:53:36",
+          "departure": "01:53:36"
         },
         {
           "station": "westerhausen",
-          "arrival": "01:55:30",
+          "arrival": "01:56:00",
           "departure": ""
         }
       ],
@@ -2789,41 +2789,41 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:34:19"
+          "departure": "00:34:49"
         },
         {
           "station": "landing",
-          "arrival": "00:36:43",
-          "departure": "00:39:03"
+          "arrival": "00:37:13",
+          "departure": "00:39:33"
         },
         {
           "station": "dospen",
-          "arrival": "00:41:27",
-          "departure": "00:41:27"
+          "arrival": "00:41:57",
+          "departure": "00:41:57"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:43:51",
-          "departure": "00:43:51"
+          "arrival": "00:44:21",
+          "departure": "00:44:21"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:46:15",
-          "departure": "00:48:16"
+          "arrival": "00:46:45",
+          "departure": "00:48:46"
         },
         {
           "station": "camberg",
-          "arrival": "00:50:40",
-          "departure": "01:08:27"
+          "arrival": "00:51:10",
+          "departure": "01:08:57"
         },
         {
           "station": "horb",
-          "arrival": "01:10:51",
-          "departure": "01:10:51"
+          "arrival": "01:11:21",
+          "departure": "01:11:21"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:13:15",
+          "arrival": "01:13:45",
           "departure": ""
         }
       ],
@@ -2840,41 +2840,41 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "01:11:00"
+          "departure": "01:11:30"
         },
         {
           "station": "horb",
-          "arrival": "01:13:24",
-          "departure": "01:13:24"
+          "arrival": "01:13:54",
+          "departure": "01:13:54"
         },
         {
           "station": "camberg",
-          "arrival": "01:15:48",
-          "departure": "01:15:48"
+          "arrival": "01:16:18",
+          "departure": "01:16:18"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:18:12",
-          "departure": "01:18:12"
+          "arrival": "01:18:42",
+          "departure": "01:18:42"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:20:36",
-          "departure": "01:20:36"
+          "arrival": "01:21:06",
+          "departure": "01:21:06"
         },
         {
           "station": "dospen",
-          "arrival": "01:23:00",
-          "departure": "01:23:00"
+          "arrival": "01:23:30",
+          "departure": "01:23:30"
         },
         {
           "station": "landing",
-          "arrival": "01:25:24",
-          "departure": "01:30:28"
+          "arrival": "01:25:54",
+          "departure": "01:30:58"
         },
         {
           "station": "westerhausen",
-          "arrival": "01:32:52",
+          "arrival": "01:33:22",
           "departure": ""
         }
       ],
@@ -2891,36 +2891,36 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:12:58"
+          "departure": "00:13:28"
         },
         {
           "station": "landing",
-          "arrival": "00:15:22",
-          "departure": "00:20:07"
+          "arrival": "00:15:52",
+          "departure": "00:20:37"
         },
         {
           "station": "dospen",
-          "arrival": "00:22:31",
-          "departure": "00:22:31"
+          "arrival": "00:23:01",
+          "departure": "00:23:01"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:24:55",
-          "departure": "00:24:55"
+          "arrival": "00:25:25",
+          "departure": "00:25:25"
         },
         {
           "station": "aurich",
-          "arrival": "00:27:19",
-          "departure": "00:27:19"
+          "arrival": "00:27:49",
+          "departure": "00:27:49"
         },
         {
           "station": "wingst",
-          "arrival": "00:29:43",
-          "departure": "00:29:43"
+          "arrival": "00:30:13",
+          "departure": "00:30:13"
         },
         {
           "station": "nordendorf",
-          "arrival": "00:32:07",
+          "arrival": "00:32:37",
           "departure": ""
         }
       ],
@@ -2937,36 +2937,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:22:03"
+          "departure": "00:22:33"
         },
         {
           "station": "horb",
-          "arrival": "00:24:27",
-          "departure": "00:27:22"
+          "arrival": "00:24:57",
+          "departure": "00:27:52"
         },
         {
           "station": "camberg",
-          "arrival": "00:29:46",
-          "departure": "00:35:20"
+          "arrival": "00:30:16",
+          "departure": "00:35:50"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:37:44",
-          "departure": "00:37:44"
+          "arrival": "00:38:14",
+          "departure": "00:38:14"
         },
         {
           "station": "aurich",
-          "arrival": "00:40:08",
-          "departure": "00:40:08"
+          "arrival": "00:40:38",
+          "departure": "00:40:38"
         },
         {
           "station": "wingst",
-          "arrival": "00:42:32",
-          "departure": "00:42:32"
+          "arrival": "00:43:02",
+          "departure": "00:43:02"
         },
         {
           "station": "nordendorf",
-          "arrival": "00:44:56",
+          "arrival": "00:45:26",
           "departure": ""
         }
       ],
@@ -2983,31 +2983,31 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:37:20"
+          "departure": "00:37:50"
         },
         {
           "station": "horb",
-          "arrival": "00:39:44",
-          "departure": "00:39:44"
+          "arrival": "00:40:14",
+          "departure": "00:40:14"
         },
         {
           "station": "camberg",
-          "arrival": "00:42:08",
-          "departure": "00:42:08"
+          "arrival": "00:42:38",
+          "departure": "00:42:38"
         },
         {
           "station": "bernau",
-          "arrival": "00:44:32",
-          "departure": "00:44:32"
+          "arrival": "00:45:02",
+          "departure": "00:45:02"
         },
         {
           "station": "finnhof",
-          "arrival": "00:46:56",
-          "departure": "00:46:56"
+          "arrival": "00:47:26",
+          "departure": "00:47:26"
         },
         {
           "station": "unterberg",
-          "arrival": "00:49:20",
+          "arrival": "00:49:50",
           "departure": ""
         }
       ],
@@ -3024,31 +3024,31 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:49:20"
+          "departure": "00:49:50"
         },
         {
           "station": "landing",
-          "arrival": "00:51:44",
-          "departure": "00:51:44"
+          "arrival": "00:52:14",
+          "departure": "00:52:14"
         },
         {
           "station": "dospen",
-          "arrival": "00:54:08",
-          "departure": "00:54:08"
+          "arrival": "00:54:38",
+          "departure": "00:54:38"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:56:32",
-          "departure": "00:56:32"
+          "arrival": "00:57:02",
+          "departure": "00:57:02"
         },
         {
           "station": "finnhof",
-          "arrival": "00:58:56",
-          "departure": "00:58:56"
+          "arrival": "00:59:26",
+          "departure": "00:59:26"
         },
         {
           "station": "unterberg",
-          "arrival": "01:01:20",
+          "arrival": "01:01:50",
           "departure": ""
         }
       ],
@@ -3065,36 +3065,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:52:11"
+          "departure": "00:52:41"
         },
         {
           "station": "horb",
-          "arrival": "00:53:41",
-          "departure": "00:53:41"
+          "arrival": "00:54:11",
+          "departure": "00:54:11"
         },
         {
           "station": "camberg",
-          "arrival": "00:55:11",
-          "departure": "00:55:11"
+          "arrival": "00:55:41",
+          "departure": "00:55:41"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:56:41",
-          "departure": "01:01:11"
+          "arrival": "00:57:11",
+          "departure": "01:01:41"
         },
         {
           "station": "aurich",
-          "arrival": "01:02:41",
-          "departure": "01:02:41"
+          "arrival": "01:03:11",
+          "departure": "01:03:11"
         },
         {
           "station": "wingst",
-          "arrival": "01:04:11",
-          "departure": "01:04:11"
+          "arrival": "01:04:41",
+          "departure": "01:04:41"
         },
         {
           "station": "nordendorf",
-          "arrival": "01:05:41",
+          "arrival": "01:06:11",
           "departure": ""
         }
       ],
@@ -3111,36 +3111,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "01:16:20"
+          "departure": "01:16:50"
         },
         {
           "station": "wingst",
-          "arrival": "01:17:50",
-          "departure": "01:17:50"
+          "arrival": "01:18:20",
+          "departure": "01:18:20"
         },
         {
           "station": "aurich",
-          "arrival": "01:19:20",
-          "departure": "01:19:20"
+          "arrival": "01:19:50",
+          "departure": "01:19:50"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:20:50",
-          "departure": "01:22:20"
+          "arrival": "01:21:20",
+          "departure": "01:22:50"
         },
         {
           "station": "camberg",
-          "arrival": "01:23:50",
-          "departure": "01:23:50"
+          "arrival": "01:24:20",
+          "departure": "01:24:20"
         },
         {
           "station": "horb",
-          "arrival": "01:25:20",
-          "departure": "01:25:20"
+          "arrival": "01:25:50",
+          "departure": "01:25:50"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:26:50",
+          "arrival": "01:27:20",
           "departure": ""
         }
       ],
@@ -3157,36 +3157,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "01:31:30"
+          "departure": "01:32:00"
         },
         {
           "station": "horb",
-          "arrival": "01:33:00",
-          "departure": "01:33:00"
+          "arrival": "01:33:30",
+          "departure": "01:33:30"
         },
         {
           "station": "camberg",
-          "arrival": "01:34:30",
-          "departure": "01:34:30"
+          "arrival": "01:35:00",
+          "departure": "01:35:00"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:36:00",
-          "departure": "01:37:30"
+          "arrival": "01:36:30",
+          "departure": "01:38:00"
         },
         {
           "station": "aurich",
-          "arrival": "01:39:00",
-          "departure": "01:39:00"
+          "arrival": "01:39:30",
+          "departure": "01:39:30"
         },
         {
           "station": "wingst",
-          "arrival": "01:40:30",
-          "departure": "01:40:30"
+          "arrival": "01:41:00",
+          "departure": "01:41:00"
         },
         {
           "station": "nordendorf",
-          "arrival": "01:42:00",
+          "arrival": "01:42:30",
           "departure": ""
         }
       ],
@@ -3203,36 +3203,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "01:45:13"
+          "departure": "01:45:43"
         },
         {
           "station": "wingst",
-          "arrival": "01:46:43",
-          "departure": "01:46:43"
+          "arrival": "01:47:13",
+          "departure": "01:47:13"
         },
         {
           "station": "aurich",
-          "arrival": "01:48:13",
-          "departure": "01:48:13"
+          "arrival": "01:48:43",
+          "departure": "01:48:43"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:49:43",
-          "departure": "01:51:13"
+          "arrival": "01:50:13",
+          "departure": "01:51:43"
         },
         {
           "station": "camberg",
-          "arrival": "01:52:43",
-          "departure": "01:52:43"
+          "arrival": "01:53:13",
+          "departure": "01:53:13"
         },
         {
           "station": "horb",
-          "arrival": "01:54:13",
-          "departure": "01:54:13"
+          "arrival": "01:54:43",
+          "departure": "01:54:43"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:55:43",
+          "arrival": "01:56:13",
           "departure": ""
         }
       ],
@@ -3249,36 +3249,36 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:52:40"
+          "departure": "00:53:10"
         },
         {
           "station": "landing",
-          "arrival": "00:54:10",
-          "departure": "00:54:10"
+          "arrival": "00:54:40",
+          "departure": "00:54:40"
         },
         {
           "station": "dospen",
-          "arrival": "00:55:40",
-          "departure": "00:55:40"
+          "arrival": "00:56:10",
+          "departure": "00:56:10"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:57:10",
-          "departure": "00:57:10"
+          "arrival": "00:57:40",
+          "departure": "00:57:40"
         },
         {
           "station": "aurich",
-          "arrival": "00:58:40",
-          "departure": "00:58:40"
+          "arrival": "00:59:10",
+          "departure": "00:59:10"
         },
         {
           "station": "wingst",
-          "arrival": "01:00:10",
-          "departure": "01:00:10"
+          "arrival": "01:00:40",
+          "departure": "01:00:40"
         },
         {
           "station": "nordendorf",
-          "arrival": "01:01:40",
+          "arrival": "01:02:10",
           "departure": ""
         }
       ],
@@ -3295,36 +3295,36 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "01:06:30"
+          "departure": "01:07:00"
         },
         {
           "station": "landing",
-          "arrival": "01:08:00",
-          "departure": "01:08:00"
+          "arrival": "01:08:30",
+          "departure": "01:08:30"
         },
         {
           "station": "dospen",
-          "arrival": "01:09:30",
-          "departure": "01:09:30"
+          "arrival": "01:10:00",
+          "departure": "01:10:00"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:11:00",
-          "departure": "01:11:00"
+          "arrival": "01:11:30",
+          "departure": "01:11:30"
         },
         {
           "station": "aurich",
-          "arrival": "01:12:30",
-          "departure": "01:12:30"
+          "arrival": "01:13:00",
+          "departure": "01:13:00"
         },
         {
           "station": "wingst",
-          "arrival": "01:14:00",
-          "departure": "01:14:00"
+          "arrival": "01:14:30",
+          "departure": "01:14:30"
         },
         {
           "station": "nordendorf",
-          "arrival": "01:15:30",
+          "arrival": "01:16:00",
           "departure": ""
         }
       ],
@@ -3341,36 +3341,36 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "01:41:00"
+          "departure": "01:41:30"
         },
         {
           "station": "landing",
-          "arrival": "01:42:30",
-          "departure": "01:42:30"
+          "arrival": "01:43:00",
+          "departure": "01:43:00"
         },
         {
           "station": "dospen",
-          "arrival": "01:44:00",
-          "departure": "01:44:00"
+          "arrival": "01:44:30",
+          "departure": "01:44:30"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:45:30",
-          "departure": "01:45:30"
+          "arrival": "01:46:00",
+          "departure": "01:46:00"
         },
         {
           "station": "aurich",
-          "arrival": "01:47:00",
-          "departure": "01:47:00"
+          "arrival": "01:47:30",
+          "departure": "01:47:30"
         },
         {
           "station": "wingst",
-          "arrival": "01:48:30",
-          "departure": "01:48:30"
+          "arrival": "01:49:00",
+          "departure": "01:49:00"
         },
         {
           "station": "nordendorf",
-          "arrival": "01:50:00",
+          "arrival": "01:50:30",
           "departure": ""
         }
       ],
@@ -3387,11 +3387,11 @@
         {
           "station": "unterberg",
           "arrival": "",
-          "departure": "00:02:00"
+          "departure": "00:02:30"
         },
         {
           "station": "finnhof",
-          "arrival": "00:04:24",
+          "arrival": "00:04:54",
           "departure": ""
         }
       ],
@@ -3408,26 +3408,26 @@
         {
           "station": "finnhof",
           "arrival": "",
-          "departure": "00:33:32"
+          "departure": "00:34:02"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:35:56",
-          "departure": "00:37:36"
+          "arrival": "00:36:26",
+          "departure": "00:38:06"
         },
         {
           "station": "dospen",
-          "arrival": "00:40:00",
-          "departure": "00:48:55"
+          "arrival": "00:40:30",
+          "departure": "00:49:25"
         },
         {
           "station": "landing",
-          "arrival": "00:51:19",
-          "departure": "00:52:54"
+          "arrival": "00:51:49",
+          "departure": "00:53:24"
         },
         {
           "station": "westerhausen",
-          "arrival": "00:55:18",
+          "arrival": "00:55:48",
           "departure": ""
         }
       ],
@@ -3444,46 +3444,46 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:02:04"
+          "departure": "00:02:34"
         },
         {
           "station": "horb",
-          "arrival": "00:04:28",
-          "departure": "00:08:53"
+          "arrival": "00:04:58",
+          "departure": "00:09:23"
         },
         {
           "station": "camberg",
-          "arrival": "00:11:17",
-          "departure": "00:11:17"
+          "arrival": "00:11:47",
+          "departure": "00:11:47"
         },
         {
           "station": "bernau",
-          "arrival": "00:13:41",
-          "departure": "00:13:41"
+          "arrival": "00:14:11",
+          "departure": "00:14:11"
         },
         {
           "station": "finnhof",
-          "arrival": "00:16:05",
-          "departure": "00:22:42"
+          "arrival": "00:16:35",
+          "departure": "00:23:12"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:25:06",
-          "departure": "00:25:06"
+          "arrival": "00:25:36",
+          "departure": "00:25:36"
         },
         {
           "station": "dospen",
-          "arrival": "00:27:30",
-          "departure": "00:35:18"
+          "arrival": "00:28:00",
+          "departure": "00:35:48"
         },
         {
           "station": "landing",
-          "arrival": "00:37:42",
-          "departure": "00:37:42"
+          "arrival": "00:38:12",
+          "departure": "00:38:12"
         },
         {
           "station": "westerhausen",
-          "arrival": "00:40:06",
+          "arrival": "00:40:36",
           "departure": ""
         }
       ],
@@ -3500,36 +3500,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:00:00"
+          "departure": "00:00:30"
         },
         {
           "station": "wingst",
-          "arrival": "00:02:24",
-          "departure": "00:06:00"
+          "arrival": "00:02:54",
+          "departure": "00:06:30"
         },
         {
           "station": "aurich",
-          "arrival": "00:08:24",
-          "departure": "00:08:24"
+          "arrival": "00:08:54",
+          "departure": "00:08:54"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:10:48",
-          "departure": "00:16:36"
+          "arrival": "00:11:18",
+          "departure": "00:17:06"
         },
         {
           "station": "camberg",
-          "arrival": "00:19:00",
-          "departure": "00:19:00"
+          "arrival": "00:19:30",
+          "departure": "00:19:30"
         },
         {
           "station": "horb",
-          "arrival": "00:21:24",
-          "departure": "00:21:24"
+          "arrival": "00:21:54",
+          "departure": "00:21:54"
         },
         {
           "station": "ostermünde",
-          "arrival": "00:23:48",
+          "arrival": "00:24:18",
           "departure": ""
         }
       ],
@@ -3546,36 +3546,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:02:28"
+          "departure": "00:02:58"
         },
         {
           "station": "wingst",
-          "arrival": "00:03:58",
-          "departure": "00:03:58"
+          "arrival": "00:04:28",
+          "departure": "00:04:28"
         },
         {
           "station": "aurich",
-          "arrival": "00:05:28",
-          "departure": "00:05:28"
+          "arrival": "00:05:58",
+          "departure": "00:05:58"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:06:58",
-          "departure": "00:08:28"
+          "arrival": "00:07:28",
+          "departure": "00:08:58"
         },
         {
           "station": "camberg",
-          "arrival": "00:09:58",
-          "departure": "00:09:58"
+          "arrival": "00:10:28",
+          "departure": "00:10:28"
         },
         {
           "station": "horb",
-          "arrival": "00:11:28",
-          "departure": "00:11:28"
+          "arrival": "00:11:58",
+          "departure": "00:11:58"
         },
         {
           "station": "ostermünde",
-          "arrival": "00:12:58",
+          "arrival": "00:13:28",
           "departure": ""
         }
       ],
@@ -3592,36 +3592,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:08:56"
+          "departure": "00:09:26"
         },
         {
           "station": "wingst",
-          "arrival": "00:10:26",
-          "departure": "00:10:26"
+          "arrival": "00:10:56",
+          "departure": "00:10:56"
         },
         {
           "station": "aurich",
-          "arrival": "00:11:56",
-          "departure": "00:11:56"
+          "arrival": "00:12:26",
+          "departure": "00:12:26"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:13:26",
-          "departure": "00:14:26"
+          "arrival": "00:13:56",
+          "departure": "00:14:56"
         },
         {
           "station": "dospen",
-          "arrival": "00:15:56",
-          "departure": "00:15:56"
+          "arrival": "00:16:26",
+          "departure": "00:16:26"
         },
         {
           "station": "landing",
-          "arrival": "00:17:26",
-          "departure": "00:17:26"
+          "arrival": "00:17:56",
+          "departure": "00:17:56"
         },
         {
           "station": "westerhausen",
-          "arrival": "00:18:56",
+          "arrival": "00:19:26",
           "departure": ""
         }
       ],
@@ -3638,36 +3638,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:04:14"
+          "departure": "00:04:44"
         },
         {
           "station": "wingst",
-          "arrival": "00:06:38",
-          "departure": "00:12:15"
+          "arrival": "00:07:08",
+          "departure": "00:12:45"
         },
         {
           "station": "aurich",
-          "arrival": "00:14:39",
-          "departure": "00:14:39"
+          "arrival": "00:15:09",
+          "departure": "00:15:09"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:17:03",
-          "departure": "00:17:03"
+          "arrival": "00:17:33",
+          "departure": "00:17:33"
         },
         {
           "station": "dospen",
-          "arrival": "00:19:27",
-          "departure": "00:20:41"
+          "arrival": "00:19:57",
+          "departure": "00:21:11"
         },
         {
           "station": "landing",
-          "arrival": "00:23:05",
-          "departure": "00:23:05"
+          "arrival": "00:23:35",
+          "departure": "00:23:35"
         },
         {
           "station": "westerhausen",
-          "arrival": "00:25:29",
+          "arrival": "00:25:59",
           "departure": ""
         }
       ],
@@ -3684,36 +3684,36 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:04:10"
+          "departure": "00:04:40"
         },
         {
           "station": "landing",
-          "arrival": "00:05:40",
-          "departure": "00:05:40"
+          "arrival": "00:06:10",
+          "departure": "00:06:10"
         },
         {
           "station": "dospen",
-          "arrival": "00:07:10",
-          "departure": "00:07:58"
+          "arrival": "00:07:40",
+          "departure": "00:08:28"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:09:28",
-          "departure": "00:09:28"
+          "arrival": "00:09:58",
+          "departure": "00:09:58"
         },
         {
           "station": "aurich",
-          "arrival": "00:10:58",
-          "departure": "00:11:58"
+          "arrival": "00:11:28",
+          "departure": "00:12:28"
         },
         {
           "station": "wingst",
-          "arrival": "00:13:28",
-          "departure": "00:13:28"
+          "arrival": "00:13:58",
+          "departure": "00:13:58"
         },
         {
           "station": "nordendorf",
-          "arrival": "00:14:58",
+          "arrival": "00:15:28",
           "departure": ""
         }
       ],
@@ -3730,36 +3730,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:11:20"
+          "departure": "00:11:50"
         },
         {
           "station": "wingst",
-          "arrival": "00:13:20",
-          "departure": "00:15:41"
+          "arrival": "00:13:50",
+          "departure": "00:16:11"
         },
         {
           "station": "aurich",
-          "arrival": "00:17:41",
-          "departure": "00:20:37"
+          "arrival": "00:18:11",
+          "departure": "00:21:07"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:22:37",
-          "departure": "00:27:07"
+          "arrival": "00:23:07",
+          "departure": "00:27:37"
         },
         {
           "station": "dospen",
-          "arrival": "00:29:07",
-          "departure": "00:30:07"
+          "arrival": "00:29:37",
+          "departure": "00:30:37"
         },
         {
           "station": "landing",
-          "arrival": "00:32:07",
-          "departure": "00:33:07"
+          "arrival": "00:32:37",
+          "departure": "00:33:37"
         },
         {
           "station": "westerhausen",
-          "arrival": "00:35:07",
+          "arrival": "00:35:37",
           "departure": ""
         }
       ],
@@ -3776,41 +3776,41 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:32:30"
+          "departure": "00:33:00"
         },
         {
           "station": "landing",
-          "arrival": "00:34:13",
-          "departure": "00:35:13"
+          "arrival": "00:34:43",
+          "departure": "00:35:43"
         },
         {
           "station": "dospen",
-          "arrival": "00:36:56",
-          "departure": "00:37:29"
+          "arrival": "00:37:26",
+          "departure": "00:37:59"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:39:12",
-          "departure": "00:40:12"
+          "arrival": "00:39:42",
+          "departure": "00:40:42"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:41:55",
-          "departure": "00:43:15"
+          "arrival": "00:42:25",
+          "departure": "00:43:45"
         },
         {
           "station": "camberg",
-          "arrival": "00:44:58",
-          "departure": "00:44:58"
+          "arrival": "00:45:28",
+          "departure": "00:45:28"
         },
         {
           "station": "horb",
-          "arrival": "00:46:41",
-          "departure": "00:47:41"
+          "arrival": "00:47:11",
+          "departure": "00:48:11"
         },
         {
           "station": "ostermünde",
-          "arrival": "00:49:24",
+          "arrival": "00:49:54",
           "departure": ""
         }
       ],
@@ -3827,41 +3827,41 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:12:20"
+          "departure": "00:12:50"
         },
         {
           "station": "horb",
-          "arrival": "00:14:03",
-          "departure": "00:15:13"
+          "arrival": "00:14:33",
+          "departure": "00:15:43"
         },
         {
           "station": "camberg",
-          "arrival": "00:16:56",
-          "departure": "00:16:56"
+          "arrival": "00:17:26",
+          "departure": "00:17:26"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:18:39",
-          "departure": "00:19:39"
+          "arrival": "00:19:09",
+          "departure": "00:20:09"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:21:22",
-          "departure": "00:22:22"
+          "arrival": "00:21:52",
+          "departure": "00:22:52"
         },
         {
           "station": "dospen",
-          "arrival": "00:24:05",
-          "departure": "00:24:05"
+          "arrival": "00:24:35",
+          "departure": "00:24:35"
         },
         {
           "station": "landing",
-          "arrival": "00:25:48",
-          "departure": "00:26:48"
+          "arrival": "00:26:18",
+          "departure": "00:27:18"
         },
         {
           "station": "westerhausen",
-          "arrival": "00:28:31",
+          "arrival": "00:29:01",
           "departure": ""
         }
       ],
@@ -3878,41 +3878,41 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "01:36:20"
+          "departure": "01:36:50"
         },
         {
           "station": "landing",
-          "arrival": "01:38:03",
-          "departure": "01:39:03"
+          "arrival": "01:38:33",
+          "departure": "01:39:33"
         },
         {
           "station": "dospen",
-          "arrival": "01:40:46",
-          "departure": "01:40:46"
+          "arrival": "01:41:16",
+          "departure": "01:41:16"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:42:29",
-          "departure": "01:43:29"
+          "arrival": "01:42:59",
+          "departure": "01:43:59"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:45:12",
-          "departure": "01:46:12"
+          "arrival": "01:45:42",
+          "departure": "01:46:42"
         },
         {
           "station": "camberg",
-          "arrival": "01:47:55",
-          "departure": "01:47:55"
+          "arrival": "01:48:25",
+          "departure": "01:48:25"
         },
         {
           "station": "horb",
-          "arrival": "01:49:38",
-          "departure": "01:50:38"
+          "arrival": "01:50:08",
+          "departure": "01:51:08"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:52:21",
+          "arrival": "01:52:51",
           "departure": ""
         }
       ],
@@ -3929,41 +3929,41 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "01:37:00"
+          "departure": "01:37:30"
         },
         {
           "station": "horb",
-          "arrival": "01:38:43",
-          "departure": "01:39:43"
+          "arrival": "01:39:13",
+          "departure": "01:40:13"
         },
         {
           "station": "camberg",
-          "arrival": "01:41:26",
-          "departure": "01:41:26"
+          "arrival": "01:41:56",
+          "departure": "01:41:56"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:43:09",
-          "departure": "01:44:09"
+          "arrival": "01:43:39",
+          "departure": "01:44:39"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:45:52",
-          "departure": "01:46:52"
+          "arrival": "01:46:22",
+          "departure": "01:47:22"
         },
         {
           "station": "dospen",
-          "arrival": "01:48:35",
-          "departure": "01:48:35"
+          "arrival": "01:49:05",
+          "departure": "01:49:05"
         },
         {
           "station": "landing",
-          "arrival": "01:50:18",
-          "departure": "01:51:18"
+          "arrival": "01:50:48",
+          "departure": "01:51:48"
         },
         {
           "station": "westerhausen",
-          "arrival": "01:53:01",
+          "arrival": "01:53:31",
           "departure": ""
         }
       ],
@@ -3980,36 +3980,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:08:10"
+          "departure": "00:08:40"
         },
         {
           "station": "horb",
-          "arrival": "00:09:53",
-          "departure": "00:11:19"
+          "arrival": "00:10:23",
+          "departure": "00:11:49"
         },
         {
           "station": "camberg",
-          "arrival": "00:13:02",
-          "departure": "00:13:02"
+          "arrival": "00:13:32",
+          "departure": "00:13:32"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:14:45",
-          "departure": "00:15:45"
+          "arrival": "00:15:15",
+          "departure": "00:16:15"
         },
         {
           "station": "aurich",
-          "arrival": "00:17:28",
-          "departure": "00:18:28"
+          "arrival": "00:17:58",
+          "departure": "00:18:58"
         },
         {
           "station": "wingst",
-          "arrival": "00:20:11",
-          "departure": "00:20:11"
+          "arrival": "00:20:41",
+          "departure": "00:20:41"
         },
         {
           "station": "nordendorf",
-          "arrival": "00:21:54",
+          "arrival": "00:22:24",
           "departure": ""
         }
       ],
@@ -4026,36 +4026,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:48:40"
+          "departure": "00:49:10"
         },
         {
           "station": "wingst",
-          "arrival": "00:50:23",
-          "departure": "00:50:23"
+          "arrival": "00:50:53",
+          "departure": "00:50:53"
         },
         {
           "station": "aurich",
-          "arrival": "00:52:06",
-          "departure": "00:53:06"
+          "arrival": "00:52:36",
+          "departure": "00:53:36"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:54:49",
-          "departure": "00:56:20"
+          "arrival": "00:55:19",
+          "departure": "00:56:50"
         },
         {
           "station": "camberg",
-          "arrival": "00:58:03",
-          "departure": "00:58:03"
+          "arrival": "00:58:33",
+          "departure": "00:58:33"
         },
         {
           "station": "horb",
-          "arrival": "00:59:46",
-          "departure": "00:59:46"
+          "arrival": "01:00:16",
+          "departure": "01:00:16"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:01:29",
+          "arrival": "01:01:59",
           "departure": ""
         }
       ],
@@ -4072,36 +4072,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "01:18:10"
+          "departure": "01:18:40"
         },
         {
           "station": "horb",
-          "arrival": "01:19:53",
-          "departure": "01:20:53"
+          "arrival": "01:20:23",
+          "departure": "01:21:23"
         },
         {
           "station": "camberg",
-          "arrival": "01:22:36",
-          "departure": "01:22:36"
+          "arrival": "01:23:06",
+          "departure": "01:23:06"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:24:19",
-          "departure": "01:25:19"
+          "arrival": "01:24:49",
+          "departure": "01:25:49"
         },
         {
           "station": "aurich",
-          "arrival": "01:27:02",
-          "departure": "01:28:02"
+          "arrival": "01:27:32",
+          "departure": "01:28:32"
         },
         {
           "station": "wingst",
-          "arrival": "01:29:45",
-          "departure": "01:29:45"
+          "arrival": "01:30:15",
+          "departure": "01:30:15"
         },
         {
           "station": "nordendorf",
-          "arrival": "01:31:28",
+          "arrival": "01:31:58",
           "departure": ""
         }
       ],
@@ -4118,36 +4118,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "01:40:50"
+          "departure": "01:41:20"
         },
         {
           "station": "wingst",
-          "arrival": "01:42:33",
-          "departure": "01:42:33"
+          "arrival": "01:43:03",
+          "departure": "01:43:03"
         },
         {
           "station": "aurich",
-          "arrival": "01:44:16",
-          "departure": "01:45:16"
+          "arrival": "01:44:46",
+          "departure": "01:45:46"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:46:59",
-          "departure": "01:47:59"
+          "arrival": "01:47:29",
+          "departure": "01:48:29"
         },
         {
           "station": "camberg",
-          "arrival": "01:49:42",
-          "departure": "01:49:42"
+          "arrival": "01:50:12",
+          "departure": "01:50:12"
         },
         {
           "station": "horb",
-          "arrival": "01:51:25",
-          "departure": "01:52:25"
+          "arrival": "01:51:55",
+          "departure": "01:52:55"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:54:08",
+          "arrival": "01:54:38",
           "departure": ""
         }
       ],
@@ -4164,36 +4164,36 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:54:10"
+          "departure": "00:54:40"
         },
         {
           "station": "landing",
-          "arrival": "00:56:10",
-          "departure": "00:57:10"
+          "arrival": "00:56:40",
+          "departure": "00:57:40"
         },
         {
           "station": "dospen",
-          "arrival": "00:59:10",
-          "departure": "01:00:10"
+          "arrival": "00:59:40",
+          "departure": "01:00:40"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:02:10",
-          "departure": "01:03:10"
+          "arrival": "01:02:40",
+          "departure": "01:03:40"
         },
         {
           "station": "aurich",
-          "arrival": "01:05:10",
-          "departure": "01:06:10"
+          "arrival": "01:05:40",
+          "departure": "01:06:40"
         },
         {
           "station": "wingst",
-          "arrival": "01:08:10",
-          "departure": "01:09:10"
+          "arrival": "01:08:40",
+          "departure": "01:09:40"
         },
         {
           "station": "nordendorf",
-          "arrival": "01:11:10",
+          "arrival": "01:11:40",
           "departure": ""
         }
       ],
@@ -4210,36 +4210,36 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "01:48:50"
+          "departure": "01:49:20"
         },
         {
           "station": "landing",
-          "arrival": "01:50:50",
-          "departure": "01:51:50"
+          "arrival": "01:51:20",
+          "departure": "01:52:20"
         },
         {
           "station": "dospen",
-          "arrival": "01:53:50",
-          "departure": "01:54:50"
+          "arrival": "01:54:20",
+          "departure": "01:55:20"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:56:50",
-          "departure": "01:57:50"
+          "arrival": "01:57:20",
+          "departure": "01:58:20"
         },
         {
           "station": "aurich",
-          "arrival": "01:59:50",
-          "departure": "02:00:50"
+          "arrival": "02:00:20",
+          "departure": "02:01:20"
         },
         {
           "station": "wingst",
-          "arrival": "02:02:50",
-          "departure": "02:03:50"
+          "arrival": "02:03:20",
+          "departure": "02:04:20"
         },
         {
           "station": "nordendorf",
-          "arrival": "02:05:50",
+          "arrival": "02:06:20",
           "departure": ""
         }
       ],
@@ -4256,31 +4256,31 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:08:32"
+          "departure": "00:09:02"
         },
         {
           "station": "landing",
-          "arrival": "00:10:32",
-          "departure": "00:14:41"
+          "arrival": "00:11:02",
+          "departure": "00:15:11"
         },
         {
           "station": "dospen",
-          "arrival": "00:16:41",
-          "departure": "00:17:41"
+          "arrival": "00:17:11",
+          "departure": "00:18:11"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:19:41",
-          "departure": "00:20:41"
+          "arrival": "00:20:11",
+          "departure": "00:21:11"
         },
         {
           "station": "finnhof",
-          "arrival": "00:22:41",
-          "departure": "00:23:41"
+          "arrival": "00:23:11",
+          "departure": "00:24:11"
         },
         {
           "station": "unterberg",
-          "arrival": "00:25:41",
+          "arrival": "00:26:11",
           "departure": ""
         }
       ],
@@ -4297,31 +4297,31 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "01:11:50"
+          "departure": "01:12:20"
         },
         {
           "station": "landing",
-          "arrival": "01:13:50",
-          "departure": "01:14:50"
+          "arrival": "01:14:20",
+          "departure": "01:15:20"
         },
         {
           "station": "dospen",
-          "arrival": "01:16:50",
-          "departure": "01:17:59"
+          "arrival": "01:17:20",
+          "departure": "01:18:29"
         },
         {
           "station": "langenfelde",
-          "arrival": "01:19:59",
-          "departure": "01:20:59"
+          "arrival": "01:20:29",
+          "departure": "01:21:29"
         },
         {
           "station": "finnhof",
-          "arrival": "01:22:59",
-          "departure": "01:23:59"
+          "arrival": "01:23:29",
+          "departure": "01:24:29"
         },
         {
           "station": "unterberg",
-          "arrival": "01:25:59",
+          "arrival": "01:26:29",
           "departure": ""
         }
       ],
@@ -4338,31 +4338,31 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:17:40"
+          "departure": "00:18:10"
         },
         {
           "station": "horb",
-          "arrival": "00:19:40",
-          "departure": "00:20:40"
+          "arrival": "00:20:10",
+          "departure": "00:21:10"
         },
         {
           "station": "camberg",
-          "arrival": "00:22:40",
-          "departure": "00:24:15"
+          "arrival": "00:23:10",
+          "departure": "00:24:45"
         },
         {
           "station": "bernau",
-          "arrival": "00:26:15",
-          "departure": "00:27:15"
+          "arrival": "00:26:45",
+          "departure": "00:27:45"
         },
         {
           "station": "finnhof",
-          "arrival": "00:29:15",
-          "departure": "00:30:15"
+          "arrival": "00:29:45",
+          "departure": "00:30:45"
         },
         {
           "station": "unterberg",
-          "arrival": "00:32:15",
+          "arrival": "00:32:45",
           "departure": ""
         }
       ],
@@ -4379,31 +4379,31 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "01:38:50"
+          "departure": "01:39:20"
         },
         {
           "station": "horb",
-          "arrival": "01:40:50",
-          "departure": "01:41:50"
+          "arrival": "01:41:20",
+          "departure": "01:42:20"
         },
         {
           "station": "camberg",
-          "arrival": "01:43:50",
-          "departure": "01:44:50"
+          "arrival": "01:44:20",
+          "departure": "01:45:20"
         },
         {
           "station": "bernau",
-          "arrival": "01:46:50",
-          "departure": "01:47:50"
+          "arrival": "01:47:20",
+          "departure": "01:48:20"
         },
         {
           "station": "finnhof",
-          "arrival": "01:49:50",
-          "departure": "01:50:50"
+          "arrival": "01:50:20",
+          "departure": "01:51:20"
         },
         {
           "station": "unterberg",
-          "arrival": "01:52:50",
+          "arrival": "01:53:20",
           "departure": ""
         }
       ],
@@ -4420,31 +4420,31 @@
         {
           "station": "landing",
           "arrival": "",
-          "departure": "01:55:00"
+          "departure": "01:55:30"
         },
         {
           "station": "dospen",
-          "arrival": "01:57:00",
-          "departure": "01:58:00"
+          "arrival": "01:57:30",
+          "departure": "01:58:30"
         },
         {
           "station": "langenfelde",
-          "arrival": "02:00:00",
-          "departure": "02:01:00"
+          "arrival": "02:00:30",
+          "departure": "02:01:30"
         },
         {
           "station": "finnhof",
-          "arrival": "02:03:00",
-          "departure": "02:04:00"
+          "arrival": "02:03:30",
+          "departure": "02:04:30"
         },
         {
           "station": "bernau",
-          "arrival": "02:06:00",
-          "departure": "02:07:00"
+          "arrival": "02:06:30",
+          "departure": "02:07:30"
         },
         {
           "station": "camberg",
-          "arrival": "02:09:00",
+          "arrival": "02:09:30",
           "departure": ""
         }
       ],
@@ -4461,31 +4461,31 @@
         {
           "station": "camberg",
           "arrival": "",
-          "departure": "02:00:00"
+          "departure": "02:00:30"
         },
         {
           "station": "bernau",
-          "arrival": "02:02:00",
-          "departure": "02:03:00"
+          "arrival": "02:02:30",
+          "departure": "02:03:30"
         },
         {
           "station": "finnhof",
-          "arrival": "02:05:00",
-          "departure": "02:06:00"
+          "arrival": "02:05:30",
+          "departure": "02:06:30"
         },
         {
           "station": "langenfelde",
-          "arrival": "02:08:00",
-          "departure": "02:09:00"
+          "arrival": "02:08:30",
+          "departure": "02:09:30"
         },
         {
           "station": "dospen",
-          "arrival": "02:11:00",
-          "departure": "02:12:00"
+          "arrival": "02:11:30",
+          "departure": "02:12:30"
         },
         {
           "station": "landing",
-          "arrival": "02:14:00",
+          "arrival": "02:14:30",
           "departure": ""
         }
       ],
@@ -4502,41 +4502,41 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:01:44"
+          "departure": "00:02:14"
         },
         {
           "station": "landing",
-          "arrival": "00:04:08",
-          "departure": "00:07:11"
+          "arrival": "00:04:38",
+          "departure": "00:07:41"
         },
         {
           "station": "dospen",
-          "arrival": "00:09:35",
-          "departure": "00:09:35"
+          "arrival": "00:10:05",
+          "departure": "00:10:05"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:11:59",
-          "departure": "00:16:06"
+          "arrival": "00:12:29",
+          "departure": "00:16:36"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:18:30",
-          "departure": "00:19:30"
+          "arrival": "00:19:00",
+          "departure": "00:20:00"
         },
         {
           "station": "camberg",
-          "arrival": "00:21:54",
-          "departure": "00:21:54"
+          "arrival": "00:22:24",
+          "departure": "00:22:24"
         },
         {
           "station": "horb",
-          "arrival": "00:24:18",
-          "departure": "00:24:18"
+          "arrival": "00:24:48",
+          "departure": "00:24:48"
         },
         {
           "station": "ostermünde",
-          "arrival": "00:26:42",
+          "arrival": "00:27:12",
           "departure": ""
         }
       ],
@@ -4553,41 +4553,41 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:27:34"
+          "departure": "00:28:04"
         },
         {
           "station": "landing",
-          "arrival": "00:29:04",
-          "departure": "00:29:04"
+          "arrival": "00:29:34",
+          "departure": "00:29:34"
         },
         {
           "station": "dospen",
-          "arrival": "00:30:34",
-          "departure": "00:30:34"
+          "arrival": "00:31:04",
+          "departure": "00:31:04"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:32:04",
-          "departure": "00:32:04"
+          "arrival": "00:32:34",
+          "departure": "00:32:34"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:33:34",
-          "departure": "00:35:07"
+          "arrival": "00:34:04",
+          "departure": "00:35:37"
         },
         {
           "station": "camberg",
-          "arrival": "00:36:37",
-          "departure": "00:36:37"
+          "arrival": "00:37:07",
+          "departure": "00:37:07"
         },
         {
           "station": "horb",
-          "arrival": "00:38:07",
-          "departure": "00:38:07"
+          "arrival": "00:38:37",
+          "departure": "00:38:37"
         },
         {
           "station": "ostermünde",
-          "arrival": "00:39:37",
+          "arrival": "00:40:07",
           "departure": ""
         }
       ],
@@ -4604,41 +4604,41 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:24:56"
+          "departure": "00:25:26"
         },
         {
           "station": "landing",
-          "arrival": "00:27:20",
-          "departure": "00:44:37"
+          "arrival": "00:27:50",
+          "departure": "00:45:07"
         },
         {
           "station": "dospen",
-          "arrival": "00:47:01",
-          "departure": "00:50:23"
+          "arrival": "00:47:31",
+          "departure": "00:50:53"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:52:47",
-          "departure": "00:58:06"
+          "arrival": "00:53:17",
+          "departure": "00:58:36"
         },
         {
           "station": "kreuztal",
-          "arrival": "01:00:30",
-          "departure": "01:02:41"
+          "arrival": "01:01:00",
+          "departure": "01:03:11"
         },
         {
           "station": "camberg",
-          "arrival": "01:05:05",
-          "departure": "01:05:05"
+          "arrival": "01:05:35",
+          "departure": "01:05:35"
         },
         {
           "station": "horb",
-          "arrival": "01:07:29",
-          "departure": "01:07:29"
+          "arrival": "01:07:59",
+          "departure": "01:07:59"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:09:53",
+          "arrival": "01:10:23",
           "departure": ""
         }
       ],
@@ -4655,16 +4655,16 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:16:47"
+          "departure": "00:17:17"
         },
         {
           "station": "wingst",
-          "arrival": "00:18:30",
-          "departure": "00:22:23"
+          "arrival": "00:19:00",
+          "departure": "00:22:53"
         },
         {
           "station": "aurich",
-          "arrival": "00:24:06",
+          "arrival": "00:24:36",
           "departure": ""
         }
       ],
@@ -4681,16 +4681,16 @@
         {
           "station": "aurich",
           "arrival": "",
-          "departure": "00:34:58"
+          "departure": "00:35:28"
         },
         {
           "station": "wingst",
-          "arrival": "00:36:41",
-          "departure": "00:37:41"
+          "arrival": "00:37:11",
+          "departure": "00:38:11"
         },
         {
           "station": "nordendorf",
-          "arrival": "00:39:24",
+          "arrival": "00:39:54",
           "departure": ""
         }
       ],
@@ -4707,36 +4707,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:23:56"
+          "departure": "00:24:26"
         },
         {
           "station": "wingst",
-          "arrival": "00:25:39",
-          "departure": "00:25:39"
+          "arrival": "00:26:09",
+          "departure": "00:26:09"
         },
         {
           "station": "aurich",
-          "arrival": "00:27:22",
-          "departure": "00:28:53"
+          "arrival": "00:27:52",
+          "departure": "00:29:23"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:30:36",
-          "departure": "00:33:24"
+          "arrival": "00:31:06",
+          "departure": "00:33:54"
         },
         {
           "station": "camberg",
-          "arrival": "00:35:07",
-          "departure": "00:39:08"
+          "arrival": "00:35:37",
+          "departure": "00:39:38"
         },
         {
           "station": "horb",
-          "arrival": "00:40:51",
-          "departure": "00:41:51"
+          "arrival": "00:41:21",
+          "departure": "00:42:21"
         },
         {
           "station": "ostermünde",
-          "arrival": "00:43:34",
+          "arrival": "00:44:04",
           "departure": ""
         }
       ],
@@ -4753,21 +4753,21 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:21:04"
+          "departure": "00:21:34"
         },
         {
           "station": "wingst",
-          "arrival": "00:23:28",
-          "departure": "00:27:42"
+          "arrival": "00:23:58",
+          "departure": "00:28:12"
         },
         {
           "station": "aurich",
-          "arrival": "00:30:06",
-          "departure": "00:30:39"
+          "arrival": "00:30:36",
+          "departure": "00:31:09"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:33:03",
+          "arrival": "00:33:33",
           "departure": ""
         }
       ],
@@ -4784,21 +4784,21 @@
         {
           "station": "kreuztal",
           "arrival": "",
-          "departure": "00:40:48"
+          "departure": "00:41:18"
         },
         {
           "station": "camberg",
-          "arrival": "00:43:12",
-          "departure": "00:51:31"
+          "arrival": "00:43:42",
+          "departure": "00:52:01"
         },
         {
           "station": "horb",
-          "arrival": "00:53:55",
-          "departure": "00:53:55"
+          "arrival": "00:54:25",
+          "departure": "00:54:25"
         },
         {
           "station": "ostermünde",
-          "arrival": "00:56:19",
+          "arrival": "00:56:49",
           "departure": ""
         }
       ],
@@ -4815,21 +4815,21 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:27:10"
+          "departure": "00:27:40"
         },
         {
           "station": "wingst",
-          "arrival": "00:29:10",
-          "departure": "00:30:10"
+          "arrival": "00:29:40",
+          "departure": "00:30:40"
         },
         {
           "station": "aurich",
-          "arrival": "00:32:10",
-          "departure": "00:33:10"
+          "arrival": "00:32:40",
+          "departure": "00:33:40"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:35:10",
+          "arrival": "00:35:40",
           "departure": ""
         }
       ],
@@ -4846,16 +4846,16 @@
         {
           "station": "hohenbrunn",
           "arrival": "",
-          "departure": "00:41:38"
+          "departure": "00:42:08"
         },
         {
           "station": "aurich",
-          "arrival": "00:43:38",
-          "departure": "00:46:46"
+          "arrival": "00:44:08",
+          "departure": "00:47:16"
         },
         {
           "station": "wingst",
-          "arrival": "00:48:46",
+          "arrival": "00:49:16",
           "departure": ""
         }
       ],
@@ -4872,26 +4872,26 @@
         {
           "station": "wingst",
           "arrival": "",
-          "departure": "00:56:16"
+          "departure": "00:56:46"
         },
         {
           "station": "aurich",
-          "arrival": "00:58:16",
-          "departure": "00:59:16"
+          "arrival": "00:58:46",
+          "departure": "00:59:46"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "01:01:16",
-          "departure": "01:04:43"
+          "arrival": "01:01:46",
+          "departure": "01:05:13"
         },
         {
           "station": "dospen",
-          "arrival": "01:06:43",
-          "departure": "01:07:43"
+          "arrival": "01:07:13",
+          "departure": "01:08:13"
         },
         {
           "station": "landing",
-          "arrival": "01:09:43",
+          "arrival": "01:10:13",
           "departure": ""
         }
       ],
@@ -4908,36 +4908,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:40:18"
+          "departure": "00:40:48"
         },
         {
           "station": "wingst",
-          "arrival": "00:41:48",
-          "departure": "00:41:48"
+          "arrival": "00:42:18",
+          "departure": "00:42:18"
         },
         {
           "station": "aurich",
-          "arrival": "00:43:18",
-          "departure": "00:43:18"
+          "arrival": "00:43:48",
+          "departure": "00:43:48"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:44:48",
-          "departure": "00:45:48"
+          "arrival": "00:45:18",
+          "departure": "00:46:18"
         },
         {
           "station": "dospen",
-          "arrival": "00:47:18",
-          "departure": "00:47:18"
+          "arrival": "00:47:48",
+          "departure": "00:47:48"
         },
         {
           "station": "landing",
-          "arrival": "00:48:48",
-          "departure": "00:48:48"
+          "arrival": "00:49:18",
+          "departure": "00:49:18"
         },
         {
           "station": "westerhausen",
-          "arrival": "00:50:18",
+          "arrival": "00:50:48",
           "departure": ""
         }
       ],
@@ -4954,36 +4954,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:30:34"
+          "departure": "00:31:04"
         },
         {
           "station": "wingst",
-          "arrival": "00:32:58",
-          "departure": "00:32:58"
+          "arrival": "00:33:28",
+          "departure": "00:33:28"
         },
         {
           "station": "aurich",
-          "arrival": "00:35:22",
-          "departure": "00:35:22"
+          "arrival": "00:35:52",
+          "departure": "00:35:52"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:37:46",
-          "departure": "00:48:10"
+          "arrival": "00:38:16",
+          "departure": "00:48:40"
         },
         {
           "station": "dospen",
-          "arrival": "00:50:34",
-          "departure": "00:57:47"
+          "arrival": "00:51:04",
+          "departure": "00:58:17"
         },
         {
           "station": "landing",
-          "arrival": "01:00:11",
-          "departure": "01:00:11"
+          "arrival": "01:00:41",
+          "departure": "01:00:41"
         },
         {
           "station": "westerhausen",
-          "arrival": "01:02:35",
+          "arrival": "01:03:05",
           "departure": ""
         }
       ],
@@ -5000,36 +5000,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:46:12"
+          "departure": "00:46:42"
         },
         {
           "station": "wingst",
-          "arrival": "00:48:36",
-          "departure": "00:52:18"
+          "arrival": "00:49:06",
+          "departure": "00:52:48"
         },
         {
           "station": "aurich",
-          "arrival": "00:54:42",
-          "departure": "00:54:42"
+          "arrival": "00:55:12",
+          "departure": "00:55:12"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:57:06",
-          "departure": "01:07:01"
+          "arrival": "00:57:36",
+          "departure": "01:07:31"
         },
         {
           "station": "dospen",
-          "arrival": "01:09:25",
-          "departure": "01:16:18"
+          "arrival": "01:09:55",
+          "departure": "01:16:48"
         },
         {
           "station": "landing",
-          "arrival": "01:18:42",
-          "departure": "01:18:42"
+          "arrival": "01:19:12",
+          "departure": "01:19:12"
         },
         {
           "station": "westerhausen",
-          "arrival": "01:21:06",
+          "arrival": "01:21:36",
           "departure": ""
         }
       ],
@@ -5046,36 +5046,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:13:32"
+          "departure": "00:14:02"
         },
         {
           "station": "wingst",
-          "arrival": "00:15:56",
-          "departure": "00:17:58"
+          "arrival": "00:16:26",
+          "departure": "00:18:28"
         },
         {
           "station": "aurich",
-          "arrival": "00:20:22",
-          "departure": "00:24:23"
+          "arrival": "00:20:52",
+          "departure": "00:24:53"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:26:47",
-          "departure": "00:29:16"
+          "arrival": "00:27:17",
+          "departure": "00:29:46"
         },
         {
           "station": "camberg",
-          "arrival": "00:31:40",
-          "departure": "00:31:40"
+          "arrival": "00:32:10",
+          "departure": "00:32:10"
         },
         {
           "station": "horb",
-          "arrival": "00:34:04",
-          "departure": "00:34:04"
+          "arrival": "00:34:34",
+          "departure": "00:34:34"
         },
         {
           "station": "ostermünde",
-          "arrival": "00:36:28",
+          "arrival": "00:36:58",
           "departure": ""
         }
       ],
@@ -5092,21 +5092,21 @@
         {
           "station": "unterberg",
           "arrival": "",
-          "departure": "00:00:00"
+          "departure": "00:00:30"
         },
         {
           "station": "finnhof",
-          "arrival": "00:02:00",
-          "departure": "00:03:00"
+          "arrival": "00:02:30",
+          "departure": "00:03:30"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:05:00",
-          "departure": "00:06:00"
+          "arrival": "00:05:30",
+          "departure": "00:06:30"
         },
         {
           "station": "dospen",
-          "arrival": "00:08:00",
+          "arrival": "00:08:30",
           "departure": ""
         }
       ],
@@ -5123,26 +5123,26 @@
         {
           "station": "dospen",
           "arrival": "",
-          "departure": "00:15:20"
+          "departure": "00:15:50"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:17:20",
-          "departure": "00:18:20"
+          "arrival": "00:17:50",
+          "departure": "00:18:50"
         },
         {
           "station": "finnhof",
-          "arrival": "00:20:20",
-          "departure": "00:24:43"
+          "arrival": "00:20:50",
+          "departure": "00:25:13"
         },
         {
           "station": "bernau",
-          "arrival": "00:26:43",
-          "departure": "00:27:43"
+          "arrival": "00:27:13",
+          "departure": "00:28:13"
         },
         {
           "station": "camberg",
-          "arrival": "00:29:43",
+          "arrival": "00:30:13",
           "departure": ""
         }
       ],
@@ -5159,26 +5159,26 @@
         {
           "station": "camberg",
           "arrival": "",
-          "departure": "00:33:00"
+          "departure": "00:33:30"
         },
         {
           "station": "bernau",
-          "arrival": "00:35:00",
-          "departure": "00:36:00"
+          "arrival": "00:35:30",
+          "departure": "00:36:30"
         },
         {
           "station": "finnhof",
-          "arrival": "00:38:00",
-          "departure": "00:39:00"
+          "arrival": "00:38:30",
+          "departure": "00:39:30"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:41:00",
-          "departure": "00:42:00"
+          "arrival": "00:41:30",
+          "departure": "00:42:30"
         },
         {
           "station": "dospen",
-          "arrival": "00:44:00",
+          "arrival": "00:44:30",
           "departure": ""
         }
       ],
@@ -5195,26 +5195,26 @@
         {
           "station": "dospen",
           "arrival": "",
-          "departure": "00:50:00"
+          "departure": "00:50:30"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:52:00",
-          "departure": "00:53:00"
+          "arrival": "00:52:30",
+          "departure": "00:53:30"
         },
         {
           "station": "finnhof",
-          "arrival": "00:55:00",
-          "departure": "00:56:00"
+          "arrival": "00:55:30",
+          "departure": "00:56:30"
         },
         {
           "station": "bernau",
-          "arrival": "00:58:00",
-          "departure": "00:59:00"
+          "arrival": "00:58:30",
+          "departure": "00:59:30"
         },
         {
           "station": "camberg",
-          "arrival": "01:01:00",
+          "arrival": "01:01:30",
           "departure": ""
         }
       ],
@@ -5231,26 +5231,26 @@
         {
           "station": "camberg",
           "arrival": "",
-          "departure": "01:07:00"
+          "departure": "01:07:30"
         },
         {
           "station": "bernau",
-          "arrival": "01:09:00",
-          "departure": "01:10:00"
+          "arrival": "01:09:30",
+          "departure": "01:10:30"
         },
         {
           "station": "finnhof",
-          "arrival": "01:12:00",
-          "departure": "01:15:17"
+          "arrival": "01:12:30",
+          "departure": "01:15:47"
         },
         {
           "station": "langenfelde",
-          "arrival": "01:17:17",
-          "departure": "01:20:22"
+          "arrival": "01:17:47",
+          "departure": "01:20:52"
         },
         {
           "station": "dospen",
-          "arrival": "01:22:22",
+          "arrival": "01:22:52",
           "departure": ""
         }
       ],
@@ -5267,26 +5267,26 @@
         {
           "station": "dospen",
           "arrival": "",
-          "departure": "01:24:00"
+          "departure": "01:24:30"
         },
         {
           "station": "langenfelde",
-          "arrival": "01:26:00",
-          "departure": "01:27:00"
+          "arrival": "01:26:30",
+          "departure": "01:27:30"
         },
         {
           "station": "finnhof",
-          "arrival": "01:29:00",
-          "departure": "01:30:00"
+          "arrival": "01:29:30",
+          "departure": "01:30:30"
         },
         {
           "station": "bernau",
-          "arrival": "01:32:00",
-          "departure": "01:33:00"
+          "arrival": "01:32:30",
+          "departure": "01:33:30"
         },
         {
           "station": "camberg",
-          "arrival": "01:35:00",
+          "arrival": "01:35:30",
           "departure": ""
         }
       ],
@@ -5303,26 +5303,26 @@
         {
           "station": "camberg",
           "arrival": "",
-          "departure": "01:42:20"
+          "departure": "01:42:50"
         },
         {
           "station": "bernau",
-          "arrival": "01:44:20",
-          "departure": "01:45:20"
+          "arrival": "01:44:50",
+          "departure": "01:45:50"
         },
         {
           "station": "finnhof",
-          "arrival": "01:47:20",
-          "departure": "01:48:20"
+          "arrival": "01:47:50",
+          "departure": "01:48:50"
         },
         {
           "station": "langenfelde",
-          "arrival": "01:50:20",
-          "departure": "01:51:20"
+          "arrival": "01:50:50",
+          "departure": "01:51:50"
         },
         {
           "station": "dospen",
-          "arrival": "01:53:20",
+          "arrival": "01:53:50",
           "departure": ""
         }
       ],
@@ -5339,21 +5339,21 @@
         {
           "station": "dospen",
           "arrival": "",
-          "departure": "02:00:00"
+          "departure": "02:00:30"
         },
         {
           "station": "langenfelde",
-          "arrival": "02:02:00",
-          "departure": "02:03:00"
+          "arrival": "02:02:30",
+          "departure": "02:03:30"
         },
         {
           "station": "finnhof",
-          "arrival": "02:05:00",
-          "departure": "02:06:00"
+          "arrival": "02:05:30",
+          "departure": "02:06:30"
         },
         {
           "station": "unterberg",
-          "arrival": "02:08:00",
+          "arrival": "02:08:30",
           "departure": ""
         }
       ],
@@ -5370,46 +5370,46 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:28:32"
+          "departure": "00:29:02"
         },
         {
           "station": "horb",
-          "arrival": "00:30:56",
-          "departure": "00:35:21"
+          "arrival": "00:31:26",
+          "departure": "00:35:51"
         },
         {
           "station": "camberg",
-          "arrival": "00:37:45",
-          "departure": "00:37:45"
+          "arrival": "00:38:15",
+          "departure": "00:38:15"
         },
         {
           "station": "bernau",
-          "arrival": "00:40:09",
-          "departure": "00:40:09"
+          "arrival": "00:40:39",
+          "departure": "00:40:39"
         },
         {
           "station": "finnhof",
-          "arrival": "00:42:33",
-          "departure": "00:44:22"
+          "arrival": "00:43:03",
+          "departure": "00:44:52"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:46:46",
-          "departure": "00:46:46"
+          "arrival": "00:47:16",
+          "departure": "00:47:16"
         },
         {
           "station": "dospen",
-          "arrival": "00:49:10",
-          "departure": "00:51:21"
+          "arrival": "00:49:40",
+          "departure": "00:51:51"
         },
         {
           "station": "landing",
-          "arrival": "00:53:45",
-          "departure": "00:55:27"
+          "arrival": "00:54:15",
+          "departure": "00:55:57"
         },
         {
           "station": "westerhausen",
-          "arrival": "00:57:51",
+          "arrival": "00:58:21",
           "departure": ""
         }
       ],
@@ -5426,36 +5426,36 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:53:15"
+          "departure": "00:53:45"
         },
         {
           "station": "wingst",
-          "arrival": "00:54:45",
-          "departure": "00:54:45"
+          "arrival": "00:55:15",
+          "departure": "00:55:15"
         },
         {
           "station": "aurich",
-          "arrival": "00:56:15",
-          "departure": "00:56:15"
+          "arrival": "00:56:45",
+          "departure": "00:56:45"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:57:45",
-          "departure": "01:01:07"
+          "arrival": "00:58:15",
+          "departure": "01:01:37"
         },
         {
           "station": "camberg",
-          "arrival": "01:02:37",
-          "departure": "01:02:37"
+          "arrival": "01:03:07",
+          "departure": "01:03:07"
         },
         {
           "station": "horb",
-          "arrival": "01:04:07",
-          "departure": "01:04:07"
+          "arrival": "01:04:37",
+          "departure": "01:04:37"
         },
         {
           "station": "ostermünde",
-          "arrival": "01:05:37",
+          "arrival": "01:06:07",
           "departure": ""
         }
       ],
@@ -5472,26 +5472,26 @@
         {
           "station": "unterberg",
           "arrival": "",
-          "departure": "00:05:11"
+          "departure": "00:05:41"
         },
         {
           "station": "finnhof",
-          "arrival": "00:06:41",
-          "departure": "00:06:41"
+          "arrival": "00:07:11",
+          "departure": "00:07:11"
         },
         {
           "station": "langenfelde",
-          "arrival": "00:08:11",
-          "departure": "00:08:11"
+          "arrival": "00:08:41",
+          "departure": "00:08:41"
         },
         {
           "station": "dospen",
-          "arrival": "00:09:41",
-          "departure": "00:09:41"
+          "arrival": "00:10:11",
+          "departure": "00:10:11"
         },
         {
           "station": "landing",
-          "arrival": "00:11:11",
+          "arrival": "00:11:41",
           "departure": ""
         }
       ],
@@ -5508,21 +5508,21 @@
         {
           "station": "landing",
           "arrival": "",
-          "departure": "00:27:22"
+          "departure": "00:27:52"
         },
         {
           "station": "dospen",
-          "arrival": "00:28:52",
-          "departure": "00:35:12"
+          "arrival": "00:29:22",
+          "departure": "00:35:42"
         },
         {
           "station": "hohenbrunn",
-          "arrival": "00:36:42",
-          "departure": "00:38:01"
+          "arrival": "00:37:12",
+          "departure": "00:38:31"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:39:31",
+          "arrival": "00:40:01",
           "departure": ""
         }
       ],
@@ -5539,36 +5539,36 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:25:52"
+          "departure": "00:26:22"
         },
         {
           "station": "horb",
-          "arrival": "00:28:16",
-          "departure": "00:32:23"
+          "arrival": "00:28:46",
+          "departure": "00:32:53"
         },
         {
           "station": "camberg",
-          "arrival": "00:34:47",
-          "departure": "00:42:08"
+          "arrival": "00:35:17",
+          "departure": "00:42:38"
         },
         {
           "station": "kreuztal",
-          "arrival": "00:44:32",
-          "departure": "00:44:32"
+          "arrival": "00:45:02",
+          "departure": "00:45:02"
         },
         {
           "station": "aurich",
-          "arrival": "00:46:56",
-          "departure": "00:49:08"
+          "arrival": "00:47:26",
+          "departure": "00:49:38"
         },
         {
           "station": "wingst",
-          "arrival": "00:51:32",
-          "departure": "00:51:32"
+          "arrival": "00:52:02",
+          "departure": "00:52:02"
         },
         {
           "station": "nordendorf",
-          "arrival": "00:53:56",
+          "arrival": "00:54:26",
           "departure": ""
         }
       ],
@@ -5585,21 +5585,21 @@
         {
           "station": "kreuztal",
           "arrival": "",
-          "departure": "01:21:48"
+          "departure": "01:22:18"
         },
         {
           "station": "aurich",
-          "arrival": "01:23:18",
-          "departure": "01:23:18"
+          "arrival": "01:23:48",
+          "departure": "01:23:48"
         },
         {
           "station": "wingst",
-          "arrival": "01:24:48",
-          "departure": "01:24:48"
+          "arrival": "01:25:18",
+          "departure": "01:25:18"
         },
         {
           "station": "nordendorf",
-          "arrival": "01:26:18",
+          "arrival": "01:26:48",
           "departure": ""
         }
       ],
