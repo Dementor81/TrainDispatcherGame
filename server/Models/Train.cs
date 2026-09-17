@@ -136,17 +136,27 @@ namespace TrainDispatcherGame.Server.Models
             }
 
             if (TrainEvent is TrainSpawnEvent spawn)
-                return SecondsLate(spawn.ScheduledTime, waypoint.ScheduledReferenceTime);
+                return SecondsLate(spawn.ScheduledTime, DelayDueTime(waypoint));
 
             if (waypoint.HasActualDepartureTime)
                 return SecondsLate(simulationTime, waypoint.DepartureTime);
 
-            var arrivalActual = waypoint.HasActualArrivalTime ? waypoint.ActualArrivalTime : simulationTime;
-            var arrivalDelay = SecondsLate(arrivalActual, waypoint.ScheduledReferenceTime);
-            if (!waypoint.HasDepartureTime)
-                return arrivalDelay;
+            // Only a reported platform stop is an arrival. Waiting at a signal or
+            // holding for a scheduled dwell is late only vs departure.
+            if (waypoint.Processed)
+            {
+                var arrivalDelay = SecondsLate(waypoint.ActualArrivalTime, waypoint.ScheduledReferenceTime);
+                if (!waypoint.HasDepartureTime)
+                    return arrivalDelay;
+                return Math.Max(arrivalDelay, SecondsLate(simulationTime, waypoint.DepartureTime));
+            }
 
-            return Math.Max(arrivalDelay, SecondsLate(simulationTime, waypoint.DepartureTime));
+            return SecondsLate(simulationTime, DelayDueTime(waypoint));
+        }
+
+        private static DateTime DelayDueTime(TrainWayPoint waypoint)
+        {
+            return waypoint.HasDepartureTime ? waypoint.DepartureTime : waypoint.ScheduledReferenceTime;
         }
 
         private static int SecondsLate(DateTime actual, DateTime scheduled)
