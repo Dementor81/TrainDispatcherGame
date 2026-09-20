@@ -233,7 +233,7 @@ export interface GameMasterSnapshotDto {
   causedDelaySeconds: number;
 }
 
-export type MajorEventType = "MissedStop" | "Derailed" | "Collision" | "Removed" | "Failed";
+export type MajorEventType = "MissedStop" | "Derailed" | "Collision" | "Removed" | "Failed" | "PassedRedSignal";
 
 export interface MajorEventDto {
   simulationTime: string;

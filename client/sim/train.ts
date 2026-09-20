@@ -24,7 +24,8 @@ export enum TrainState {
     ENDED = "ended",
     MANUAL_CONTROL = "manual_control",
     MISROUTED = "misrouted",
-    EXITING = "exiting"
+    EXITING = "exiting",
+    PASSED_RED_SIGNAL = "passed_red_signal"
 }
 
 type TrainExitState = {
@@ -316,6 +317,18 @@ export class Train {
         }
     }
 
+    enterEmergencyForSignal(signal: Signal): void {
+        this._stoppedByEndOfTrack = false;
+        this._stoppedBySignal = signal;
+        this.setState(TrainState.EMERGENCY_BRAKING);
+    }
+
+    enterPassedRedSignal(): void {
+        this._stoppedByEndOfTrack = false;
+        this._stoppedBySignal = null;
+        this.setState(TrainState.PASSED_RED_SIGNAL);
+    }
+
     setStoppedByEndOfTrack(distanceToStop: number): void {
         this._stoppedBySignal = null;
         this.setState(TrainState.BRAKING_FOR_SIGNAL, distanceToStop);
@@ -347,6 +360,10 @@ export class Train {
 
     static isHardStoppedState(state: TrainState): boolean {
         return Tools.is(state, [TrainState.COLLISION, TrainState.DERAILEMENT, TrainState.END_OF_TRACK, TrainState.ENDED, TrainState.MISROUTED, TrainState.EMERGENCY_STOP]);
+    }
+
+    static isAwaitingAcknowledgement(state: TrainState): boolean {
+        return Tools.is(state, [TrainState.EMERGENCY_BRAKING, TrainState.EMERGENCY_STOP, TrainState.PASSED_RED_SIGNAL]);
     }
 
     setState(nextState: TrainState, distanceToStop: number | null = null): void {

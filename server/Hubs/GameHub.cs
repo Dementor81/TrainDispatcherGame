@@ -611,6 +611,32 @@ namespace TrainDispatcherGame.Server.Hubs
             await Task.CompletedTask;
         }
 
+        public async Task ReportTrainPassedRedSignal(string trainNumber, string stationId)
+        {
+            if (!TryResolveSession(out var session) || session == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var train = session.Simulation.Trains.FirstOrDefault(t => t.Number == trainNumber);
+                if (train == null)
+                {
+                    ServerLogger.Instance.LogWarning(Ctx(session.SessionId, trainNumber), $"Failed to report passed red signal: Train not found ({trainNumber})");
+                    return;
+                }
+
+                session.Simulation.HandlePassedRedSignal(train, stationId);
+            }
+            catch (Exception ex)
+            {
+                ServerLogger.Instance.LogError(Ctx(session.SessionId, trainNumber), $"Error reporting passed red signal {trainNumber}: {ex.Message}");
+            }
+
+            await Task.CompletedTask;
+        }
+
         public async Task RespondApproval(string trainNumber, string fromStationId, bool approved)
         {
             if (!TryResolveSession(out var session) || session == null)

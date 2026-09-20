@@ -261,9 +261,9 @@ export class TrainOverviewPanel extends BasePanel {
       <tr class="border-bottom border-secondary">
         <th>Zug</th>
         <th>Von</th>
-        <th>Nach</th>
         <th>Ankunft</th>
         <th>Abfahrt</th>
+        <th>Nach</th>
         <th>Status</th>
       </tr>
     `;
@@ -283,11 +283,14 @@ export class TrainOverviewPanel extends BasePanel {
     const isStoppedBySignal = this.app.trains.some(t => t.number === train.trainNumber && t.stoppedBySignal);
 
     row.innerHTML = `
-      <td class="small fw-bold ${isStoppedBySignal ? 'text-danger' : ''}">${train.category} ${train.trainNumber}</td>
+      <td class="small fw-bold train-id-cell ${isStoppedBySignal ? 'text-danger' : ''}">
+        <span class="train-category">${train.category}</span>
+        <span class="train-number">${train.trainNumber}</span>
+      </td>
       <td class="small">${train.fromStation}</td>
-      <td class="small">${train.nextStation}</td>
       <td class="small">${formatArrivalTimeForStation(train.arrivalTime, train.stops, UNSET_TIME_PLACEHOLDER)}</td>
       <td class="small">${formatTimeFromIso(train.departureTime, UNSET_TIME_PLACEHOLDER)}</td>
+      <td class="small">${train.nextStation}</td>
       <td><span data-delay-badge="true" class="badge ${delayInfo.class}">${delayInfo.text}</span></td>
     `;
   }

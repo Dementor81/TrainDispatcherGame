@@ -24,6 +24,7 @@ export class TrainDetailsPanel extends BasePanel {
     [TrainState.DERAILEMENT]: 'Entgleisung',
     [TrainState.ENDED]: 'Fahrtende',
     [TrainState.MANUAL_CONTROL]: 'Manuelle Steuerung',
+    [TrainState.PASSED_RED_SIGNAL]: 'Halt bei Rot überfahren',
   };
 
   private static readonly TYPE_LABELS: Record<string, string> = {
@@ -69,6 +70,12 @@ export class TrainDetailsPanel extends BasePanel {
       }
       this._train = train;
       void this.Updates();
+    });
+
+    this.app.eventManager.on('trainUpdated', (train: Train) => {
+      if (!this._trainNumber || train.number !== this._trainNumber) return;
+      if (train.state !== TrainState.PASSED_RED_SIGNAL && train.state !== TrainState.EMERGENCY_BRAKING) return;
+      this.resumeBtn.disabled = train.speedCurrent > 0.1;
     });
   }
 
@@ -151,8 +158,12 @@ export class TrainDetailsPanel extends BasePanel {
       this.manualToggleBtn.title = canToggle ? '' : 'Nur im Stillstand moeglich';
 
       const isEmergency = train.state === TrainState.EMERGENCY_STOP || train.state === TrainState.EMERGENCY_BRAKING;
-      this.emergencyStopBtn.classList.toggle('d-none', isEmergency);
-      this.resumeBtn.classList.toggle('d-none', !isEmergency);
+      const isPassedRed = train.state === TrainState.PASSED_RED_SIGNAL;
+      const showResume = isEmergency || isPassedRed;
+      this.emergencyStopBtn.classList.toggle('d-none', showResume);
+      this.resumeBtn.classList.toggle('d-none', !showResume);
+      this.resumeBtn.textContent = isPassedRed ? 'Weiter' : 'Start';
+      this.resumeBtn.disabled = showResume && train.speedCurrent > 0.1;
 
       this.setVisible(this.manualDriveControls, isSpawned && isManual);
     }
@@ -220,7 +231,7 @@ export class TrainDetailsPanel extends BasePanel {
   }
 
   private handleResume(): void {
-    this._train!.setState(TrainState.RUNNING);
+    this._train!.setStoppedBySignal(null);
   }
 
   private handleToggleManualMode(): void {

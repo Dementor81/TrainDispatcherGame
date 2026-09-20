@@ -20,7 +20,8 @@ export class Camera {
    }
 
    handleZoom(e: WheelEvent): void {
-      const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+      const delta = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+      const zoomFactor = Math.exp(-Math.max(-80, Math.min(80, delta)) * 0.0005);
       const newZoom = Math.max(this._minZoom, Math.min(this._maxZoom, this._currentZoom * zoomFactor));
 
       if (newZoom !== this._currentZoom) {

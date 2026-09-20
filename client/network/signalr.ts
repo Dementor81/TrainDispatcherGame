@@ -71,6 +71,12 @@ export class SignalRManager {
                 this.reportTrainDerailed(train.number, this.stationId, sw?.id);
             }
         });
+
+        this._eventManager.on("trainPassedRedSignal", (train: Train) => {
+            if (this.stationId) {
+                void this.reportTrainPassedRedSignal(train.number, this.stationId);
+            }
+        });
     }
 
     private setupRemoteEventHandlers(): void {
@@ -365,6 +371,20 @@ export class SignalRManager {
             console.log(`Reported derailment of train ${trainNumber} at station ${stationId}${switchId !== undefined ? ` (switch ${switchId})` : ''}`);
         } catch (error) {
             console.error('Failed to report train derailment:', error);
+            throw error;
+        }
+    }
+
+    public async reportTrainPassedRedSignal(trainNumber: string, stationId: string): Promise<void> {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+            throw new Error('SignalR connection not established');
+        }
+
+        try {
+            await this.connection.invoke('ReportTrainPassedRedSignal', trainNumber, stationId);
+            console.log(`Reported passed red signal for train ${trainNumber} at station ${stationId}`);
+        } catch (error) {
+            console.error('Failed to report passed red signal:', error);
             throw error;
         }
     }

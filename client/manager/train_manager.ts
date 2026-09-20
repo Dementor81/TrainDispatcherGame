@@ -65,12 +65,14 @@ export class TrainManager {
       }
 
       if (Train.isHardStoppedState(train.state)) return;
+      if (train.state === TrainState.PASSED_RED_SIGNAL && train.speedCurrent === 0) return;
 
-
-
-      if (this._stationHandler.checkStationStop(train)) return; // train is stopped at the current station, so we can skip the rest of the update
-      if (this._stationHandler.checkTrainEnding(train)) return; // train is ending, so we can skip the rest of the update
-      this._signalHandler.checkTrainStoppedBySignal(train);
+      const awaitingAck = train.state === TrainState.EMERGENCY_BRAKING || train.state === TrainState.PASSED_RED_SIGNAL;
+      if (!awaitingAck) {
+         if (this._stationHandler.checkStationStop(train)) return; // train is stopped at the current station, so we can skip the rest of the update
+         if (this._stationHandler.checkTrainEnding(train)) return; // train is ending, so we can skip the rest of the update
+         this._signalHandler.checkTrainStoppedBySignal(train);
+      }
 
       this._movementHandler.updateTrainSpeed(train);
 
@@ -161,6 +163,7 @@ export class TrainManager {
       if (train.speedCurrent !== 0) return;
 
       if (train.state === TrainState.EMERGENCY_BRAKING) train.setState(TrainState.EMERGENCY_STOP, 0);
+      if (train.state === TrainState.PASSED_RED_SIGNAL) return;
 
       if (train.stoppedByEndOfTrack && (train.state === TrainState.BRAKING_FOR_SIGNAL || train.state === TrainState.WAITING_AT_SIGNAL)) {
          train.setState(TrainState.MISROUTED, 0);
@@ -172,7 +175,7 @@ export class TrainManager {
    }
 
    private isMovementState(state: TrainState): boolean {
-      return Tools.is(state, [TrainState.RUNNING, TrainState.EMERGENCY_BRAKING, TrainState.BRAKING_FOR_SIGNAL, TrainState.BRAKING_FOR_STATION, TrainState.MANUAL_CONTROL]);
+      return Tools.is(state, [TrainState.RUNNING, TrainState.EMERGENCY_BRAKING, TrainState.BRAKING_FOR_SIGNAL, TrainState.BRAKING_FOR_STATION, TrainState.MANUAL_CONTROL, TrainState.PASSED_RED_SIGNAL]);
    }
 
 

@@ -710,6 +710,24 @@ namespace TrainDispatcherGame.Server.Simulation
             }
         }
 
+        public void HandlePassedRedSignal(Train train, string? stationId = null)
+        {
+            lock (_simulationLock)
+            {
+                try
+                {
+                    var station = !string.IsNullOrWhiteSpace(stationId) ? stationId : train.CurrentLocation;
+                    RefreshTrainDelay(train);
+                    ServerLogger.Instance.LogEmergency(Ctx(train.Number), $"Passed red signal: train {train.Number} at station {station}");
+                    RecordMajorEvent(MajorEventType.PassedRedSignal, train.Number, station: station);
+                }
+                catch (Exception ex)
+                {
+                    ServerLogger.Instance.LogError(Ctx(train.Number), $"Error handling passed red signal: {ex.Message}");
+                }
+            }
+        }
+
         public void HandleTrainRemoved(Train train, string? stationId = null)
         {
             lock (_simulationLock)

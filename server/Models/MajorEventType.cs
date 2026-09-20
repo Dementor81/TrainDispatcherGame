@@ -9,6 +9,7 @@ namespace TrainDispatcherGame.Server.Models
         Derailed,
         Collision,
         Removed,
-        Failed
+        Failed,
+        PassedRedSignal
     }
 }

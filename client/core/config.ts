@@ -53,9 +53,9 @@ export class RendererConfig {
 
      // Exit rendering configuration
      static readonly exitTextColor = 0xffffff;
-     static readonly exitTextSize = 12;
+     static readonly exitTextSize = 14;
      static readonly exitTextFont = "Arial";
-     static readonly exitTextOffset = 12; // Vertical distance above the exit arrow
+     static readonly exitTextOffset = 10; // Vertical distance above the exit arrow
 }
 
 export class SimulationConfig {

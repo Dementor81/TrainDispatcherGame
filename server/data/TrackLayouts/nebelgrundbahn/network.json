@@ -40,17 +40,17 @@
       {
          "id": "kreuztal",
          "name": "Kreuztal",
-         "description": ""
+         "description": "Kreuztal ist der Zentrale Knotenpunkt der Strecke. Hier ist wirklich Action geboten."
       },
       {
          "id": "landing",
          "name": "Landing",
-         "description": ""
+         "description": "Landing ist ein kleiner Bahnhof in dem nur Regionalzüge halten. Außerdem endet hier die S-Bahn Linie 6. Leider fehlen dem Bahnhof Überhlungsgleise für Güterzüge."
       },
       {
          "id": "langenfelde",
          "name": "Langenfelde",
-         "description": ""
+         "description": "Langenfelde ist ein kleiner Bahnhof auf der Nebenbahn. Hier ist wirklich kaum etwas los."
       },
       {
          "id": "wingst",

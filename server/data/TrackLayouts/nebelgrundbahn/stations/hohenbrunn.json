@@ -690,7 +690,13 @@
             "x": -575.0,
             "y": 300.0
          },
-         "signals": [],
+         "signals": [
+            {
+               "type": "main",
+               "position": 604,
+               "direction": 1
+            }
+         ],
          "switches": [
             {
                "type": "Exit",
@@ -712,7 +718,13 @@
             "x": -525.0,
             "y": 250.0
          },
-         "signals": [],
+         "signals": [
+            {
+               "type": "main",
+               "position": 604,
+               "direction": 1
+            }
+         ],
          "switches": [
             {
                "type": "Exit",

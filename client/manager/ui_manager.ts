@@ -67,6 +67,10 @@ export class UIManager {
             this.notifyMisrouted(train.number);
         });
 
+        this._eventManager.on('trainPassedRedSignal', (train: Train) => {
+            this.notifyPassedRedSignal(train.number);
+        });
+
         // Simulation stopped notifications
         this._eventManager.on('simulationStopped', () => {
             ApprovalToast.clearAll();
@@ -139,6 +143,10 @@ export class UIManager {
     notifyMisrouted(trainNumber: string): void {
         const message = `Zug ${trainNumber} ist fehlgeleitet!`;
         Toast.show(message, 'warning');
+    }
+
+    notifyPassedRedSignal(trainNumber: string): void {
+        Toast.show(`Zug ${trainNumber} hat ein Halt zeigendes Signal überfahren!`, 'warning');
     }
 
     showApprovalToast(data: { stationId: string, fromStationId: string, trainNumber: string }): void {
