@@ -3,6 +3,14 @@ import * as bootstrap from "bootstrap";
 import "./styles/landing.css";
 import { renderAppVersionBadge } from "./ui/appVersionBadge";
 
+const landingBackgroundContext = import.meta.webpackContext("./assets/img", {
+  recursive: false,
+  regExp: /landingpage_back_\d+\.(jpe?g|webp)$/,
+});
+const landingBackgrounds = landingBackgroundContext.keys().map((key) => landingBackgroundContext(key));
+const landingBackground = landingBackgrounds[Math.floor(Math.random() * landingBackgrounds.length)];
+document.documentElement.style.setProperty("--landing-background", `url(${landingBackground})`);
+
 window.addEventListener("DOMContentLoaded", () => {
   void renderAppVersionBadge();
 
