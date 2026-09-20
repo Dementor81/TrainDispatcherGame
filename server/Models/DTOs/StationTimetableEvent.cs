@@ -16,6 +16,9 @@ namespace TrainDispatcherGame.Server.Models.DTOs
         [JsonPropertyName("departureTime")]
         public DateTime? DepartureTime { get; set; }
 
+        [JsonPropertyName("stops")]
+        public bool Stops { get; set; }
+
         [JsonPropertyName("currentDelay")]
         public int CurrentDelay { get; set; } = 0;
 

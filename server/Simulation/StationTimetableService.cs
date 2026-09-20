@@ -37,6 +37,7 @@ namespace TrainDispatcherGame.Server.Simulation
                             Category = train.Category ?? string.Empty,
                             ArrivalTime = NormalizeScheduledTime(waypoint.ArrivalTime),
                             DepartureTime = NormalizeScheduledTime(waypoint.DepartureTime),
+                            Stops = waypoint.Stops,
                             CurrentDelay = train.GetDelay(simulationTime),
                             FromStation = fromStation,
                             NextStation = nextStation

@@ -1,4 +1,4 @@
-﻿{
+{
   "title": "Fahrplan zweigleisig Full",
   "layout": "frankenbahn",
   "start_time": "00:00",
@@ -14,32 +14,38 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:04:34"
+          "departure": "00:04:34",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:07:08",
-          "departure": "00:07:43"
+          "departure": "00:07:43",
+          "stop": true
         },
         {
           "station": "neustadt",
           "arrival": "00:10:52",
-          "departure": "00:11:29"
+          "departure": "00:11:29",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "00:14:44",
-          "departure": "00:22:50"
+          "departure": "00:22:50",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:26:05",
-          "departure": "00:26:50"
+          "departure": "00:26:50",
+          "stop": true
         },
         {
           "station": "rechtsheim",
           "arrival": "00:29:23",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -55,32 +61,38 @@
         {
           "station": "rechtsheim",
           "arrival": "",
-          "departure": "00:00:56"
+          "departure": "00:00:56",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:03:07",
-          "departure": "00:03:07"
+          "departure": "00:03:07",
+          "stop": false
         },
         {
           "station": "burghausen",
           "arrival": "00:05:54",
-          "departure": "00:06:54"
+          "departure": "00:06:54",
+          "stop": true
         },
         {
           "station": "neustadt",
           "arrival": "00:09:41",
-          "departure": "00:10:41"
+          "departure": "00:10:41",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:13:23",
-          "departure": "00:14:23"
+          "departure": "00:14:23",
+          "stop": true
         },
         {
           "station": "linksdorf",
           "arrival": "00:16:35",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -96,17 +108,20 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:09:52"
+          "departure": "00:09:52",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:11:22",
-          "departure": "00:12:22"
+          "departure": "00:12:22",
+          "stop": true
         },
         {
           "station": "meßbach",
           "arrival": "00:13:52",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": "33806"
@@ -122,17 +137,20 @@
         {
           "station": "meßbach",
           "arrival": "",
-          "departure": "00:19:39"
+          "departure": "00:19:39",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:21:09",
-          "departure": "00:29:37"
+          "departure": "00:29:37",
+          "stop": true
         },
         {
           "station": "linksdorf",
           "arrival": "00:31:07",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -148,32 +166,38 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:19:55"
+          "departure": "00:19:55",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:22:25",
-          "departure": "00:25:28"
+          "departure": "00:25:28",
+          "stop": true
         },
         {
           "station": "neustadt",
           "arrival": "00:27:58",
-          "departure": "00:28:39"
+          "departure": "00:28:39",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "00:31:09",
-          "departure": "00:31:54"
+          "departure": "00:31:54",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:34:24",
-          "departure": "00:35:11"
+          "departure": "00:35:11",
+          "stop": true
         },
         {
           "station": "rechtsheim",
           "arrival": "00:37:41",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -189,32 +213,38 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:00:42"
+          "departure": "00:00:42",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:04:33",
-          "departure": "00:20:44"
+          "departure": "00:20:44",
+          "stop": false
         },
         {
           "station": "neustadt",
           "arrival": "00:25:27",
-          "departure": "00:36:02"
+          "departure": "00:36:02",
+          "stop": false
         },
         {
           "station": "burghausen",
           "arrival": "00:40:55",
-          "departure": "00:41:53"
+          "departure": "00:41:53",
+          "stop": false
         },
         {
           "station": "ostheim",
           "arrival": "00:46:45",
-          "departure": "00:46:45"
+          "departure": "00:46:45",
+          "stop": false
         },
         {
           "station": "rechtsheim",
           "arrival": "00:50:34",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -230,32 +260,38 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:12:13"
+          "departure": "00:12:13",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:14:09",
-          "departure": "00:14:09"
+          "departure": "00:14:09",
+          "stop": false
         },
         {
           "station": "neustadt",
           "arrival": "00:16:30",
-          "departure": "00:17:53"
+          "departure": "00:17:53",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "00:20:20",
-          "departure": "00:20:20"
+          "departure": "00:20:20",
+          "stop": false
         },
         {
           "station": "ostheim",
           "arrival": "00:22:45",
-          "departure": "00:22:45"
+          "departure": "00:22:45",
+          "stop": false
         },
         {
           "station": "rechtsheim",
           "arrival": "00:24:40",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -271,32 +307,38 @@
         {
           "station": "rechtsheim",
           "arrival": "",
-          "departure": "00:06:25"
+          "departure": "00:06:25",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:08:20",
-          "departure": "00:08:20"
+          "departure": "00:08:20",
+          "stop": false
         },
         {
           "station": "burghausen",
           "arrival": "00:10:45",
-          "departure": "00:10:45"
+          "departure": "00:10:45",
+          "stop": false
         },
         {
           "station": "neustadt",
           "arrival": "00:13:12",
-          "departure": "00:14:12"
+          "departure": "00:14:12",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:16:34",
-          "departure": "00:16:34"
+          "departure": "00:16:34",
+          "stop": false
         },
         {
           "station": "linksdorf",
           "arrival": "00:18:29",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -312,32 +354,38 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:14:16"
+          "departure": "00:14:16",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:16:54",
-          "departure": "00:17:33"
+          "departure": "00:17:33",
+          "stop": true
         },
         {
           "station": "neustadt",
           "arrival": "00:20:40",
-          "departure": "00:21:40"
+          "departure": "00:21:40",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "00:24:54",
-          "departure": "00:26:07"
+          "departure": "00:26:07",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:29:19",
-          "departure": "00:30:19"
+          "departure": "00:30:19",
+          "stop": true
         },
         {
           "station": "rechtsheim",
           "arrival": "00:32:56",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -353,32 +401,38 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "01:00:03"
+          "departure": "01:00:03",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "01:02:33",
-          "departure": "01:03:33"
+          "departure": "01:03:33",
+          "stop": true
         },
         {
           "station": "neustadt",
           "arrival": "01:06:03",
-          "departure": "01:07:03"
+          "departure": "01:07:03",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "01:09:33",
-          "departure": "01:10:33"
+          "departure": "01:10:33",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "01:13:03",
-          "departure": "01:14:03"
+          "departure": "01:14:03",
+          "stop": true
         },
         {
           "station": "rechtsheim",
           "arrival": "01:16:33",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -394,32 +448,38 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "01:11:28"
+          "departure": "01:11:28",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "01:13:37",
-          "departure": "01:13:37"
+          "departure": "01:13:37",
+          "stop": false
         },
         {
           "station": "neustadt",
           "arrival": "01:15:45",
-          "departure": "01:16:45"
+          "departure": "01:16:45",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "01:18:54",
-          "departure": "01:19:54"
+          "departure": "01:19:54",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "01:22:02",
-          "departure": "01:23:02"
+          "departure": "01:23:02",
+          "stop": true
         },
         {
           "station": "rechtsheim",
           "arrival": "01:25:11",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -435,32 +495,38 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:39:57"
+          "departure": "00:39:57",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:42:31",
-          "departure": "00:43:31"
+          "departure": "00:43:31",
+          "stop": true
         },
         {
           "station": "neustadt",
           "arrival": "00:46:40",
-          "departure": "00:53:23"
+          "departure": "00:53:23",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "00:56:38",
-          "departure": "00:57:38"
+          "departure": "00:57:38",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "01:00:53",
-          "departure": "01:01:53"
+          "departure": "01:01:53",
+          "stop": true
         },
         {
           "station": "rechtsheim",
           "arrival": "01:04:26",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -476,32 +542,38 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:45:50"
+          "departure": "00:45:50",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:47:59",
-          "departure": "00:47:59"
+          "departure": "00:47:59",
+          "stop": false
         },
         {
           "station": "neustadt",
           "arrival": "00:50:07",
-          "departure": "00:51:07"
+          "departure": "00:51:07",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "00:53:16",
-          "departure": "00:54:16"
+          "departure": "00:54:16",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:56:24",
-          "departure": "00:56:24"
+          "departure": "00:56:24",
+          "stop": false
         },
         {
           "station": "rechtsheim",
           "arrival": "00:58:33",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -517,32 +589,38 @@
         {
           "station": "rechtsheim",
           "arrival": "",
-          "departure": "00:32:40"
+          "departure": "00:32:40",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:34:51",
-          "departure": "00:34:51"
+          "departure": "00:34:51",
+          "stop": false
         },
         {
           "station": "burghausen",
           "arrival": "00:37:38",
-          "departure": "00:38:38"
+          "departure": "00:38:38",
+          "stop": true
         },
         {
           "station": "neustadt",
           "arrival": "00:41:25",
-          "departure": "00:42:25"
+          "departure": "00:42:25",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:45:07",
-          "departure": "00:46:07"
+          "departure": "00:46:07",
+          "stop": true
         },
         {
           "station": "linksdorf",
           "arrival": "00:48:19",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -558,32 +636,38 @@
         {
           "station": "rechtsheim",
           "arrival": "",
-          "departure": "00:13:21"
+          "departure": "00:13:21",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:15:51",
-          "departure": "00:16:40"
+          "departure": "00:16:40",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "00:19:10",
-          "departure": "00:20:10"
+          "departure": "00:20:10",
+          "stop": true
         },
         {
           "station": "neustadt",
           "arrival": "00:22:40",
-          "departure": "00:23:40"
+          "departure": "00:23:40",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:26:10",
-          "departure": "00:26:39"
+          "departure": "00:26:39",
+          "stop": true
         },
         {
           "station": "linksdorf",
           "arrival": "00:29:09",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -599,32 +683,38 @@
         {
           "station": "rechtsheim",
           "arrival": "",
-          "departure": "00:35:02"
+          "departure": "00:35:02",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:37:35",
-          "departure": "00:38:35"
+          "departure": "00:38:35",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "00:41:49",
-          "departure": "00:42:49"
+          "departure": "00:42:49",
+          "stop": true
         },
         {
           "station": "neustadt",
           "arrival": "00:46:05",
-          "departure": "00:51:03"
+          "departure": "00:51:03",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:54:12",
-          "departure": "00:55:12"
+          "departure": "00:55:12",
+          "stop": true
         },
         {
           "station": "linksdorf",
           "arrival": "00:57:46",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -640,32 +730,38 @@
         {
           "station": "rechtsheim",
           "arrival": "",
-          "departure": "00:23:54"
+          "departure": "00:23:54",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:25:49",
-          "departure": "00:25:49"
+          "departure": "00:25:49",
+          "stop": false
         },
         {
           "station": "burghausen",
           "arrival": "00:28:14",
-          "departure": "00:28:14"
+          "departure": "00:28:14",
+          "stop": false
         },
         {
           "station": "neustadt",
           "arrival": "00:30:41",
-          "departure": "00:31:41"
+          "departure": "00:31:41",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:34:03",
-          "departure": "00:34:03"
+          "departure": "00:34:03",
+          "stop": false
         },
         {
           "station": "linksdorf",
           "arrival": "00:35:58",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -681,22 +777,26 @@
         {
           "station": "rechtsheim",
           "arrival": "",
-          "departure": "00:08:28"
+          "departure": "00:08:28",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:11:31",
-          "departure": "00:12:09"
+          "departure": "00:12:09",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "00:15:53",
-          "departure": "00:16:53"
+          "departure": "00:16:53",
+          "stop": true
         },
         {
           "station": "golm",
           "arrival": "00:21:05",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -712,22 +812,26 @@
         {
           "station": "golm",
           "arrival": "",
-          "departure": "00:31:18"
+          "departure": "00:31:18",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "00:35:29",
-          "departure": "00:38:04"
+          "departure": "00:38:04",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:41:49",
-          "departure": "00:42:49"
+          "departure": "00:42:49",
+          "stop": true
         },
         {
           "station": "rechtsheim",
           "arrival": "00:45:52",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -743,22 +847,26 @@
         {
           "station": "rechtsheim",
           "arrival": "",
-          "departure": "00:28:29"
+          "departure": "00:28:29",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:30:59",
-          "departure": "00:32:09"
+          "departure": "00:32:09",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "00:34:39",
-          "departure": "00:35:26"
+          "departure": "00:35:26",
+          "stop": true
         },
         {
           "station": "golm",
           "arrival": "00:38:56",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -774,22 +882,26 @@
         {
           "station": "golm",
           "arrival": "",
-          "departure": "00:49:46"
+          "departure": "00:49:46",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "00:53:57",
-          "departure": "01:00:55"
+          "departure": "01:00:55",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "01:04:40",
-          "departure": "01:05:40"
+          "departure": "01:05:40",
+          "stop": true
         },
         {
           "station": "rechtsheim",
           "arrival": "01:08:42",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -805,32 +917,38 @@
         {
           "station": "rechtsheim",
           "arrival": "",
-          "departure": "00:16:02"
+          "departure": "00:16:02",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:19:06",
-          "departure": "00:28:18"
+          "departure": "00:28:18",
+          "stop": false
         },
         {
           "station": "burghausen",
           "arrival": "00:32:11",
-          "departure": "00:32:11"
+          "departure": "00:32:11",
+          "stop": false
         },
         {
           "station": "neustadt",
           "arrival": "00:36:06",
-          "departure": "00:54:14"
+          "departure": "00:54:14",
+          "stop": false
         },
         {
           "station": "weststadt",
           "arrival": "00:58:00",
-          "departure": "00:58:00"
+          "departure": "00:58:00",
+          "stop": false
         },
         {
           "station": "linksdorf",
           "arrival": "01:01:05",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -846,22 +964,26 @@
         {
           "station": "golm",
           "arrival": "",
-          "departure": "00:24:41"
+          "departure": "00:24:41",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "00:30:58",
-          "departure": "00:47:00"
+          "departure": "00:47:00",
+          "stop": false
         },
         {
           "station": "ostheim",
           "arrival": "00:52:36",
-          "departure": "01:08:56"
+          "departure": "01:08:56",
+          "stop": false
         },
         {
           "station": "rechtsheim",
           "arrival": "01:13:31",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -877,32 +999,38 @@
         {
           "station": "rechtsheim",
           "arrival": "",
-          "departure": "00:03:15"
+          "departure": "00:03:15",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:06:19",
-          "departure": "00:19:26"
+          "departure": "00:19:26",
+          "stop": false
         },
         {
           "station": "burghausen",
           "arrival": "00:23:19",
-          "departure": "00:23:19"
+          "departure": "00:23:19",
+          "stop": false
         },
         {
           "station": "neustadt",
           "arrival": "00:27:14",
-          "departure": "00:34:13"
+          "departure": "00:34:13",
+          "stop": false
         },
         {
           "station": "weststadt",
           "arrival": "00:37:59",
-          "departure": "00:37:59"
+          "departure": "00:37:59",
+          "stop": false
         },
         {
           "station": "linksdorf",
           "arrival": "00:41:04",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -918,32 +1046,38 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:22:52"
+          "departure": "00:22:52",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:26:43",
-          "departure": "00:35:35"
+          "departure": "00:35:35",
+          "stop": false
         },
         {
           "station": "neustadt",
           "arrival": "00:40:18",
-          "departure": "00:45:29"
+          "departure": "00:45:29",
+          "stop": false
         },
         {
           "station": "burghausen",
           "arrival": "00:50:22",
-          "departure": "01:04:44"
+          "departure": "01:04:44",
+          "stop": false
         },
         {
           "station": "ostheim",
           "arrival": "01:09:36",
-          "departure": "01:16:33"
+          "departure": "01:16:33",
+          "stop": false
         },
         {
           "station": "rechtsheim",
           "arrival": "01:20:22",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -959,32 +1093,38 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:26:43"
+          "departure": "00:26:43",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:28:39",
-          "departure": "00:28:39"
+          "departure": "00:28:39",
+          "stop": false
         },
         {
           "station": "neustadt",
           "arrival": "00:31:00",
-          "departure": "00:32:52"
+          "departure": "00:32:52",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "00:35:19",
-          "departure": "00:35:19"
+          "departure": "00:35:19",
+          "stop": false
         },
         {
           "station": "ostheim",
           "arrival": "00:37:44",
-          "departure": "00:37:44"
+          "departure": "00:37:44",
+          "stop": false
         },
         {
           "station": "rechtsheim",
           "arrival": "00:39:39",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -1000,17 +1140,20 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:07:15"
+          "departure": "00:07:15",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:09:49",
-          "departure": "00:10:57"
+          "departure": "00:10:57",
+          "stop": true
         },
         {
           "station": "neustadt",
           "arrival": "00:14:06",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": "6602"
@@ -1026,17 +1169,20 @@
         {
           "station": "neustadt",
           "arrival": "",
-          "departure": "00:16:50"
+          "departure": "00:16:50",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:19:59",
-          "departure": "00:20:59"
+          "departure": "00:20:59",
+          "stop": true
         },
         {
           "station": "linksdorf",
           "arrival": "00:23:33",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -1052,17 +1198,20 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:28:41"
+          "departure": "00:28:41",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:31:15",
-          "departure": "00:32:23"
+          "departure": "00:32:23",
+          "stop": true
         },
         {
           "station": "neustadt",
           "arrival": "00:35:32",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": "6604"
@@ -1078,17 +1227,20 @@
         {
           "station": "neustadt",
           "arrival": "",
-          "departure": "00:39:17"
+          "departure": "00:39:17",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:42:26",
-          "departure": "00:43:26"
+          "departure": "00:43:26",
+          "stop": true
         },
         {
           "station": "linksdorf",
           "arrival": "00:46:00",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -1104,22 +1256,26 @@
         {
           "station": "golm",
           "arrival": "",
-          "departure": "00:11:58"
+          "departure": "00:11:58",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "00:14:39",
-          "departure": "00:15:39"
+          "departure": "00:15:39",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:18:54",
-          "departure": "00:19:54"
+          "departure": "00:19:54",
+          "stop": true
         },
         {
           "station": "rechtsheim",
           "arrival": "00:22:27",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -1135,22 +1291,26 @@
         {
           "station": "golm",
           "arrival": "",
-          "departure": "00:01:12"
+          "departure": "00:01:12",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "00:05:14",
-          "departure": "00:05:14"
+          "departure": "00:05:14",
+          "stop": false
         },
         {
           "station": "ostheim",
           "arrival": "00:10:05",
-          "departure": "00:10:05"
+          "departure": "00:10:05",
+          "stop": false
         },
         {
           "station": "rechtsheim",
           "arrival": "00:13:55",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -1166,17 +1326,20 @@
         {
           "station": "meßbach",
           "arrival": "",
-          "departure": "00:01:09"
+          "departure": "00:01:09",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:03:43",
-          "departure": "00:04:43"
+          "departure": "00:04:43",
+          "stop": true
         },
         {
           "station": "linksdorf",
           "arrival": "00:07:17",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": "33805"
@@ -1192,17 +1355,20 @@
         {
           "station": "meßbach",
           "arrival": "",
-          "departure": "00:04:35"
+          "departure": "00:04:35",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:07:40",
-          "departure": "00:08:40"
+          "departure": "00:08:40",
+          "stop": false
         },
         {
           "station": "linksdorf",
           "arrival": "00:11:45",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -1218,17 +1384,20 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:17:00"
+          "departure": "00:17:00",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:19:34",
-          "departure": "00:22:19"
+          "departure": "00:22:19",
+          "stop": true
         },
         {
           "station": "meßbach",
           "arrival": "00:24:53",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": "33808"
@@ -1244,17 +1413,20 @@
         {
           "station": "meßbach",
           "arrival": "",
-          "departure": "00:27:55"
+          "departure": "00:27:55",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:30:29",
-          "departure": "00:31:29"
+          "departure": "00:31:29",
+          "stop": true
         },
         {
           "station": "linksdorf",
           "arrival": "00:34:03",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -1270,32 +1442,38 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:31:36"
+          "departure": "00:31:36",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:35:27",
-          "departure": "00:50:06"
+          "departure": "00:50:06",
+          "stop": false
         },
         {
           "station": "neustadt",
           "arrival": "00:54:49",
-          "departure": "00:56:54"
+          "departure": "00:56:54",
+          "stop": false
         },
         {
           "station": "burghausen",
           "arrival": "01:01:47",
-          "departure": "01:22:09"
+          "departure": "01:22:09",
+          "stop": false
         },
         {
           "station": "ostheim",
           "arrival": "01:27:01",
-          "departure": "01:34:17"
+          "departure": "01:34:17",
+          "stop": false
         },
         {
           "station": "rechtsheim",
           "arrival": "01:38:06",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -1311,17 +1489,20 @@
         {
           "station": "meßbach",
           "arrival": "",
-          "departure": "00:16:05"
+          "departure": "00:16:05",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:19:10",
-          "departure": "00:23:33"
+          "departure": "00:23:33",
+          "stop": false
         },
         {
           "station": "linksdorf",
           "arrival": "00:26:38",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -1337,17 +1518,20 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:35:29"
+          "departure": "00:35:29",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:37:53",
-          "departure": "00:38:53"
+          "departure": "00:38:53",
+          "stop": false
         },
         {
           "station": "meßbach",
           "arrival": "00:41:17",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -1363,17 +1547,20 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:42:38"
+          "departure": "00:42:38",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:45:12",
-          "departure": "00:47:57"
+          "departure": "00:47:57",
+          "stop": true
         },
         {
           "station": "meßbach",
           "arrival": "00:50:31",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": "33810"
@@ -1389,22 +1576,26 @@
         {
           "station": "rechtsheim",
           "arrival": "",
-          "departure": "00:20:00"
+          "departure": "00:20:00",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:22:24",
-          "departure": "00:23:24"
+          "departure": "00:23:24",
+          "stop": false
         },
         {
           "station": "burghausen",
           "arrival": "00:25:48",
-          "departure": "00:25:48"
+          "departure": "00:25:48",
+          "stop": false
         },
         {
           "station": "golm",
           "arrival": "00:28:12",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": "40604"
@@ -1420,22 +1611,26 @@
         {
           "station": "golm",
           "arrival": "",
-          "departure": "00:58:13"
+          "departure": "00:58:13",
+          "stop": true
         },
         {
           "station": "burghausen",
           "arrival": "01:00:37",
-          "departure": "01:13:08"
+          "departure": "01:13:08",
+          "stop": false
         },
         {
           "station": "ostheim",
           "arrival": "01:15:32",
-          "departure": "01:20:31"
+          "departure": "01:20:31",
+          "stop": false
         },
         {
           "station": "rechtsheim",
           "arrival": "01:22:55",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -1451,32 +1646,38 @@
         {
           "station": "rechtsheim",
           "arrival": "",
-          "departure": "00:40:00"
+          "departure": "00:40:00",
+          "stop": true
         },
         {
           "station": "ostheim",
           "arrival": "00:41:55",
-          "departure": "00:41:55"
+          "departure": "00:41:55",
+          "stop": false
         },
         {
           "station": "burghausen",
           "arrival": "00:44:20",
-          "departure": "00:46:13"
+          "departure": "00:46:13",
+          "stop": true
         },
         {
           "station": "neustadt",
           "arrival": "00:48:40",
-          "departure": "00:48:40"
+          "departure": "00:48:40",
+          "stop": false
         },
         {
           "station": "weststadt",
           "arrival": "00:51:02",
-          "departure": "00:51:02"
+          "departure": "00:51:02",
+          "stop": false
         },
         {
           "station": "linksdorf",
           "arrival": "00:52:57",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null

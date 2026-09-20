@@ -39,8 +39,7 @@ export class TrainStationHandler {
    /// <param name="train">The train to check.</param>
    /// <returns>True if the calling function can skip evaluating the train further, since it is already stopped at the station</returns>
    checkStationStop(train: Train): boolean {
-      const isFreightPassThrough = train.type === 'Freight' && train.action !== 'End';
-      if ((!train.shouldStopAtCurrentStation) || !train.position!.track.halt || train.state === TrainState.WAITING_FOR_NEXT_SERVICE || train.state === TrainState.MANUAL_CONTROL || (isFreightPassThrough) || train.waitingProgress === 1) return false;
+      if ((!train.shouldStopAtCurrentStation) || !train.position!.track.halt || train.state === TrainState.WAITING_FOR_NEXT_SERVICE || train.state === TrainState.MANUAL_CONTROL || train.waitingProgress === 1) return false;
 
       const currentSimulationTime = this._clientSimulation.currentSimulationTime!;
 

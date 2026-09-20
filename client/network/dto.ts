@@ -84,6 +84,7 @@ export interface StationTimetableEventDto {
   category?: string;
   arrivalTime?: string | null;
   departureTime?: string | null;
+  stops: boolean;
   currentDelay: number;
   fromStation: string;
   nextStation: string;
@@ -173,6 +174,7 @@ export interface ScenarioTimetableEntryDto {
   station: string;
   arrival: string;   // may be HH:mm:ss or ISO
   departure: string; // may be HH:mm:ss or ISO
+  stop: boolean;
 }
 
 export interface NetworkStationDto {

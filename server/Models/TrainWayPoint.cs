@@ -11,12 +11,14 @@ namespace TrainDispatcherGame.Server.Models
         public DateTime ActualDepartureTime { get; set; } = DateTime.MinValue;
         public bool Processed { get; set; } = false;
         public bool IsLast { get; set; } = false;
+        public bool Stops { get; set; }
 
-        public TrainWayPoint(string station, DateTime arrivalTime, DateTime departureTime)
+        public TrainWayPoint(string station, DateTime arrivalTime, DateTime departureTime, bool stops)
         {
             Station = station;
             ArrivalTime = arrivalTime;
             DepartureTime = departureTime;
+            Stops = stops;
         }
 
         public static bool HasTime(DateTime time) => time.Year > 1;
@@ -25,14 +27,6 @@ namespace TrainDispatcherGame.Server.Models
         public bool HasActualArrivalTime => HasTime(ActualArrivalTime);
         public bool HasActualDepartureTime => HasTime(ActualDepartureTime);
         public DateTime ScheduledReferenceTime => HasArrivalTime ? ArrivalTime : DepartureTime;
-
-        public bool Stops
-        {
-            get
-            {
-                return ArrivalTime != DepartureTime;
-            }
-        }
 
         public TrainWayPointActionType Action
         {

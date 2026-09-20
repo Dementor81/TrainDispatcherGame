@@ -286,7 +286,7 @@ export class TrainOverviewPanel extends BasePanel {
       <td class="small fw-bold ${isStoppedBySignal ? 'text-danger' : ''}">${train.category} ${train.trainNumber}</td>
       <td class="small">${train.fromStation}</td>
       <td class="small">${train.nextStation}</td>
-      <td class="small">${formatArrivalTimeForStation(train.arrivalTime, train.departureTime, UNSET_TIME_PLACEHOLDER)}</td>
+      <td class="small">${formatArrivalTimeForStation(train.arrivalTime, train.stops, UNSET_TIME_PLACEHOLDER)}</td>
       <td class="small">${formatTimeFromIso(train.departureTime, UNSET_TIME_PLACEHOLDER)}</td>
       <td><span data-delay-badge="true" class="badge ${delayInfo.class}">${delayInfo.text}</span></td>
     `;

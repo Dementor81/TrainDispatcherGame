@@ -251,7 +251,7 @@ namespace TrainDispatcherGame.Server.Services
                     }
 
                     var station = timetableEntry.Station?.ToLowerInvariant() ?? string.Empty;
-                    train.Route.Add(new TrainWayPoint(station, arrivalTime, departureTime));
+                    train.Route.Add(new TrainWayPoint(station, arrivalTime, departureTime, timetableEntry.Stop));
                 }
 
                 if (train.Route.Count == 0)

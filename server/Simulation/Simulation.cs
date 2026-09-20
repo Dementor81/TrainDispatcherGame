@@ -447,7 +447,7 @@ namespace TrainDispatcherGame.Server.Simulation
                     train.controlledByPlayer = false;
                     train.CurrentLocation = null;
 
-                    if (currentWayPoint.Stops && !currentWayPoint.Processed && train.Type != TrainType.Freight)
+                    if (currentWayPoint.Stops && !currentWayPoint.Processed)
                     {
                         train.Record(new TrainMissedStopEvent(SimulationTime, currentWayPoint.Station));
                         RecordMajorEvent(MajorEventType.MissedStop, train.Number, station: currentWayPoint.Station);

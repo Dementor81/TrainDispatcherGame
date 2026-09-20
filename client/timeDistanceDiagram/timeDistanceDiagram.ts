@@ -24,6 +24,7 @@ export type TimeDistanceDiagramOptions = {
    directionFilterButton?: HTMLButtonElement | null;
    onTrainSelected?: (index: number | null) => void;
    onTrainEditRequested?: (index: number) => void;
+   onRouteChanged?: (stationOrder: string[]) => void;
 };
 
 export class TimeDistanceDiagram {
@@ -34,6 +35,7 @@ export class TimeDistanceDiagram {
    private readonly directionFilterButton: HTMLButtonElement | null;
    private readonly onTrainSelected?: (index: number | null) => void;
    private readonly onTrainEditRequested?: (index: number) => void;
+   private readonly onRouteChanged?: (stationOrder: string[]) => void;
    private app!: PIXI.Application;
    private isDraggingTrain: boolean = false;
    private draggingTrainIdx: number | null = null;
@@ -86,6 +88,7 @@ export class TimeDistanceDiagram {
       this.directionFilterButton = options.directionFilterButton ?? null;
       this.onTrainSelected = options.onTrainSelected;
       this.onTrainEditRequested = options.onTrainEditRequested;
+      this.onRouteChanged = options.onRouteChanged;
    }
 
    public async init(): Promise<void> {
@@ -354,6 +357,7 @@ export class TimeDistanceDiagram {
             this.selectedRoute = this.availableRoutes[idx];
             this.updateStationOrder(this.scenario!, this.network!);
             this.drawScene();
+            this.onRouteChanged?.(this.stationOrder);
          }
       };
    }

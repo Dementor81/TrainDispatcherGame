@@ -2,7 +2,9 @@ import type { ScenarioTrainDto, TrainType } from "../network/dto";
 import { BasePanel } from "../ui/basePanel";
 import { UI } from "../utils/ui";
 
-export type CreateTrainResult = {
+export type StationStop = { station: string; stop: boolean };
+
+export type TrainEditorResult = {
    number: string;
    type: TrainType;
    category?: string;
@@ -10,15 +12,7 @@ export type CreateTrainResult = {
    cars: number;
    startStation: string;
    endStation: string;
-   followingTrainNumber?: string;
-};
-
-export type EditTrainResult = {
-   number: string;
-   type: TrainType;
-   category?: string;
-   speedMax: number;
-   cars: number;
+   stops: StationStop[];
    followingTrainNumber?: string;
 };
 
@@ -31,23 +25,25 @@ export class TrainEditorPanel extends BasePanel {
    private followingEl!: HTMLSelectElement;
    private startSel!: HTMLSelectElement;
    private endSel!: HTMLSelectElement;
-   private startEndRow!: HTMLDivElement;
    private helperText!: HTMLDivElement;
+   private stopsListEl!: HTMLDivElement;
    private submitBtn!: HTMLButtonElement;
-   private pendingResolve: ((value: CreateTrainResult | EditTrainResult | null) => void) | null = null;
+   private pendingResolve: ((value: TrainEditorResult | null) => void) | null = null;
    private isClosingProgrammatically = false;
    private scenarioTrains: ScenarioTrainDto[] = [];
    private excludeTrainNumber: string | undefined;
-   private currentTerminus: string | undefined;
+   private stationOrder: string[] = [];
+   private stopChecks = new Map<string, boolean>();
+   private fallbackPath: string[] = [];
 
    constructor() {
-      // The scenario editor only needs the shared BasePanel chrome, not the full main Application.
       super(null, {
          title: "Train",
-         width: 360,
+         width: 640,
          top: 72,
          right: 16,
          closeable: true,
+         resizable: true,
       });
    }
 
@@ -75,15 +71,16 @@ export class TrainEditorPanel extends BasePanel {
       this.carsEl.max = "20";
       this.carsEl.step = "1";
 
-      this.startEndRow = UI.createDiv("row g-2", null);
+      const startEndRow = UI.createDiv("row g-2", null);
       const startCol = UI.createDiv("col", null);
       const endCol = UI.createDiv("col", null);
       startCol.appendChild(this.wrapField("Start station", this.startSel = document.createElement("select")));
       endCol.appendChild(this.wrapField("Terminus", this.endSel = document.createElement("select")));
       this.startSel.className = "form-select no-drag";
       this.endSel.className = "form-select no-drag";
-      this.endSel.addEventListener("change", () => this.populateFollowingTrains());
-      this.startEndRow.append(startCol, endCol);
+      this.startSel.addEventListener("change", () => this.onRouteInputsChanged());
+      this.endSel.addEventListener("change", () => this.onRouteInputsChanged());
+      startEndRow.append(startCol, endCol);
 
       const speedCarsRow = UI.createDiv("row g-2", null);
       const speedCol = UI.createDiv("col", null);
@@ -92,24 +89,36 @@ export class TrainEditorPanel extends BasePanel {
       carsCol.appendChild(this.wrapField("Cars", this.carsEl));
       speedCarsRow.append(speedCol, carsCol);
 
+      const fields = UI.createDiv("d-grid gap-2", null);
+      fields.append(
+         this.wrapField("Train number", this.numEl),
+         this.wrapField("Type", this.typeEl),
+         this.wrapField("Category", this.catEl),
+         this.wrapField("Following Train Number", this.followingEl),
+         speedCarsRow,
+         startEndRow
+      );
+
+      this.stopsListEl = UI.createDiv("d-grid gap-1 overflow-auto no-drag", null);
+      this.stopsListEl.style.maxHeight = "280px";
+      const stopsCol = this.wrapField("Stops", this.stopsListEl);
+
+      const columns = UI.createDiv("row g-3", null);
+      const left = UI.createDiv("col-7", null);
+      const right = UI.createDiv("col-5", null);
+      left.appendChild(fields);
+      right.appendChild(stopsCol);
+      columns.append(left, right);
+
       this.helperText = UI.createDiv("form-text mt-1", null);
-      this.helperText.textContent = "Departure will be set to scenario start time; stops use 1 min dwell.";
+      this.helperText.textContent = "Departure is scenario start time. Unchecked stations pass through with no dwell.";
 
       const actions = UI.createDiv("d-flex justify-content-end gap-2 mt-2", null);
       actions.appendChild(UI.createButton("btn-sm btn-outline-secondary", "Cancel", () => this.hide()));
       this.submitBtn = UI.createButton("btn-sm btn-primary", "Save", () => this.submit());
       actions.appendChild(this.submitBtn);
 
-      form.append(
-         this.wrapField("Train number", this.numEl),
-         this.wrapField("Type", this.typeEl),
-         this.wrapField("Category", this.catEl),
-         this.wrapField("Following Train Number", this.followingEl),
-         speedCarsRow,
-         this.startEndRow,
-         this.helperText,
-         actions
-      );
+      form.append(columns, this.helperText, actions);
       root.appendChild(form);
       return root;
    }
@@ -120,30 +129,35 @@ export class TrainEditorPanel extends BasePanel {
       this.isClosingProgrammatically = false;
    }
 
-   public async showCreate(stationOrder: string[], trains: ScenarioTrainDto[]): Promise<CreateTrainResult | null> {
+   public async showCreate(stationOrder: string[], trains: ScenarioTrainDto[]): Promise<TrainEditorResult | null> {
       this.prepareCreate(stationOrder, trains);
-      return this.open<CreateTrainResult>();
+      return this.open();
    }
 
-   public async showEdit(train: ScenarioTrainDto, trains: ScenarioTrainDto[]): Promise<EditTrainResult | null> {
-      this.prepareEdit(train, trains);
-      return this.open<EditTrainResult>();
+   public async showEdit(train: ScenarioTrainDto, trains: ScenarioTrainDto[], stationOrder: string[]): Promise<TrainEditorResult | null> {
+      this.prepareEdit(train, trains, stationOrder);
+      return this.open();
    }
 
-   private open<T extends CreateTrainResult | EditTrainResult>(): Promise<T | null> {
+   public updateStationOrder(stationOrder: string[]): void {
+      if (!this.isVisible) return;
+      this.captureStopChecks();
+      this.fillStationSelects(stationOrder);
+      this.rebuildStopList();
+   }
+
+   private open(): Promise<TrainEditorResult | null> {
       this.finish(null);
       this.show();
       queueMicrotask(() => this.numEl.focus());
       return new Promise((resolve) => {
-         this.pendingResolve = resolve as (value: CreateTrainResult | EditTrainResult | null) => void;
+         this.pendingResolve = resolve;
       });
    }
 
    private prepareCreate(stationOrder: string[], trains: ScenarioTrainDto[]) {
       this.setTitle("Add Train");
       this.submitBtn.textContent = "Create";
-      this.startEndRow.classList.remove("d-none");
-      this.helperText.classList.remove("d-none");
       this.numEl.value = "";
       this.typeEl.value = "Passenger";
       this.catEl.value = "";
@@ -151,18 +165,18 @@ export class TrainEditorPanel extends BasePanel {
       this.carsEl.value = "6";
       this.scenarioTrains = trains;
       this.excludeTrainNumber = undefined;
-      this.currentTerminus = undefined;
-      this.populateStations(stationOrder);
+      this.stopChecks.clear();
+      this.fallbackPath = [];
+      this.fillStationSelects(stationOrder);
+      this.startSel.selectedIndex = 0;
+      this.endSel.selectedIndex = Math.max(0, stationOrder.length - 1);
       this.populateFollowingTrains("");
-      this.startSel.required = true;
-      this.endSel.required = true;
+      this.rebuildStopList();
    }
 
-   private prepareEdit(train: ScenarioTrainDto, trains: ScenarioTrainDto[]) {
+   private prepareEdit(train: ScenarioTrainDto, trains: ScenarioTrainDto[], stationOrder: string[]) {
       this.setTitle("Edit Train");
       this.submitBtn.textContent = "Save";
-      this.startEndRow.classList.add("d-none");
-      this.helperText.classList.add("d-none");
       this.numEl.value = train.number || "";
       this.typeEl.value = train.type || "Passenger";
       this.catEl.value = train.category || "";
@@ -170,27 +184,33 @@ export class TrainEditorPanel extends BasePanel {
       this.carsEl.value = String(train.cars ?? 6);
       this.scenarioTrains = trains;
       this.excludeTrainNumber = train.number;
-      const lastStop = train.timetable?.[train.timetable.length - 1];
-      this.currentTerminus = lastStop?.station;
+      this.stopChecks.clear();
+      for (const entry of train.timetable ?? []) {
+         this.stopChecks.set(entry.station, entry.stop);
+      }
+      const first = train.timetable?.[0]?.station;
+      const last = train.timetable?.[train.timetable.length - 1]?.station;
+      this.fallbackPath = (train.timetable ?? []).map((entry) => entry.station);
+      this.fillStationSelects(stationOrder, [first, last]);
+      if (first) this.startSel.value = first;
+      if (last) this.endSel.value = last;
       this.populateFollowingTrains(train.followingTrainNumber || "");
-      this.startSel.required = false;
-      this.endSel.required = false;
+      this.rebuildStopList();
    }
 
    private normalizeStation(station?: string | null): string {
       return (station || "").trim().toLowerCase();
    }
 
-   private getTerminus(): string {
-      if (this.startEndRow.classList.contains("d-none")) {
-         return this.normalizeStation(this.currentTerminus);
-      }
-      return this.normalizeStation(this.endSel.value);
+   private onRouteInputsChanged() {
+      this.captureStopChecks();
+      this.rebuildStopList();
+      this.populateFollowingTrains();
    }
 
    private populateFollowingTrains(preferred?: string) {
       const previous = preferred ?? this.followingEl.value;
-      const terminus = this.getTerminus();
+      const terminus = this.normalizeStation(this.endSel.value);
       this.followingEl.innerHTML = "";
       this.followingEl.appendChild(new Option("", ""));
 
@@ -212,43 +232,108 @@ export class TrainEditorPanel extends BasePanel {
          numbers.includes(previous) || (preferred !== undefined && previous === preferred) ? previous : "";
    }
 
-   private populateStations(stationOrder: string[]) {
+   private fillStationSelects(stationOrder: string[], extra: Array<string | undefined> = []) {
+      this.stationOrder = stationOrder;
+      const start = this.startSel.value;
+      const end = this.endSel.value;
+      const stations = [...stationOrder];
+      for (const station of extra) {
+         if (station && !stations.includes(station)) stations.push(station);
+      }
       this.startSel.innerHTML = "";
       this.endSel.innerHTML = "";
-      for (const station of stationOrder) {
+      for (const station of stations) {
          this.startSel.appendChild(new Option(station, station));
          this.endSel.appendChild(new Option(station, station));
       }
-      this.startSel.selectedIndex = 0;
-      this.endSel.selectedIndex = Math.max(0, stationOrder.length - 1);
+      if (stations.includes(start)) this.startSel.value = start;
+      else this.startSel.selectedIndex = 0;
+      if (stations.includes(end)) this.endSel.value = end;
+      else this.endSel.selectedIndex = Math.max(0, stations.length - 1);
+   }
+
+   private getPath(): string[] {
+      const startIdx = this.stationOrder.indexOf(this.startSel.value);
+      const endIdx = this.stationOrder.indexOf(this.endSel.value);
+      if (startIdx < 0 || endIdx < 0 || startIdx === endIdx) return this.fallbackPath;
+      const step = startIdx < endIdx ? 1 : -1;
+      const path: string[] = [];
+      for (let i = startIdx; i !== endIdx + step; i += step) path.push(this.stationOrder[i]);
+      this.fallbackPath = [];
+      return path;
+   }
+
+   private captureStopChecks() {
+      for (const input of this.stopsListEl.querySelectorAll<HTMLInputElement>("input[type=checkbox]")) {
+         const station = input.dataset.station;
+         if (station) this.stopChecks.set(station, input.checked);
+      }
+   }
+
+   private rebuildStopList() {
+      const path = this.getPath();
+      this.stopsListEl.innerHTML = "";
+      if (path.length === 0) {
+         const hint = UI.createDiv("form-text", null);
+         hint.textContent = "Select different start and terminus.";
+         this.stopsListEl.appendChild(hint);
+         return;
+      }
+      path.forEach((station, index) => {
+         const isEndpoint = index === 0 || index === path.length - 1;
+         const checked = isEndpoint ? true : (this.stopChecks.get(station) ?? true);
+         this.stopChecks.set(station, checked);
+
+         const row = UI.createDiv("form-check", null);
+         const input = document.createElement("input");
+         input.type = "checkbox";
+         input.className = "form-check-input no-drag";
+         input.id = `train-stop-${index}`;
+         input.dataset.station = station;
+         input.checked = checked;
+         input.disabled = isEndpoint;
+         input.addEventListener("change", () => this.stopChecks.set(station, input.checked));
+
+         const label = document.createElement("label");
+         label.className = "form-check-label";
+         label.htmlFor = input.id;
+         label.textContent = station;
+         row.append(input, label);
+         this.stopsListEl.appendChild(row);
+      });
+   }
+
+   private collectStops(): StationStop[] {
+      this.captureStopChecks();
+      const path = this.getPath();
+      return path.map((station, index) => ({
+         station,
+         stop: index === 0 || index === path.length - 1 || (this.stopChecks.get(station) ?? true),
+      }));
    }
 
    private submit() {
-      const base = {
+      this.closeWithResult({
          number: this.numEl.value.trim() || "NEW",
          type: (this.typeEl.value as TrainType) || "Passenger",
          category: this.catEl.value.trim() || undefined,
          speedMax: parseInt(this.speedEl.value || "120", 10) || 120,
          cars: parseInt(this.carsEl.value || "6", 10) || 6,
+         startStation: this.startSel.value,
+         endStation: this.endSel.value,
+         stops: this.collectStops(),
          followingTrainNumber: this.followingEl.value.trim() || undefined,
-      };
-      this.closeWithResult(this.startEndRow.classList.contains("d-none")
-         ? base
-         : {
-              ...base,
-              startStation: this.startSel.value,
-              endStation: this.endSel.value,
-           });
+      });
    }
 
-   private closeWithResult(result: CreateTrainResult | EditTrainResult) {
+   private closeWithResult(result: TrainEditorResult) {
       this.isClosingProgrammatically = true;
       super.hide();
       this.isClosingProgrammatically = false;
       this.finish(result);
    }
 
-   private finish(value: CreateTrainResult | EditTrainResult | null) {
+   private finish(value: TrainEditorResult | null) {
       const resolve = this.pendingResolve;
       this.pendingResolve = null;
       if (resolve) resolve(value);

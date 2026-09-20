@@ -48,8 +48,7 @@ export class TrainSignalHandler {
 
    private shouldSkipBumperLookahead(train: Train): boolean {
       if (train.isStationState()) return true;
-      const isFreightPassThrough = train.type === 'Freight' && train.action !== 'End';
-      return train.shouldStopAtCurrentStation && !!train.position?.track.halt && !isFreightPassThrough;
+      return train.shouldStopAtCurrentStation && !!train.position?.track.halt;
    }
 
    private checkEndOfTrackAhead(train: Train): void {

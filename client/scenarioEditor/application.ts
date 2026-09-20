@@ -1,7 +1,7 @@
 import { fetchScenarios, fetchScenario, fetchNetwork, saveScenario } from "../network/api";
-import type { ScenarioDto, NetworkDto } from "../network/dto";
+import type { ScenarioDto, NetworkDto, ScenarioTrainDto, ScenarioTimetableEntryDto } from "../network/dto";
 import { toMinutes, minutesToString } from "./utils/timeUtils";
-import { TrainEditorPanel } from "./trainEditorPanel";
+import { TrainEditorPanel, type StationStop } from "./trainEditorPanel";
 import { validateTrains } from "./utils/trainValidation";
 import Toast from "../ui/toast";
 import { TimeDistanceDiagram } from "../timeDistanceDiagram/timeDistanceDiagram";
@@ -23,6 +23,7 @@ export default class SzenariosApplication {
             this.diagram.selectTrain(idx);
             void this.editSelectedTrain();
          },
+         onRouteChanged: (stationOrder) => this.trainEditorPanel.updateStationOrder(stationOrder),
       });
    }
 
@@ -133,14 +134,15 @@ export default class SzenariosApplication {
       const idx = this.diagram.selectedTrainIndex;
       if (idx === null || !scenario) return;
       const train = scenario.trains[idx];
-      const res = await this.trainEditorPanel.showEdit(train as any, scenario.trains);
+      const res = await this.trainEditorPanel.showEdit(train, scenario.trains, this.diagram.getStationOrder());
       if (!res) return;
       train.number = res.number;
-      (train as any).type = res.type;
-      (train as any).category = res.category;
+      train.type = res.type;
+      train.category = res.category;
       train.speedMax = res.speedMax;
       train.cars = res.cars;
-      (train as any).followingTrainNumber = res.followingTrainNumber;
+      train.followingTrainNumber = res.followingTrainNumber;
+      this.applyEditorRoute(train, res.startStation, res.endStation, res.stops, scenario.start_time);
       this.diagram.redraw();
    }
 
@@ -157,11 +159,12 @@ export default class SzenariosApplication {
             category: train.category,
             speedMax: train.speedMax,
             cars: train.cars,
-            followingTrainNumber: (train as any).followingTrainNumber,
-            timetable: train.timetable.map(({ station, arrival, departure }) => ({
+            followingTrainNumber: train.followingTrainNumber,
+            timetable: train.timetable.map(({ station, arrival, departure, stop }) => ({
                station,
                ...(arrival?.trim() ? { arrival } : {}),
                ...(departure?.trim() ? { departure } : {}),
+               stop: !!stop,
             })),
          })),
       };
@@ -270,8 +273,9 @@ export default class SzenariosApplication {
          speedMax: res.speedMax,
          cars: res.cars,
          followingTrainNumber: res.followingTrainNumber,
-         timetable: this.buildTimetable(range.startIdx, range.endIdx, res.speedMax, toMinutes(scenario.start_time)) as any,
-      } as any);
+         path: [],
+         timetable: this.buildTimetable(range.startIdx, range.endIdx, res.speedMax, toMinutes(scenario.start_time), res.stops),
+      });
       this.diagram.redraw();
    }
 
@@ -282,29 +286,76 @@ export default class SzenariosApplication {
       return startIdx < 0 || endIdx < 0 || startIdx === endIdx ? null : { startIdx, endIdx };
    }
 
-   private buildTimetable(
-      startIndex: number,
-      endIndex: number,
-      speed: number,
-      startTimeMinutes: number
-   ): Array<{ station: string; arrival?: string; departure?: string }> {
+   private stationsOnRange(startIndex: number, endIndex: number): string[] {
       const stationOrder = this.diagram.getStationOrder();
       const step = startIndex < endIndex ? 1 : -1;
       const path: string[] = [];
       for (let i = startIndex; i !== endIndex + step; i += step) path.push(stationOrder[i]);
+      return path;
+   }
+
+   private applyEditorRoute(
+      train: ScenarioTrainDto,
+      startStation: string,
+      endStation: string,
+      stops: StationStop[],
+      scenarioStartTime: string
+   ) {
+      const range = this.getStationRange(startStation, endStation);
+      if (!range) {
+         if (stops.length === 0) return;
+         const stopByStation = new Map(stops.map((entry) => [entry.station, entry.stop]));
+         train.timetable.forEach((entry, index) => {
+            const isEnd = index === 0 || index === train.timetable.length - 1;
+            entry.stop = isEnd || (stopByStation.get(entry.station) ?? entry.stop);
+         });
+         return;
+      }
+      const path = this.stationsOnRange(range.startIdx, range.endIdx);
+      const same = path.length === train.timetable.length && path.every((station, i) => station === train.timetable[i].station);
+      if (same) {
+         const stopByStation = new Map(stops.map((entry) => [entry.station, entry.stop]));
+         train.timetable.forEach((entry, index) => {
+            const isEnd = index === 0 || index === train.timetable.length - 1;
+            entry.stop = isEnd || (stopByStation.get(entry.station) ?? true);
+         });
+         return;
+      }
+      const startMinutes = this.getTrainStartMinutes(train) ?? toMinutes(scenarioStartTime);
+      train.timetable = this.buildTimetable(range.startIdx, range.endIdx, train.speedMax, startMinutes, stops);
+   }
+
+   private buildTimetable(
+      startIndex: number,
+      endIndex: number,
+      speed: number,
+      startTimeMinutes: number,
+      stops?: StationStop[] | Map<string, boolean>
+   ): ScenarioTimetableEntryDto[] {
+      const path = this.stationsOnRange(startIndex, endIndex);
+      const stopByStation = stops instanceof Map
+         ? stops
+         : new Map((stops ?? []).map((entry) => [entry.station, entry.stop]));
 
       let current = startTimeMinutes;
       return path.map((station, index) => {
-         if (index === 0) return { station, departure: minutesToString(current) };
+         const isFirst = index === 0;
+         const isLast = index === path.length - 1;
+         const stop = isFirst || isLast || (stopByStation.get(station) ?? true);
+         if (isFirst) {
+            return { station, arrival: "", departure: minutesToString(current), stop: true };
+         }
          current += this.diagram.travelMinutes(path[index - 1], station, speed);
-         const arrival = current;
-         const departure = index === path.length - 1 ? undefined : minutesToString(arrival + 1);
-         if (departure) current = arrival + 1;
-         return { station, arrival: minutesToString(arrival), departure };
+         const arrival = minutesToString(current);
+         if (isLast) {
+            return { station, arrival, departure: "", stop: true };
+         }
+         if (stop) current += 1;
+         return { station, arrival, departure: minutesToString(current), stop };
       });
    }
 
-   private getTrainStartMinutes(train: any) {
+   private getTrainStartMinutes(train: ScenarioTrainDto) {
       const [firstEntry, secondEntry] = train.timetable;
       if (!firstEntry) return null;
       if (firstEntry.departure) return toMinutes(firstEntry.departure);
@@ -323,7 +374,8 @@ export default class SzenariosApplication {
       const range = this.getStationRange(firstEntry.station, lastEntry.station);
       const startMinutes = this.getTrainStartMinutes(train);
       if (!range || startMinutes === null) return;
-      train.timetable = this.buildTimetable(range.startIdx, range.endIdx, train.speedMax, startMinutes) as any;
+      const stops = train.timetable.map((entry) => ({ station: entry.station, stop: entry.stop }));
+      train.timetable = this.buildTimetable(range.startIdx, range.endIdx, train.speedMax, startMinutes, stops);
       this.diagram.redraw();
    }
 }

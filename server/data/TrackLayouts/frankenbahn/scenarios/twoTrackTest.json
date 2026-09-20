@@ -1,4 +1,4 @@
-﻿{
+{
   "title": "Fahrplan zweigleisig Test",
   "layout": "frankenbahn",
   "start_time": "00:00",
@@ -14,12 +14,14 @@
         {
           "station": "linksdorf",
           "arrival": "",
-          "departure": "00:00:00"
+          "departure": "00:00:00",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:02:00",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": "002"
@@ -35,12 +37,14 @@
         {
           "station": "weststadt",
           "arrival": "",
-          "departure": "00:05:33"
+          "departure": "00:05:33",
+          "stop": true
         },
         {
           "station": "linksdorf",
           "arrival": "00:07:33",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -56,17 +60,20 @@
         {
           "station": "neustadt",
           "arrival": "",
-          "departure": "00:00:00"
+          "departure": "00:00:00",
+          "stop": true
         },
         {
           "station": "weststadt",
           "arrival": "00:02:00",
-          "departure": "00:03:11"
+          "departure": "00:03:11",
+          "stop": true
         },
         {
           "station": "linksdorf",
           "arrival": "00:05:11",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null

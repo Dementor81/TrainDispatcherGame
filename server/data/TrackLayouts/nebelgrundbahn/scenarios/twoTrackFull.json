@@ -1,4 +1,4 @@
-﻿{
+{
   "title": "Fahrplan Full",
   "layout": "nebelgrundbahn",
   "start_time": "00:00",
@@ -14,37 +14,44 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:01:09"
+          "departure": "00:01:09",
+          "stop": true
         },
         {
           "station": "horb",
           "arrival": "00:02:52",
-          "departure": "00:03:52"
+          "departure": "00:03:52",
+          "stop": true
         },
         {
           "station": "camberg",
           "arrival": "00:05:35",
-          "departure": "00:06:35"
+          "departure": "00:06:35",
+          "stop": true
         },
         {
           "station": "kreuztal",
           "arrival": "00:08:18",
-          "departure": "00:09:18"
+          "departure": "00:09:18",
+          "stop": true
         },
         {
           "station": "hohenbrunn",
           "arrival": "00:11:00",
-          "departure": "00:12:00"
+          "departure": "00:12:00",
+          "stop": true
         },
         {
           "station": "dospen",
           "arrival": "00:13:43",
-          "departure": "00:14:43"
+          "departure": "00:14:43",
+          "stop": true
         },
         {
           "station": "landing",
           "arrival": "00:16:26",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": "6605"
@@ -60,32 +67,38 @@
         {
           "station": "landing",
           "arrival": "",
-          "departure": "00:41:49"
+          "departure": "00:41:49",
+          "stop": true
         },
         {
           "station": "dospen",
           "arrival": "00:43:32",
-          "departure": "00:44:32"
+          "departure": "00:44:32",
+          "stop": true
         },
         {
           "station": "hohenbrunn",
           "arrival": "00:46:15",
-          "departure": "00:47:15"
+          "departure": "00:47:15",
+          "stop": true
         },
         {
           "station": "kreuztal",
           "arrival": "00:48:58",
-          "departure": "00:49:58"
+          "departure": "00:49:58",
+          "stop": true
         },
         {
           "station": "camberg",
           "arrival": "00:51:40",
-          "departure": "00:52:40"
+          "departure": "00:52:40",
+          "stop": true
         },
         {
           "station": "horb",
           "arrival": "00:54:23",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -101,37 +114,44 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:00:52"
+          "departure": "00:00:52",
+          "stop": true
         },
         {
           "station": "landing",
           "arrival": "00:02:35",
-          "departure": "00:03:35"
+          "departure": "00:03:35",
+          "stop": true
         },
         {
           "station": "dospen",
           "arrival": "00:05:18",
-          "departure": "00:06:18"
+          "departure": "00:06:18",
+          "stop": true
         },
         {
           "station": "hohenbrunn",
           "arrival": "00:08:01",
-          "departure": "00:09:01"
+          "departure": "00:09:01",
+          "stop": true
         },
         {
           "station": "kreuztal",
           "arrival": "00:10:43",
-          "departure": "00:11:43"
+          "departure": "00:11:43",
+          "stop": true
         },
         {
           "station": "camberg",
           "arrival": "00:13:26",
-          "departure": "00:14:26"
+          "departure": "00:14:26",
+          "stop": true
         },
         {
           "station": "horb",
           "arrival": "00:16:09",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": "6606"
@@ -147,37 +167,44 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:19:32"
+          "departure": "00:19:32",
+          "stop": true
         },
         {
           "station": "landing",
           "arrival": "00:21:15",
-          "departure": "00:22:15"
+          "departure": "00:22:15",
+          "stop": true
         },
         {
           "station": "dospen",
           "arrival": "00:23:58",
-          "departure": "00:24:58"
+          "departure": "00:24:58",
+          "stop": true
         },
         {
           "station": "hohenbrunn",
           "arrival": "00:26:41",
-          "departure": "00:27:41"
+          "departure": "00:27:41",
+          "stop": true
         },
         {
           "station": "kreuztal",
           "arrival": "00:29:23",
-          "departure": "00:30:23"
+          "departure": "00:30:23",
+          "stop": true
         },
         {
           "station": "camberg",
           "arrival": "00:32:06",
-          "departure": "00:33:06"
+          "departure": "00:33:06",
+          "stop": true
         },
         {
           "station": "horb",
           "arrival": "00:34:49",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": "6608"
@@ -193,37 +220,44 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:21:12"
+          "departure": "00:21:12",
+          "stop": true
         },
         {
           "station": "horb",
           "arrival": "00:22:55",
-          "departure": "00:23:55"
+          "departure": "00:23:55",
+          "stop": true
         },
         {
           "station": "camberg",
           "arrival": "00:25:38",
-          "departure": "00:26:38"
+          "departure": "00:26:38",
+          "stop": true
         },
         {
           "station": "kreuztal",
           "arrival": "00:28:21",
-          "departure": "00:29:21"
+          "departure": "00:29:21",
+          "stop": true
         },
         {
           "station": "hohenbrunn",
           "arrival": "00:31:03",
-          "departure": "00:32:03"
+          "departure": "00:32:03",
+          "stop": true
         },
         {
           "station": "dospen",
           "arrival": "00:33:46",
-          "departure": "00:34:46"
+          "departure": "00:34:46",
+          "stop": true
         },
         {
           "station": "landing",
           "arrival": "00:36:29",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": "6607"
@@ -239,32 +273,38 @@
         {
           "station": "horb",
           "arrival": "",
-          "departure": "00:44:12"
+          "departure": "00:44:12",
+          "stop": true
         },
         {
           "station": "camberg",
           "arrival": "00:45:55",
-          "departure": "00:46:55"
+          "departure": "00:46:55",
+          "stop": true
         },
         {
           "station": "kreuztal",
           "arrival": "00:48:38",
-          "departure": "00:49:38"
+          "departure": "00:49:38",
+          "stop": true
         },
         {
           "station": "hohenbrunn",
           "arrival": "00:51:21",
-          "departure": "00:52:21"
+          "departure": "00:52:21",
+          "stop": true
         },
         {
           "station": "dospen",
           "arrival": "00:54:03",
-          "departure": "00:55:03"
+          "departure": "00:55:03",
+          "stop": true
         },
         {
           "station": "landing",
           "arrival": "00:56:46",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -280,32 +320,38 @@
         {
           "station": "landing",
           "arrival": "",
-          "departure": "01:01:11"
+          "departure": "01:01:11",
+          "stop": true
         },
         {
           "station": "dospen",
           "arrival": "01:02:54",
-          "departure": "01:03:54"
+          "departure": "01:03:54",
+          "stop": true
         },
         {
           "station": "hohenbrunn",
           "arrival": "01:05:37",
-          "departure": "01:06:37"
+          "departure": "01:06:37",
+          "stop": true
         },
         {
           "station": "kreuztal",
           "arrival": "01:08:20",
-          "departure": "01:09:20"
+          "departure": "01:09:20",
+          "stop": true
         },
         {
           "station": "camberg",
           "arrival": "01:11:02",
-          "departure": "01:12:02"
+          "departure": "01:12:02",
+          "stop": true
         },
         {
           "station": "horb",
           "arrival": "01:13:45",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -321,32 +367,38 @@
         {
           "station": "horb",
           "arrival": "",
-          "departure": "01:04:12"
+          "departure": "01:04:12",
+          "stop": true
         },
         {
           "station": "camberg",
           "arrival": "01:05:55",
-          "departure": "01:06:55"
+          "departure": "01:06:55",
+          "stop": true
         },
         {
           "station": "kreuztal",
           "arrival": "01:08:38",
-          "departure": "01:09:38"
+          "departure": "01:09:38",
+          "stop": true
         },
         {
           "station": "hohenbrunn",
           "arrival": "01:11:21",
-          "departure": "01:12:21"
+          "departure": "01:12:21",
+          "stop": true
         },
         {
           "station": "dospen",
           "arrival": "01:14:03",
-          "departure": "01:15:03"
+          "departure": "01:15:03",
+          "stop": true
         },
         {
           "station": "landing",
           "arrival": "01:16:46",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -362,32 +414,38 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:00:00"
+          "departure": "00:00:00",
+          "stop": true
         },
         {
           "station": "wingst",
           "arrival": "00:02:00",
-          "departure": "00:05:49"
+          "departure": "00:05:49",
+          "stop": true
         },
         {
           "station": "aurich",
           "arrival": "00:07:49",
-          "departure": "00:08:49"
+          "departure": "00:08:49",
+          "stop": true
         },
         {
           "station": "hohenbrunn",
           "arrival": "00:10:49",
-          "departure": "00:13:47"
+          "departure": "00:13:47",
+          "stop": true
         },
         {
           "station": "dospen",
           "arrival": "00:15:47",
-          "departure": "00:16:47"
+          "departure": "00:16:47",
+          "stop": true
         },
         {
           "station": "landing",
           "arrival": "00:18:47",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": "55503"
@@ -403,27 +461,32 @@
         {
           "station": "landing",
           "arrival": "",
-          "departure": "00:24:04"
+          "departure": "00:24:04",
+          "stop": true
         },
         {
           "station": "dospen",
           "arrival": "00:26:04",
-          "departure": "00:27:04"
+          "departure": "00:27:04",
+          "stop": true
         },
         {
           "station": "hohenbrunn",
           "arrival": "00:29:04",
-          "departure": "00:30:04"
+          "departure": "00:30:04",
+          "stop": true
         },
         {
           "station": "aurich",
           "arrival": "00:32:04",
-          "departure": "00:33:04"
+          "departure": "00:33:04",
+          "stop": true
         },
         {
           "station": "wingst",
           "arrival": "00:35:04",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": "55502"
@@ -439,27 +502,32 @@
         {
           "station": "wingst",
           "arrival": "",
-          "departure": "00:43:46"
+          "departure": "00:43:46",
+          "stop": true
         },
         {
           "station": "aurich",
           "arrival": "00:45:46",
-          "departure": "00:46:46"
+          "departure": "00:46:46",
+          "stop": true
         },
         {
           "station": "hohenbrunn",
           "arrival": "00:48:46",
-          "departure": "00:49:46"
+          "departure": "00:49:46",
+          "stop": true
         },
         {
           "station": "dospen",
           "arrival": "00:51:46",
-          "departure": "00:52:46"
+          "departure": "00:52:46",
+          "stop": true
         },
         {
           "station": "landing",
           "arrival": "00:54:46",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": "55505"
@@ -475,27 +543,32 @@
         {
           "station": "landing",
           "arrival": "",
-          "departure": "01:22:30"
+          "departure": "01:22:30",
+          "stop": true
         },
         {
           "station": "dospen",
           "arrival": "01:24:30",
-          "departure": "01:25:30"
+          "departure": "01:25:30",
+          "stop": true
         },
         {
           "station": "hohenbrunn",
           "arrival": "01:27:30",
-          "departure": "01:28:30"
+          "departure": "01:28:30",
+          "stop": true
         },
         {
           "station": "aurich",
           "arrival": "01:30:30",
-          "departure": "01:31:30"
+          "departure": "01:31:30",
+          "stop": true
         },
         {
           "station": "wingst",
           "arrival": "01:33:30",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -511,37 +584,44 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:02:42"
+          "departure": "00:02:42",
+          "stop": true
         },
         {
           "station": "wingst",
           "arrival": "00:04:12",
-          "departure": "00:04:12"
+          "departure": "00:04:12",
+          "stop": false
         },
         {
           "station": "aurich",
           "arrival": "00:05:42",
-          "departure": "00:05:42"
+          "departure": "00:05:42",
+          "stop": false
         },
         {
           "station": "kreuztal",
           "arrival": "00:07:12",
-          "departure": "00:08:45"
+          "departure": "00:08:45",
+          "stop": true
         },
         {
           "station": "camberg",
           "arrival": "00:10:15",
-          "departure": "00:10:15"
+          "departure": "00:10:15",
+          "stop": false
         },
         {
           "station": "horb",
           "arrival": "00:11:45",
-          "departure": "00:11:45"
+          "departure": "00:11:45",
+          "stop": false
         },
         {
           "station": "ostermünde",
           "arrival": "00:13:15",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -557,37 +637,44 @@
         {
           "station": "ostermünde",
           "arrival": "",
-          "departure": "00:05:19"
+          "departure": "00:05:19",
+          "stop": true
         },
         {
           "station": "horb",
           "arrival": "00:06:49",
-          "departure": "00:06:49"
+          "departure": "00:06:49",
+          "stop": false
         },
         {
           "station": "camberg",
           "arrival": "00:08:19",
-          "departure": "00:08:19"
+          "departure": "00:08:19",
+          "stop": false
         },
         {
           "station": "kreuztal",
           "arrival": "00:09:49",
-          "departure": "00:10:49"
+          "departure": "00:10:49",
+          "stop": true
         },
         {
           "station": "aurich",
           "arrival": "00:12:19",
-          "departure": "00:12:19"
+          "departure": "00:12:19",
+          "stop": false
         },
         {
           "station": "wingst",
           "arrival": "00:13:49",
-          "departure": "00:13:49"
+          "departure": "00:13:49",
+          "stop": false
         },
         {
           "station": "nordendorf",
           "arrival": "00:15:19",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -603,37 +690,44 @@
         {
           "station": "nordendorf",
           "arrival": "",
-          "departure": "00:04:20"
+          "departure": "00:04:20",
+          "stop": true
         },
         {
           "station": "wingst",
           "arrival": "00:06:44",
-          "departure": "00:07:59"
+          "departure": "00:07:59",
+          "stop": false
         },
         {
           "station": "aurich",
           "arrival": "00:10:23",
-          "departure": "00:10:23"
+          "departure": "00:10:23",
+          "stop": false
         },
         {
           "station": "kreuztal",
           "arrival": "00:12:47",
-          "departure": "00:13:45"
+          "departure": "00:13:45",
+          "stop": false
         },
         {
           "station": "camberg",
           "arrival": "00:16:09",
-          "departure": "00:21:30"
+          "departure": "00:21:30",
+          "stop": false
         },
         {
           "station": "horb",
           "arrival": "00:23:54",
-          "departure": "00:23:54"
+          "departure": "00:23:54",
+          "stop": false
         },
         {
           "station": "ostermünde",
           "arrival": "00:26:18",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -649,42 +743,50 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:02:59"
+          "departure": "00:02:59",
+          "stop": true
         },
         {
           "station": "landing",
           "arrival": "00:05:23",
-          "departure": "00:05:23"
+          "departure": "00:05:23",
+          "stop": false
         },
         {
           "station": "dospen",
           "arrival": "00:07:47",
-          "departure": "00:08:27"
+          "departure": "00:08:27",
+          "stop": false
         },
         {
           "station": "hohenbrunn",
           "arrival": "00:10:51",
-          "departure": "00:17:17"
+          "departure": "00:17:17",
+          "stop": false
         },
         {
           "station": "kreuztal",
           "arrival": "00:19:41",
-          "departure": "00:22:06"
+          "departure": "00:22:06",
+          "stop": false
         },
         {
           "station": "camberg",
           "arrival": "00:24:30",
-          "departure": "00:24:30"
+          "departure": "00:24:30",
+          "stop": false
         },
         {
           "station": "horb",
           "arrival": "00:26:54",
-          "departure": "00:26:54"
+          "departure": "00:26:54",
+          "stop": false
         },
         {
           "station": "ostermünde",
           "arrival": "00:29:18",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -700,42 +802,50 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:06:37"
+          "departure": "00:06:37",
+          "stop": true
         },
         {
           "station": "landing",
           "arrival": "00:08:20",
-          "departure": "00:09:20"
+          "departure": "00:09:20",
+          "stop": true
         },
         {
           "station": "dospen",
           "arrival": "00:11:03",
-          "departure": "00:11:03"
+          "departure": "00:11:03",
+          "stop": false
         },
         {
           "station": "hohenbrunn",
           "arrival": "00:12:46",
-          "departure": "00:13:46"
+          "departure": "00:13:46",
+          "stop": true
         },
         {
           "station": "kreuztal",
           "arrival": "00:15:28",
-          "departure": "00:16:18"
+          "departure": "00:16:18",
+          "stop": true
         },
         {
           "station": "camberg",
           "arrival": "00:18:01",
-          "departure": "00:18:01"
+          "departure": "00:18:01",
+          "stop": false
         },
         {
           "station": "horb",
           "arrival": "00:19:44",
-          "departure": "00:19:44"
+          "departure": "00:19:44",
+          "stop": false
         },
         {
           "station": "ostermünde",
           "arrival": "00:21:27",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -751,42 +861,50 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:10:59"
+          "departure": "00:10:59",
+          "stop": true
         },
         {
           "station": "landing",
           "arrival": "00:12:29",
-          "departure": "00:12:29"
+          "departure": "00:12:29",
+          "stop": false
         },
         {
           "station": "dospen",
           "arrival": "00:13:59",
-          "departure": "00:13:59"
+          "departure": "00:13:59",
+          "stop": false
         },
         {
           "station": "hohenbrunn",
           "arrival": "00:15:29",
-          "departure": "00:15:29"
+          "departure": "00:15:29",
+          "stop": false
         },
         {
           "station": "kreuztal",
           "arrival": "00:16:59",
-          "departure": "00:18:29"
+          "departure": "00:18:29",
+          "stop": true
         },
         {
           "station": "camberg",
           "arrival": "00:19:59",
-          "departure": "00:19:59"
+          "departure": "00:19:59",
+          "stop": false
         },
         {
           "station": "horb",
           "arrival": "00:21:29",
-          "departure": "00:21:29"
+          "departure": "00:21:29",
+          "stop": false
         },
         {
           "station": "ostermünde",
           "arrival": "00:22:59",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null
@@ -802,42 +920,50 @@
         {
           "station": "westerhausen",
           "arrival": "",
-          "departure": "00:33:32"
+          "departure": "00:33:32",
+          "stop": true
         },
         {
           "station": "landing",
           "arrival": "00:35:02",
-          "departure": "00:35:02"
+          "departure": "00:35:02",
+          "stop": false
         },
         {
           "station": "dospen",
           "arrival": "00:36:32",
-          "departure": "00:36:32"
+          "departure": "00:36:32",
+          "stop": false
         },
         {
           "station": "hohenbrunn",
           "arrival": "00:38:02",
-          "departure": "00:38:02"
+          "departure": "00:38:02",
+          "stop": false
         },
         {
           "station": "kreuztal",
           "arrival": "00:39:32",
-          "departure": "00:41:02"
+          "departure": "00:41:02",
+          "stop": true
         },
         {
           "station": "camberg",
           "arrival": "00:42:32",
-          "departure": "00:42:32"
+          "departure": "00:42:32",
+          "stop": false
         },
         {
           "station": "horb",
           "arrival": "00:44:02",
-          "departure": "00:44:02"
+          "departure": "00:44:02",
+          "stop": false
         },
         {
           "station": "ostermünde",
           "arrival": "00:45:32",
-          "departure": ""
+          "departure": "",
+          "stop": true
         }
       ],
       "followingTrainNumber": null

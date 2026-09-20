@@ -12,5 +12,8 @@ namespace TrainDispatcherGame.Server.Models.DTOs
 
         [JsonPropertyName("departure")]
         public string Departure { get; set; } = string.Empty;
+
+        [JsonPropertyName("stop")]
+        public bool Stop { get; set; }
     }
 } 
