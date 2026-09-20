@@ -172,6 +172,20 @@ namespace TrainDispatcherGame.Server.Models
             Events.Add(evt);
         }
 
+        /// <summary>
+        /// Updates the current event's schedule without appending to <see cref="Events"/>.
+        /// Returns false if the current event is not <typeparamref name="T"/> so the caller can assign a new one.
+        /// </summary>
+        public bool TryRescheduleCurrent<T>(DateTime scheduledTime, Action<T>? update = null) where T : TrainEventBase
+        {
+            if (_trainEvent is not T current)
+                return false;
+
+            update?.Invoke(current);
+            current.ScheduledTime = scheduledTime;
+            return true;
+        }
+
         public void Reset()
         {
             throw new NotImplementedException();

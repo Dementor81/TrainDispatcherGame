@@ -133,7 +133,10 @@ namespace TrainDispatcherGame.Server.Simulation
                 var predecessor = _simulation.FindTrainByNumber(train.PredecessorTrainNumber);
                 if (predecessor != null && !predecessor.completed)
                 {
-                    train.TrainEvent = new TrainStartEvent(_simulation.SimulationTime.AddMinutes(1), firstWaypoint?.Station ?? string.Empty);
+                    var retryTime = _simulation.SimulationTime.AddMinutes(1);
+                    var station = firstWaypoint?.Station ?? string.Empty;
+                    if (!train.TryRescheduleCurrent<TrainStartEvent>(retryTime, start => start.Station = station))
+                        train.TrainEvent = new TrainStartEvent(retryTime, station);
                     return;
                 }
 
@@ -253,7 +256,9 @@ namespace TrainDispatcherGame.Server.Simulation
                 track.WaitingTrainNumber = train.Number;
 
             var retryTime = blockingTrain?.TrainEvent?.ScheduledTime.AddSeconds(20) ?? _simulation.SimulationTime.AddSeconds(20);
-            train.TrainEvent = new RetryDispatchEvent(retryTime, blockingTrain?.Number ?? string.Empty);
+            var blockingNumber = blockingTrain?.Number ?? string.Empty;
+            if (!train.TryRescheduleCurrent<RetryDispatchEvent>(retryTime, retry => retry.BlockingTrainNumber = blockingNumber))
+                train.TrainEvent = new RetryDispatchEvent(retryTime, blockingNumber);
             train.CurrentLocation = currentWaypoint.Station;
             _simulation.RefreshTrainDelay(train, forceNotify: true);
         }

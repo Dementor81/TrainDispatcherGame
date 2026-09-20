@@ -552,7 +552,7 @@ namespace TrainDispatcherGame.Server.Simulation
                         ServerLogger.Instance.LogWarning(Ctx(trainNumber), $"Approval for unknown train {trainNumber}");
                         return;
                     }
-                    if (train.TrainEvent is not SendApprovalEvent)
+                    if (train.TrainEvent is not SendApprovalEvent approval)
                     {
                         ServerLogger.Instance.LogWarning(Ctx(train.Number), $"Approval for train {train.Number} ignored because next event is {train.TrainEvent?.GetType().Name ?? "none"}");
                         return;
@@ -560,7 +560,7 @@ namespace TrainDispatcherGame.Server.Simulation
 
                     if (!approved)
                     {
-                        train.TrainEvent = new SendApprovalEvent(SimulationTime.AddMinutes(1));
+                        approval.ApprovalDenied(SimulationTime.AddMinutes(1));
                         return;
                     }
 
