@@ -5,37 +5,37 @@
       {
          "id": "aurich",
          "name": "Aurich",
-         "description": ""
+         "description": "Die Herausforderung in Aurich liegt in der Ausfädelung der Züge, die über die eingleisige Verbindung nach Hohenbrunn fahren. abgesehen davon haben die durchgängigen Hauptgeleise keine Bahnsteige, was eine zusätzliche Herausforderung darstellt."
       },
       {
          "id": "bernau",
          "name": "Bernau",
-         "description": ""
+         "description": "Bernau ist ein kleiner Bahnhof auf der östlichen Seite der Nebenbahn. Viel verkehr ist hier nicht zu erwarten. Doch gebt acht, eingleisige Strecken haben ihre Tücken."
       },
       {
          "id": "camberg",
          "name": "camberg",
-         "description": ""
+         "description": "Camberg ist ein klassischer Bahnhof an der Hauptstrecke. Zusätzlich zweigt hier die Nebenbahn nach Bernau ab. Eventuell kann es bei Verspätungen auf der Nebenbahn schon etwas enger werden."
       },
       {
          "id": "dospen",
          "name": "Dospen",
-         "description": ""
+         "description": "Der Anschluss der Nebenbahn ist hier sicher nicht Ideal gestaltet. Dafür hat der Bahnhof ein Mittelgelis auf dem Güterzüge den schnellen verkehr passieren lassen können."
       },
       {
          "id": "finnhof",
          "name": "Finnhof",
-         "description": ""
+         "description": "Dieser Bahnhof ist das Herzstück der Eingleisigen Nebenbahn und gleichzeitig der südliche Anschluss an das Netz. Abgesehen vom Regionalverkehr gibt es immer wieder einzelne Güterzüge die in die Anschlussgleise rangiert werden müssen."
       },
       {
          "id": "hohenbrunn",
          "name": "Hohenbrunn",
-         "description": ""
+         "description": "In Hohenbrunn musst du dir als Fahrdienstleiter ständig die zwei Fragen stellen: Hält er oder hält er nicht und geht er eventuell nach Aurich. Fehlleitungen passieren hier wirklich schnell."
       },
       {
          "id": "horb",
          "name": "Horb",
-         "description": ""
+         "description": "Horb liegt ganz im Osten. Der Inselbahnhof hat ein Stumpfgleis, das für die S-Bahn vorgesehen ist, die hier regelmäßig enden. Dazu kommt ein reger Durchgangsverkehr. Nur all zu oft musst du die Frage beantworten, wer hier zu erst fahren darf."
       },
       {
          "id": "kreuztal",
@@ -45,17 +45,17 @@
       {
          "id": "landing",
          "name": "Landing",
-         "description": "Landing ist ein kleiner Bahnhof in dem nur Regionalzüge halten. Außerdem endet hier die S-Bahn Linie 6. Leider fehlen dem Bahnhof Überhlungsgleise für Güterzüge."
+         "description": "Landing ist ein kleiner Bahnhof im westen, an dem nur Regionalzüge halten. Außerdem endet hier die S-Bahn Linie 6. Leider fehlen dem Bahnhof ausreichend lange Überholungsgleise für Güterzüge."
       },
       {
          "id": "langenfelde",
          "name": "Langenfelde",
-         "description": "Langenfelde ist ein kleiner Bahnhof auf der Nebenbahn. Hier ist wirklich kaum etwas los."
+         "description": "Langenfelde ist ein kleiner Bahnhof auf der Nebenbahn. Hier ist wirklich kaum etwas los. Doch die eingleisige Strecke hat ihre Tücken. Hier kommt es auf gute Kommunikation mit deinen Nachbarn an."
       },
       {
          "id": "wingst",
          "name": "Wingst",
-         "description": "Nördlichster Bahnhof der Strecke, der Beide Richtungen über nur einen Außenbahnsteig abwickeln muss."
+         "description": "Wingst ist der nördlichste Bahnhof der Strecke, der fahrgasthalte beider Richtungen über nur den alten Bahnhofsteil abwickeln muss."
       }
    ],
    "connections": [
