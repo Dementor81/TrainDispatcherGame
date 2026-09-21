@@ -153,8 +153,7 @@ export class TrainManager {
          if (train.state === TrainState.MANUAL_CONTROL) {
             train.setState(TrainState.END_OF_TRACK, 0);
          } else {
-            train.setState(TrainState.MISROUTED, 0);
-            this._eventManager.emit("trainMisrouted", train);
+            this.markTrainMisrouted(train);
          }
       }
    }
@@ -166,8 +165,7 @@ export class TrainManager {
       if (train.state === TrainState.PASSED_RED_SIGNAL) return;
 
       if (train.stoppedByEndOfTrack && (train.state === TrainState.BRAKING_FOR_SIGNAL || train.state === TrainState.WAITING_AT_SIGNAL)) {
-         train.setState(TrainState.MISROUTED, 0);
-         this._eventManager.emit("trainMisrouted", train);
+         this.markTrainMisrouted(train);
          return;
       }
 
@@ -260,6 +258,11 @@ export class TrainManager {
       this._eventManager.emit("trainsUpdated");
    }
 
+   public async endTrainService(train: Train): Promise<void> {
+      this._eventManager.emit("trainStoppedAtStation", train);
+      await this._stationHandler.handleTrainEnding(train);
+   }
+
    public async continueTrainAfterManualControl(train: Train): Promise<void> {
       const waypoints = await getTrainWaypoints(train.number);
       const newDirection = this.getDirectionTowardExit(train, waypoints);
@@ -295,24 +298,28 @@ export class TrainManager {
       this.spawnTrainAtExitPoint(train, exitPointId);
    }
 
+   private markTrainMisrouted(train: Train): void {
+      train.setState(TrainState.MISROUTED, 0);
+      this._eventManager.emit("trainMisrouted", train);
+   }
+
    private async checkExitAndProceed(train: Train, exit: Exit, boundaryKm: number): Promise<void> {
+      if (train.action === 'End') {
+         this.markTrainMisrouted(train);
+         return;
+      }
+
       try {
          const waypoints = await getTrainWaypoints(train.number);
          const currentStation = this._trackLayoutManager.layoutId;
          const currentIndex = waypoints.findIndex((wp) => wp.station === currentStation);
-         if (currentIndex < 0 || currentIndex >= waypoints.length) {
-            console.error(`Failed to check exit for train ${train.number}: current station not found in waypoints`);
+         const nextStation = currentIndex >= 0 ? waypoints[currentIndex + 1]?.station : undefined;
+         const exitDestination = this._trackLayoutManager.getExitDestinationStation(exit);
+         if (nextStation && exitDestination === nextStation) {
             train.startExiting(exit.id, boundaryKm);
-         } else {
-            const nextStation = waypoints[currentIndex + 1].station;
-            const exitDestination = this._trackLayoutManager.getExitDestinationStation(exit);
-            if (exitDestination === nextStation) {
-               train.startExiting(exit.id, boundaryKm);
-            } else {
-               train.setState(TrainState.MISROUTED, 0);
-               this._eventManager.emit("trainMisrouted", train);
-            }
+            return;
          }
+         this.markTrainMisrouted(train);
       } catch (error) {
          console.error(`Failed to check exit for train ${train.number}:`, error);
          train.startExiting(exit.id, boundaryKm);

@@ -42,6 +42,8 @@ export class TrainDetailsPanel extends BasePanel {
   private resumeBtn!: HTMLButtonElement;
   private manualToggleBtn!: HTMLButtonElement;
   private manualDriveControls!: HTMLDivElement;
+  private endServiceControls!: HTMLDivElement;
+  private endServiceBtn!: HTMLButtonElement;
   private timetableContainer!: HTMLDivElement;
   private metaTypeValue!: HTMLSpanElement;
   private metaCarsValue!: HTMLSpanElement;
@@ -101,6 +103,10 @@ export class TrainDetailsPanel extends BasePanel {
     this.manualDriveControls.appendChild(UI.createButton('btn-sm btn-outline-warning', 'Stop', () => this.handleManualDriveStop()));
     this.manualDriveControls.appendChild(UI.createButton('btn-sm btn-outline-success', '\u25B6', () => this.handleManualDrive(1)));
 
+    this.endServiceControls = UI.createDiv('d-none gap-2 mb-3', null);
+    this.endServiceBtn = UI.createButton('btn-sm btn-outline-warning', 'Fahrt beenden', () => void this.handleEndService());
+    this.endServiceControls.appendChild(this.endServiceBtn);
+
     this.timetableContainer = UI.createDiv('mt-2', null);
 
     const trainMeta = UI.createDiv('text-secondary mb-2 d-grid', null);
@@ -114,6 +120,7 @@ export class TrainDetailsPanel extends BasePanel {
 
     root.appendChild(this.controlsEl);
     root.appendChild(this.manualDriveControls);
+    root.appendChild(this.endServiceControls);
     root.appendChild(trainMeta);
     root.appendChild(this.timetableContainer);
     return root;
@@ -166,6 +173,13 @@ export class TrainDetailsPanel extends BasePanel {
       this.resumeBtn.disabled = showResume && train.speedCurrent > 0.1;
 
       this.setVisible(this.manualDriveControls, isSpawned && isManual);
+      this.setVisible(
+        this.endServiceControls,
+        isSpawned && train.action === 'End' && train.state === TrainState.WAITING_AT_SIGNAL
+      );
+    } else {
+      this.setVisible(this.manualDriveControls, false);
+      this.setVisible(this.endServiceControls, false);
     }
 
     this.updateTrainMeta();
@@ -249,6 +263,17 @@ export class TrainDetailsPanel extends BasePanel {
   private handleManualDriveStop(): void {
     if (this._train?.state !== TrainState.MANUAL_CONTROL) return;
     this._train!.speedAimed = 0;
+  }
+
+  private async handleEndService(): Promise<void> {
+    if (!this._train || this.endServiceBtn.disabled) return;
+    this.endServiceBtn.disabled = true;
+    try {
+      await this.app.trainManager.endTrainService(this._train);
+    } finally {
+      this.endServiceBtn.disabled = false;
+      void this.Updates();
+    }
   }
 
   private async handleRemove(): Promise<void> {

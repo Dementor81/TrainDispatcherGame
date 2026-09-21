@@ -492,6 +492,11 @@ export class SignalRManager {
 
     private handleTrainSent(data: any): void {
         console.log(`Train ${data.trainNumber} recieved from server, exit point ${data.exitPointId}, action: ${data.action}`);
+        const trainManager = (this._application as ApplicationContext & { trainManager?: { getTrain(n: string): Train | undefined } }).trainManager;
+        if (trainManager?.getTrain(data.trainNumber)) {
+            console.log(`Train ${data.trainNumber} already present, ignoring TrainSent`);
+            return;
+        }
         // Create a new Train instance from the server data
         const train = Train.fromServerData(data, this._application);             
         
