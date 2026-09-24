@@ -446,6 +446,7 @@ namespace TrainDispatcherGame.Server.Simulation
                     train.Record(new TrainReturnedFromPlayerEvent(SimulationTime, train.CurrentLocation, exitId));
                     train.controlledByPlayer = false;
                     train.CurrentLocation = null;
+                    ReleaseTrainOccupancy(train);
 
                     if (currentWayPoint.Stops && !currentWayPoint.Processed)
                     {
@@ -478,7 +479,19 @@ namespace TrainDispatcherGame.Server.Simulation
                     {
                         occupyingTrainNumber = occupiedTrack.TrainOnTrack?.Number;
                     }
-                    if (!_openLineTracks.AddTrain(connection, train))
+                    var added = _openLineTracks.AddTrain(connection, train, out var releasedStale);
+                    foreach (var released in releasedStale)
+                    {
+                        try
+                        {
+                            _eventProcessor.DispatchWaitingTrain(released);
+                        }
+                        catch (Exception ex)
+                        {
+                            ServerLogger.Instance.LogError(Ctx(train.Number), $"Error dispatching waiting train after releasing {train.Number}: {ex.Message}");
+                        }
+                    }
+                    if (!added)
                     {
                         ServerLogger.Instance.LogEmergency(Ctx(train.Number), $"Train {train.Number} collision detected on track from {connection.FromStation} to {connection.ToStation}");
                         RefreshTrainDelay(train);

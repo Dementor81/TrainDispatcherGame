@@ -12,6 +12,7 @@ import { ClientSimulation } from "@core/clientSimulation";
 
 export interface TrainMovementCallbacks {
    removeTrain(trainNumber: string): boolean;
+   syncOccupancy(train: Train): void;
 }
 
 export class TrainMovementHandler {
@@ -118,6 +119,10 @@ export class TrainMovementHandler {
 
       if (train.tailPosition?.track !== previousTailTrack) {
          this._eventManager.emit("trainTailPassed", { track: previousTailTrack });
+      }
+
+      if (train.position && train.tailPosition) {
+         this._callbacks.syncOccupancy(train);
       }
 
       if (remainingLength <= 0 && train.exitId !== null) {

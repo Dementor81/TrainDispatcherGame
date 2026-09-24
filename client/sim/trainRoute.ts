@@ -5,7 +5,7 @@ import Exit from "./exit";
 
 export type RouteEndpoint = {
    track: Track;
-   km: number; // position along the track
+   km: number;
 };
 
 export type RoutePart =
@@ -16,15 +16,24 @@ class TrainRoute {
    private _parts: RoutePart[];
    private _start: RouteEndpoint;
    private _end: RouteEndpoint;
-   private _signal: Signal | null; // Signal that created this route
-   private _exit: Exit | null; // Exit point if route starts or ends at one
+   private _signal: Signal | null;
+   private _exit: Exit | null;
+   private _endsAtExit: boolean;
 
-   constructor(start: RouteEndpoint, end: RouteEndpoint, parts: RoutePart[] = [], signal: Signal | null = null, exit: Exit | null = null) {
+   constructor(
+      start: RouteEndpoint,
+      end: RouteEndpoint,
+      parts: RoutePart[] = [],
+      signal: Signal | null = null,
+      exit: Exit | null = null,
+      endsAtExit: boolean = false
+   ) {
       this._start = start;
       this._end = end;
       this._parts = parts;
       this._signal = signal;
       this._exit = exit;
+      this._endsAtExit = endsAtExit;
    }
 
    get start(): RouteEndpoint {
@@ -47,47 +56,95 @@ class TrainRoute {
       return this._exit;
    }
 
-   addPart(part: RoutePart): void {
-      this._parts.push(part);
+   get endsAtExit(): boolean {
+      return this._endsAtExit;
    }
 
-   /**
-    * Remove a track segment from this route
-    * @param track - The track to remove
-    * @returns true if the track was found and removed, false otherwise
-    */
-   removeTrack(track: Track): boolean {
-      const initialLength = this._parts.length;
-      this._parts = this._parts.filter(part => {
-         if (part.kind === "track" && part.track === track) {
-            return false; // Remove this part
-         }
-         return true; // Keep this part
-      });
-      return this._parts.length < initialLength;
-   }
-
-   /**
-    * Remove the first part if it is a switch
-    * @returns true if a switch was removed, false otherwise
-    */
-   removeFirstSwitchIfPresent(): boolean {
-      if (this._parts.length > 0 && this._parts[0].kind === "switch") {
-         this._parts.shift();
-         return true;
-      }
-      return false;
-   }
-
-   /**
-    * Check if the route has any parts remaining
-    * @returns true if route has no parts, false otherwise
-    */
    isEmpty(): boolean {
       return this._parts.length === 0;
+   }
+
+   containsPosition(track: Track, km: number): boolean {
+      return this.partIndexContaining(track, km) >= 0;
+   }
+
+   clearParts(): void {
+      this._parts = [];
+   }
+
+   reverseParts(): void {
+      this._parts.reverse();
+      for (const part of this._parts) {
+         if (part.kind !== "track") continue;
+         const fromKm = part.fromKm;
+         part.fromKm = part.toKm;
+         part.toKm = fromKm;
+      }
+   }
+
+   releaseBehindTail(tailTrack: Track, tailKm: number): void {
+      const index = this.partIndexContaining(tailTrack, tailKm);
+      if (index < 0) return;
+
+      this._parts.splice(0, index);
+      this.dropLeadingSwitches();
+
+      const first = this._parts[0];
+      if (first?.kind === "track" && first.track === tailTrack && this.partFullyPassed(first, tailKm)) {
+         if (this._endsAtExit && first === this.lastTrackPart()) return;
+         this._parts.shift();
+         this.dropLeadingSwitches();
+      }
+
+      this.dropSwitchOnlyRemainder();
+   }
+
+   private partIndexContaining(track: Track, km: number): number {
+      let found = -1;
+      for (let i = 0; i < this._parts.length; i++) {
+         const part = this._parts[i];
+         if (part.kind !== "track" || part.track !== track) continue;
+         if (!this.partCoversKm(part, km)) continue;
+         found = i;
+      }
+      return found;
+   }
+
+   private partCoversKm(part: Extract<RoutePart, { kind: "track" }>, km: number): boolean {
+      const fromKm = part.fromKm ?? 0;
+      const toKm = part.toKm ?? part.track.length;
+      const minKm = Math.min(fromKm, toKm);
+      const maxKm = Math.max(fromKm, toKm);
+      return km >= minKm && km <= maxKm;
+   }
+
+   private partFullyPassed(part: Extract<RoutePart, { kind: "track" }>, km: number): boolean {
+      const fromKm = part.fromKm ?? 0;
+      const toKm = part.toKm ?? part.track.length;
+      if (fromKm === toKm) return true;
+      if (fromKm < toKm) return km >= toKm;
+      return km <= toKm;
+   }
+
+   private lastTrackPart(): Extract<RoutePart, { kind: "track" }> | null {
+      for (let i = this._parts.length - 1; i >= 0; i--) {
+         const part = this._parts[i];
+         if (part.kind === "track") return part;
+      }
+      return null;
+   }
+
+   private dropLeadingSwitches(): void {
+      while (this._parts[0]?.kind === "switch") {
+         this._parts.shift();
+      }
+   }
+
+   private dropSwitchOnlyRemainder(): void {
+      if (this._parts.length > 0 && this._parts.every(part => part.kind === "switch")) {
+         this._parts = [];
+      }
    }
 }
 
 export default TrainRoute;
-
-

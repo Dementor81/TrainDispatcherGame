@@ -325,7 +325,7 @@ export class Application implements ApplicationContext {
          };
          
          // Create route and pass the exit so it's stored in the route
-         const route = this._trainRouteManager.createAndStoreRoute(startPoint, direction, null, exit);
+         const route = this._trainRouteManager.createAndStoreRoute(startPoint, direction, null, exit, trainNumber);
          
          if (route) {
             console.log(`Created blocking route from exit ${exitId} to next signal`);

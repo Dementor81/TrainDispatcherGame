@@ -35,8 +35,9 @@ namespace TrainDispatcherGame.Server.Simulation
             return _openLineTracks.TryGetValue(connection, out track!);
         }
 
-        public bool AddTrain(NetworkConnection connection, Train train)
+        public bool AddTrain(NetworkConnection connection, Train train, out List<NetworkConnection> releasedStale)
         {
+            releasedStale = new List<NetworkConnection>();
             if (!_openLineTracks.TryGetValue(connection, out var track)) return false;
 
             foreach (var otherTrack in _openLineTracks.Values)
@@ -48,6 +49,7 @@ namespace TrainDispatcherGame.Server.Simulation
                     SessionLogContext.Prefix(_sessionId, train.Number),
                     $"Safety cleanup: train {train.Number} was still registered on {otherTrack.Connection.FromStation}->{otherTrack.Connection.ToStation} while adding it to {connection.FromStation}->{connection.ToStation}. Removing stale registration.");
                 otherTrack.RemoveTrain();
+                releasedStale.Add(otherTrack.Connection);
             }
 
             return track.AddTrain(train);

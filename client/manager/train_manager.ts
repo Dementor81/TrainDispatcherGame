@@ -37,6 +37,7 @@ export class TrainManager {
       });
       this._movementHandler = new TrainMovementHandler(this._application, this._signalHandler, {
          removeTrain: (trainNumber) => this.removeTrain(trainNumber),
+         syncOccupancy: (train) => this.syncOccupancy(train),
       });
       this._eventManager.on("trainCreated", (train: Train, exitPointId: number) => {
          this.handleTrainCreated(train, exitPointId);
@@ -64,98 +65,107 @@ export class TrainManager {
          return;
       }
 
-      if (Train.isHardStoppedState(train.state)) return;
-      if (train.state === TrainState.PASSED_RED_SIGNAL && train.speedCurrent === 0) return;
-
-      const awaitingAck = train.state === TrainState.EMERGENCY_BRAKING || train.state === TrainState.PASSED_RED_SIGNAL;
-      if (!awaitingAck) {
-         if (this._stationHandler.checkStationStop(train)) return; // train is stopped at the current station, so we can skip the rest of the update
-         if (this._stationHandler.checkTrainEnding(train)) return; // train is ending, so we can skip the rest of the update
-         this._signalHandler.checkTrainStoppedBySignal(train);
-      }
-
-      this._movementHandler.updateTrainSpeed(train);
-
-      this.updateTrainStates(train);
-
-      if (!this.isMovementState(train.state)) return;
-
-      const movedDistance = train.getMovementDistance();
-      if (Math.abs(movedDistance) <= 0.001) return;
-
       try {
-         const result = this._trackLayoutManager.followRailNetwork(train.position.track, train.position.km, movedDistance);
-         train.consumeDistanceToStop(Math.abs(movedDistance));
+         if (Train.isHardStoppedState(train.state)) return;
+         if (train.state === TrainState.PASSED_RED_SIGNAL && train.speedCurrent === 0) return;
 
-         if (result.element instanceof Track) {
-            const previousTrack = train.position.track;
-            const previousKm = train.position.km;
-            const previousTailTrack = train.tailPosition?.track;
-            const previousTailKm = train.tailPosition?.km ?? null;
+         const awaitingAck = train.state === TrainState.EMERGENCY_BRAKING || train.state === TrainState.PASSED_RED_SIGNAL;
+         if (!awaitingAck) {
+            if (this._stationHandler.checkStationStop(train)) return;
+            if (this._stationHandler.checkTrainEnding(train)) return;
+            this._signalHandler.checkTrainStoppedBySignal(train);
+         }
 
-            train.setPosition(result.element, result.km);
+         this._movementHandler.updateTrainSpeed(train);
 
-            const tailUpdated = this._movementHandler.updateTailPosition(train);
-            if (!tailUpdated) {
-               console.warn(`Train ${train.number} derailed at switch ${result.element.id}`);
+         this.updateTrainStates(train);
+
+         if (!this.isMovementState(train.state)) return;
+
+         const movedDistance = train.getMovementDistance();
+         if (Math.abs(movedDistance) <= 0.001) return;
+
+         try {
+            const result = this._trackLayoutManager.followRailNetwork(train.position.track, train.position.km, movedDistance);
+            train.consumeDistanceToStop(Math.abs(movedDistance));
+
+            if (result.element instanceof Track) {
+               const previousTrack = train.position.track;
+               const previousKm = train.position.km;
+               const previousTailTrack = train.tailPosition?.track;
+               const previousTailKm = train.tailPosition?.km ?? null;
+
+               train.setPosition(result.element, result.km);
+
+               const tailUpdated = this._movementHandler.updateTailPosition(train);
+               if (!tailUpdated) {
+                  console.warn(`Train ${train.number} derailed at switch ${result.element.id}`);
+                  this._eventManager.emit("trainDerailed", train, result.element);
+                  train.setState(TrainState.DERAILEMENT, 0);
+                  this._signalHandler.enforceSignalsBehindHead(train);
+                  return;
+               }
+
+               const blockingTrain = this.detectTrainCollision(train);
+               if (blockingTrain) {
+                  this._eventManager.emit("trainCollision", train, blockingTrain);
+                  train.setState(TrainState.COLLISION, 0);
+                  blockingTrain.setState(TrainState.COLLISION, 0);
+                  this._signalHandler.enforceSignalsBehindHead(train);
+                  return;
+               }
+
+               this._signalHandler.checkSignalsPassedByTail(train, previousTailTrack ?? null, previousTailKm, train.tailPosition?.track ?? null, train.tailPosition?.km ?? 0);
+
+               if (train.tailPosition?.track !== previousTailTrack) {
+                  this._eventManager.emit("trainTailPassed", { track: previousTailTrack });
+               }
+
+               this._signalHandler.checkSignalsPassed(train, previousTrack, previousKm, result.element, result.km);
+               this._signalHandler.enforceSignalsBehindHead(train);
+               return;
+            } else if (result.element instanceof Exit) {
+               const exit = result.element;
+               const boundaryKm = train.movingDirection > 0 ? train.position.track.length : 0;
+               train.setPosition(train.position.track, boundaryKm);
+               this._signalHandler.enforceSignalsBehindHead(train);
+               this._movementHandler.updateTailPosition(train);
+               if (train.state === TrainState.MANUAL_CONTROL) {
+                  train.setState(TrainState.END_OF_TRACK, 0);
+                  return;
+               }
+               void this.checkExitAndProceed(train, exit, boundaryKm);
+               return;
+            } else if (result.element instanceof Switch) {
+               console.log(`Train ${train.number} stopped at switch ${result.element.id}`);
                this._eventManager.emit("trainDerailed", train, result.element);
                train.setState(TrainState.DERAILEMENT, 0);
-               this._signalHandler.enforceSignalsBehindHead(train);
+               return;
+            } else {
+               console.error(`Train ${train.number} encountered unknown element`);
                return;
             }
+         } catch (error) {
+            console.error(`Train ${train.number} movement error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            if (!(error instanceof MovementException) || !train.position) return;
 
-            const blockingTrain = this.detectTrainCollision(train);
-            if (blockingTrain) {
-               this._eventManager.emit("trainCollision", train, blockingTrain);
-               train.setState(TrainState.COLLISION, 0);
-               blockingTrain.setState(TrainState.COLLISION, 0);
-               this._signalHandler.enforceSignalsBehindHead(train);
-               return;
-            }
-
-            this._signalHandler.checkSignalsPassedByTail(train, previousTailTrack ?? null, previousTailKm, train.tailPosition?.track ?? null, train.tailPosition?.km ?? 0);
-
-            if (train.tailPosition?.track !== previousTailTrack) {
-               this._eventManager.emit("trainTailPassed", { track: previousTailTrack });
-            }
-
-            this._signalHandler.checkSignalsPassed(train, previousTrack, previousKm, result.element, result.km);
-            this._signalHandler.enforceSignalsBehindHead(train);
-            return;
-         } else if (result.element instanceof Exit) {
-            const exit = result.element;
             const boundaryKm = train.movingDirection > 0 ? train.position.track.length : 0;
             train.setPosition(train.position.track, boundaryKm);
-            this._signalHandler.enforceSignalsBehindHead(train);
             this._movementHandler.updateTailPosition(train);
             if (train.state === TrainState.MANUAL_CONTROL) {
                train.setState(TrainState.END_OF_TRACK, 0);
-               return;
+            } else {
+               this.markTrainMisrouted(train);
             }
-            void this.checkExitAndProceed(train, exit, boundaryKm);
-            return;
-         } else if (result.element instanceof Switch) {
-            console.log(`Train ${train.number} stopped at switch ${result.element.id}`);
-            this._eventManager.emit("trainDerailed", train, result.element);
-            train.setState(TrainState.DERAILEMENT, 0);
-            return;
-         } else {
-            console.error(`Train ${train.number} encountered unknown element`);
-            return;
          }
-      } catch (error) {
-         console.error(`Train ${train.number} movement error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-         if (!(error instanceof MovementException) || !train.position) return;
-
-         const boundaryKm = train.movingDirection > 0 ? train.position.track.length : 0;
-         train.setPosition(train.position.track, boundaryKm);
-         this._movementHandler.updateTailPosition(train);
-         if (train.state === TrainState.MANUAL_CONTROL) {
-            train.setState(TrainState.END_OF_TRACK, 0);
-         } else {
-            this.markTrainMisrouted(train);
-         }
+      } finally {
+         if (this.getTrain(train.number)) this.syncOccupancy(train);
       }
+   }
+
+   private syncOccupancy(train: Train): void {
+      if (!train.position || !train.tailPosition) return;
+      this._application.trainRouteManager.syncTrainOccupancy(train.number, train.position, train.tailPosition);
    }
 
    private updateTrainStates(train: Train): void {
@@ -204,6 +214,7 @@ export class TrainManager {
          train.setMovingDirection(direction);
          train.setDrawingDirection(-direction);
          this._movementHandler.updateTailPosition(train);
+         this.syncOccupancy(train);
          console.log(`Train ${train.number} positioned on track ${location.track.id} at km ${location.km} with direction ${direction}`);
       } else {
          console.error(`Could not find track for exit point ${exitPointId}`);
@@ -238,6 +249,7 @@ export class TrainManager {
    removeTrain(trainNumber: string): boolean {
       const index = this._trains.findIndex((train) => train.number === trainNumber);
       if (index !== -1) {
+         this._application.trainRouteManager.removeOccupancyForTrain(trainNumber);
          this._trains.splice(index, 1);
          this._eventManager.emit("trainsUpdated");
          return true;
@@ -279,6 +291,8 @@ export class TrainManager {
       if (!train || !train.position || !train.tailPosition) return false;
 
       train.reverse();
+      this._application.trainRouteManager.reverseOccupancy(train.number);
+      this.syncOccupancy(train);
       return true;
    }
 

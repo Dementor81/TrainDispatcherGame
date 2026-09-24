@@ -71,10 +71,10 @@ namespace TrainDispatcherGame.Server.Simulation
 
             if (_playerManager.IsStationControlled(station))
             {
-                // DO NOT remove train from open-line track yet
-                // Will be removed when client reports exit is unblocked
                 if (exitPointId == -1) throw new Exception($"Train {train.Number} has invalid exit point id -1 for player controlled station");
                 if (train.GetCurrentWayPoint() == null) throw new Exception($"Train {train.Number} has no current way point");
+                _openLineTracks.RemoveTrain(spawn.Connection);
+                DispatchWaitingTrain(spawn.Connection);
                 _ = _notificationManager.SendTrain(station, train, exitPointId);
                 train.controlledByPlayer = true;
                 train.CurrentLocation = station?.ToLowerInvariant() ?? string.Empty;
@@ -228,7 +228,10 @@ namespace TrainDispatcherGame.Server.Simulation
                 return;
             }
 
-            if (!_openLineTracks.AddTrain(connection, train))
+            var added = _openLineTracks.AddTrain(connection, train, out var releasedStale);
+            foreach (var released in releasedStale)
+                DispatchWaitingTrain(released);
+            if (!added)
             {
                 HoldTrainForRetry(train, currentWaypoint, track, track.TrainOnTrack);
                 return;
