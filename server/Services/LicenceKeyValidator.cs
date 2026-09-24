@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace TrainDispatcherGame.Server.Services
 {
     public class LicenceKeyValidator
@@ -11,11 +13,12 @@ namespace TrainDispatcherGame.Server.Services
                 ? File.ReadAllLines(path)
                     .Select(l => l.Split('#')[0].Trim())
                     .Where(l => l.Length > 0)
-                    .ToHashSet(StringComparer.OrdinalIgnoreCase)
-                : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    .ToHashSet(StringComparer.Ordinal)
+                : new HashSet<string>(StringComparer.Ordinal);
         }
 
         public bool IsValid(string key) =>
-            !string.IsNullOrWhiteSpace(key) && _validKeys.Contains(key.Trim());
+            !string.IsNullOrWhiteSpace(key)
+            && _validKeys.Contains(Convert.ToBase64String(Encoding.UTF8.GetBytes(key.Trim())));
     }
 }
