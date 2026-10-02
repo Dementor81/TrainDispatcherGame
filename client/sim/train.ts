@@ -17,6 +17,7 @@ export enum TrainState {
     BRAKING_FOR_STATION = "braking_for_station",
     WAITING_AT_STATION = "waiting_at_station",
     WAITING_FOR_NEXT_SERVICE = "waiting_for_next_service",
+    DUE_FOR_NEXT_SERVICE = "due_for_next_service",
     END_OF_TRACK = "end_of_track",
     COLLISION = "collision",
     EMERGENCY_STOP = "emergency_stop",
@@ -60,6 +61,7 @@ export class Train {
     private _stationStopStartTime: Date | null = null; // When the train actually started waiting at station
     private _waitingProgress: number = 0; // 0..1 progress while waiting at station
     private _followingTrainNumber: string | null = null; // following train number that will use this vehicle, after this train has completed its journey
+    private _serviceReleasePending = false;
     private _exitState: TrainExitState | null = null;
 
     constructor(
@@ -231,6 +233,14 @@ export class Train {
 
     get followingTrainNumber(): string | null {
         return this._followingTrainNumber;
+    }
+
+    get serviceReleasePending(): boolean {
+        return this._serviceReleasePending;
+    }
+
+    set serviceReleasePending(value: boolean) {
+        this._serviceReleasePending = value;
     }
 
     get isExiting(): boolean {

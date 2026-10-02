@@ -39,7 +39,7 @@ export class TrainStationHandler {
    /// <param name="train">The train to check.</param>
    /// <returns>True if the calling function can skip evaluating the train further, since it is already stopped at the station</returns>
    checkStationStop(train: Train): boolean {
-      if ((!train.shouldStopAtCurrentStation) || !train.position!.track.halt || train.state === TrainState.WAITING_FOR_NEXT_SERVICE || train.state === TrainState.MANUAL_CONTROL || train.waitingProgress === 1) return false;
+      if ((!train.shouldStopAtCurrentStation) || !train.position!.track.halt || train.state === TrainState.WAITING_FOR_NEXT_SERVICE || train.state === TrainState.DUE_FOR_NEXT_SERVICE || train.state === TrainState.MANUAL_CONTROL || train.waitingProgress === 1) return false;
 
       const currentSimulationTime = this._clientSimulation.currentSimulationTime!;
 
@@ -119,10 +119,52 @@ console.log(`Train ${train.number} stopped at station, departure time: ${train.d
       return Math.min(maxHead, Math.max(minHead, desired));
    }
 
+   holdBeforeServiceStart(train: Train): boolean {
+      const now = this._clientSimulation.currentSimulationTime;
+      if (train.state !== TrainState.RUNNING || train.speedCurrent > 0.1 || !train.arrivalTime || !now || train.arrivalTime < now) return false;
+      train.setState(TrainState.WAITING_FOR_NEXT_SERVICE, 0);
+      return true;
+   }
+
+   holdDueForNextService(train: Train): boolean {
+      if (!train.serviceReleasePending) return false;
+      const now = this._clientSimulation.currentSimulationTime;
+      if (!train.arrivalTime || !now || !(train.arrivalTime < now)) return false;
+
+      if (train.state === TrainState.DUE_FOR_NEXT_SERVICE) {
+         if (this.canStartService(train)) this.releaseService(train);
+         return true;
+      }
+
+      if (train.state === TrainState.RUNNING && train.speedCurrent <= 0.1) {
+         if (!this.canStartService(train)) {
+            train.setState(TrainState.DUE_FOR_NEXT_SERVICE, 0);
+            return true;
+         }
+         train.serviceReleasePending = false;
+         return false;
+      }
+
+      return false;
+   }
+
+   private canStartService(train: Train): boolean {
+      const position = train.position;
+      if (!position) return false;
+      const signal = this._trackLayoutManager.getSignalBeforeSwitch(position.track, position.km, train.movingDirection);
+      if (!signal) return false;
+      return train.type === 'Freight' || position.track.halt;
+   }
+
+   private releaseService(train: Train): void {
+      train.serviceReleasePending = false;
+      train.setState(TrainState.RUNNING, 0);
+   }
+
    checkTrainEnding(train: Train) {
       if (train.state === TrainState.WAITING_FOR_NEXT_SERVICE) {
          if (train.arrivalTime! < this._clientSimulation.currentSimulationTime!)
-            train.setState(TrainState.RUNNING, 0);
+            train.setState(TrainState.DUE_FOR_NEXT_SERVICE, 0);
          return true;
       }
 
@@ -178,6 +220,7 @@ console.log(`Train ${train.number} stopped at station, departure time: ${train.d
          }
 
          train.setStationStopStartTime(currentSimulationTime);
+         train.serviceReleasePending = true;
          train.setState(TrainState.WAITING_FOR_NEXT_SERVICE, 0);
          train.setWaitingProgress(0);
 

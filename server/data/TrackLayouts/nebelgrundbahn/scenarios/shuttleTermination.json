@@ -1,0 +1,168 @@
+﻿{
+  "title": "Test: Wendezug Landing–Dospen",
+  "layout": "nebelgrundbahn",
+  "start_time": "00:00",
+  "trains": [
+    {
+      "number": "6001",
+      "type": "MultipleUnit",
+      "category": "S",
+      "speedMax": 140,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "westerhausen",
+          "arrival": "",
+          "departure": "00:01:00",
+          "stop": true
+        },
+        {
+          "station": "landing",
+          "arrival": "00:03:00",
+          "departure": "",
+          "stop": true
+        }
+      ],
+      "followingTrainNumber": "6002"
+    },
+    {
+      "number": "6002",
+      "type": "MultipleUnit",
+      "category": "S",
+      "speedMax": 140,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "landing",
+          "arrival": "",
+          "departure": "00:07:25",
+          "stop": true
+        },
+        {
+          "station": "dospen",
+          "arrival": "00:09:25",
+          "departure": "",
+          "stop": true
+        }
+      ],
+      "followingTrainNumber": "6003"
+    },
+    {
+      "number": "6003",
+      "type": "MultipleUnit",
+      "category": "S",
+      "speedMax": 140,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "dospen",
+          "arrival": "",
+          "departure": "00:13:47",
+          "stop": true
+        },
+        {
+          "station": "landing",
+          "arrival": "00:15:47",
+          "departure": "",
+          "stop": true
+        }
+      ],
+      "followingTrainNumber": "6004"
+    },
+    {
+      "number": "6004",
+      "type": "MultipleUnit",
+      "category": "S",
+      "speedMax": 140,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "landing",
+          "arrival": "",
+          "departure": "00:21:33",
+          "stop": true
+        },
+        {
+          "station": "dospen",
+          "arrival": "00:23:33",
+          "departure": "",
+          "stop": true
+        }
+      ],
+      "followingTrainNumber": "6005"
+    },
+    {
+      "number": "6005",
+      "type": "MultipleUnit",
+      "category": "S",
+      "speedMax": 140,
+      "cars": 4,
+      "path": [],
+      "timetable": [
+        {
+          "station": "dospen",
+          "arrival": "",
+          "departure": "00:29:34",
+          "stop": true
+        },
+        {
+          "station": "landing",
+          "arrival": "00:31:34",
+          "departure": "",
+          "stop": true
+        }
+      ],
+      "followingTrainNumber": null
+    },
+    {
+      "number": "007",
+      "type": "Freight",
+      "category": "GZ",
+      "speedMax": 120,
+      "cars": 6,
+      "path": [],
+      "timetable": [
+        {
+          "station": "westerhausen",
+          "arrival": "",
+          "departure": "00:03:42",
+          "stop": true
+        },
+        {
+          "station": "landing",
+          "arrival": "00:05:42",
+          "departure": "",
+          "stop": true
+        }
+      ],
+      "followingTrainNumber": "008"
+    },
+    {
+      "number": "008",
+      "type": "Freight",
+      "category": "GZ",
+      "speedMax": 120,
+      "cars": 6,
+      "path": [],
+      "timetable": [
+        {
+          "station": "landing",
+          "arrival": "",
+          "departure": "00:13:41",
+          "stop": true
+        },
+        {
+          "station": "dospen",
+          "arrival": "00:15:41",
+          "departure": "",
+          "stop": true
+        }
+      ],
+      "followingTrainNumber": null
+    }
+  ]
+}

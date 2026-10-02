@@ -343,7 +343,7 @@ export class TrainRenderer {
             // Render signal warning (exclamation mark) when stopped by signal
             const warning = trainContainer.signalWarning;
             if (warning) {
-               const isWaitingAtSignal = train.state === TrainState.BRAKING_FOR_SIGNAL || train.state === TrainState.WAITING_AT_SIGNAL;
+               const isWaitingAtSignal = train.state === TrainState.BRAKING_FOR_SIGNAL || train.state === TrainState.WAITING_AT_SIGNAL || train.state === TrainState.DUE_FOR_NEXT_SERVICE;
                warning.visible = isWaitingAtSignal;
 
                if (isWaitingAtSignal) {

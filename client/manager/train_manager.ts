@@ -71,6 +71,8 @@ export class TrainManager {
 
          const awaitingAck = train.state === TrainState.EMERGENCY_BRAKING || train.state === TrainState.PASSED_RED_SIGNAL;
          if (!awaitingAck) {
+            if (this._stationHandler.holdBeforeServiceStart(train)) return;
+            if (this._stationHandler.holdDueForNextService(train)) return;
             if (this._stationHandler.checkStationStop(train)) return;
             if (this._stationHandler.checkTrainEnding(train)) return;
             this._signalHandler.checkTrainStoppedBySignal(train);

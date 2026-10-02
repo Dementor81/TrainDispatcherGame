@@ -19,7 +19,7 @@ export class TrainSignalHandler {
    }
 
    checkTrainStoppedBySignal(train: Train): void {
-      if (train.state === TrainState.MANUAL_CONTROL || train.state === TrainState.WAITING_FOR_NEXT_SERVICE) return;
+      if (train.state === TrainState.MANUAL_CONTROL || train.state === TrainState.WAITING_FOR_NEXT_SERVICE || train.state === TrainState.DUE_FOR_NEXT_SERVICE) return;
       if (Train.isAwaitingAcknowledgement(train.state)) return;
 
       if (train.stoppedBySignal !== null) {

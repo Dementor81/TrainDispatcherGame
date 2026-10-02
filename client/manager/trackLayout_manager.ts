@@ -389,6 +389,44 @@ export class TrackLayoutManager {
    }
 
    /**
+    * Next signal facing direction, crossing only direct track joins.
+    * A switch, exit, or dead end ends the search.
+    */
+   getSignalBeforeSwitch(track: Track, km: number, direction: number): Signal | null {
+      let current: Track | null = track;
+      let currentKm = km;
+      let includeKm = false;
+      const seen = new Set<Track>();
+
+      while (current && !seen.has(current)) {
+         seen.add(current);
+         const ahead = this.closestFacingSignal(current, currentKm, direction, includeKm);
+         if (ahead) return ahead;
+
+         const connection = current.switches[direction > 0 ? 1 : 0];
+         if (!(connection instanceof Track)) return null;
+
+         current = connection;
+         currentKm = direction > 0 ? 0 : connection.length;
+         includeKm = true;
+      }
+
+      return null;
+   }
+
+   private closestFacingSignal(track: Track, km: number, direction: number, includeKm: boolean): Signal | null {
+      const ahead = track.signals.filter(signal => {
+         if (signal.direction !== direction) return false;
+         if (direction > 0) return includeKm ? signal.position >= km : signal.position > km;
+         return includeKm ? signal.position <= km : signal.position < km;
+      });
+      if (ahead.length === 0) return null;
+      return direction > 0
+         ? ahead.reduce((closest, signal) => signal.position < closest.position ? signal : closest)
+         : ahead.reduce((closest, signal) => signal.position > closest.position ? signal : closest);
+   }
+
+   /**
     * Finds the next signal on the current track in the given direction,
     * ignoring signal direction.
     */
