@@ -2,6 +2,7 @@ import "../styles/versionBadge.css";
 
 const BADGE_ID = "app-version-badge";
 
+
 function normalizeToMajorMinor(version: string | null | undefined): string {
   if (!version) {
     return "0.0";
