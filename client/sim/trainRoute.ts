@@ -91,12 +91,11 @@ class TrainRoute {
 
       const first = this._parts[0];
       if (first?.kind === "track" && first.track === tailTrack && this.partFullyPassed(first, tailKm)) {
-         if (this._endsAtExit && first === this.lastTrackPart()) return;
          this._parts.shift();
          this.dropLeadingSwitches();
       }
 
-      this.dropSwitchOnlyRemainder();
+      this.dropFinalSection();
    }
 
    private partIndexContaining(track: Track, km: number): number {
@@ -126,22 +125,15 @@ class TrainRoute {
       return km <= toKm;
    }
 
-   private lastTrackPart(): Extract<RoutePart, { kind: "track" }> | null {
-      for (let i = this._parts.length - 1; i >= 0; i--) {
-         const part = this._parts[i];
-         if (part.kind === "track") return part;
-      }
-      return null;
-   }
-
    private dropLeadingSwitches(): void {
       while (this._parts[0]?.kind === "switch") {
          this._parts.shift();
       }
    }
 
-   private dropSwitchOnlyRemainder(): void {
-      if (this._parts.length > 0 && this._parts.every(part => part.kind === "switch")) {
+   /** Once the train is inside the final section, the track occupancy alone protects it and the route is released. */
+   private dropFinalSection(): void {
+      if (this._parts.filter(part => part.kind === "track").length <= 1) {
          this._parts = [];
       }
    }

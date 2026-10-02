@@ -13,6 +13,11 @@ export class RendererConfig {
     static readonly switchTextFont = "Arial";
     static readonly switchTextFontSize = 12;
     static readonly switchTextFontColor = 0xffffff;
+
+    // Interlocking state overlay
+    static readonly routeColor = 0x00aa00;
+    static readonly occupiedColor = 0xdd2222;
+    static readonly stateOverlayWidth = 3;
     
     // Train rendering configuration
     static readonly locomotiveColor = 0x036ffc;

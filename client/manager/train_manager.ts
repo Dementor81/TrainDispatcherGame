@@ -166,8 +166,7 @@ export class TrainManager {
    }
 
    private syncOccupancy(train: Train): void {
-      if (!train.position || !train.tailPosition) return;
-      this._application.trainRouteManager.syncTrainOccupancy(train.number, train.position, train.tailPosition);
+      this._application.trainRouteManager.syncTrainOccupancy(train);
    }
 
    private updateTrainStates(train: Train): void {
@@ -242,6 +241,7 @@ export class TrainManager {
       train.setMovingDirection(direction);
       train.setState(TrainState.EMERGENCY_STOP, 0);
       this._movementHandler.updateTailPosition(train);
+      this.syncOccupancy(train);
 
       this._eventManager.emit("trainAdded", train);
       this._trains.push(train);
@@ -251,7 +251,7 @@ export class TrainManager {
    removeTrain(trainNumber: string): boolean {
       const index = this._trains.findIndex((train) => train.number === trainNumber);
       if (index !== -1) {
-         this._application.trainRouteManager.removeOccupancyForTrain(trainNumber);
+         this._application.trainRouteManager.removeOccupancyForTrain(this._trains[index]);
          this._trains.splice(index, 1);
          this._eventManager.emit("trainsUpdated");
          return true;
@@ -269,6 +269,7 @@ export class TrainManager {
 
    clearAllTrains(): void {
       this._trains = [];
+      this._application.trainRouteManager.clearTrackOccupancy();
       this._eventManager.emit("trainsUpdated");
    }
 

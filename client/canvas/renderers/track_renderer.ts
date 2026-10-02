@@ -64,23 +64,26 @@ export class TrackRenderer {
          .stroke({ width: RendererConfig.trackWidth, color: RendererConfig.trackColor, alpha: 1, cap: "butt" });
    }
 
-   renderExit(exit: Exit, track: Track, inverted: boolean): void {
-      const exitContainer = new PIXI.Container() as ExitContainer;
-      exitContainer.exitId = exit.id;
-      
-      // Position is determined by inverted (which end of track)
+   /** Arrow pointing away from the station for outbound exits and into it for inbound exits. */
+   static drawExitArrow(container: PIXI.Container, exit: Exit, track: Track, inverted: boolean, color: number): Point {
       const unit = track.unit.multiply(inverted ? -1 : 1);
       const basePosition = inverted ? track.start : track.end;
-      
-      // Arrow direction: flip for inbound exits, normal for outbound
       // For inbound, offset by total arrow length (5 + 15 = 20) so it doesn't overlap when flipped
       const arrowOffset = exit.isInbound ? 20 : 5;
       const arrowLength = exit.isInbound ? -15 : 15;
-      
+
       const position = basePosition.add(unit.multiply(arrowOffset));
       const end = position.add(unit.multiply(arrowLength));
-      
-      drawArrow(exitContainer, position, end, { color: RendererConfig.trackColor, width: 2 });
+      drawArrow(container, position, end, { color, width: 2 });
+      return end;
+   }
+
+   renderExit(exit: Exit, track: Track, inverted: boolean): void {
+      const exitContainer = new PIXI.Container() as ExitContainer;
+      exitContainer.exitId = exit.id;
+
+      const basePosition = inverted ? track.start : track.end;
+      const end = TrackRenderer.drawExitArrow(exitContainer, exit, track, inverted, RendererConfig.trackColor);
       
       // Get destination from connection
       // If inbound, show where trains come from; if outbound, show where they go to

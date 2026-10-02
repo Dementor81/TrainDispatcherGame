@@ -2,8 +2,6 @@ import TrainRoute, { RoutePart } from "../sim/trainRoute";
 import Track from "../sim/track";
 import Switch from "../sim/switch";
 import Signal from "../sim/signal";
-import Exit from "../sim/exit";
-
 export class RouteOccupancyStore {
    private _unclaimed = new Set<TrainRoute>();
    private _byTrain = new Map<string, TrainRoute[]>();
@@ -65,8 +63,7 @@ export class RouteOccupancyStore {
       tailKm: number,
       headTrack: Track | null,
       headKm: number | null
-   ): { exits: Exit[]; changed: boolean } {
-      const exits: Exit[] = [];
+   ): boolean {
       let changed = false;
       for (const route of [...this.routesForTrain(trainNumber)]) {
          const remaining = route.parts.length;
@@ -74,19 +71,15 @@ export class RouteOccupancyStore {
             route.releaseBehindTail(tailTrack, tailKm);
          } else if (headTrack && headKm !== null && route.containsPosition(headTrack, headKm)) {
             continue;
-         } else if (route.endsAtExit) {
-            continue;
          } else {
             route.clearParts();
          }
 
          if (route.parts.length === remaining) continue;
          changed = true;
-         if (!route.isEmpty()) continue;
-         this.detach(route);
-         if (route.exit) exits.push(route.exit);
+         if (route.isEmpty()) this.detach(route);
       }
-      return { exits, changed };
+      return changed;
    }
 
    reverseTrain(trainNumber: string): void {
@@ -95,26 +88,14 @@ export class RouteOccupancyStore {
       }
    }
 
-   removeTrain(trainNumber: string): { exits: Exit[]; released: TrainRoute[] } {
+   removeTrain(trainNumber: string): TrainRoute[] {
       const routes = this._byTrain.get(trainNumber) ?? [];
       this._byTrain.delete(trainNumber);
-      const exits: Exit[] = [];
-      const released: TrainRoute[] = [];
       for (const route of routes) {
-         if (route.endsAtExit && !route.isEmpty()) {
-            this._unclaimed.add(route);
-            continue;
-         }
          route.clearParts();
          this._unclaimed.delete(route);
-         released.push(route);
-         if (route.exit) exits.push(route.exit);
       }
-      return { exits, released };
-   }
-
-   removeRoute(route: TrainRoute): void {
-      this.detach(route);
+      return routes;
    }
 
    removeBySignal(signal: Signal): TrainRoute[] {

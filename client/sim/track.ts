@@ -4,6 +4,7 @@ import { V2 } from "../utils/v2";
 import Signal from "./signal";
 import Switch from "./switch";
 import Exit from "./exit";
+import TrackSection from "./trackSection";
 
 class Track extends BaseSimModule {
    static fromObject(object: any): Track {
@@ -35,6 +36,7 @@ class Track extends BaseSimModule {
    private _slope: number | null = null;
    private _sin: number | null = null;
    private _cos: number | null = null;
+   private _sections: TrackSection[] | null = null;
 
    constructor() {
       super();
@@ -113,6 +115,24 @@ class Track extends BaseSimModule {
 
    get halt(): boolean {
       return this._halt;
+   }
+
+   /** Sections bounded by the track ends and every signal position in between. */
+   get sections(): TrackSection[] {
+      if (!this._sections) {
+         const boundaries = [...new Set([0, ...this._signals.map(s => s.position), this.length])]
+            .filter(km => km >= 0 && km <= this.length)
+            .sort((a, b) => a - b);
+         this._sections = [];
+         for (let i = 1; i < boundaries.length; i++) {
+            this._sections.push(new TrackSection(this, boundaries[i - 1], boundaries[i]));
+         }
+      }
+      return this._sections;
+   }
+
+   sectionsBetween(kmA: number, kmB: number): TrackSection[] {
+      return this.sections.filter(section => section.overlaps(kmA, kmB));
    }
 
    public switchAtStart(): Switch | null {

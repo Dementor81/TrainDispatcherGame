@@ -36,8 +36,6 @@ export class Application implements ApplicationContext {
    private _currentGameCode: string | null = null;
    private _signalRManager: SignalRManager;
    private _soundsManager: SoundsManager;
-   private _signalBlockedExits: Map<Signal, number> = new Map();
-
    constructor() {
       this._eventManager = new EventManager();
       this._signalRManager = new SignalRManager(this);
@@ -205,63 +203,31 @@ export class Application implements ApplicationContext {
       // Long click on signal → manually remove train route (signal must be red/stop)
       this._eventManager.on('signalLongClicked', (signal: Signal) => {
          if (!this._renderer) return;
-         if (signal.state) return; // Not set to stop, do nothing
-         const removed = this._trainRouteManager.removeRoutesBySignal(signal);
-         if (removed) {
-            const blockedExitId = this._signalBlockedExits.get(signal);
-            if (blockedExitId !== undefined) {
-               this._signalRManager.setExitBlockStatus(blockedExitId, false);
-               this._signalBlockedExits.delete(signal);
-            }
-         }
+         if (!signal.state) this.cancelRoutesAt(signal);
       });
 
-      // Signal state changed → handle route removal if signal turned red
+      // Signal manually set to stop → remove its routes
       this._eventManager.on('signalStateChanged', (signal: Signal) => {
          if (!this._renderer) return;
-         
-         // If signal turned red, remove routes associated with this signal
-         if (!signal.state) {
-            this._trainRouteManager.removeRoutesBySignal(signal);
-            
-            // Check if this signal was blocking an exit and unblock it
-            const blockedExitId = this._signalBlockedExits.get(signal);
-            if (blockedExitId !== undefined) {
-               this._signalRManager.setExitBlockStatus(blockedExitId, false);
-               this._signalBlockedExits.delete(signal);
-               console.log(`Signal turned red, unblocking exit ${blockedExitId}`);
-            }
-         }
+         if (!signal.state) this.cancelRoutesAt(signal);
       });
 
-      // Route created → render the routes
-      this._eventManager.on('routeCreated', () => {
-         if (!this._renderer) return;
-         this._renderer.renderTrainRoutes(this._trainRouteManager.routes);
-      });
+      const renderTrackState = () => {
+         this._renderer?.renderTrackState(this._trainRouteManager.routes, this._trainRouteManager.occupiedElements);
+      };
+      this._eventManager.on('routeCreated', renderTrackState);
+      this._eventManager.on('routesCleared', renderTrackState);
+      this._eventManager.on('occupancyChanged', renderTrackState);
 
-      // Routes cleared → render (empty routes)
-      this._eventManager.on('routesCleared', () => {
-         if (!this._renderer) return;
-         this._renderer.renderTrainRoutes(this._trainRouteManager.routes);
-      });
 
-      
-
-      this._eventManager.on('routeEndedAtExit', (route: TrainRoute, exit: Exit) => {
+      this._eventManager.on('routeEndedAtExit', (_route: TrainRoute, exit: Exit) => {
          this._signalRManager.setExitBlockStatus(exit.id, true);
-         
-         // Track which signal is blocking this exit so we can unblock it later
-         if (route.signal) {
-            this._signalBlockedExits.set(route.signal, exit.id);
-            console.log(`Signal is blocking exit ${exit.id}`);
-         }
       });
 
-      // Route with exit cleared → notify server that exit is unblocked
-      this._eventManager.on('routeWithExitCleared', (exit: Exit) => {
+      // Arriving train has fully left the exit → notify server that exit is unblocked
+      this._eventManager.on('exitCleared', (exit: Exit) => {
          this._signalRManager.setExitBlockStatus(exit.id, false);
-         console.log(`Exit ${exit.id} blocking route fully cleared, reporting unblock`);
+         console.log(`Exit ${exit.id} cleared by arriving train, reporting unblock`);
       });
 
       // Exit block status changed (from server) → create or remove blocking route
@@ -318,6 +284,7 @@ export class Application implements ApplicationContext {
          
          // Get the exit object to pass to the route
          const exit = this._trackLayoutManager.getExitById(exitId);
+         if (exit && trainNumber) this._trainRouteManager.holdExit(trainNumber, exit);
          
          const startPoint = {
             track: location.track,
@@ -334,19 +301,15 @@ export class Application implements ApplicationContext {
          }
       } else {
          this._renderer?.setIncomingTrain(exitId, null);
+         const exit = this._trackLayoutManager.getExitById(exitId);
+         if (exit) this._trainRouteManager.releaseExit(exit);
+      }
+   }
 
-         // BOTH stations handle unblock:
-         // Find and remove any route associated with this exit
-         const routeAtExit = this._trainRouteManager.routes.find(r => r.exit?.id === exitId);
-         if (routeAtExit) {
-            this._trainRouteManager.removeRoute(routeAtExit);
-            console.log(`Removed route for exit ${exitId} after receiving unblock`);
-            
-            // Also clear the signal tracking if this was a signal-based route
-            if (routeAtExit.signal) {
-               this._signalBlockedExits.delete(routeAtExit.signal);
-            }
-         }
+   /** Removes the routes starting at a signal; a cancelled departure route frees the exit it had blocked. */
+   private cancelRoutesAt(signal: Signal): void {
+      for (const route of this._trainRouteManager.removeRoutesBySignal(signal)) {
+         if (route.endsAtExit && route.exit) this._signalRManager.setExitBlockStatus(route.exit.id, false);
       }
    }
 

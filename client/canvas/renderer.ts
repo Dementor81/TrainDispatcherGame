@@ -16,6 +16,7 @@ import { TrainRenderer } from "./renderers/train_renderer";
 import { StationRenderer } from "./renderers/station_renderer";
 import { TrainRouteRenderer } from "./renderers/trainRoute_renderer";
 import TrainRoute from "../sim/trainRoute";
+import { OccupiedElement } from "../manager/trackOccupancyStore";
 
 export class Renderer {
    private _pixiApp: PIXI.Application;
@@ -103,7 +104,7 @@ export class Renderer {
       r._platformRenderer = new PlatformRenderer(r._pixiApp.stage, trackLayoutManager);
       r._switchRenderer = new SwitchRenderer(r._pixiApp.stage, eventManager, canvas);
       r._signalRenderer = new SignalRenderer(r._pixiApp.stage, eventManager, canvas);
-      r._trainRouteRenderer = new TrainRouteRenderer(r._pixiApp.stage);
+      r._trainRouteRenderer = new TrainRouteRenderer(r._pixiApp.stage, trackLayoutManager);
       r._trainRenderer = new TrainRenderer(r._pixiApp.stage, trackLayoutManager, eventManager, canvas, trainManager);
       r._stationRenderer = new StationRenderer(r._pixiApp.stage, trackLayoutManager);
 
@@ -191,8 +192,8 @@ export class Renderer {
 
 
 
-   public renderTrainRoutes(routes: TrainRoute[]): void {
-      this._trainRouteRenderer.renderAll(routes);
+   public renderTrackState(routes: TrainRoute[], occupied: Iterable<OccupiedElement>): void {
+      this._trainRouteRenderer.renderAll(routes, occupied);
    }
 
    public setIncomingTrain(exitId: number, label: string | null): void {

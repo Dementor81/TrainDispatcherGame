@@ -10,6 +10,9 @@ import { Application } from "../core/application";
 import { NetworkConnectionDto, PlatformDto } from "../network/dto";
 import { CancellableEvent } from "./event_manager";
 import { Tools } from "../core/utils";
+import RailPosition from "../sim/railPosition";
+import Toast from "../ui/toast";
+import { OccupiedElement } from "./trackOccupancyStore";
 // Movement exception for actual errors
 export class MovementException extends Error {
    constructor(message: string) {
@@ -223,6 +226,10 @@ export class TrackLayoutManager {
    }
 
    private handleSwitchClick(sw: Switch): void {
+      if (this._application.trainRouteManager.isSwitchLocked(sw)) {
+         Toast.show("Weiche ist verschlossen (Fahrstraße oder besetzt).", "warning");
+         return;
+      }
       sw.toggle();
    }
 
@@ -291,6 +298,44 @@ export class TrackLayoutManager {
       }
 
       return { element: track, km, direction: currentDirection };
+   }
+
+   /**
+    * All sections, switches and exits a train spanning from tail to head occupies.
+    * Exits count as occupied while an end of the train is pinned at the track boundary leading to them.
+    */
+   occupiedElementsBetween(tail: RailPosition, head: RailPosition, direction: number): OccupiedElement[] {
+      const elements: OccupiedElement[] = [];
+      const exitAt = (position: RailPosition): void => {
+         const index = position.km === 0 ? 0 : position.km === position.track.length ? 1 : -1;
+         const connection = index >= 0 ? position.track.switches[index] : null;
+         if (connection instanceof Exit) elements.push(connection);
+      };
+
+      exitAt(tail);
+      let track = tail.track;
+      let km = tail.km;
+      for (let steps = 0; steps < 100; steps++) {
+         if (track === head.track) {
+            elements.push(...track.sectionsBetween(km, head.km));
+            break;
+         }
+         const boundaryKm = direction > 0 ? track.length : 0;
+         elements.push(...track.sectionsBetween(km, boundaryKm));
+         const connection = track.switches[direction > 0 ? 1 : 0];
+         if (connection instanceof Switch) elements.push(connection);
+         let next: Track | Switch | Exit;
+         try {
+            next = this.findNextTrack(track, direction);
+         } catch {
+            break;
+         }
+         if (!(next instanceof Track)) break;
+         track = next;
+         km = direction > 0 ? 0 : track.length;
+      }
+      exitAt(head);
+      return elements;
    }
 
    /**
@@ -403,7 +448,7 @@ export class TrackLayoutManager {
          const ahead = this.closestFacingSignal(current, currentKm, direction, includeKm);
          if (ahead) return ahead;
 
-         const connection = current.switches[direction > 0 ? 1 : 0];
+         const connection: Switch | Track | Exit | null = current.switches[direction > 0 ? 1 : 0];
          if (!(connection instanceof Track)) return null;
 
          current = connection;
