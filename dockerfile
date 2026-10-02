@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Stage 1: Frontend — independent of .NET so BuildKit can run it in parallel
-FROM node:24-bookworm-slim AS client-build
+FROM node:26-bookworm-slim AS client-build
 WORKDIR /client
 
 COPY client/package*.json ./
