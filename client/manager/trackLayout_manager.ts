@@ -339,6 +339,22 @@ export class TrackLayoutManager {
    }
 
    /**
+    * Sections and switches between an inbound exit and its home signal (first facing signal over
+    * direct track joins); without a home signal the exit track up to its far end.
+    */
+   entryZone(exit: Exit): OccupiedElement[] {
+      const { track, km } = this.getExitPointLocation(exit.id);
+      if (!track) return [];
+      const direction = this.getExitPointDirection(exit.id);
+      const signal = this.getSignalBeforeSwitch(track, km, direction);
+      const end = signal?.track
+         ? new RailPosition(signal.track, signal.position)
+         : new RailPosition(track, direction > 0 ? track.length : 0);
+      return this.occupiedElementsBetween(new RailPosition(track, km), end, direction)
+         .filter(element => !(element instanceof Exit));
+   }
+
+   /**
     * Finds the next signal on a track in the given direction from a certain point
     * @param currentTrack - The current track to search on
     * @param currentKm - The current kilometer position on the track

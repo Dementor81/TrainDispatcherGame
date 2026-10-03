@@ -15,6 +15,8 @@ export class TrainRouteManager {
    private _eventManager: EventManager;
    private _occupancy = new RouteOccupancyStore();
    private _trackOccupancy = new TrackOccupancyStore();
+   /** Announced inbound exits; true once a train has occupied the exit's entry zone. */
+   private _inboundExits = new Map<Exit, boolean>();
 
    constructor(layout: TrackLayoutManager, eventManager: EventManager) {
       this._layout = layout;
@@ -27,8 +29,8 @@ export class TrainRouteManager {
          this.clearRoutes();
       });
       this._eventManager.on("trainTransformed", (train: Train, oldNumber: string) => {
-         this.setTrackOccupancy(oldNumber, []);
          this.syncTrainOccupancy(train);
+         this.setTrackOccupancy(oldNumber, []);
       });
    }
 
@@ -37,7 +39,15 @@ export class TrainRouteManager {
    }
 
    get occupiedElements(): Set<OccupiedElement> {
-      return this._trackOccupancy.all();
+      const all = this._trackOccupancy.all();
+      for (const [exit, reached] of this._inboundExits) {
+         if (reached) all.add(exit);
+      }
+      return all;
+   }
+
+   isExitOccupied(exit: Exit): boolean {
+      return this._trackOccupancy.isOccupied(exit) || this._inboundExits.get(exit) === true;
    }
 
    isSwitchLocked(sw: Switch): boolean {
@@ -128,7 +138,7 @@ export class TrainRouteManager {
          }
 
          if (nextElement instanceof Exit) {
-            if (this._trackOccupancy.isOccupied(nextElement)) {
+            if (this.isExitOccupied(nextElement)) {
                return null;
             }
             endEndpoint = { track: currentTrack, km: boundaryKm };
@@ -180,12 +190,7 @@ export class TrainRouteManager {
       const tail = train.tailPosition;
       if (!head || !tail) return;
 
-      const elements = this._layout.occupiedElementsBetween(tail, head, train.movingDirection);
-      const left = [...this._trackOccupancy.forTrain(train.number)].filter(element => !elements.includes(element));
-      this.setTrackOccupancy(train.number, elements);
-      for (const element of left) {
-         if (element instanceof Exit) this._eventManager.emit('exitCleared', element);
-      }
+      this.setTrackOccupancy(train.number, this._layout.occupiedElementsBetween(tail, head, train.movingDirection));
 
       this._occupancy.claimOverlappingUnclaimed(train.number, head.track, head.km);
       if (!this._occupancy.releaseBehindTail(train.number, tail.track, tail.km, head.track, head.km)) return;
@@ -209,26 +214,44 @@ export class TrainRouteManager {
    }
 
    holdExit(trainNumber: string, exit: Exit): void {
+      this._inboundExits.set(exit, this._inboundExits.get(exit) ?? false);
       this.setTrackOccupancy(trainNumber, [exit]);
    }
 
    releaseExit(exit: Exit): void {
+      this._inboundExits.delete(exit);
       if (this._trackOccupancy.release(exit)) this._eventManager.emit('occupancyChanged');
    }
 
    clearTrackOccupancy(): void {
       this._trackOccupancy.clear();
+      this._inboundExits.clear();
       this._eventManager.emit('occupancyChanged');
    }
 
    private setTrackOccupancy(trainNumber: string, elements: Iterable<OccupiedElement>): void {
-      if (this._trackOccupancy.setTrain(trainNumber, elements)) this._eventManager.emit('occupancyChanged');
+      if (!this._trackOccupancy.setTrain(trainNumber, elements)) return;
+      this.updateInboundExits();
+      this._eventManager.emit('occupancyChanged');
+   }
+
+   /** An announced exit is reported cleared once its entry zone has been occupied and is free again. */
+   private updateInboundExits(): void {
+      for (const [exit, reached] of this._inboundExits) {
+         if (this._trackOccupancy.isAnyOccupied(this._layout.entryZone(exit))) {
+            this._inboundExits.set(exit, true);
+            continue;
+         }
+         if (reached) this._eventManager.emit('exitCleared', exit);
+         if (this._trackOccupancy.isOccupied(exit)) this._inboundExits.set(exit, false);
+         else this._inboundExits.delete(exit);
+      }
    }
 
    clearRoutes() {
       this._routes = [];
       this._occupancy.clear();
-      this._trackOccupancy.clear();
+      this.clearTrackOccupancy();
       this._eventManager.emit('routesCleared');
    }
 }

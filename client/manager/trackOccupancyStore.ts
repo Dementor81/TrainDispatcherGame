@@ -12,10 +12,6 @@ export type OccupiedElement = TrackSection | Switch | Exit;
 export class TrackOccupancyStore {
    private _byTrain = new Map<string, Set<OccupiedElement>>();
 
-   forTrain(trainNumber: string): Set<OccupiedElement> {
-      return this._byTrain.get(trainNumber) ?? new Set();
-   }
-
    /** Replaces the train's occupied elements. Returns true if anything changed. */
    setTrain(trainNumber: string, elements: Iterable<OccupiedElement>): boolean {
       const next = new Set(elements);
