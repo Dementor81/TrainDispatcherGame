@@ -17,8 +17,8 @@ Features:
 Big Features:    
     
     ☐ coupling and decoupling
-    ☐ slow down trains if the train is on a router with switches set to the branch
-    ☐ add a admin page that allows to see all games and players
+    ☐ slow down trains if the train is on a route with switches set to the branch
+    ☐ add a admin page that allows to see all games and players and to add new keys
     ☐ settings page on game master panel for settlings like "show train labels" or random delays
     ☐ create new trains on the fly with a button in the gamemaster panel
     ☐ Manual/Help window for players
