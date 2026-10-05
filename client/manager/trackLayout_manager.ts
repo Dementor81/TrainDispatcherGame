@@ -313,6 +313,34 @@ export class TrackLayoutManager {
    }
 
    /**
+    * Like followRailNetwork, but never throws: a dead end yields `element: null`.
+    * `track`/`km` is the reached position on rails: the element position for a Track,
+    * otherwise the end of the last traversed segment (or the boundary of the start track).
+    */
+   walk(
+      currentTrack: Track,
+      currentKm: number,
+      distance: number
+   ): { element: Track | Switch | Exit | null; track: Track; km: number; segments: RailSegment[] } {
+      let element: Track | Switch | Exit | null;
+      let km: number;
+      let segments: RailSegment[];
+      try {
+         ({ element, km, segments } = this.followRailNetwork(currentTrack, currentKm, distance));
+      } catch (error) {
+         if (!(error instanceof MovementException)) throw error;
+         element = null;
+         km = 0;
+         segments = error.segments;
+      }
+      if (element instanceof Track) return { element, track: element, km, segments };
+      const last = segments[segments.length - 1];
+      return last
+         ? { element, track: last.track, km: last.toKm, segments }
+         : { element, track: currentTrack, km: distance > 0 ? currentTrack.length : 0, segments };
+   }
+
+   /**
     * All sections, switches and exits a train spanning from tail to head occupies.
     * Exits count as occupied while an end of the train is pinned at the track boundary leading to them.
     */

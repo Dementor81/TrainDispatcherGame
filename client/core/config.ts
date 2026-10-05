@@ -3,9 +3,9 @@ export class RendererConfig {
     static readonly trackColor = 0x666666;
     static readonly inactiveTrackColor = 0x444444;
     static readonly switchColor = 0x888888;
-    static readonly trackWidth = 4;
+    static readonly trackWidth = 5;
     static readonly bumperLength = 12;
-    static readonly switchCircleRadius = 10;
+    static readonly switchCircleRadius = 12;
 
     // Interlocking state overlay
     static readonly routeColor = 0xffffff;

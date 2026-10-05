@@ -269,7 +269,9 @@ export class Train {
 
 
 
+    // All cars (including locomotive) share the same width
     get length(): number {
+        if (this._cars === 0) return 0;
         return this._cars * RendererConfig.carWidth + ((this._cars - 1) * RendererConfig.trainCarSpacing);
     }
 
@@ -294,7 +296,8 @@ export class Train {
         this.setPosition(this.tailPosition!.track, this.tailPosition!.km);
         this.setTailPosition(tempTrack, tempKm);
         this.setMovingDirection(this.movingDirection * -1);
-        this.releaseClearedSignals();
+        this._clearedSignals.clear();
+        this._eventManager.emit("trainReversed", this);
     }
 
     hasClearedSignal(signal: Signal): boolean {
@@ -307,22 +310,6 @@ export class Train {
 
     forgetClearedSignal(signal: Signal): void {
         this._clearedSignals.delete(signal);
-    }
-
-    releaseClearedSignals(): void {
-        this._clearedSignals.clear();
-    }
-
-    // Calculate the actual length of the train based on configured car width and spacing
-    getLength(): number {
-        if (this._cars === 0) {
-            return 0;
-        }
-
-        // All cars (including locomotive) use the same width
-        const totalLength = (this._cars * RendererConfig.carWidth) + ((this._cars - 1) * RendererConfig.trainCarSpacing);
-
-        return totalLength;
     }
 
     // Set the train's position
@@ -395,10 +382,6 @@ export class Train {
 
     static isHardStoppedState(state: TrainState): boolean {
         return Tools.is(state, [TrainState.COLLISION, TrainState.DERAILEMENT, TrainState.END_OF_TRACK, TrainState.ENDED, TrainState.MISROUTED, TrainState.EMERGENCY_STOP]);
-    }
-
-    static isAwaitingAcknowledgement(state: TrainState): boolean {
-        return Tools.is(state, [TrainState.EMERGENCY_BRAKING, TrainState.EMERGENCY_STOP, TrainState.PASSED_RED_SIGNAL]);
     }
 
     setState(nextState: TrainState, distanceToStop: number | null = null): void {

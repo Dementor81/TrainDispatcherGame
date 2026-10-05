@@ -11,7 +11,7 @@ import Toast from "../ui/toast";
 import { Application } from "../core/application";
 import { EventManager } from "./event_manager";
 import Tools from "../core/utils";
-import Train from "../sim/train";
+import Train, { TrainState } from "../sim/train";
 import Switch from "../sim/switch";
 
 export class UIManager {
@@ -62,9 +62,8 @@ export class UIManager {
             this.notifyDerailment(train.number, sw?.id);
         });
 
-        // Train missrouted notifications
-        this._eventManager.on('trainMisrouted', (train: Train) => {
-            this.notifyMisrouted(train.number);
+        this._eventManager.on('trainStateChanged', (train: Train, _previous: TrainState, next: TrainState) => {
+            if (next === TrainState.MISROUTED) this.notifyMisrouted(train.number);
         });
 
         this._eventManager.on('trainPassedRedSignal', (train: Train) => {

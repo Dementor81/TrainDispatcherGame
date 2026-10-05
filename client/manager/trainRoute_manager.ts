@@ -32,6 +32,10 @@ export class TrainRouteManager {
          this.syncTrainOccupancy(train);
          this.setTrackOccupancy(oldNumber, []);
       });
+      this._eventManager.on("trainReversed", (train: Train) => {
+         this._occupancy.reverseTrain(train.number);
+         this.syncTrainOccupancy(train);
+      });
    }
 
    get routes(): TrainRoute[] {
@@ -196,10 +200,6 @@ export class TrainRouteManager {
       if (!this._occupancy.releaseBehindTail(train.number, tail.track, tail.km, head.track, head.km)) return;
       this._routes = this._routes.filter(route => !route.isEmpty());
       this._eventManager.emit('routesCleared');
-   }
-
-   reverseOccupancy(trainNumber: string): void {
-      this._occupancy.reverseTrain(trainNumber);
    }
 
    /** A train leaving through an exit keeps that exit occupied until the neighbour reports its arrival. */
