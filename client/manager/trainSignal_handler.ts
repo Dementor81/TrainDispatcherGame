@@ -2,7 +2,7 @@ import Train from "../sim/train";
 import Track from "../sim/track";
 import Signal from "../sim/signal";
 import { EventManager } from "./event_manager";
-import { TrackLayoutManager } from "./trackLayout_manager";
+import { MovementException, RailSegment, TrackLayoutManager } from "./trackLayout_manager";
 import { SimulationConfig } from "../core/config";
 import Tools from "../core/utils";
 import { TrainState } from "../sim/train";
@@ -91,64 +91,57 @@ export class TrainSignalHandler {
    checkSignalsAhead(train: Train): SignalAhead | null {
       if (!train.position) throw new Error(`Train ${train.number} has no position`);
 
-      const lookahead = SimulationConfig.trainLookaheadDistance;
+      const distance = SimulationConfig.trainLookaheadDistance * train.movingDirection;
+      return this.firstStopSignal(train, this.segmentsAlong(train.position.track, train.position.km, distance));
+   }
+
+   passSignals(train: Train, segments: RailSegment[]): void {
       const dir = train.movingDirection;
-      const endKm = train.position.km + lookahead * dir;
-
-      const onCurrent = this.findClosestRedSignal(train.position.track, train.position.km, endKm, dir);
-      if (onCurrent) return onCurrent;
-
-      try {
-         const result = this._trackLayoutManager.followRailNetwork(train.position.track, train.position.km, lookahead * dir);
-
-         const nextTrack = result.element instanceof Track ? result.element : null;
-         if (nextTrack && nextTrack !== train.position.track) {
-            const toEndOfCurrent = dir > 0
-               ? train.position.track.length - train.position.km
-               : train.position.km;
-            const nextStart = dir > 0 ? 0 : nextTrack.length;
-            const onNext = this.findClosestRedSignal(nextTrack, nextStart, result.km, dir);
-            if (onNext) return { signal: onNext.signal, distance: toEndOfCurrent + onNext.distance };
+      segments.forEach((segment, index) => {
+         for (const signal of this.facingSignals(segment, dir, index > 0)) {
+            this.emitTrainPassedSignal(train, signal);
          }
-      } catch {
-         // Dead end or invalid path
+      });
+   }
+
+   private segmentsAlong(track: Track, km: number, distance: number): RailSegment[] {
+      try {
+         return this._trackLayoutManager.followRailNetwork(track, km, distance).segments;
+      } catch (error) {
+         if (error instanceof MovementException) return error.segments;
+         return [];
+      }
+   }
+
+   private firstStopSignal(train: Train, segments: RailSegment[]): SignalAhead | null {
+      const dir = train.movingDirection;
+      let traveled = 0;
+      for (let i = 0; i < segments.length; i++) {
+         const segment = segments[i];
+         for (const signal of this.facingSignals(segment, dir, i > 0)) {
+            if (train.hasClearedSignal(signal)) train.forgetClearedSignal(signal);
+            if (!signal.isTrainAllowedToGo()) {
+               return { signal, distance: traveled + Math.abs(signal.position - segment.fromKm) };
+            }
+         }
+         traveled += Math.abs(segment.toKm - segment.fromKm);
       }
       return null;
    }
 
-   private findClosestRedSignal(track: Track, startKm: number, endKm: number, direction: number): SignalAhead | null {
-      const minKm = Math.min(startKm, endKm);
-      const maxKm = Math.max(startKm, endKm);
-      let closest: SignalAhead | null = null;
-
-      for (const signal of track.signals) {
-         if (signal.direction !== direction) continue;
-         if (signal.position < minKm || signal.position > maxKm) continue;
-         if (signal.isTrainAllowedToGo()) continue;
-         const distance = Math.abs(signal.position - startKm);
-         if (!closest || distance < closest.distance) closest = { signal, distance };
-      }
-      return closest;
-   }
-
-   checkSignalsPassed(
-      train: Train,
-      previousTrack: Track | null,
-      previousKm: number,
-      newTrack: Track,
-      newKm: number
-   ): void {
-      if (!previousTrack) return;
-
-      if (previousTrack === newTrack) {
-         this.checkSignalsPassedOnTrack(train, previousTrack, previousKm, newKm);
-      } else {
-         const endKm = train.movingDirection > 0 ? previousTrack.length : 0;
-         this.checkSignalsPassedOnTrack(train, previousTrack, previousKm, endKm);
-
-         const startKm = train.movingDirection > 0 ? 0 : newTrack.length;
-         this.checkSignalsPassedOnTrack(train, newTrack, startKm, newKm);
-      }
+   private facingSignals(segment: RailSegment, direction: number, includeStart: boolean): Signal[] {
+      const forward = direction > 0;
+      const signals = segment.track.signals.filter(signal => {
+         if (signal.direction !== direction) return false;
+         if (forward) {
+            const afterStart = includeStart ? signal.position >= segment.fromKm : signal.position > segment.fromKm;
+            return afterStart && signal.position <= segment.toKm;
+         }
+         const afterStart = includeStart ? signal.position <= segment.fromKm : signal.position < segment.fromKm;
+         return afterStart && signal.position >= segment.toKm;
+      });
+      if (!forward) signals.reverse();
+      return signals;
    }
 
    checkSignalsPassedByTail(
@@ -195,20 +188,14 @@ export class TrainSignalHandler {
       }
    }
 
-   private checkSignalsPassedOnTrack(train: Train, track: Track, startKm: number, endKm: number): void {
-      for (const signal of track.signals) {
-         if (signal.direction !== train.movingDirection) continue;
-
-         const signalPassed = train.movingDirection > 0
-            ? signal.position > startKm && signal.position <= endKm
-            : signal.position < startKm && signal.position >= endKm;
-
-         if (signalPassed) this.emitTrainPassedSignal(train, signal);
-      }
-   }
-
    private emitTrainPassedSignal(train: Train, signal: Signal): void {
-      if (signal.state) {
+      if (train.hasClearedSignal(signal)) {
+         if (signal.isTrainAllowedToGo()) this._eventManager.emit("trainPassedSignal", train, signal);
+         return;
+      }
+
+      if (signal.isTrainAllowedToGo()) {
+         train.markSignalCleared(signal);
          console.log(`Train ${train.number} passed signal at km ${signal.position} on track ${signal.track?.id}`);
          this._eventManager.emit("trainPassedSignal", train, signal);
          return;

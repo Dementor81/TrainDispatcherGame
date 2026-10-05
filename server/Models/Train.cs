@@ -8,6 +8,7 @@ namespace TrainDispatcherGame.Server.Models
     {
         public string Number { get; set; } = string.Empty;
         public TrainType Type { get; set; } = TrainType.Passenger;
+        public bool Passengers { get; set; } = true;
         public string? Category { get; set; } = null;
         public double SpeedMax { get; set; }//m/s
         public int Cars { get; set; }

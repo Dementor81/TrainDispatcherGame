@@ -42,6 +42,7 @@ export class Train {
     private _clientSimulation: ClientSimulation;
     private _number: string;
     private _type: TrainType;
+    private _passengers: boolean;
     private _category: string | null;
     private _position: RailPosition | null = null;
     private _tailPosition: RailPosition | null = null;
@@ -63,6 +64,7 @@ export class Train {
     private _followingTrainNumber: string | null = null; // following train number that will use this vehicle, after this train has completed its journey
     private _serviceReleasePending = false;
     private _exitState: TrainExitState | null = null;
+    private _clearedSignals = new Set<Signal>();
 
     constructor(
         application: ApplicationContext,
@@ -77,6 +79,7 @@ export class Train {
         this._clientSimulation = application.clientSimulation;
         this._number = number;
         this._type = type;
+        this._passengers = true;
         this._category = category;
         this._cars = cars;
         this._speedMax = speedMax;
@@ -90,6 +93,7 @@ export class Train {
     static fromServerData(data: any, application: ApplicationContext): Train {
         const category = data.category ?? data.catagory ?? null;
         const train = new Train(application, data.trainNumber, data.cars, data.speedMax, data.trainType || 'Passenger', category);
+        train._passengers = data.passengers ?? true;
 
         // Set schedule times if provided
         if (data.departureTime) {
@@ -111,6 +115,10 @@ export class Train {
 
     get type(): TrainType {
         return this._type;
+    }
+
+    get passengers(): boolean {
+        return this._passengers;
     }
 
     get category(): string | null {
@@ -286,6 +294,23 @@ export class Train {
         this.setPosition(this.tailPosition!.track, this.tailPosition!.km);
         this.setTailPosition(tempTrack, tempKm);
         this.setMovingDirection(this.movingDirection * -1);
+        this.releaseClearedSignals();
+    }
+
+    hasClearedSignal(signal: Signal): boolean {
+        return this._clearedSignals.has(signal);
+    }
+
+    markSignalCleared(signal: Signal): void {
+        this._clearedSignals.add(signal);
+    }
+
+    forgetClearedSignal(signal: Signal): void {
+        this._clearedSignals.delete(signal);
+    }
+
+    releaseClearedSignals(): void {
+        this._clearedSignals.clear();
     }
 
     // Calculate the actual length of the train based on configured car width and spacing

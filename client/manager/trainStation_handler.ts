@@ -153,7 +153,7 @@ console.log(`Train ${train.number} stopped at station, departure time: ${train.d
       if (!position) return false;
       const signal = this._trackLayoutManager.getSignalBeforeSwitch(position.track, position.km, train.movingDirection);
       if (!signal) return false;
-      return train.type === 'Freight' || position.track.halt;
+      return !train.passengers || position.track.halt;
    }
 
    private releaseService(train: Train): void {

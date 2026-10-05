@@ -7,6 +7,7 @@ export type StationStop = { station: string; stop: boolean };
 export type TrainEditorResult = {
    number: string;
    type: TrainType;
+   passengers: boolean;
    category?: string;
    speedMax: number;
    cars: number;
@@ -19,6 +20,7 @@ export type TrainEditorResult = {
 export class TrainEditorPanel extends BasePanel {
    private numEl!: HTMLInputElement;
    private typeEl!: HTMLSelectElement;
+   private passengersEl!: HTMLInputElement;
    private catEl!: HTMLInputElement;
    private speedEl!: HTMLInputElement;
    private carsEl!: HTMLInputElement;
@@ -58,6 +60,11 @@ export class TrainEditorPanel extends BasePanel {
 
       this.numEl = this.createInput("Train number", "text", true);
       this.typeEl = this.createSelect("Type", ["Passenger", "Freight", "MultipleUnit"]);
+      this.typeEl.addEventListener("change", () => this.onTypeChanged());
+      this.passengersEl = document.createElement("input");
+      this.passengersEl.type = "checkbox";
+      this.passengersEl.className = "form-check-input no-drag";
+      this.passengersEl.id = "train-passengers";
       this.catEl = this.createInput("Category", "text", false, "e.g., ICE, Freight, Regional");
       this.followingEl = document.createElement("select");
       this.followingEl.className = "form-select no-drag";
@@ -93,6 +100,7 @@ export class TrainEditorPanel extends BasePanel {
       fields.append(
          this.wrapField("Train number", this.numEl),
          this.wrapField("Type", this.typeEl),
+         this.wrapPassengersField(),
          this.wrapField("Category", this.catEl),
          this.wrapField("Following Train Number", this.followingEl),
          speedCarsRow,
@@ -160,6 +168,7 @@ export class TrainEditorPanel extends BasePanel {
       this.submitBtn.textContent = "Create";
       this.numEl.value = "";
       this.typeEl.value = "Passenger";
+      this.passengersEl.checked = true;
       this.catEl.value = "";
       this.speedEl.value = "120";
       this.carsEl.value = "6";
@@ -179,6 +188,7 @@ export class TrainEditorPanel extends BasePanel {
       this.submitBtn.textContent = "Save";
       this.numEl.value = train.number || "";
       this.typeEl.value = train.type || "Passenger";
+      this.passengersEl.checked = train.passengers ?? train.type !== "Freight";
       this.catEl.value = train.category || "";
       this.speedEl.value = String(train.speedMax ?? 120);
       this.carsEl.value = String(train.cars ?? 6);
@@ -316,6 +326,7 @@ export class TrainEditorPanel extends BasePanel {
       this.closeWithResult({
          number: this.numEl.value.trim() || "NEW",
          type: (this.typeEl.value as TrainType) || "Passenger",
+         passengers: this.passengersEl.checked,
          category: this.catEl.value.trim() || undefined,
          speedMax: parseInt(this.speedEl.value || "120", 10) || 120,
          cars: parseInt(this.carsEl.value || "6", 10) || 6,
@@ -337,6 +348,21 @@ export class TrainEditorPanel extends BasePanel {
       const resolve = this.pendingResolve;
       this.pendingResolve = null;
       if (resolve) resolve(value);
+   }
+
+   private onTypeChanged() {
+      if (this.typeEl.value === "Freight") this.passengersEl.checked = false;
+      else if (this.typeEl.value === "Passenger") this.passengersEl.checked = true;
+   }
+
+   private wrapPassengersField() {
+      const wrapper = UI.createDiv("form-check mb-0", null);
+      const label = document.createElement("label");
+      label.className = "form-check-label";
+      label.htmlFor = this.passengersEl.id;
+      label.textContent = "Passengers";
+      wrapper.append(this.passengersEl, label);
+      return wrapper;
    }
 
    private createInput(label: string, type: string, required: boolean, placeholder?: string) {

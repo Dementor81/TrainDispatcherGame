@@ -63,6 +63,8 @@ export class PositionCalculator {
 
    private static alignRotation(angle: number, reference: number): number {
       const delta = Math.atan2(Math.sin(angle - reference), Math.cos(angle - reference));
-      return Math.abs(delta) > Math.PI / 2 ? angle + Math.PI : angle;
+      const aligned = Math.abs(delta) > Math.PI / 2 ? angle + Math.PI : angle;
+      // Wrap onto (-π, π]. `angle + π` is the same heading, but it can land a full turn away.
+      return Math.atan2(Math.sin(aligned), Math.cos(aligned));
    }
 } 

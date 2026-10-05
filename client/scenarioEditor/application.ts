@@ -138,6 +138,7 @@ export default class SzenariosApplication {
       if (!res) return;
       train.number = res.number;
       train.type = res.type;
+      train.passengers = res.passengers;
       train.category = res.category;
       train.speedMax = res.speedMax;
       train.cars = res.cars;
@@ -156,6 +157,7 @@ export default class SzenariosApplication {
          trains: scenario.trains.map((train) => ({
             number: train.number,
             type: train.type,
+            passengers: train.passengers,
             category: train.category,
             speedMax: train.speedMax,
             cars: train.cars,
@@ -269,6 +271,7 @@ export default class SzenariosApplication {
       scenario.trains.push({
          number: res.number,
          type: res.type,
+         passengers: res.passengers,
          category: res.category,
          speedMax: res.speedMax,
          cars: res.cars,

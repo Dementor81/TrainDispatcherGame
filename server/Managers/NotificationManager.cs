@@ -87,6 +87,7 @@ namespace TrainDispatcherGame.Server.Managers
                 trainNumber = train.Number,
                 category = train.Category,
                 trainType = train.Type.ToString(),
+                passengers = train.Passengers,
                 stationId = normalizedStationId,
                 exitPointId = exitPointId,
                 action = currentEvent.Action.ToString(),

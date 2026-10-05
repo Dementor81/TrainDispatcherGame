@@ -5,17 +5,10 @@ export class RendererConfig {
     static readonly switchColor = 0x888888;
     static readonly trackWidth = 4;
     static readonly bumperLength = 12;
-    static readonly switchWidth = 4;
-    static readonly switchHeight = 4;
-    static readonly switchCircleRadius = 8;
-    static readonly switchTextColor = 0xffffff;
-    static readonly switchTextSize = 12;
-    static readonly switchTextFont = "Arial";
-    static readonly switchTextFontSize = 12;
-    static readonly switchTextFontColor = 0xffffff;
+    static readonly switchCircleRadius = 10;
 
     // Interlocking state overlay
-    static readonly routeColor = 0x00aa00;
+    static readonly routeColor = 0xffffff;
     static readonly occupiedColor = 0xdd2222;
     static readonly stateOverlayWidth = 3;
     

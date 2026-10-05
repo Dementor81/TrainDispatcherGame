@@ -13,8 +13,12 @@ import { Tools } from "../core/utils";
 import RailPosition from "../sim/railPosition";
 import Toast from "../ui/toast";
 import { OccupiedElement } from "./trackOccupancyStore";
+export type RailSegment = { track: Track; fromKm: number; toKm: number };
+
 // Movement exception for actual errors
 export class MovementException extends Error {
+   segments: RailSegment[] = [];
+
    constructor(message: string) {
       super(message);
       this.name = "MovementException";
@@ -258,46 +262,54 @@ export class TrackLayoutManager {
    }
 
    /**
-    * Calculates the new position after moving along the rail network
+    * Calculates the new position after moving along the rail network.
+    * `segments` lists every track span entered, including intermediate tracks.
     * @param currentTrack - The current track the object is on
     * @param currentKm - The current kilometer position on the track
     * @param distance - Distance to move in kilometers (positive = forward, negative = backward)
-    * @returns Object with element (Track/Switch/Exit), km, and direction - element type indicates result
+    * @returns Object with element (Track/Switch/Exit), km, direction, and segments
     * @throws MovementException for actual errors (invalid track, zero distance, etc.)
     */
    followRailNetwork(
       currentTrack: Track,
       currentKm: number,
       distance: number
-   ): { element: Track | Switch | Exit; km: number; direction: number } {
+   ): { element: Track | Switch | Exit; km: number; direction: number; segments: RailSegment[] } {
       if (!currentTrack) throw new Error("currentTrack must not be null");
+      const segments: RailSegment[] = [];
       let remainingDistance: number = distance;
       let track: Track | Switch | Exit | null = currentTrack;
       let km: number = currentKm;
-      let currentDirection = distance > 0 ? 1 : -1;
-      
-      while (Math.abs(remainingDistance) > 0) {
-         km += remainingDistance;
+      const currentDirection = distance > 0 ? 1 : -1;
 
-         if (track instanceof Track && (km > track.length || km < 0)) {
-            // We need to move to the next track
-            remainingDistance = km < 0 ? km : km - track.length;
+      try {
+         while (Math.abs(remainingDistance) > 0) {
+            const startKm = km;
+            km += remainingDistance;
 
-            // Find the next element through switches (may throw exception)
-            track = this.findNextTrack(track, currentDirection);
-            
-            if (track instanceof Track) {               
-               km = currentDirection > 0 ? 0 : track.length;
-               continue;
-            } else {
+            if (track instanceof Track && (km > track.length || km < 0)) {
+               const boundary = km < 0 ? 0 : track.length;
+               if (startKm !== boundary) segments.push({ track, fromKm: startKm, toKm: boundary });
+               remainingDistance = km < 0 ? km : km - track.length;
+
+               track = this.findNextTrack(track, currentDirection);
+
+               if (track instanceof Track) {
+                  km = currentDirection > 0 ? 0 : track.length;
+                  continue;
+               }
                break;
             }
-         } else {
+
+            if (track instanceof Track && km !== startKm) segments.push({ track, fromKm: startKm, toKm: km });
             break;
          }
+      } catch (error) {
+         if (error instanceof MovementException) error.segments = segments;
+         throw error;
       }
 
-      return { element: track, km, direction: currentDirection };
+      return { element: track, km, direction: currentDirection, segments };
    }
 
    /**

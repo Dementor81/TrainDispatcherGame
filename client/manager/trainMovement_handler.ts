@@ -35,24 +35,46 @@ export class TrainMovementHandler {
       this._callbacks = callbacks;
    }
 
-   updateTrainSpeed(train: Train): void {
+   /** Signed distance traveled this tick. Braking uses constant deceleration and stops at distanceToStop. */
+   updateTrainSpeed(train: Train): number {
       const aimedSpeed = Math.max(0, Math.min(train.speedAimed, train.maxAllowedSpeed));
       const dtSeconds = SimulationConfig.simulationIntervalSeconds * this._clientSimulation.speed;
+      const direction = train.movingDirection;
+      const speed = train.speedCurrent;
 
-      if (train.speedCurrent < aimedSpeed) {
+      if (speed < aimedSpeed) {
          const accelerationStep = SimulationConfig.trainAcceleration * dtSeconds;
-         train.speedCurrent = Math.min(aimedSpeed, train.speedCurrent + accelerationStep);
-      } else if (train.speedCurrent > aimedSpeed) {
-         const remainingDistance = train.distanceToStop;
-         let speedRatePerSecond;
-         if (remainingDistance === null)
-            speedRatePerSecond = 10;
-         else
-            speedRatePerSecond = Math.max(0.01, (train.speedCurrent * train.speedCurrent) / (2 * remainingDistance));
-         const decelerationStep = speedRatePerSecond * dtSeconds;
-         train.speedCurrent = Math.max(aimedSpeed, train.speedCurrent - decelerationStep);
-         if (train.speedCurrent <= 0.05) train.speedCurrent = 0;
+         train.speedCurrent = Math.min(aimedSpeed, speed + accelerationStep);
+         return train.speedCurrent * dtSeconds * direction;
       }
+
+      if (speed > aimedSpeed) {
+         const step = this.brakingStep(speed, aimedSpeed, train.distanceToStop, dtSeconds);
+         train.speedCurrent = step.speed;
+         return step.travel * direction;
+      }
+
+      return speed * dtSeconds * direction;
+   }
+
+   private brakingStep(
+      speed: number,
+      aimed: number,
+      remaining: number | null,
+      dt: number
+   ): { speed: number; travel: number } {
+      if (speed <= 0.05 || (remaining !== null && remaining <= 0)) return { speed: 0, travel: 0 };
+
+      const decel = remaining === null ? 10 : (speed * speed) / (2 * remaining);
+      if (!Number.isFinite(decel) || decel <= 0) return { speed: 0, travel: Math.max(0, remaining ?? 0) };
+      const timeToAimed = (speed - aimed) / decel;
+      const arrived = dt >= timeToAimed;
+      const step = Math.min(dt, timeToAimed);
+      let travel = speed * step - 0.5 * decel * step * step;
+      if (remaining !== null) travel = Math.min(Math.max(0, travel), remaining);
+      let nextSpeed = arrived ? aimed : Math.max(0, speed - decel * dt);
+      if (nextSpeed <= 0.05 && (arrived || remaining === null)) nextSpeed = 0;
+      return { speed: nextSpeed, travel };
    }
 
    /**

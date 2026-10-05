@@ -6,6 +6,7 @@
     {
       "number": "59005",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 4,
@@ -53,6 +54,7 @@
     {
       "number": "58002",
       "type": "Passenger",
+      "passengers": true,
       "category": "RE",
       "speedMax": 120,
       "cars": 4,
@@ -100,6 +102,7 @@
     {
       "number": "33801",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 4,
@@ -129,6 +132,7 @@
     {
       "number": "33806",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 4,
@@ -158,6 +162,7 @@
     {
       "number": "59007",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 4,
@@ -205,6 +210,7 @@
     {
       "number": "40001",
       "type": "Freight",
+      "passengers": false,
       "category": "GZ",
       "speedMax": 100,
       "cars": 12,
@@ -252,6 +258,7 @@
     {
       "number": "601",
       "type": "MultipleUnit",
+      "passengers": true,
       "category": "ICE",
       "speedMax": 160,
       "cars": 9,
@@ -299,6 +306,7 @@
     {
       "number": "603",
       "type": "MultipleUnit",
+      "passengers": true,
       "category": "ICE",
       "speedMax": 160,
       "cars": 9,
@@ -346,6 +354,7 @@
     {
       "number": "58001",
       "type": "Passenger",
+      "passengers": true,
       "category": "RE",
       "speedMax": 120,
       "cars": 5,
@@ -393,6 +402,7 @@
     {
       "number": "59011",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 4,
@@ -440,6 +450,7 @@
     {
       "number": "58005",
       "type": "Passenger",
+      "passengers": true,
       "category": "RE",
       "speedMax": 120,
       "cars": 5,
@@ -487,6 +498,7 @@
     {
       "number": "59009",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 4,
@@ -534,6 +546,7 @@
     {
       "number": "58003",
       "type": "Passenger",
+      "passengers": true,
       "category": "RE",
       "speedMax": 120,
       "cars": 5,
@@ -581,6 +594,7 @@
     {
       "number": "58004",
       "type": "Passenger",
+      "passengers": true,
       "category": "RE",
       "speedMax": 120,
       "cars": 4,
@@ -628,6 +642,7 @@
     {
       "number": "59002",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 4,
@@ -675,6 +690,7 @@
     {
       "number": "59004",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 4,
@@ -722,6 +738,7 @@
     {
       "number": "513",
       "type": "MultipleUnit",
+      "passengers": true,
       "category": "ICE",
       "speedMax": 160,
       "cars": 9,
@@ -769,6 +786,7 @@
     {
       "number": "33702",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 4,
@@ -804,6 +822,7 @@
     {
       "number": "33703",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 4,
@@ -839,6 +858,7 @@
     {
       "number": "33704",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 4,
@@ -874,6 +894,7 @@
     {
       "number": "33705",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 4,
@@ -909,6 +930,7 @@
     {
       "number": "40102",
       "type": "Freight",
+      "passengers": false,
       "category": "GZ",
       "speedMax": 100,
       "cars": 12,
@@ -956,6 +978,7 @@
     {
       "number": "40602",
       "type": "Freight",
+      "passengers": false,
       "category": "GZ",
       "speedMax": 100,
       "cars": 8,
@@ -991,6 +1014,7 @@
     {
       "number": "40100",
       "type": "Freight",
+      "passengers": false,
       "category": "GZ",
       "speedMax": 100,
       "cars": 10,
@@ -1038,6 +1062,7 @@
     {
       "number": "40003",
       "type": "Freight",
+      "passengers": false,
       "category": "GZ",
       "speedMax": 100,
       "cars": 12,
@@ -1085,6 +1110,7 @@
     {
       "number": "703",
       "type": "MultipleUnit",
+      "passengers": true,
       "category": "ICE",
       "speedMax": 160,
       "cars": 9,
@@ -1132,6 +1158,7 @@
     {
       "number": "6601",
       "type": "MultipleUnit",
+      "passengers": true,
       "category": "S",
       "speedMax": 120,
       "cars": 4,
@@ -1161,6 +1188,7 @@
     {
       "number": "6602",
       "type": "MultipleUnit",
+      "passengers": true,
       "category": "S",
       "speedMax": 120,
       "cars": 4,
@@ -1190,6 +1218,7 @@
     {
       "number": "6603",
       "type": "MultipleUnit",
+      "passengers": true,
       "category": "S",
       "speedMax": 120,
       "cars": 4,
@@ -1219,6 +1248,7 @@
     {
       "number": "6604",
       "type": "MultipleUnit",
+      "passengers": true,
       "category": "S",
       "speedMax": 120,
       "cars": 4,
@@ -1248,6 +1278,7 @@
     {
       "number": "33901",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 3,
@@ -1283,6 +1314,7 @@
     {
       "number": "40600",
       "type": "Freight",
+      "passengers": false,
       "category": "GZ",
       "speedMax": 100,
       "cars": 7,
@@ -1318,6 +1350,7 @@
     {
       "number": "33804",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 4,
@@ -1347,6 +1380,7 @@
     {
       "number": "46404",
       "type": "Freight",
+      "passengers": false,
       "category": "GZ",
       "speedMax": 100,
       "cars": 10,
@@ -1376,6 +1410,7 @@
     {
       "number": "33803",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 4,
@@ -1405,6 +1440,7 @@
     {
       "number": "33808",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 4,
@@ -1434,6 +1470,7 @@
     {
       "number": "40005",
       "type": "Freight",
+      "passengers": false,
       "category": "GZ",
       "speedMax": 100,
       "cars": 12,
@@ -1481,6 +1518,7 @@
     {
       "number": "46406",
       "type": "Freight",
+      "passengers": false,
       "category": "GZ",
       "speedMax": 100,
       "cars": 10,
@@ -1510,6 +1548,7 @@
     {
       "number": "46405",
       "type": "Freight",
+      "passengers": false,
       "category": "GZ",
       "speedMax": 100,
       "cars": 8,
@@ -1539,6 +1578,7 @@
     {
       "number": "33805",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 4,
@@ -1568,6 +1608,7 @@
     {
       "number": "40603",
       "type": "Freight",
+      "passengers": false,
       "category": "GZ",
       "speedMax": 100,
       "cars": 8,
@@ -1603,6 +1644,7 @@
     {
       "number": "40604",
       "type": "Freight",
+      "passengers": false,
       "category": "GZ",
       "speedMax": 100,
       "cars": 7,
@@ -1638,6 +1680,7 @@
     {
       "number": "605",
       "type": "MultipleUnit",
+      "passengers": true,
       "category": "ICE",
       "speedMax": 160,
       "cars": 9,

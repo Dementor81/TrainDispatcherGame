@@ -6,6 +6,7 @@
     {
       "number": "6001",
       "type": "MultipleUnit",
+      "passengers": true,
       "category": "S",
       "speedMax": 140,
       "cars": 4,
@@ -29,6 +30,7 @@
     {
       "number": "6002",
       "type": "MultipleUnit",
+      "passengers": true,
       "category": "S",
       "speedMax": 140,
       "cars": 4,
@@ -52,6 +54,7 @@
     {
       "number": "6003",
       "type": "MultipleUnit",
+      "passengers": true,
       "category": "S",
       "speedMax": 140,
       "cars": 4,
@@ -75,6 +78,7 @@
     {
       "number": "6004",
       "type": "MultipleUnit",
+      "passengers": true,
       "category": "S",
       "speedMax": 140,
       "cars": 4,
@@ -98,6 +102,7 @@
     {
       "number": "6005",
       "type": "MultipleUnit",
+      "passengers": true,
       "category": "S",
       "speedMax": 140,
       "cars": 4,
@@ -121,6 +126,7 @@
     {
       "number": "007",
       "type": "Freight",
+      "passengers": false,
       "category": "GZ",
       "speedMax": 120,
       "cars": 6,
@@ -144,6 +150,7 @@
     {
       "number": "008",
       "type": "Freight",
+      "passengers": false,
       "category": "GZ",
       "speedMax": 120,
       "cars": 6,

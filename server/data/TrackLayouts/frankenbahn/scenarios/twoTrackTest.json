@@ -6,6 +6,7 @@
     {
       "number": "001",
       "type": "MultipleUnit",
+      "passengers": true,
       "category": "S",
       "speedMax": 160,
       "cars": 5,
@@ -29,6 +30,7 @@
     {
       "number": "002",
       "type": "MultipleUnit",
+      "passengers": true,
       "category": "S",
       "speedMax": 120,
       "cars": 6,
@@ -52,6 +54,7 @@
     {
       "number": "004",
       "type": "Passenger",
+      "passengers": true,
       "category": "RB",
       "speedMax": 120,
       "cars": 6,

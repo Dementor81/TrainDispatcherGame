@@ -223,6 +223,7 @@ namespace TrainDispatcherGame.Server.Endpoints
                     TrainNumber = train.Number,
                     Category = train.Category,
                     Type = train.Type,
+                    Passengers = train.Passengers,
                     Cars = train.Cars,
                     SpeedMax = train.SpeedMax,
                     FollowingTrainNumber = train.FollowingTrainNumber

@@ -10,6 +10,9 @@ namespace TrainDispatcherGame.Server.Models.DTOs
         [JsonPropertyName("type")]
         public TrainDispatcherGame.Server.Models.TrainType Type { get; set; } = TrainDispatcherGame.Server.Models.TrainType.Passenger;
 
+        [JsonPropertyName("passengers")]
+        public bool Passengers { get; set; } = true;
+
         [JsonPropertyName("category")]
         public string? Category { get; set; }
 

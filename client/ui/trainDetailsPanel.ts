@@ -47,6 +47,7 @@ export class TrainDetailsPanel extends BasePanel {
   private endServiceBtn!: HTMLButtonElement;
   private timetableContainer!: HTMLDivElement;
   private metaTypeValue!: HTMLSpanElement;
+  private metaPassengersValue!: HTMLSpanElement;
   private metaCarsValue!: HTMLSpanElement;
   private metaSpeedValue!: HTMLSpanElement;
   private metaStatusValue!: HTMLSpanElement;
@@ -115,6 +116,7 @@ export class TrainDetailsPanel extends BasePanel {
     trainMeta.style.columnGap = '12px';
     trainMeta.style.rowGap = '2px';
     this.metaTypeValue = this.appendMetaRow(trainMeta, 'Typ', '-');
+    this.metaPassengersValue = this.appendMetaRow(trainMeta, 'Fahrgäste', '-');
     this.metaCarsValue = this.appendMetaRow(trainMeta, 'Wagen', '-');
     this.metaSpeedValue = this.appendMetaRow(trainMeta, 'vmax', '-');
     this.metaStatusValue = this.appendMetaRow(trainMeta, 'Status', '-', '1 / -1');
@@ -292,6 +294,8 @@ export class TrainDetailsPanel extends BasePanel {
     const details = this._trainDetails;
 
     this.metaTypeValue.textContent = TrainDetailsPanel.TYPE_LABELS[details?.type ?? train?.type ?? ''] ?? details?.type ?? '-';
+    const passengers = details?.passengers ?? train?.passengers;
+    this.metaPassengersValue.textContent = passengers == null ? '-' : (passengers ? 'ja' : 'nein');
     this.metaCarsValue.textContent = String(details?.cars ?? train?.cars ?? '-');
     this.metaSpeedValue.textContent = this.formatTrainSpeed(details?.speedMax ?? train?.speedMax);
     this.metaStatusValue.textContent = train ? (TrainDetailsPanel.STATE_LABELS[train.state] ?? String(train.state)) : '-';
