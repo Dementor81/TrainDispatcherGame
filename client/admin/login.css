@@ -1,0 +1,28 @@
+#adminLoginModal .modal-content {
+  background-color: #2a2b2e;
+  color: #f8f9fa;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+#adminLoginModal .modal-header,
+#adminLoginModal .modal-footer {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+#adminLoginModal .form-control {
+  background-color: #1e1e1e;
+  color: #f8f9fa;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+#adminLoginModal .form-control:focus {
+  background-color: #1e1e1e;
+  color: #f8f9fa;
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: none;
+}
+
+#adminLoginModal .form-control:-webkit-autofill {
+  -webkit-text-fill-color: #f8f9fa;
+  box-shadow: 0 0 0 1000px #1e1e1e inset;
+}

@@ -1,3 +1,4 @@
+import { adminFetch } from "../admin/api";
 import { TrackLayoutDto, StationTimetableEventDto, ScenarioSummaryDto, ScenarioDto, NetworkDto, TrainWayPointDto, TrainDetailsDto, TrainEventDto, LogEntryDto, PlayerControlledStationDto, GameMasterSnapshotDto } from "./dto";
 
 const API_BASE_URL = "/api";
@@ -206,7 +207,7 @@ export async function fetchScenario(id: string): Promise<ScenarioDto> {
 }
 
 export async function saveScenario(id: string, scenario: ScenarioDto): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/scenarios/${encodeURIComponent(id)}`, {
+  const response = await adminFetch(`${API_BASE_URL}/scenarios/${encodeURIComponent(id)}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(scenario)

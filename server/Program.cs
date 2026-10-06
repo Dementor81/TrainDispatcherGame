@@ -28,6 +28,7 @@ builder.Services.AddSignalR(options =>
 builder.Services.AddSingleton<TrackLayoutService>();
 builder.Services.AddSingleton<NetworkDiagramService>();
 builder.Services.AddSingleton<LicenceKeyValidator>();
+builder.Services.AddSingleton<AdminCodeValidator>();
 builder.Services.AddSingleton<GameSessionManager>();
 
 var app = builder.Build();
@@ -54,14 +55,18 @@ if (!app.Environment.IsDevelopment())
 // Configure CORS for both API and SignalR
 app.UseCors("AllowDevClient");
 
-// Serve static files from wwwroot and map default files (e.g., index.html)
-app.UseDefaultFiles();
-app.UseStaticFiles();
+// wwwroot is filled by the Docker image (client/dist). Skip when it is missing so local runs do not warn.
+if (Directory.Exists(app.Environment.WebRootPath))
+{
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+}
 
 // Map SignalR hub with CORS
 app.MapHub<GameHub>("/gamehub").RequireCors("AllowDevClient");
 
 app.MapGameEndpoints();
+app.MapAdminEndpoints();
 app.MapLayoutEndpoints();
 app.MapLogsEndpoints();
 app.MapSimulationEndpoints();

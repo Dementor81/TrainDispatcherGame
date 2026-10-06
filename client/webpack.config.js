@@ -16,6 +16,7 @@ module.exports = (env, argv) => {
          scenarioEditor: "./scenarioEditor/main.ts",
          timeDistanceView: "./timeDistanceView/main.ts",
          gameMaster: "./gameMaster/main.ts",
+         admin: "./admin/main.ts",
       },
       output: {
          filename: isProduction ? "[name].[contenthash].js" : "[name].js",
@@ -102,6 +103,13 @@ module.exports = (env, argv) => {
             inject: "head",
             scriptLoading: "blocking",
             chunks: ["gameMaster"],
+         }),
+         new HtmlWebpackPlugin({
+            template: "admin/main.html",
+            filename: "admin.html",
+            inject: "head",
+            scriptLoading: "blocking",
+            chunks: ["admin"],
          }),
       ],
       devServer: {

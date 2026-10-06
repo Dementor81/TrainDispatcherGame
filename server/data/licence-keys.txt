@@ -1,6 +1,0 @@
-#File allows comments
-#one licence key per line
-ZnJhbms= #first key
-cy1iYWhuLW3DvG5jaGVu
-cmVnZWx3ZXJr
-c2ltdWxhdG9y

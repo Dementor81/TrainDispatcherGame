@@ -1,5 +1,6 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/basePanel.css";
+import { ensureAdminAccess } from "../admin/loginGate";
 import SzenariosApplication from "./application";
 import { renderAppVersionBadge } from "../ui/appVersionBadge";
 
@@ -13,7 +14,16 @@ async function bootstrap() {
 
 document.addEventListener("DOMContentLoaded", () => {
   void renderAppVersionBadge();
-  void bootstrap();
+  const appEl = document.getElementById("app");
+  if (appEl) {
+    appEl.hidden = true;
+  }
+  ensureAdminAccess(() => {
+    if (appEl) {
+      appEl.hidden = false;
+    }
+    void bootstrap();
+  });
 });
 
 

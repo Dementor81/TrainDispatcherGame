@@ -25,8 +25,14 @@ namespace TrainDispatcherGame.Server.Endpoints
                 return Results.Ok(scenario);
             });
 
-            app.MapPut("/api/scenarios/{id}", async (string id, HttpRequest req) =>
+            app.MapPut("/api/scenarios/{id}", async (string id, HttpRequest req, AdminCodeValidator validator) =>
             {
+                var denied = AdminEndpoints.RequireAdmin(req, validator);
+                if (denied != null)
+                {
+                    return denied;
+                }
+
                 try
                 {
                     using var reader = new StreamReader(req.Body);

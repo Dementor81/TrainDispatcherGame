@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using TrainDispatcherGame.Server.Hubs;
 using TrainDispatcherGame.Server.Logging;
 using TrainDispatcherGame.Server.Managers;
+using TrainDispatcherGame.Server.Models.DTOs;
 using TrainDispatcherGame.Server.Services;
 using TrainDispatcherGame.Server.Simulation;
 
@@ -148,6 +149,31 @@ namespace TrainDispatcherGame.Server.Sessions
                 session.Touch();
                 return SessionCreateStatus.Created;
             }
+        }
+
+        public IReadOnlyList<AdminSessionDto> ListSessions()
+        {
+            // Do not Touch sessions here; an admin poll must not keep idle sessions alive.
+            SweepInactiveSessionsIfNeeded();
+            return _sessions.Values
+                .Select(session => new AdminSessionDto
+                {
+                    GameCode = session.SessionId,
+                    ScenarioId = session.Simulation.ScenarioId,
+                    State = session.Simulation.State.ToString(),
+                    LastAccessUtc = session.LastAccessUtc,
+                    Players = session.PlayerManager.GetAllPlayers()
+                        .Where(player => !string.IsNullOrWhiteSpace(player.Name) || !string.IsNullOrWhiteSpace(player.StationId))
+                        .Select(player => new PlayerControlledStationDto
+                        {
+                            PlayerId = player.Id,
+                            PlayerName = player.Name,
+                            StationId = player.StationId
+                        })
+                        .ToList()
+                })
+                .OrderBy(session => session.GameCode, StringComparer.OrdinalIgnoreCase)
+                .ToList();
         }
 
         public bool TryGet(string? sessionId, out GameSession? session)

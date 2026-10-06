@@ -1,3 +1,4 @@
+import { AdminUnauthorizedError } from "../admin/api";
 import { fetchScenarios, fetchScenario, fetchNetwork, saveScenario } from "../network/api";
 import type { ScenarioDto, NetworkDto, ScenarioTrainDto, ScenarioTimetableEntryDto } from "../network/dto";
 import { toMinutes, minutesToString } from "./utils/timeUtils";
@@ -255,6 +256,9 @@ export default class SzenariosApplication {
          await saveScenario(this.currentScenarioId, scenarioData as any);
          Toast.show("Scenario saved successfully!", "success");
       } catch (error) {
+         if (error instanceof AdminUnauthorizedError) {
+            return;
+         }
          const message = error instanceof Error ? error.message : "Unknown error";
          alert(`Failed to save scenario: ${message}`);
          console.error("Error saving scenario:", error);
