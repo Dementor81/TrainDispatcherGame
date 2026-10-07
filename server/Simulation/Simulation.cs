@@ -30,8 +30,10 @@ namespace TrainDispatcherGame.Server.Simulation
         private readonly OpenLineTrackRegistry _openLineTracks;
         private readonly TrainEventProcessor _eventProcessor;
         private readonly StationTimetableService _timetableService;
-        private readonly HashSet<(string stationId, int exitId)> _blockedExits = new();
-        private readonly object _blockedExitsLock = new object();
+        /// <summary>Entry zone occupied, reported by the station that owns the exit. Blocks the far end of the connection.</summary>
+        private readonly Dictionary<(string stationId, int exitId), bool> _entryZoneOccupied = new();
+        /// <summary>Last blocked value published to each station, so a refresh only notifies on change.</summary>
+        private readonly Dictionary<(string stationId, int exitId), bool> _publishedExitBlocks = new();
         private readonly object _simulationLock = new object(); // Thread synchronization object
         private DateTime _simulationStartTime;
         private string _scenarioId;
@@ -88,10 +90,8 @@ namespace TrainDispatcherGame.Server.Simulation
             _trains = scenario.Trains;
             ResolveTrainPredecessors();
             _simulationStartTime = scenario.StartTime;
-            lock (_blockedExitsLock)
-            {
-                _blockedExits.Clear();
-            }
+            _entryZoneOccupied.Clear();
+            _publishedExitBlocks.Clear();
             _majorEvents.Clear();
 
             _openLineTracks.Initialize();
@@ -414,6 +414,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 {
                     ServerLogger.Instance.LogError(Ctx(train.Number), $"Error dispatching waiting train after releasing {train.Number}: {ex.Message}");
                 }
+                RefreshExitBlocks(connection);
             }
         }
 
@@ -490,6 +491,7 @@ namespace TrainDispatcherGame.Server.Simulation
                         {
                             ServerLogger.Instance.LogError(Ctx(train.Number), $"Error dispatching waiting train after releasing {train.Number}: {ex.Message}");
                         }
+                        RefreshExitBlocks(released);
                     }
                     if (!added)
                     {
@@ -498,6 +500,10 @@ namespace TrainDispatcherGame.Server.Simulation
                         train.completed = true;
                         train.damaged = true;
                         RecordMajorEvent(MajorEventType.Collision, train.Number, occupyingTrainNumber, connection.FromStation);
+                    }
+                    else
+                    {
+                        RefreshExitBlocks(connection);
                     }
 
                     RefreshTrainDelay(train, forceNotify: true);
@@ -521,6 +527,7 @@ namespace TrainDispatcherGame.Server.Simulation
                 try
                 {
                     var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+                    ClearStationEntryZones(normalizedStationId);
 
                     var trainsToReturn = _trains
                         .Where(t => t.controlledByPlayer && string.Equals(t.CurrentLocation, normalizedStationId, StringComparison.OrdinalIgnoreCase))
@@ -882,117 +889,177 @@ namespace TrainDispatcherGame.Server.Simulation
 
         public bool IsExitBlocked(string stationId, int exitId)
         {
-            var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
-            lock (_blockedExitsLock)
-            {
-                return _blockedExits.Contains((normalizedStationId, exitId));
-            }
-        }
-
-        /// <summary>
-        /// Records that a destination exit is owned by a train the server just put on the open line.
-        /// </summary>
-        public void MarkExitBlocked(string stationId, int exitId)
-        {
-            var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
-            lock (_blockedExitsLock)
-            {
-                _blockedExits.Add((normalizedStationId, exitId));
-            }
-        }
-
-        public void ClearExitBlocked(string stationId, int exitId)
-        {
-            var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
-            lock (_blockedExitsLock)
-            {
-                _blockedExits.Remove((normalizedStationId, exitId));
-            }
-        }
-
-        /// <summary>
-        /// Handles the report of a station exit being blocked or unblocked by a train route.
-        /// It will notify the neighboring station so it can extend the train route to the other station.
-        /// </summary>
-        /// <param name="playerId">The player id.</param>
-        /// <param name="exitId">The exit id of the station that is being blocked or unblocked.</param>
-        /// <param name="blocked">True if the exit is blocked, false if it is unblocked.</param>
-        public async Task HandleExitBlockStatus(string playerId, int exitId, bool blocked)
-        {
-            string? otherStation = null;
-            var otherExitId = 0;
-            var notifyBlocked = blocked;
-
             lock (_simulationLock)
             {
-                try
+                return ComputeExitBlocked(stationId, exitId);
+            }
+        }
+
+        /// <summary>
+        /// True while the station reports a train between this exit and its first signal.
+        /// A train must not be handed to the station through that exit until the zone is free.
+        /// </summary>
+        public bool IsEntryZoneOccupied(string stationId, int exitId)
+        {
+            lock (_simulationLock)
+            {
+                var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+                return _entryZoneOccupied.TryGetValue((normalizedStationId, exitId), out var occupied) && occupied;
+            }
+        }
+
+        /// <summary>
+        /// Forwards a route that ends at an exit to the next station, which draws it from the paired exit to the first signal.
+        /// A clear is kept back while that exit is blocked, so a train already on the way does not lose the route.
+        /// </summary>
+        public void SetApproachRoute(string playerId, int exitId, bool active)
+        {
+            lock (_simulationLock)
+            {
+                var player = _playerManager.GetPlayer(playerId);
+                if (player == null)
                 {
-                    var player = _playerManager.GetPlayer(playerId);
-                    if (player == null)
-                    {
-                        ServerLogger.Instance.LogWarning(Ctx(playerId), $"Player {playerId} not found");
-                        return;
-                    }
-
-                    var stationId = player.StationId;
-                    var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
-
-                    var connection = _trackLayoutService.GetConnection(normalizedStationId, exitId, out bool isReversed);
-                    if (connection == null)
-                    {
-                        ServerLogger.Instance.LogWarning(Ctx(normalizedStationId), $"No connection found for exit {exitId} at station {stationId}");
-                        return;
-                    }
-
-                    if (!blocked)
-                    {
-                        ClearExitBlocked(normalizedStationId, exitId);
-
-                        if (_openLineTracks.TryGet(connection, out var openLine)
-                            && openLine.TrainOnTrack != null
-                            && openLine.TrainOnTrack.controlledByPlayer)
-                        {
-                            _openLineTracks.RemoveTrain(connection);
-                        }
-
-                        _eventProcessor.DispatchWaitingTrain(connection);
-                    }
-                    else
-                    {
-                        MarkExitBlocked(normalizedStationId, exitId);
-                    }
-
-                    if (isReversed)
-                    {
-                        otherStation = connection.FromStation;
-                        otherExitId = connection.FromExitId;
-                    }
-                    else
-                    {
-                        otherStation = connection.ToStation;
-                        otherExitId = connection.ToExitId;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ServerLogger.Instance.LogError(Ctx(playerId), $"Error handling exit block status: {ex.Message}");
+                    ServerLogger.Instance.LogWarning(Ctx(playerId), $"Player {playerId} not found");
                     return;
                 }
+
+                var stationId = player.StationId?.ToLowerInvariant() ?? string.Empty;
+                var connection = _trackLayoutService.GetConnection(stationId, exitId, out var isReversed);
+                if (connection == null)
+                {
+                    ServerLogger.Instance.LogWarning(Ctx(stationId), $"No connection found for exit {exitId} at station {stationId}");
+                    return;
+                }
+
+                var otherStation = isReversed ? connection.FromStation : connection.ToStation;
+                var otherExitId = isReversed ? connection.FromExitId : connection.ToExitId;
+                if (!active && ComputeExitBlocked(otherStation, otherExitId)) return;
+
+                _ = _notificationManager.SendApproachRoute(otherStation, otherExitId, active);
+            }
+        }
+
+        /// <summary>
+        /// Records the owning station's report of whether a train occupies the track from this exit to the first signal.
+        /// That occupancy blocks the exit at the other end of the connection.
+        /// </summary>
+        public void SetEntryZoneOccupied(string playerId, int exitId, bool occupied)
+        {
+            lock (_simulationLock)
+            {
+                var player = _playerManager.GetPlayer(playerId);
+                if (player == null)
+                {
+                    ServerLogger.Instance.LogWarning(Ctx(playerId), $"Player {playerId} not found");
+                    return;
+                }
+
+                var stationId = player.StationId?.ToLowerInvariant() ?? string.Empty;
+                if (!TrySetEntryZone(stationId, exitId, occupied)) return;
+
+                var connection = _trackLayoutService.GetConnection(stationId, exitId, out _);
+                if (connection == null)
+                {
+                    ServerLogger.Instance.LogWarning(Ctx(stationId), $"No connection found for exit {exitId} at station {stationId}");
+                    return;
+                }
+
+                RefreshExitBlocks(connection);
+            }
+        }
+
+        /// <summary>
+        /// Treats the destination entry zone as occupied from the moment a train is handed to that station,
+        /// until the station reports the zone free.
+        /// </summary>
+        internal void AssumeEntryZoneOccupied(string stationId, int exitId)
+        {
+            var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+            _entryZoneOccupied[(normalizedStationId, exitId)] = true;
+        }
+
+        /// <summary>
+        /// Recomputes both ends of a connection and notifies a station when its exit's blocked value changes.
+        /// Caller holds <see cref="_simulationLock"/>.
+        /// </summary>
+        internal void RefreshExitBlocks(NetworkConnection connection)
+        {
+            PublishExit(connection, connection.FromStation, connection.FromExitId);
+            PublishExit(connection, connection.ToStation, connection.ToExitId);
+        }
+
+        private void ClearStationEntryZones(string stationId)
+        {
+            var exits = _entryZoneOccupied.Keys.Where(key => key.stationId == stationId).ToList();
+            var connections = new List<NetworkConnection>();
+            foreach (var exit in exits)
+            {
+                _entryZoneOccupied.Remove(exit);
+                var connection = _trackLayoutService.GetConnection(exit.stationId, exit.exitId, out _);
+                if (connection != null && !connections.Contains(connection))
+                    connections.Add(connection);
             }
 
-            if (otherStation == null)
+            foreach (var connection in connections)
+                RefreshExitBlocks(connection);
+        }
+
+        private bool TrySetEntryZone(string stationId, int exitId, bool occupied)
+        {
+            var key = (stationId, exitId);
+            var current = _entryZoneOccupied.TryGetValue(key, out var stored) && stored;
+            if (current == occupied) return false;
+            if (occupied) _entryZoneOccupied[key] = true;
+            else _entryZoneOccupied.Remove(key);
+            return true;
+        }
+
+        /// <summary>
+        /// An exit is blocked while its open line holds a train, or while the paired exit's entry zone is occupied.
+        /// </summary>
+        private bool ComputeExitBlocked(string stationId, int exitId)
+        {
+            var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+            var connection = _trackLayoutService.GetConnection(normalizedStationId, exitId, out var isReversed);
+            if (connection == null) return false;
+            if (_openLineTracks.TryGet(connection, out var track) && track.TrainOnTrack != null) return true;
+
+            var farStation = (isReversed ? connection.FromStation : connection.ToStation)?.ToLowerInvariant() ?? string.Empty;
+            var farExitId = isReversed ? connection.FromExitId : connection.ToExitId;
+            return _entryZoneOccupied.TryGetValue((farStation, farExitId), out var occupied) && occupied;
+        }
+
+        private void PublishExit(NetworkConnection connection, string stationId, int exitId)
+        {
+            var station = stationId?.ToLowerInvariant() ?? string.Empty;
+            var blocked = ComputeExitBlocked(station, exitId);
+            var key = (station, exitId);
+            if (_publishedExitBlocks.TryGetValue(key, out var previous))
             {
+                if (previous == blocked) return;
+            }
+            else if (!blocked)
+            {
+                _publishedExitBlocks[key] = false;
                 return;
             }
+            _publishedExitBlocks[key] = blocked;
 
-            try
+            string? trainNumber = null;
+            string? category = null;
+            if (blocked && _openLineTracks.TryGet(connection, out var openLine))
             {
-                await _notificationManager.SendExitBlockStatus(otherStation, otherExitId, notifyBlocked);
+                var occupant = openLine.TrainOnTrack;
+                if (occupant?.TrainEvent is TrainSpawnEvent spawn
+                    && string.Equals(spawn.HeadingStation, station, StringComparison.OrdinalIgnoreCase)
+                    && spawn.HeadingExitId == exitId)
+                {
+                    trainNumber = occupant.Number;
+                    category = occupant.Category;
+                }
             }
-            catch (Exception ex)
-            {
-                ServerLogger.Instance.LogError(Ctx(playerId), $"Error notifying exit block status: {ex.Message}");
-            }
+
+            _ = _notificationManager.SendExitBlockStatus(station, exitId, blocked, trainNumber, category);
         }
     }
 }

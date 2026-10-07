@@ -174,6 +174,10 @@ export class SignalRManager {
             this.handleExitBlockStatusChanged(data);
         });
 
+        this.connection.on('ApproachRouteChanged', (data) => {
+            this._eventManager.emit('approachRouteChanged', data.exitId, data.active);
+        });
+
         this.connection.on('ApprovalRequested', (data) => {
             this._eventManager.emit('approvalRequested', data);
         });
@@ -416,16 +420,28 @@ export class SignalRManager {
         }
     }
 
-    public async setExitBlockStatus(exitId: number, blocked: boolean): Promise<void> {
+    public async setApproachRoute(exitId: number, active: boolean): Promise<void> {
         if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
             throw new Error('SignalR connection not established');
         }
 
         try {
-            await this.connection.invoke('SetExitBlockStatus', exitId, blocked);
-            console.log(`Requested to ${blocked ? 'block' : 'unblock'} exit ${exitId}`);
+            await this.connection.invoke('SetApproachRoute', exitId, active);
         } catch (error) {
-            console.error('Failed to set exit block status:', error);
+            console.error(`Failed to ${active ? 'set' : 'clear'} approach route for exit ${exitId}:`, error);
+            throw error;
+        }
+    }
+
+    public async setEntryZoneOccupied(exitId: number, occupied: boolean): Promise<void> {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+            throw new Error('SignalR connection not established');
+        }
+
+        try {
+            await this.connection.invoke('SetEntryZoneOccupied', exitId, occupied);
+        } catch (error) {
+            console.error(`Failed to report entry zone of exit ${exitId}:`, error);
             throw error;
         }
     }
@@ -467,6 +483,9 @@ export class SignalRManager {
         // state is stale — notify the application so it can clear it.
         if (data.success && !data.isReconnect) {
             this._eventManager.emit('stationJoinedFull');
+        }
+        if (data.success) {
+            this._eventManager.emit('stationJoined', data.stationId, !!data.isReconnect);
         }
     }
 

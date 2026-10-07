@@ -97,6 +97,7 @@ export class Application implements ApplicationContext {
          this._currentStationId = layout;
          this._currentGameCode = (sessionStorage.getItem("gameCode") || "").trim();
          await this._trackLayoutManager.loadTrackLayout(layout);
+         this._trainRouteManager.reportEntryZones();
          this.setMainCanvasVisible(true);
          this._renderer?.renderTrackLayout();
          
@@ -220,17 +221,19 @@ export class Application implements ApplicationContext {
       this._eventManager.on('occupancyChanged', renderTrackState);
 
 
+      this._eventManager.on('entryZoneOccupied', (exit: Exit, occupied: boolean) => {
+         void this._signalRManager.setEntryZoneOccupied(exit.id, occupied).catch(() => undefined);
+      });
+
       this._eventManager.on('routeEndedAtExit', (_route: TrainRoute, exit: Exit) => {
-         this._signalRManager.setExitBlockStatus(exit.id, true);
+         void this._signalRManager.setApproachRoute(exit.id, true).catch(() => undefined);
       });
 
-      // Arriving train has fully left the exit → notify server that exit is unblocked
-      this._eventManager.on('exitCleared', (exit: Exit) => {
-         this._signalRManager.setExitBlockStatus(exit.id, false);
-         console.log(`Exit ${exit.id} cleared by arriving train, reporting unblock`);
+      this._eventManager.on('approachRouteChanged', (exitId: number, active: boolean) => {
+         this.handleApproachRouteChanged(exitId, active);
       });
 
-      // Exit block status changed (from server) → create or remove blocking route
+      // Exit block status changed (from server) → paint the arrow and, for an approaching train, the approach route
       this._eventManager.on('exitBlockStatusChanged', (exitId: number, blocked: boolean, trainNumber?: string, category?: string) => {
          this.handleExitBlockStatusChanged(exitId, blocked, trainNumber, category);
       });
@@ -244,6 +247,12 @@ export class Application implements ApplicationContext {
       // Full station rejoin after grace period expired — clear stale local trains.
       this._eventManager.on('stationJoinedFull', () => {
          this._trainManager.clearAllTrains();
+      });
+
+      this._eventManager.on('stationJoined', (stationId: string, isReconnect: boolean) => {
+         if (!isReconnect) return;
+         if (this._currentStationId?.toLowerCase() !== stationId?.toLowerCase()) return;
+         this._trainRouteManager.reportEntryZones();
       });
 
       // All SignalR reconnect attempts exhausted — show a dialog then return to start screen.
@@ -267,49 +276,64 @@ export class Application implements ApplicationContext {
    }
 
    private handleExitBlockStatusChanged(exitId: number, blocked: boolean, trainNumber?: string, category?: string): void {
-      if (blocked) {
-         if (trainNumber) {
-            const label = category ? `${category} ${trainNumber}` : trainNumber;
-            this._renderer?.setIncomingTrain(exitId, label);
-         }
-
-         // Station B: Create blocking route from exit
-         const location = this._trackLayoutManager.getExitPointLocation(exitId);
-         const direction = this._trackLayoutManager.getExitPointDirection(exitId);
-         
-         if (!location.track) {
-            console.error(`Cannot create route: exit ${exitId} track not found`);
-            return;
-         }
-         
-         // Get the exit object to pass to the route
-         const exit = this._trackLayoutManager.getExitById(exitId);
-         if (exit && trainNumber) this._trainRouteManager.holdExit(trainNumber, exit);
-         
-         const startPoint = {
-            track: location.track,
-            km: location.km
-         };
-         
-         // Create route and pass the exit so it's stored in the route
-         const route = this._trainRouteManager.createAndStoreRoute(startPoint, direction, null, exit, trainNumber);
-         
-         if (route) {
-            console.log(`Created blocking route from exit ${exitId} to next signal`);
-         } else {
-            console.warn(`Failed to create blocking route for exit ${exitId}`);
-         }
-      } else {
-         this._renderer?.setIncomingTrain(exitId, null);
-         const exit = this._trackLayoutManager.getExitById(exitId);
-         if (exit) this._trainRouteManager.releaseExit(exit);
+      const exit = this._trackLayoutManager.getExitById(exitId);
+      if (!exit) {
+         console.error(`Cannot update exit ${exitId}: exit not found`);
+         return;
       }
+
+      this._trainRouteManager.setExitBlocked(exit, blocked);
+      if (!blocked) {
+         this._renderer?.setIncomingTrain(exitId, null);
+         this._trainRouteManager.clearApproachRoute(exit);
+         return;
+      }
+
+      if (!trainNumber) return;
+
+      const label = category ? `${category} ${trainNumber}` : trainNumber;
+      this._renderer?.setIncomingTrain(exitId, label);
+      this.ensureApproachRoute(exit, trainNumber);
    }
 
-   /** Removes the routes starting at a signal; a cancelled departure route frees the exit it had blocked. */
+   /** Route from the paired exit to the first signal, drawn when the neighbour sets a departure or a train is on the line. */
+   private handleApproachRouteChanged(exitId: number, active: boolean): void {
+      const exit = this._trackLayoutManager.getExitById(exitId);
+      if (!exit) {
+         console.error(`Cannot update approach route: exit ${exitId} not found`);
+         return;
+      }
+      if (active) this.ensureApproachRoute(exit, null);
+      else this._trainRouteManager.clearApproachRoute(exit);
+   }
+
+   private ensureApproachRoute(exit: Exit, trainNumber: string | null): void {
+      if (this._trainRouteManager.routes.some(route => route.exit === exit && route.signal === null && !route.isEmpty())) return;
+
+      const location = this._trackLayoutManager.getExitPointLocation(exit.id);
+      const direction = this._trackLayoutManager.getExitPointDirection(exit.id);
+      if (!location.track) {
+         console.error(`Cannot create route: exit ${exit.id} track not found`);
+         return;
+      }
+
+      const route = this._trainRouteManager.createAndStoreRoute(
+         { track: location.track, km: location.km },
+         direction,
+         null,
+         exit,
+         trainNumber
+      );
+      if (route) console.log(`Created approach route from exit ${exit.id} to next signal`);
+      else console.warn(`Failed to create approach route for exit ${exit.id}`);
+   }
+
+   /** Removes the routes starting at a signal and tells the next station to drop the matching approach route. */
    private cancelRoutesAt(signal: Signal): void {
       for (const route of this._trainRouteManager.removeRoutesBySignal(signal)) {
-         if (route.endsAtExit && route.exit) this._signalRManager.setExitBlockStatus(route.exit.id, false);
+         if (route.endsAtExit && route.exit) {
+            void this._signalRManager.setApproachRoute(route.exit.id, false).catch(() => undefined);
+         }
       }
    }
 

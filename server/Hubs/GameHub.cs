@@ -681,11 +681,11 @@ namespace TrainDispatcherGame.Server.Hubs
             await Task.CompletedTask;
         }
 
-        public async Task SetExitBlockStatus(int exitId, bool blocked)
+        public Task SetApproachRoute(int exitId, bool active)
         {
             if (!TryResolveSession(out var session) || session == null)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             try
@@ -693,16 +693,44 @@ namespace TrainDispatcherGame.Server.Hubs
                 var resolvedPlayerId = ResolvePlayerId();
                 if (string.IsNullOrWhiteSpace(resolvedPlayerId))
                 {
-                    ServerLogger.Instance.LogWarning(Ctx(session.SessionId, "unknown"), $"Unable to resolve player ID for exit block update on connection {Context.ConnectionId}");
-                    return;
+                    ServerLogger.Instance.LogWarning(Ctx(session.SessionId, "unknown"), $"Unable to resolve player ID for approach route on connection {Context.ConnectionId}");
+                    return Task.CompletedTask;
                 }
 
-                await session.Simulation.HandleExitBlockStatus(resolvedPlayerId, exitId, blocked);
+                session.Simulation.SetApproachRoute(resolvedPlayerId, exitId, active);
             }
             catch (Exception ex)
             {
-                ServerLogger.Instance.LogError(Ctx(session.SessionId, exitId.ToString()), $"Error setting exit block status for exit {exitId}: {ex.Message}");
+                ServerLogger.Instance.LogError(Ctx(session.SessionId, exitId.ToString()), $"Error setting approach route for exit {exitId}: {ex.Message}");
             }
+
+            return Task.CompletedTask;
+        }
+
+        public Task SetEntryZoneOccupied(int exitId, bool occupied)
+        {
+            if (!TryResolveSession(out var session) || session == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            try
+            {
+                var resolvedPlayerId = ResolvePlayerId();
+                if (string.IsNullOrWhiteSpace(resolvedPlayerId))
+                {
+                    ServerLogger.Instance.LogWarning(Ctx(session.SessionId, "unknown"), $"Unable to resolve player ID for entry zone update on connection {Context.ConnectionId}");
+                    return Task.CompletedTask;
+                }
+
+                session.Simulation.SetEntryZoneOccupied(resolvedPlayerId, exitId, occupied);
+            }
+            catch (Exception ex)
+            {
+                ServerLogger.Instance.LogError(Ctx(session.SessionId, exitId.ToString()), $"Error setting entry zone occupancy for exit {exitId}: {ex.Message}");
+            }
+
+            return Task.CompletedTask;
         }
     }
 } 

@@ -151,6 +151,17 @@ export class TrackLayoutManager {
       return null;
    }
 
+   /** Exits that lead to another station. */
+   connectedExits(): Exit[] {
+      const exits: Exit[] = [];
+      for (const track of this._tracks) {
+         for (const switchItem of track.switches) {
+            if (switchItem instanceof Exit && switchItem.connection) exits.push(switchItem);
+         }
+      }
+      return exits;
+   }
+
    findExitToStation(stationName: string): Exit | null {
       for (const track of this._tracks) {
          for (const switchItem of track.switches) {

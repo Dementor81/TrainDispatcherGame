@@ -99,9 +99,14 @@ export class RouteOccupancyStore {
    }
 
    removeBySignal(signal: Signal): TrainRoute[] {
+      return this.removeMatching(route => route.signal === signal);
+   }
+
+   removeMatching(predicate: (route: TrainRoute) => boolean): TrainRoute[] {
       const removed: TrainRoute[] = [];
       for (const route of [...this.allRoutes()]) {
-         if (route.signal !== signal) continue;
+         if (!predicate(route)) continue;
+         route.clearParts();
          this.detach(route);
          removed.push(route);
       }

@@ -73,7 +73,14 @@ namespace TrainDispatcherGame.Server.Simulation
             {
                 if (exitPointId == -1) throw new Exception($"Train {train.Number} has invalid exit point id -1 for player controlled station");
                 if (train.GetCurrentWayPoint() == null) throw new Exception($"Train {train.Number} has no current way point");
+                if (_simulation.IsEntryZoneOccupied(station, exitPointId))
+                {
+                    spawn.ScheduledTime = _simulation.SimulationTime.AddSeconds(1);
+                    return;
+                }
+                _simulation.AssumeEntryZoneOccupied(station, exitPointId);
                 _openLineTracks.RemoveTrain(spawn.Connection);
+                _simulation.RefreshExitBlocks(spawn.Connection);
                 DispatchWaitingTrain(spawn.Connection);
                 _ = _notificationManager.SendTrain(station, train, exitPointId);
                 train.controlledByPlayer = true;
@@ -84,18 +91,8 @@ namespace TrainDispatcherGame.Server.Simulation
             }
 
             _openLineTracks.RemoveTrain(spawn.Connection);
+            _simulation.RefreshExitBlocks(spawn.Connection);
             DispatchWaitingTrain(spawn.Connection);
-            // If the train is coming from a player controlled station, notify the player that its exit is unblocked
-            var previousWaypoint = train.GetPreviousWayPoint();
-            if (previousWaypoint != null)
-            {
-                string fromStation = previousWaypoint.Station;
-                if (_playerManager.IsStationControlled(fromStation))
-                {
-                    _simulation.ClearExitBlocked(fromStation, spawn.CommingFromExitId);
-                    _ = _notificationManager.SendExitBlockStatus(fromStation, spawn.CommingFromExitId, false);
-                }
-            }
             var currentWaypoint = train.GetCurrentWayPoint();
             if (currentWaypoint != null)
             {
@@ -178,7 +175,8 @@ namespace TrainDispatcherGame.Server.Simulation
             if (connection != null)
             {
                 var destinationExitId = isReversed ? connection.FromExitId : connection.ToExitId;
-                if (_simulation.IsExitBlocked(nextWaypoint.Station, destinationExitId))
+                if (_simulation.IsExitBlocked(nextWaypoint.Station, destinationExitId)
+                    || _simulation.IsEntryZoneOccupied(nextWaypoint.Station, destinationExitId))
                 {
                     sendApprovalEvent.ScheduledTime = _simulation.SimulationTime.AddSeconds(20);
                     return;
@@ -220,7 +218,8 @@ namespace TrainDispatcherGame.Server.Simulation
             var headingExitId = isReversed ? connection.FromExitId : connection.ToExitId;
             var lineOccupied = track.TrainOnTrack != null && track.TrainOnTrack != train;
             var exitBlocked = _playerManager.IsStationControlled(headingStation)
-                && _simulation.IsExitBlocked(headingStation, headingExitId);
+                && (_simulation.IsExitBlocked(headingStation, headingExitId)
+                    || _simulation.IsEntryZoneOccupied(headingStation, headingExitId));
 
             if (lineOccupied || exitBlocked)
             {
@@ -230,7 +229,10 @@ namespace TrainDispatcherGame.Server.Simulation
 
             var added = _openLineTracks.AddTrain(connection, train, out var releasedStale);
             foreach (var released in releasedStale)
+            {
                 DispatchWaitingTrain(released);
+                _simulation.RefreshExitBlocks(released);
+            }
             if (!added)
             {
                 HoldTrainForRetry(train, currentWaypoint, track, track.TrainOnTrack);
@@ -239,17 +241,12 @@ namespace TrainDispatcherGame.Server.Simulation
 
             var spawn = CreateSpawnFromConnection(train, connection, isReversed, distanceToExit, currentWaypoint.DepartureTime);
 
-            if (_playerManager.IsStationControlled(headingStation))
-            {
-                _simulation.MarkExitBlocked(headingStation, headingExitId);
-                _ = _notificationManager.SendExitBlockStatus(headingStation, headingExitId, true, train.Number, train.Category);
-            }
-
             train.TrainEvent = spawn;
             train.AdvanceToNextWayPoint();
             train.CurrentLocation = null;
             if (track.WaitingTrainNumber == train.Number)
                 track.WaitingTrainNumber = null;
+            _simulation.RefreshExitBlocks(connection);
             _simulation.RefreshTrainDelay(train, forceNotify: true);
         }
 

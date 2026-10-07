@@ -205,7 +205,7 @@ export class TrainManager {
 
    clearAllTrains(): void {
       this._trains = [];
-      this._application.trainRouteManager.clearTrackOccupancy();
+      this._application.trainRouteManager.clearTrackOccupancy(false);
       this._eventManager.emit("trainsUpdated");
    }
 

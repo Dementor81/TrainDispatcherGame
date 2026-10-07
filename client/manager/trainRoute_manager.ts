@@ -15,8 +15,10 @@ export class TrainRouteManager {
    private _eventManager: EventManager;
    private _occupancy = new RouteOccupancyStore();
    private _trackOccupancy = new TrackOccupancyStore();
-   /** Announced inbound exits; true once a train has occupied the exit's entry zone. */
-   private _inboundExits = new Map<Exit, boolean>();
+   /** Exits the server reports as blocked: open line occupied, or the far entry zone occupied. */
+   private _blockedExits = new Set<Exit>();
+   /** Last entry-zone occupancy reported to the server, per exit. */
+   private _entryZones = new Map<Exit, boolean>();
 
    constructor(layout: TrackLayoutManager, eventManager: EventManager) {
       this._layout = layout;
@@ -44,14 +46,19 @@ export class TrainRouteManager {
 
    get occupiedElements(): Set<OccupiedElement> {
       const all = this._trackOccupancy.all();
-      for (const [exit, reached] of this._inboundExits) {
-         if (reached) all.add(exit);
-      }
+      for (const exit of this._blockedExits) all.add(exit);
       return all;
    }
 
    isExitOccupied(exit: Exit): boolean {
-      return this._trackOccupancy.isOccupied(exit) || this._inboundExits.get(exit) === true;
+      return this._trackOccupancy.isOccupied(exit) || this._blockedExits.has(exit);
+   }
+
+   setExitBlocked(exit: Exit, blocked: boolean): void {
+      const wasBlocked = this._blockedExits.has(exit);
+      if (blocked) this._blockedExits.add(exit);
+      else this._blockedExits.delete(exit);
+      if (wasBlocked !== blocked) this._eventManager.emit('occupancyChanged');
    }
 
    isSwitchLocked(sw: Switch): boolean {
@@ -173,9 +180,7 @@ export class TrainRouteManager {
          this._routes.push(route);
          this._occupancy.add(route, trainNumber);
          this._eventManager.emit('routeCreated', route);
-         if (endsAtExit) {
-            this._eventManager.emit('routeEndedAtExit', route, nextElement as Exit);
-         }
+         if (endsAtExit) this._eventManager.emit('routeEndedAtExit', route, nextElement as Exit);
          return route;
       }
       return null;
@@ -202,10 +207,8 @@ export class TrainRouteManager {
       this._eventManager.emit('routesCleared');
    }
 
-   /** A train leaving through an exit keeps that exit occupied until the neighbour reports its arrival. */
    removeOccupancyForTrain(train: Train): void {
-      const exit = train.exitId !== null ? this._layout.getExitById(train.exitId) : null;
-      this.setTrackOccupancy(train.number, exit ? [exit] : []);
+      this.setTrackOccupancy(train.number, []);
 
       const released = this._occupancy.removeTrain(train.number);
       if (released.length === 0) return;
@@ -213,45 +216,46 @@ export class TrainRouteManager {
       this._eventManager.emit('routesCleared');
    }
 
-   holdExit(trainNumber: string, exit: Exit): void {
-      this._inboundExits.set(exit, this._inboundExits.get(exit) ?? false);
-      this.setTrackOccupancy(trainNumber, [exit]);
+   /** Drops the approach route drawn from an exit when the server clears that exit. */
+   clearApproachRoute(exit: Exit): void {
+      const removed = this._occupancy.removeMatching(route => route.exit === exit && route.signal === null);
+      if (removed.length === 0) return;
+      this._routes = this._routes.filter(route => !removed.includes(route));
+      this._eventManager.emit('routesCleared');
    }
 
-   releaseExit(exit: Exit): void {
-      this._inboundExits.delete(exit);
-      if (this._trackOccupancy.release(exit)) this._eventManager.emit('occupancyChanged');
+   /** Sends the current entry-zone occupancy of every connected exit. */
+   reportEntryZones(): void {
+      this.publishEntryZones(true);
    }
 
-   clearTrackOccupancy(): void {
+   clearTrackOccupancy(reportZones = true): void {
       this._trackOccupancy.clear();
-      this._inboundExits.clear();
+      this._blockedExits.clear();
+      if (reportZones) this.publishEntryZones(false);
+      else this._entryZones.clear();
       this._eventManager.emit('occupancyChanged');
    }
 
    private setTrackOccupancy(trainNumber: string, elements: Iterable<OccupiedElement>): void {
       if (!this._trackOccupancy.setTrain(trainNumber, elements)) return;
-      this.updateInboundExits();
+      this.publishEntryZones(false);
       this._eventManager.emit('occupancyChanged');
    }
 
-   /** An announced exit is reported cleared once its entry zone has been occupied and is free again. */
-   private updateInboundExits(): void {
-      for (const [exit, reached] of this._inboundExits) {
-         if (this._trackOccupancy.isAnyOccupied(this._layout.entryZone(exit))) {
-            this._inboundExits.set(exit, true);
-            continue;
-         }
-         if (reached) this._eventManager.emit('exitCleared', exit);
-         if (this._trackOccupancy.isOccupied(exit)) this._inboundExits.set(exit, false);
-         else this._inboundExits.delete(exit);
+   private publishEntryZones(force: boolean): void {
+      for (const exit of this._layout.connectedExits()) {
+         const occupied = this._trackOccupancy.isAnyOccupied(this._layout.entryZone(exit));
+         if (!force && this._entryZones.get(exit) === occupied) continue;
+         this._entryZones.set(exit, occupied);
+         this._eventManager.emit('entryZoneOccupied', exit, occupied);
       }
    }
 
    clearRoutes() {
       this._routes = [];
       this._occupancy.clear();
-      this.clearTrackOccupancy();
+      this.clearTrackOccupancy(false);
       this._eventManager.emit('routesCleared');
    }
 }

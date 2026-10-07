@@ -169,6 +169,24 @@ namespace TrainDispatcherGame.Server.Managers
             await _hubContext.Clients.Group(SessionStationGroup(normalizedStationId)).SendAsync("ExitBlockStatusChanged", payload);
         }
 
+        /// <summary>
+        /// Asks the station at the other end of a connection to set or clear the route from its exit to the first signal.
+        /// </summary>
+        public async Task SendApproachRoute(string stationId, int exitId, bool active)
+        {
+            var normalizedStationId = stationId?.ToLowerInvariant() ?? string.Empty;
+            if (_playerManager.GetPlayerByStation(normalizedStationId) == null) return;
+
+            var payload = new { exitId, active };
+            if (_isInGracePeriod?.Invoke(normalizedStationId) == true)
+            {
+                BufferMessage(normalizedStationId, "ApproachRouteChanged", payload);
+                return;
+            }
+
+            await _hubContext.Clients.Group(SessionStationGroup(normalizedStationId)).SendAsync("ApproachRouteChanged", payload);
+        }
+
         public async Task SendTrainDelayUpdated(TrainDelayUpdatedNotification payload)
         {
             if (string.IsNullOrWhiteSpace(payload.TrainNumber))
