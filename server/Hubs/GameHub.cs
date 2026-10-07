@@ -30,26 +30,6 @@ namespace TrainDispatcherGame.Server.Hubs
             return SessionLogContext.Prefix(sessionId, context);
         }
 
-        private async Task NotifyPlayerJoinedSessionStation(string sessionId, Player player)
-        {
-            await Clients.Group(SessionGroup(sessionId)).SendAsync("PlayerJoinedStation", new
-            {
-                playerId = player.Id,
-                playerName = player.Name,
-                stationId = player.StationId
-            });
-        }
-
-        private async Task NotifyPlayerLeftSessionStation(string sessionId, string playerId, string playerName, string stationId)
-        {
-            await Clients.Group(SessionGroup(sessionId)).SendAsync("PlayerLeftStation", new
-            {
-                playerId = playerId,
-                playerName = playerName,
-                stationId = stationId
-            });
-        }
-
         private string? ResolvePlayerId()
         {
             var mappedPlayerId = _sessionManager.GetPlayerIdForConnection(Context.ConnectionId);
@@ -136,7 +116,7 @@ namespace TrainDispatcherGame.Server.Hubs
                                 {
                                     try
                                     {
-                                        await NotifyPlayerLeftSessionStation(capturedSession.SessionId, capturedPlayer.Id, capturedPlayerName, capturedStationId);
+                                        await capturedSession.NotificationManager.SendPlayerLeftStation(capturedPlayer.Id, capturedPlayerName, capturedStationId);
                                     }
                                     catch (Exception ex)
                                     {
@@ -325,7 +305,7 @@ namespace TrainDispatcherGame.Server.Hubs
                 {
                     await Groups.RemoveFromGroupAsync(Context.ConnectionId, SessionStationGroup(session.SessionId, previousStationId));
                     await session.Simulation.ReturnTrainsAtStation(previousStationId);
-                    await NotifyPlayerLeftSessionStation(session.SessionId, resolvedPlayerId, player?.Name ?? string.Empty, previousStationId);
+                    await session.NotificationManager.SendPlayerLeftStation(resolvedPlayerId, player?.Name ?? string.Empty, previousStationId);
                 }
                 _sessionManager.BindConnection(Context.ConnectionId, session.SessionId, resolvedPlayerId);
                 await Groups.AddToGroupAsync(Context.ConnectionId, SessionGroup(session.SessionId));
@@ -333,7 +313,7 @@ namespace TrainDispatcherGame.Server.Hubs
                 var joinedPlayer = session.PlayerManager.GetPlayer(resolvedPlayerId);
                 if (joinedPlayer != null)
                 {
-                    await NotifyPlayerJoinedSessionStation(session.SessionId, joinedPlayer);
+                    await session.NotificationManager.SendPlayerJoinedStation(joinedPlayer);
                 }
                 await session.Simulation.Resume();
 
@@ -432,7 +412,7 @@ namespace TrainDispatcherGame.Server.Hubs
             if (success)
             {
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, SessionStationGroup(session.SessionId, stationId));
-                await NotifyPlayerLeftSessionStation(session.SessionId, playerBeforeRelease.Id, playerBeforeRelease.Name, stationId);
+                await session.NotificationManager.SendPlayerLeftStation(playerBeforeRelease.Id, playerBeforeRelease.Name, stationId);
 
                 await Clients.Caller.SendAsync("StationLeft", new
                 {
