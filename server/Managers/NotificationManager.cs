@@ -212,5 +212,25 @@ namespace TrainDispatcherGame.Server.Managers
             await _hubContext.Clients.Group(SessionGroup()).SendAsync("MajorEventOccurred", payload);
         }
 
+        public async Task SendPlayerJoinedStation(Player player)
+        {
+            await _hubContext.Clients.Group(SessionGroup()).SendAsync("PlayerJoinedStation", new
+            {
+                playerId = player.Id,
+                playerName = player.Name,
+                stationId = player.StationId
+            });
+        }
+
+        public async Task SendPlayerLeftStation(string playerId, string playerName, string stationId)
+        {
+            await _hubContext.Clients.Group(SessionGroup()).SendAsync("PlayerLeftStation", new
+            {
+                playerId = playerId,
+                playerName = playerName,
+                stationId = stationId
+            });
+        }
+
     }
 }
