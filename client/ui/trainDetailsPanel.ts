@@ -25,7 +25,7 @@ export class TrainDetailsPanel extends BasePanel {
     [TrainState.DERAILEMENT]: 'Entgleisung',
     [TrainState.ENDED]: 'Fahrtende',
     [TrainState.MANUAL_CONTROL]: 'Manuelle Steuerung',
-    [TrainState.PASSED_RED_SIGNAL]: 'Halt bei Rot überfahren',
+    [TrainState.PASSED_RED_SIGNAL]: 'Halt überfahren',
   };
 
   private static readonly TYPE_LABELS: Record<string, string> = {
@@ -96,7 +96,7 @@ export class TrainDetailsPanel extends BasePanel {
     this.resumeBtn.style.width = '86px';
     this.controlsEl.appendChild(this.resumeBtn);
 
-    this.manualToggleBtn = UI.createButton('btn-sm btn-outline-info', 'Rangieren', () => this.handleToggleManualMode());
+    this.manualToggleBtn = UI.createButton('btn-sm btn-outline-info', 'Manuell', () => this.handleToggleManualMode());
     this.controlsEl.appendChild(this.manualToggleBtn);
     this.controlsEl.appendChild(UI.createButton('btn-sm btn-outline-danger', 'Entfernen', () => void this.handleRemove()));
 
@@ -163,9 +163,7 @@ export class TrainDetailsPanel extends BasePanel {
       const isManual = train.state === TrainState.MANUAL_CONTROL;
       this.manualToggleBtn.classList.toggle('btn-outline-info', !isManual);
       this.manualToggleBtn.classList.toggle('btn-info', isManual);
-      const canToggle = train.speedCurrent <= 0.1;
-      this.manualToggleBtn.disabled = !canToggle;
-      this.manualToggleBtn.title = canToggle ? '' : 'Nur im Stillstand moeglich';
+      
 
       const isEmergency = train.state === TrainState.EMERGENCY_STOP || train.state === TrainState.EMERGENCY_BRAKING;
       const isPassedRed = train.state === TrainState.PASSED_RED_SIGNAL;
@@ -239,7 +237,7 @@ export class TrainDetailsPanel extends BasePanel {
     this.timetableContainer.appendChild(table);
 
     if (followingTrainNumber) {
-      this.timetableContainer.appendChild(UI.createSpan('small text-secondary mt-1', `Wendet auf ${followingTrainNumber}`));
+      this.timetableContainer.appendChild(UI.createSpan('small text-secondary mt-1', `wird ${followingTrainNumber}`));
     }
   }
 

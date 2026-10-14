@@ -3,14 +3,14 @@ using TrainDispatcherGame.Server.Models;
 
 namespace TrainDispatcherGame.Server.Simulation
 {
-    public class StationTimetableService
+    public static class StationTimetableService
     {
         private static DateTime? NormalizeScheduledTime(DateTime time)
         {
             return time.Year <= 1 ? null : time;
         }
 
-        public List<StationTimetableEvent> BuildStationTimetableEvents(IEnumerable<Train> trains, string stationId, DateTime simulationTime)
+        public static List<StationTimetableEvent> BuildStationTimetableEvents(IEnumerable<Train> trains, string stationId, DateTime simulationTime)
         {
             var stationEvents = new List<StationTimetableEvent>();
 

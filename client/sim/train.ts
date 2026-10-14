@@ -243,6 +243,10 @@ export class Train {
         return this._followingTrainNumber;
     }
 
+    set followingTrainNumber(value: string | null) {
+        this._followingTrainNumber = value;
+    }
+
     get serviceReleasePending(): boolean {
         return this._serviceReleasePending;
     }

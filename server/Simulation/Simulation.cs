@@ -29,7 +29,6 @@ namespace TrainDispatcherGame.Server.Simulation
         private readonly TrackLayoutService _trackLayoutService;
         private readonly OpenLineTrackRegistry _openLineTracks;
         private readonly TrainEventProcessor _eventProcessor;
-        private readonly StationTimetableService _timetableService;
         /// <summary>Entry zone occupied, reported by the station that owns the exit. Blocks the far end of the connection.</summary>
         private readonly Dictionary<(string stationId, int exitId), bool> _entryZoneOccupied = new();
         /// <summary>Last blocked value published to each station, so a refresh only notifies on change.</summary>
@@ -59,7 +58,6 @@ namespace TrainDispatcherGame.Server.Simulation
             _sessionId = sessionId;
             _openLineTracks = new OpenLineTrackRegistry(_trackLayoutService, _sessionId);
             _eventProcessor = new TrainEventProcessor(this, _notificationManager, _playerManager, _trackLayoutService, _openLineTracks);
-            _timetableService = new StationTimetableService();
             ServerLogger.Instance.SetSimulationTimeProvider(() => SimulationTime);
             this.Reset();
         }
@@ -833,7 +831,7 @@ namespace TrainDispatcherGame.Server.Simulation
 
         public List<StationTimetableEvent> GetStationTimetableEvents(string stationId)
         {
-            return _timetableService.BuildStationTimetableEvents(_trains, stationId, SimulationTime);
+            return StationTimetableService.BuildStationTimetableEvents(_trains, stationId, SimulationTime);
         }
 
         // Manually advance simulation time by a number of seconds and process due events

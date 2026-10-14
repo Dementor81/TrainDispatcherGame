@@ -4,7 +4,7 @@ import { TrackLayoutManager } from "./trackLayout_manager";
 import { ClientSimulation } from "../core/clientSimulation";
 import { SimulationConfig } from "../core/config";
 import Tools from "../core/utils";
-import { getTrainWaypoints } from "../network/api";
+import { getTrainDetails, getTrainWaypoints } from "../network/api";
 import { TrainWayPointActionType, TrainWayPointDto } from "../network/dto";
 import Application from "@core/application";
 
@@ -161,7 +161,10 @@ export class TrainStationHandler {
       }
 
       try {
-         const waypoints = await getTrainWaypoints(followingTrainNumber);
+         const [waypoints, details] = await Promise.all([
+            getTrainWaypoints(followingTrainNumber),
+            getTrainDetails(followingTrainNumber),
+         ]);
          const firstWaypoint = waypoints[0];
          if (!firstWaypoint) throw new Error(`Following train ${followingTrainNumber} has no waypoints`);
          const now = this._clientSimulation.currentSimulationTime;
@@ -173,6 +176,7 @@ export class TrainStationHandler {
          const departure = scheduledDeparture && scheduledDeparture > earliestDeparture ? scheduledDeparture : earliestDeparture;
 
          train.number = followingTrainNumber;
+         train.followingTrainNumber = details.followingTrainNumber ?? null;
          train.action = firstWaypoint.action as TrainWayPointActionType;
          train.setScheduleTimes(new Date(departure.getTime() - minStopMs), departure);
          this.alignDirectionToward(train, waypoints);
