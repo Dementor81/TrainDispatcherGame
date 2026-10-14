@@ -40,4 +40,10 @@ COPY --from=server-build /app/publish .
 COPY --from=server-build /src/server/data ./data
 COPY --from=client-build /client/dist ./wwwroot
 
+USER root
+RUN mkdir -p /app/licence-keys && chown app:app /app/licence-keys
+USER app
+
+ENV LICENCE_KEYS_PATH=/app/licence-keys/licence-keys.json
+VOLUME ["/app/licence-keys"]
 ENTRYPOINT ["dotnet", "server.dll"]

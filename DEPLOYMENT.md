@@ -64,7 +64,9 @@ docker buildx build --platform linux/amd64 -t marcus360/train_dispatcher_game:te
 
 
 sudo docker login
-sudo docker container run --name train_dispatch_game -d -p5070:5070 marcus360/train_dispatcher_game:test
+sudo docker container run --name train_dispatch_game -d -p 5070:5070 \
+  -v train_dispatcher_licence_keys:/app/licence-keys \
+  marcus360/train_dispatcher_game:test
 
 
 Once deployed, the application is accessible at:
@@ -117,6 +119,7 @@ docker run -d \
   -e ASPNETCORE_Kestrel__Certificates__Default__Password="<pfx-password>" \
   -p 5070:5070 -p 5071:5071 \
   -v /host/path/certs:/app/certs:ro \
+  -v train_dispatcher_licence_keys:/app/licence-keys \
   --name train_dispatch_game marcus360/train_dispatcher_game:test
 ```
 
@@ -124,3 +127,20 @@ Client URLs in production:
 - **Main Application**: `https://<host>/main.html`
 - **Game Master Panel**: `https://<host>/gameMaster.html`
 - **Scenarios**: `https://<host>/szenarios.html`
+
+## Updating the container
+
+Licence keys are stored in the `train_dispatcher_licence_keys` volume, separate from track layouts. Recreate the container from a new image with the same volume name. Keys already in the volume are kept. `docker rm -v` deletes that volume.
+
+The volume starts empty. Copy keys out of the current container before the first run that mounts it:
+
+```bash
+docker cp train_dispatch_game:/app/data/licence-keys.json ./licence-keys.json
+docker volume create train_dispatcher_licence_keys
+docker run --rm \
+  -v train_dispatcher_licence_keys:/dest \
+  -v "$PWD/licence-keys.json:/src/licence-keys.json:ro" \
+  alpine sh -c "cp /src/licence-keys.json /dest/licence-keys.json && chown -R 1654:1654 /dest"
+```
+
+Then remove the old container and start the new one with `-v train_dispatcher_licence_keys:/app/licence-keys`.

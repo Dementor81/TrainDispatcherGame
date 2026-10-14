@@ -1,0 +1,19 @@
+services:
+  dotnet_app:
+    image: marcus360/train_dispatcher_game:latest
+    container_name: traingame_container # Dies ist der interne Hostname für NPM
+    restart: always
+    networks:
+      - proxy_net
+    volumes:
+      - train_dispatcher_licence_keys:/app/licence-keys
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+networks:
+  proxy_net:
+    external: true
+    name: main_proxy_network # Der Name des vom NPM erstellten Netzwerks
+
+volumes:
+  train_dispatcher_licence_keys:

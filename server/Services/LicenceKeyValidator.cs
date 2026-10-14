@@ -22,7 +22,10 @@ namespace TrainDispatcherGame.Server.Services
 
         public LicenceKeyValidator(IWebHostEnvironment env)
         {
-            _path = Path.Combine(env.ContentRootPath, "data", "licence-keys.json");
+            var configured = Environment.GetEnvironmentVariable("LICENCE_KEYS_PATH");
+            _path = string.IsNullOrWhiteSpace(configured)
+                ? Path.Combine(env.ContentRootPath, "data", "licence-keys.json")
+                : configured;
             if (!File.Exists(_path))
             {
                 return;
