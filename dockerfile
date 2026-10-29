@@ -23,13 +23,13 @@ RUN --mount=type=cache,target=/root/.nuget/packages \
     dotnet restore server/server.csproj
 
 COPY server/. ./server/
-ARG APP_VERSION
+ARG APP_VERSION=2.1.0
 RUN --mount=type=cache,target=/root/.nuget/packages \
     dotnet publish server/server.csproj -c Release -o /app/publish --no-restore \
         -p:UseAppHost=false \
         -p:DebugType=None \
         -p:DebugSymbols=false \
-        $$( [ -n "$$APP_VERSION" ] && printf '%s' "-p:Version=$$APP_VERSION" )
+        -p:Version=${APP_VERSION}
 
 # Stage 3: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
