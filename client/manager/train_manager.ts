@@ -134,9 +134,13 @@ export class TrainManager {
          train.setState(TrainState.MISROUTED, 0);
          return;
       }
+      if (train.operationPending) return;
+      train.operationPending = true;
 
+      const trainNumber = train.number;
       try {
-         const waypoints = await getTrainWaypoints(train.number);
+         const waypoints = await getTrainWaypoints(trainNumber);
+         if (train.number !== trainNumber || train.isExiting) return;
          const currentIndex = waypoints.findIndex((wp) => wp.station === this._trackLayoutManager.layoutId);
          const nextStation = currentIndex >= 0 ? waypoints[currentIndex + 1]?.station : undefined;
          if (nextStation && this._trackLayoutManager.getExitDestinationStation(exit) === nextStation) {
@@ -145,8 +149,10 @@ export class TrainManager {
             train.setState(TrainState.MISROUTED, 0);
          }
       } catch (error) {
-         console.error(`Failed to check exit for train ${train.number}:`, error);
+         console.error(`Failed to check exit for train ${trainNumber}:`, error);
          train.startExiting(exit.id, boundaryKm);
+      } finally {
+         train.operationPending = false;
       }
    }
 

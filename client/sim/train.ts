@@ -63,6 +63,7 @@ export class Train {
     private _waitingProgress: number = 0; // 0..1 progress while waiting at station
     private _followingTrainNumber: string | null = null; // following train number that will use this vehicle, after this train has completed its journey
     private _serviceReleasePending = false;
+    private _operationPending = false;
     private _exitState: TrainExitState | null = null;
     private _clearedSignals = new Set<Signal>();
 
@@ -253,6 +254,14 @@ export class Train {
 
     set serviceReleasePending(value: boolean) {
         this._serviceReleasePending = value;
+    }
+
+    get operationPending(): boolean {
+        return this._operationPending;
+    }
+
+    set operationPending(value: boolean) {
+        this._operationPending = value;
     }
 
     get isExiting(): boolean {

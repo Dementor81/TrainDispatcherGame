@@ -159,12 +159,15 @@ export class TrainStationHandler {
          train.setState(TrainState.ENDED, 0);
          return;
       }
+      if (train.operationPending) return;
+      train.operationPending = true;
 
       try {
          const [waypoints, details] = await Promise.all([
             getTrainWaypoints(followingTrainNumber),
             getTrainDetails(followingTrainNumber),
          ]);
+         if (train.number !== oldNumber) return;
          const firstWaypoint = waypoints[0];
          if (!firstWaypoint) throw new Error(`Following train ${followingTrainNumber} has no waypoints`);
          const now = this._clientSimulation.currentSimulationTime;
@@ -189,6 +192,8 @@ export class TrainStationHandler {
          this._eventManager.emit('trainTransformed', train, oldNumber, followingTrainNumber);
       } catch (error) {
          console.error(`Failed to fetch waypoints for following train ${followingTrainNumber}:`, error);
+      } finally {
+         train.operationPending = false;
       }
    }
 }
