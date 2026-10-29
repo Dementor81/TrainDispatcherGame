@@ -23,11 +23,13 @@ RUN --mount=type=cache,target=/root/.nuget/packages \
     dotnet restore server/server.csproj
 
 COPY server/. ./server/
+ARG APP_VERSION
 RUN --mount=type=cache,target=/root/.nuget/packages \
     dotnet publish server/server.csproj -c Release -o /app/publish --no-restore \
         -p:UseAppHost=false \
         -p:DebugType=None \
-        -p:DebugSymbols=false
+        -p:DebugSymbols=false \
+        $$( [ -n "$$APP_VERSION" ] && printf '%s' "-p:Version=$$APP_VERSION" )
 
 # Stage 3: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
@@ -37,7 +39,7 @@ ENV ASPNETCORE_URLS=http://+:5070 \
 EXPOSE 5070
 
 COPY --from=server-build /app/publish .
-COPY --from=server-build /src/server/data ./data
+COPY --from=server-build --chown=app:app /src/server/data ./data
 COPY --from=client-build /client/dist ./wwwroot
 
 USER root

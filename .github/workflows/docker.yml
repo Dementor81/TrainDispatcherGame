@@ -21,12 +21,23 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Resolve app version
+        id: version
+        run: |
+          base=$(sed -n 's:.*<Version>\([^<]*\)</Version>.*:\1:p' server/server.csproj | head -n 1)
+          major_minor=$(printf '%s' "$base" | cut -d. -f1,2)
+          echo "number=${major_minor}.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           file: dockerfile
           push: true
-          tags: marcus360/train_dispatcher_game:latest
+          tags: |
+            marcus360/train_dispatcher_game:latest
+            marcus360/train_dispatcher_game:${{ steps.version.outputs.number }}
+          build-args: |
+            APP_VERSION=${{ steps.version.outputs.number }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

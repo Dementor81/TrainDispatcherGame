@@ -1,6 +1,5 @@
 {
    "name": "client",
-   "version": "2.1.0",
    "main": "main.ts",
    "scripts": {
       "start": "webpack serve --mode=development --config webpack.config.js",

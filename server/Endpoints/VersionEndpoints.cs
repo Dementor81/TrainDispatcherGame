@@ -12,6 +12,12 @@ namespace TrainDispatcherGame.Server.Endpoints
                 var informationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
                 var assemblyVersion = assembly.GetName().Version?.ToString();
                 var version = informationalVersion ?? assemblyVersion ?? "0.0.0";
+                var plus = version.IndexOf('+', StringComparison.Ordinal);
+                if (plus >= 0)
+                {
+                    version = version[..plus];
+                }
+
                 return Results.Ok(new { version });
             });
 
